@@ -93,23 +93,6 @@
         ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
-        /* 토글 스위치 */
-        .theme-toggle { position: relative; width: 48px; height: 26px; cursor: pointer; }
-        .theme-toggle input { opacity: 0; width: 0; height: 0; }
-        .theme-toggle .slider {
-            position: absolute; inset: 0;
-            background: #1E293B; border-radius: 999px;
-            transition: background 0.3s;
-        }
-        .theme-toggle .slider::before {
-            content: '';
-            position: absolute; left: 3px; top: 3px;
-            width: 20px; height: 20px; border-radius: 50%;
-            background: #64748B;
-            transition: transform 0.3s, background 0.3s;
-        }
-        html[data-theme="light"] .theme-toggle .slider { background: #BAE6FD; }
-        html[data-theme="light"] .theme-toggle .slider::before { transform: translateX(22px); background: #0284C7; }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
@@ -124,14 +107,6 @@
                     수출 표준품 포장강화 대시보드 <span class="text-xs bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded-full border border-accentBlue/20">SYSTEM</span>
                 </h1>
             </div>
-        </div>
-        <div class="flex items-center gap-2.5">
-            <i class="fa-solid fa-moon text-xs text-slate-400" id="themeIconMoon"></i>
-            <label class="theme-toggle" title="라이트/다크 모드 전환">
-                <input type="checkbox" id="themeToggle" onchange="toggleTheme(this.checked)">
-                <span class="slider"></span>
-            </label>
-            <i class="fa-solid fa-sun text-xs text-slate-400" id="themeIconSun"></i>
         </div>
     </header>
 
@@ -2350,21 +2325,7 @@
         }
 
         // 🌟 [안전 가드 장착]: G-Suite Iframe의 로컬 스토리지 차단 정책 우회용 보안 모듈 장착 🌟
-        // 라이트/다크 모드 토글
-        function toggleTheme(isLight) {
-            document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
-            localStorage.setItem('dashboard_theme', isLight ? 'light' : 'dark');
-            document.getElementById('themeIconSun').style.color = isLight ? '#F59E0B' : '';
-            document.getElementById('themeIconMoon').style.color = isLight ? '' : '#94A3B8';
-        }
-        (function initTheme() {
-            const saved = localStorage.getItem('dashboard_theme') || 'dark';
-            const isLight = saved === 'light';
-            document.documentElement.setAttribute('data-theme', saved);
-            const toggle = document.getElementById('themeToggle');
-            if (toggle) toggle.checked = isLight;
-            if (isLight) document.getElementById('themeIconSun').style.color = '#F59E0B';
-        })();
+        document.documentElement.setAttribute('data-theme', 'light');
 
         const safeLocalStorage = {
             getItem: function(key) {
