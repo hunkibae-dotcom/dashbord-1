@@ -1656,50 +1656,33 @@
             });
 
             if (nearestItem) {
-                document.getElementById('nearestRoundName').innerText = nearestItem.round;
-                
-                const loadDate = nearestItem.date && nearestItem.date !== '-' ? new Date(nearestItem.date) : null;
-                let cleanDue = (nearestItem.dueDate || '').toString().replace(/\s+/g, '').replace(/\./g, '-');
-                if (cleanDue.split('-')[0].length === 2) {
-                    cleanDue = '20' + cleanDue;
-                }
-                const dueDate = new Date(cleanDue);
+                // 상차일 기준 D-Day 계산
+                const loadDate = new Date(nearestItem.date);
+                const loadDateReset = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const diffDays = Math.ceil((loadDateReset.getTime() - todayReset.getTime()) / (1000 * 60 * 60 * 24));
 
-                let targetDate = loadDate && !isNaN(loadDate.getTime()) ? loadDate : dueDate;
-                if (loadDate && !isNaN(loadDate.getTime()) && !isNaN(dueDate.getTime())) {
-                    const diffLoad = loadDate.getTime() - todayReset.getTime();
-                    const diffDue = dueDate.getTime() - todayReset.getTime();
-                    if (diffLoad >= 0 && diffDue >= 0) {
-                        targetDate = diffLoad < diffDue ? loadDate : dueDate;
-                    } else if (diffLoad >= 0) {
-                        targetDate = loadDate;
-                    } else {
-                        targetDate = dueDate;
-                    }
-                }
+                const ddayText = diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
+                const ddayClass = diffDays === 0
+                    ? 'text-[10px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold'
+                    : 'text-[10px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold';
 
-                const diffTime = targetDate.getTime() - todayReset.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+                // 사이드바 카드 업데이트
                 const ddayEl = document.getElementById('nearestDDay');
-                if (diffDays === 0) {
-                    ddayEl.innerText = 'D-Day';
-                    ddayEl.className = 'text-[10px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold';
-                } else {
-                    ddayEl.innerText = `D-${diffDays}`;
-                    ddayEl.className = 'text-[10px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold';
-                }
-
-                document.getElementById('nearestLoadDate').innerText = nearestItem.date && nearestItem.date !== '-' ? normalizeDate(nearestItem.date) : '미구성';
-                document.getElementById('nearestDueDate').innerText = normalizeDate(nearestItem.dueDate);
+                if (ddayEl) { ddayEl.innerText = ddayText; ddayEl.className = ddayClass; }
+                const nrEl = document.getElementById('nearestRoundName');
+                if (nrEl) nrEl.innerText = nearestItem.round;
+                const nlEl = document.getElementById('nearestLoadDate');
+                if (nlEl) nlEl.innerText = normalizeDate(nearestItem.date);
+                const ndEl = document.getElementById('nearestDueDate');
+                if (ndEl) ndEl.innerText = normalizeDate(nearestItem.dueDate);
 
                 // 4번 카드 동기화
                 document.getElementById('card4RoundName').innerText = nearestItem.round;
-                document.getElementById('card4LoadDate').innerText = nearestItem.date && nearestItem.date !== '-' ? normalizeDate(nearestItem.date) : '미구성';
+                document.getElementById('card4LoadDate').innerText = normalizeDate(nearestItem.date);
                 document.getElementById('card4DueDate').innerText = normalizeDate(nearestItem.dueDate);
                 const card4DDay = document.getElementById('card4DDay');
-                card4DDay.innerText = document.getElementById('nearestDDay').innerText;
-                card4DDay.className = document.getElementById('nearestDDay').className;
+                card4DDay.innerText = ddayText;
+                card4DDay.className = ddayClass;
             } else {
                 clearNearestScheduleUI();
             }
