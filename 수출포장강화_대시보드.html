@@ -1329,6 +1329,50 @@
             updateSortHeaders();
         }
 
+        // 상태 드롭다운 필터
+        let activeStatusFilter = '전체';
+
+        function toggleStatusDropdown(e) {
+            e.stopPropagation();
+            const dd = document.getElementById('statusDropdown');
+            const arrow = document.getElementById('statusDropdownArrow');
+            const isOpen = !dd.classList.contains('hidden');
+            dd.classList.toggle('hidden');
+            arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+        }
+
+        function selectStatusFilter(value) {
+            activeStatusFilter = value;
+            document.getElementById('statusDropdown').classList.add('hidden');
+            document.getElementById('statusDropdownArrow').style.transform = '';
+
+            // 헤더 레이블 업데이트
+            const label = document.getElementById('statusFilterLabel');
+            if (value === '전체') {
+                label.classList.add('hidden');
+            } else {
+                label.textContent = value;
+                label.classList.remove('hidden');
+            }
+
+            // 선택된 항목 강조
+            ['전체','출고','피킹','포장완료','포장대기','미입고'].forEach(s => {
+                const btn = document.getElementById('sf-' + s);
+                if (btn) btn.classList.toggle('bg-slate-700/60', s === value);
+            });
+
+            applyFilters();
+        }
+
+        // 드롭다운 외부 클릭 시 닫기
+        document.addEventListener('click', function() {
+            const dd = document.getElementById('statusDropdown');
+            if (dd && !dd.classList.contains('hidden')) {
+                dd.classList.add('hidden');
+                document.getElementById('statusDropdownArrow').style.transform = '';
+            }
+        });
+
         // 🌟 [정밀 정렬 핵심 로직] 🌟
         function sortData() {
             const key = sortConfig.key;
