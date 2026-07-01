@@ -110,7 +110,14 @@
         </div>
     </header>
 
-    <main class="flex-grow px-2 py-5 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start">
+    <div class="max-w-[1600px] w-full mx-auto px-2 pt-3 flex justify-start">
+        <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-panelBg border border-borderSlate px-3 py-1.5 rounded-lg transition-all hover:border-slate-400">
+            <i class="fa-solid fa-sidebar text-xs" id="sidebarToggleIcon"></i>
+            <span id="sidebarToggleLabel">사이드바 숨기기</span>
+        </button>
+    </div>
+
+    <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start">
 
         <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl lg:col-start-1 lg:row-start-1">
                 <h2 class="text-base font-bold text-white mb-4 flex items-center gap-2">
