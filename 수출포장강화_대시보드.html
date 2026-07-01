@@ -2337,7 +2337,6 @@
             sidebarVisible = !sidebarVisible;
             const top       = document.getElementById('sidebarTop');
             const bottom    = document.getElementById('sidebarBottom');
-            const grid      = document.getElementById('mainGrid');
             const label     = document.getElementById('sidebarToggleLabel');
             const dashView  = document.getElementById('generalDashboardView');
             const tableView = document.getElementById('tablePanel');
@@ -2345,8 +2344,6 @@
             if (sidebarVisible) {
                 top.classList.remove('hidden');
                 bottom.classList.remove('hidden');
-                grid.classList.remove('lg:grid-cols-1');
-                grid.classList.add('lg:grid-cols-4');
                 dashView.classList.remove('lg:col-start-1', 'lg:col-span-4');
                 dashView.classList.add('lg:col-start-2', 'lg:col-span-3');
                 if (tableView) {
@@ -2357,8 +2354,6 @@
             } else {
                 top.classList.add('hidden');
                 bottom.classList.add('hidden');
-                grid.classList.remove('lg:grid-cols-4');
-                grid.classList.add('lg:grid-cols-1');
                 dashView.classList.remove('lg:col-start-2', 'lg:col-span-3');
                 dashView.classList.add('lg:col-start-1', 'lg:col-span-4');
                 if (tableView) {
