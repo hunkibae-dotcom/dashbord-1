@@ -1050,14 +1050,14 @@
                 let row = csvRows[i];
                 if (row.length === 0 || row.every(cell => !cell || cell.toString().trim() === "")) continue;
 
-                // [핵심] 품목코드나 수량이 비어있으면 엑셀 찌꺼기(유령행)로 간주하고 즉시 버림!
+                // D열(수량)이 비어있는 행만 건너뜀 — 수량에 값이 있으면 유효한 행
+                let rawQtyStr = indices.qty !== -1 && indices.qty < row.length && row[indices.qty] ? row[indices.qty].toString().trim() : '';
+                let qtyVal = parseInt(rawQtyStr.replace(/[^0-9]/g, '')) || 0;
+                if (rawQtyStr === '') continue;
+
                 let rawCodeStr = indices.code !== -1 && indices.code < row.length && row[indices.code] ? row[indices.code].toString().trim() : '';
                 if (!rawCodeStr && row[1]) rawCodeStr = row[1].toString().trim();
                 if (!rawCodeStr && row[0]) rawCodeStr = row[0].toString().trim();
-                let rawQtyStr = indices.qty !== -1 && indices.qty < row.length && row[indices.qty] ? row[indices.qty].toString().trim() : '';
-                let qtyVal = parseInt(rawQtyStr.replace(/[^0-9]/g, '')) || 0;
-                
-                if (rawCodeStr === '') continue;
 
                 let dateVal = indices.date !== -1 && indices.date < row.length && row[indices.date] ? normalizeDate(row[indices.date]) : '-';
                 let regDateVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? normalizeDate(row[indices.regDate]) : dateVal;
