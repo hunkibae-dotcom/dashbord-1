@@ -1741,9 +1741,9 @@
 
                 const codeKey = (item.code || '').toString().trim().toUpperCase();
                 if (codeKey) {
-                    // 포장완료(3) > 입고(2) > 기타(1) 우선순위로 코드 상태 결정 (statusLabel 기준)
-                    const labelNorm = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '').toLowerCase();
-                    const currentPriority = /포장완료/.test(labelNorm) ? 3 : (/^입고$/.test(labelNorm) ? 2 : 1);
+                    // 출고(4) > 피킹(3) > 포장완료(2) > 입고(1) > 기타(0) 우선순위
+                    const sc = (item.status || '').toString().trim().toLowerCase();
+                    const currentPriority = sc === '출고' ? 4 : sc === '피킹' ? 3 : sc === '포장완료' ? 2 : sc === '입고' ? 1 : 0;
                     const existing = codeStatusMap.get(codeKey);
                     if (!existing || currentPriority > existing.priority) {
                         codeStatusMap.set(codeKey, { status: isNotReceived ? '미입고' : '입고', priority: currentPriority });
