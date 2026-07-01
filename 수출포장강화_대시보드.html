@@ -1995,10 +1995,11 @@
                     }
                 }
             }
-            setVal('hoverShippedTotalQty', shippedTotalQty.toLocaleString());
-            setVal('hoverShippedTotalCodes', shippedTotalCodes.size.toLocaleString());
-            setVal('hoverShippedPickingQty', shippedPickingQty.toLocaleString());
-            setVal('hoverShippedPickingCodes', shippedPickingCodes.size.toLocaleString());
+            // 카드3 상세현황 비활성화
+            // setVal('hoverShippedTotalQty', shippedTotalQty.toLocaleString());
+            // setVal('hoverShippedTotalCodes', shippedTotalCodes.size.toLocaleString());
+            // setVal('hoverShippedPickingQty', shippedPickingQty.toLocaleString());
+            // setVal('hoverShippedPickingCodes', shippedPickingCodes.size.toLocaleString());
 
             document.getElementById('matchCount').innerText = filtered.length;
             document.getElementById('totalDisplayCount').innerText = filtered.length;
