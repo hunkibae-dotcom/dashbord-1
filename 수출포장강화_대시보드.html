@@ -2498,7 +2498,9 @@
                 }
             }
 
-            document.getElementById('chartModalTitle').innerText = country + ' - ' + statusType + ' 상세';
+            document.getElementById('chartModalTitle').innerText = country + ' 상세품목';
+            document.getElementById('chartDetailModal').dataset.country = country;
+            document.getElementById('chartDetailModal').dataset.statusType = statusType;
             const tbody = document.getElementById('chartModalTableBody');
             tbody.innerHTML = '';
 
