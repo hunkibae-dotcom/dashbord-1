@@ -2050,17 +2050,16 @@
 
                 tr.innerHTML = `
                     <td class="py-3.5 px-4 font-mono text-xs text-slate-400">${normalizeDate(item.regDate)}</td>
-                    <td class="py-3.5 px-4 font-semibold text-white text-xs">${item.round}</td>
+                    <td class="py-3.5 px-4 font-semibold text-white text-xs text-center">${item.round}</td>
                     <td class="py-3.5 px-4 font-mono text-xs">
                         <span class="text-blue-700 hover:text-blue-900 cursor-pointer transition-colors font-semibold" onclick="openDetailPanelFromTable('${item.code}')">${item.code}</span>
                     </td>
-                    <td class="py-3.5 px-4 font-bold text-slate-300">${item.qty.toLocaleString()}</td>
-                    <td class="py-3.5 px-4 text-slate-400 font-mono text-xs">${normalizeDate(item.dueDate)}</td>
-                    <td class="py-3.5 px-4 text-slate-400 font-mono text-xs">${normalizeDate(item.date)}</td>
+                    <td class="py-3.5 px-4 font-bold text-slate-300 text-center">${item.qty.toLocaleString()}</td>
+                    <td class="py-3.5 px-4 text-slate-400 font-mono text-xs text-center">${normalizeDate(item.dueDate)}</td>
+                    <td class="py-3.5 px-4 text-slate-400 font-mono text-xs text-center">${normalizeDate(item.date)}</td>
                     <td class="py-3.5 px-4 text-center font-semibold text-slate-300">${item.targetQty.toLocaleString()}</td>
                     <td class="py-3.5 px-4 text-center font-semibold text-accentGreen">${item.strengthenedQty.toLocaleString()}</td>
                     <td class="py-3.5 px-4 text-center font-semibold text-accentOrange">${item.shippedQty.toLocaleString()}</td>
-                    <td class="py-3.5 px-4 text-right font-medium text-slate-300">${item.cost.toLocaleString()}원</td>
                     <td class="py-3.5 px-4 text-center"><span class="px-2.5 py-0.5 rounded text-xs ${badgeClass}">${item.statusLabel || item.status}</span></td>`;
                 tbody.appendChild(tr);
             });
