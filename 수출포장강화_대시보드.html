@@ -2526,6 +2526,32 @@
             document.getElementById('chartDetailModal').classList.remove('hidden');
         }
 
+        function exportChartModalData() {
+            const modal = document.getElementById('chartDetailModal');
+            const country = modal.dataset.country || '';
+            const statusType = modal.dataset.statusType || '';
+            const rows = document.querySelectorAll('#chartModalTableBody tr');
+            if (!rows.length) return;
+
+            let csv = '﻿제품구분,품목코드,수량(EA)\n';
+            rows.forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (cells.length >= 2) {
+                    const code = cells[0].innerText.trim();
+                    const qty  = cells[1].innerText.replace(/[^0-9]/g, '');
+                    csv += `"${country}","${code}",${qty}\n`;
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url;
+            a.download = `${country}_${statusType}_상세품목.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         function closeChartDetailModal() {
             document.getElementById('chartDetailModal').classList.add('hidden');
         }
