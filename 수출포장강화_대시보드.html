@@ -1997,12 +1997,19 @@
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150';
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
-                if (item.status === '출고완료') {
+                if (item.status === '출고') {
+                    // 강화포장 후 출고 완료
                     badgeClass = 'bg-accentGreen/10 text-accentGreen border-accentGreen/20 font-bold';
                 } else if (item.status === '포장완료') {
+                    // 포장완료, 미출고
                     badgeClass = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20 font-bold';
+                } else if (item.status === '피킹') {
+                    // 강화 없이 출고
+                    badgeClass = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20 font-bold';
                 } else if (item.status === '포장대기') {
                     badgeClass = 'bg-accentOrange/10 text-accentOrange border-accentOrange/20 font-bold';
+                } else if (item.status === '입고') {
+                    badgeClass = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20';
                 }
 
                 tr.innerHTML = `
