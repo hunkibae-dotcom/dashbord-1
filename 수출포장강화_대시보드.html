@@ -1621,45 +1621,38 @@
             });
         }
 
-        // 미래 일정만 임박 수출 일정에 표출되도록 상차일/납기일 계산 알고리즘 정비
+        // 수출 표준품 현황 시트에서 상차일 기준 가장 가까운 미래 일정 표출
         function updateNearestSchedule() {
-            const list = state.filteredData.length > 0 ? state.filteredData : state.data;
+            // 수출 표준품 현황 시트 데이터만 사용
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            const list = exportKey ? datasetMap[exportKey] : [];
             if (!list || list.length === 0) {
                 clearNearestScheduleUI();
                 return;
             }
 
-            // 오늘 날짜인 2026-06-25일 시점으로 고정 설정
-            const today = new Date('2026-06-25'); 
-            const todayReset = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const now = new Date();
+            const todayReset = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
             let nearestItem = null;
             let minDiff = Infinity;
 
             list.forEach(item => {
-                let loadDateVal = item.date && item.date !== '-' ? new Date(item.date) : null;
-                
-                let cleanDue = (item.dueDate || '').toString().replace(/\s+/g, '').replace(/\./g, '-');
-                if (cleanDue.split('-')[0].length === 2) {
-                    cleanDue = '20' + cleanDue;
+                // 상차일(date)이 있는 항목만 대상
+                if (!item.date || item.date === '-') return;
+                const loadDate = new Date(item.date);
+                if (isNaN(loadDate.getTime())) return;
+
+                const compareDate = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const diff = compareDate.getTime() - todayReset.getTime();
+
+                // 오늘 포함 미래 상차일만 대상
+                if (diff < 0) return;
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    nearestItem = item;
                 }
-                const dueDateVal = new Date(cleanDue);
-
-                // 오늘 포함 미래 일자만 판별 가이드 작동
-                [loadDateVal, dueDateVal].forEach(d => {
-                    if (!d || isNaN(d.getTime())) return;
-                    
-                    const compareTarget = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                    const diff = compareTarget.getTime() - todayReset.getTime();
-                    
-                    // 과거 일자(6월 24일 이전)는 무조건 배제 (0일 이상만 통과)
-                    if (diff < 0) return;
-
-                    if (diff < minDiff) {
-                        minDiff = diff;
-                        nearestItem = item;
-                    }
-                });
             });
 
             if (nearestItem) {
