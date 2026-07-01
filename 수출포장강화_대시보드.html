@@ -254,6 +254,53 @@
 
         <div id="generalDashboardView" class="flex flex-col gap-4 lg:col-start-2 lg:col-span-3 lg:row-start-1">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div id="remainingStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('remainingStatusDetail')" onmouseleave="hideHover('remainingStatusDetail')">
+                        <p class="text-base font-semibold text-slate-400 uppercase tracking-wider mb-4">충주공장 재고</p>
+                        <div class="pt-2">
+                            <div class="pb-3">
+                                <div class="flex items-end justify-between">
+                                    <span class="text-sm text-slate-400 font-semibold">총</span>
+                                    <div class="flex items-end gap-1.5">
+                                        <span id="generalKpiRemainingQty" class="text-2xl font-bold text-accentRed"></span>
+                                        <span class="text-xs text-slate-400">EA</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-t border-slate-700/80"></div>
+                            <div class="pt-3">
+                                <div class="flex items-end justify-between">
+                                    <span class="text-sm text-slate-400 font-semibold">총</span>
+                                    <div class="flex items-end gap-1.5">
+                                        <span id="generalKpiRemainingCodes" class="text-2xl font-bold text-accentRed"></span>
+                                        <span class="text-[10px] text-slate-500 uppercase">CODE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-4">
+                                <p class="text-[11px] text-slate-500">최근 포장일 : <span id="kpiLastPackingDate">-</span></p>
+                            </div>
+                        </div>
+                        <div id="remainingStatusDetail" onmouseenter="showHover('remainingStatusDetail')" onmouseleave="hideHover('remainingStatusDetail')" class="absolute left-0 top-full z-50 mt-3 w-full rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 p-4 shadow-2xl transition-opacity transition-transform duration-200 ease-out opacity-0 translate-y-2 pointer-events-none">
+                            <div class="text-sm font-semibold text-white mb-3">상세 현황</div>
+                            <div class="grid gap-2.5 text-xs text-slate-400">
+                                <div class="flex justify-between items-center">
+                                    <span>포장대기</span>
+                                    <span class="font-mono"><span id="hoverStockWaitingQty" class="text-white font-bold">-</span>EA / <span id="hoverStockWaitingCodes" class="text-white font-bold">-</span>CODE</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>포장완료</span>
+                                    <span class="font-mono"><span id="hoverStockDoneQty" class="text-accentGreen font-bold">-</span>EA / <span id="hoverStockDoneCodes" class="text-accentGreen font-bold">-</span>CODE</span>
+                                </div>
+                            </div>
+                            <div class="border-t border-slate-700/60 mt-3 pt-3 text-xs text-slate-300">
+                                <div class="font-medium text-slate-100">총 PALET</div>
+                                <div class="mt-1 text-slate-300">
+                                    <span id="hoverStockPallets">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="exportStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('exportStatusDetail')" onmouseleave="hideHover('exportStatusDetail')">
                         <p class="text-base font-semibold text-slate-400 uppercase tracking-wider mb-4">수출 표준품 현황</p>
                         <div class="pt-2">
@@ -297,53 +344,6 @@
                                 <div class="mt-1 text-slate-300">
                                     <span id="hoverRecentReceivedItem">-</span>
                                     <span id="hoverRecentReceivedExtra" class="block text-slate-500 text-[10px] mt-0.5"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="remainingStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('remainingStatusDetail')" onmouseleave="hideHover('remainingStatusDetail')">
-                        <p class="text-base font-semibold text-slate-400 uppercase tracking-wider mb-4">충주공장 재고</p>
-                        <div class="pt-2">
-                            <div class="pb-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="generalKpiRemainingQty" class="text-2xl font-bold text-accentRed"></span>
-                                        <span class="text-xs text-slate-400">EA</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-t border-slate-700/80"></div>
-                            <div class="pt-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="generalKpiRemainingCodes" class="text-2xl font-bold text-accentRed"></span>
-                                        <span class="text-[10px] text-slate-500 uppercase">CODE</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="pt-4">
-                                <p class="text-[11px] text-slate-500">최근 포장일 : <span id="kpiLastPackingDate">-</span></p>
-                            </div>
-                        </div>
-                        <div id="remainingStatusDetail" onmouseenter="showHover('remainingStatusDetail')" onmouseleave="hideHover('remainingStatusDetail')" class="absolute left-0 top-full z-50 mt-3 w-full rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 p-4 shadow-2xl transition-opacity transition-transform duration-200 ease-out opacity-0 translate-y-2 pointer-events-none">
-                            <div class="text-sm font-semibold text-white mb-3">상세 현황</div>
-                            <div class="grid gap-2.5 text-xs text-slate-400">
-                                <div class="flex justify-between items-center">
-                                    <span>포장대기</span>
-                                    <span class="font-mono"><span id="hoverStockWaitingQty" class="text-white font-bold">-</span>EA / <span id="hoverStockWaitingCodes" class="text-white font-bold">-</span>CODE</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span>포장완료</span>
-                                    <span class="font-mono"><span id="hoverStockDoneQty" class="text-accentGreen font-bold">-</span>EA / <span id="hoverStockDoneCodes" class="text-accentGreen font-bold">-</span>CODE</span>
-                                </div>
-                            </div>
-                            <div class="border-t border-slate-700/60 mt-3 pt-3 text-xs text-slate-300">
-                                <div class="font-medium text-slate-100">총 PALET</div>
-                                <div class="mt-1 text-slate-300">
-                                    <span id="hoverStockPallets">-</span>
                                 </div>
                             </div>
                         </div>
