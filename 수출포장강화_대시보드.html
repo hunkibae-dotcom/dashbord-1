@@ -706,11 +706,13 @@
         function combineDatasets() {
             let combined = [];
             const keys = Object.keys(datasetMap);
-            
+
             const hasRealUploads = keys.some(k => k !== 'default');
-            
+
             keys.forEach(k => {
                 if (hasRealUploads && k === 'default') return;
+                // 충주공장 재고 시트는 테이블 합산에서 제외
+                if (k.includes('충주공장 재고')) return;
                 combined = mergeDatasets(combined, datasetMap[k]);
             });
             
