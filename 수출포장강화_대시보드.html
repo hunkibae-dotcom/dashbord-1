@@ -2491,6 +2491,28 @@
             });
         }
 
+        function downloadPackingChartData() {
+            if (!trendChartInstance) return;
+            const chart = trendChartInstance;
+            const labels = chart.data.labels || [];
+            const data   = chart.data.datasets[0] ? chart.data.datasets[0].data : [];
+            const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : '월간별';
+            const yearLabel = packingSelectedYear || '';
+
+            let csv = '﻿기간,강화수량(EA)\n';
+            labels.forEach(function(lbl, i) {
+                csv += '"' + lbl + '",' + (data[i] || 0) + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = '포장강화현황_' + yearLabel + '_' + modeLabel + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         // 설정 패널 제어
         function openSettingsModal() {
             document.getElementById('inputPubUrl').value = safeLocalStorage.getItem('sheet_pub_url') || '';
