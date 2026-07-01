@@ -2228,6 +2228,221 @@
             buildPackingDataAndInit();
         }
 
+        // ─── 포장 강화 현황 차트 ─────────────────────────────────────────
+        function buildPackingDataAndInit() {
+            _packingDateQtyMap = {};
+
+            // 1) 출고 완료: 행 단위로 수량 합산 (포장일 없으면 skip)
+            const shippedKey = Object.keys(datasetMap).find(k => k.includes('출고 완료'));
+            if (shippedKey) {
+                datasetMap[shippedKey].forEach(function(item) {
+                    const d = item.regDate;
+                    if (!d || d === '-') return;
+                    const qty = item.qty || 0;
+                    if (!_packingDateQtyMap[d]) _packingDateQtyMap[d] = 0;
+                    _packingDateQtyMap[d] += qty;
+                });
+            }
+
+            // 2) 충주공장 재고: (건명+제품코드+색상+포장일) 기준 중복 제거 후 합산
+            const stockKey = Object.keys(datasetMap).find(k => k.includes('충주공장 재고'));
+            if (stockKey) {
+                const grouped = {};
+                datasetMap[stockKey].forEach(function(item) {
+                    const d = item.regDate;
+                    if (!d || d === '-') return;
+                    const gKey = (item.round || '') + '|' + (item.code || '') + '|' + (item.color || '') + '|' + d;
+                    if (!grouped[gKey]) grouped[gKey] = { d: d, qty: 0 };
+                    grouped[gKey].qty += item.qty || 0;
+                });
+                Object.values(grouped).forEach(function(g) {
+                    if (!_packingDateQtyMap[g.d]) _packingDateQtyMap[g.d] = 0;
+                    _packingDateQtyMap[g.d] += g.qty;
+                });
+            }
+
+            initPackingYearSelect();
+            updatePackingModeSlider();
+            renderPackingChart();
+        }
+
+        function initPackingYearSelect() {
+            const years = [];
+            Object.keys(_packingDateQtyMap).forEach(function(d) {
+                const y = d.slice(0, 4);
+                if (years.indexOf(y) === -1) years.push(y);
+            });
+            years.sort();
+            const sel = document.getElementById('packingYearSelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            if (years.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = ''; opt.textContent = '데이터 없음';
+                sel.appendChild(opt);
+                packingSelectedYear = null;
+                return;
+            }
+            years.forEach(function(y) {
+                const opt = document.createElement('option');
+                opt.value = y; opt.textContent = y + '년';
+                sel.appendChild(opt);
+            });
+            const currentYear = new Date().getFullYear().toString();
+            packingSelectedYear = years.indexOf(currentYear) >= 0 ? currentYear : years[years.length - 1];
+            sel.value = packingSelectedYear;
+        }
+
+        function setPackingYear(year) {
+            packingSelectedYear = year;
+            renderPackingChart();
+        }
+
+        function setPackingViewMode(mode) {
+            packingViewMode = mode;
+            updatePackingModeSlider();
+            renderPackingChart();
+        }
+
+        function updatePackingModeSlider() {
+            const slider = document.getElementById('packingModeSlider');
+            if (!slider) return;
+            const modes = ['daily', 'weekly', 'monthly'];
+            const idx = modes.indexOf(packingViewMode);
+            slider.style.left = (idx * 33.33) + '%';
+            modes.forEach(function(m, i) {
+                const btn = document.getElementById('packingBtn_' + m);
+                if (btn) btn.style.color = (i === idx) ? '#ffffff' : '#94a3b8';
+            });
+        }
+
+        function getISOWeek(dateStr) {
+            const d = new Date(dateStr + 'T12:00:00');
+            const day = d.getDay() || 7;
+            d.setDate(d.getDate() + 4 - day);
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return d.getFullYear() + '-W' + String(weekNo).padStart(2, '0');
+        }
+
+        function renderPackingChart() {
+            const year = packingSelectedYear;
+            const filtered = {};
+            Object.keys(_packingDateQtyMap).forEach(function(d) {
+                if (!year || d.startsWith(year)) filtered[d] = _packingDateQtyMap[d];
+            });
+
+            let labels = [], dataArr = [];
+
+            if (packingViewMode === 'daily') {
+                const sorted = Object.keys(filtered).sort();
+                labels  = sorted.map(function(d) { return d.slice(5); });
+                dataArr = sorted.map(function(d) { return filtered[d]; });
+
+            } else if (packingViewMode === 'weekly') {
+                const weekMap = {};
+                Object.keys(filtered).sort().forEach(function(d) {
+                    const wk = getISOWeek(d);
+                    if (!weekMap[wk]) weekMap[wk] = 0;
+                    weekMap[wk] += filtered[d];
+                });
+                const sortedWks = Object.keys(weekMap).sort();
+                labels  = sortedWks.map(function(wk) { return parseInt(wk.split('-W')[1]) + '주'; });
+                dataArr = sortedWks.map(function(wk) { return weekMap[wk]; });
+
+            } else {
+                const monthMap = {};
+                Object.keys(filtered).sort().forEach(function(d) {
+                    const mo = d.slice(0, 7);
+                    if (!monthMap[mo]) monthMap[mo] = 0;
+                    monthMap[mo] += filtered[d];
+                });
+                const sortedMos = Object.keys(monthMap).sort();
+                labels  = sortedMos.map(function(m) { return parseInt(m.slice(5)) + '월'; });
+                dataArr = sortedMos.map(function(m) { return monthMap[m]; });
+            }
+
+            if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
+
+            const canvas = document.getElementById('trendChart');
+            if (!canvas) return;
+
+            const packingBarTopPlugin = {
+                id: 'packingBarTop',
+                _hov: -1,
+                afterEvent: function(chart, args) {
+                    const e = args.event;
+                    if (e.type !== 'mousemove' && e.type !== 'mouseout') return;
+                    const els = e.type === 'mousemove'
+                        ? chart.getElementsAtEventForMode(e.native, 'nearest', { intersect: true }, false)
+                        : [];
+                    const ni = els.length > 0 ? els[0].index : -1;
+                    if (ni !== this._hov) { this._hov = ni; args.changed = true; }
+                },
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const hov = this._hov;
+                    const ds  = chart.data.datasets[0];
+                    const meta = chart.getDatasetMeta(0);
+                    meta.data.forEach(function(bar, i) {
+                        const val = ds.data[i];
+                        if (!val) return;
+                        ctx.save();
+                        ctx.fillStyle = '#00E676';
+                        ctx.font = 'bold ' + (hov === i ? 10 : 8) + 'px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(val.toLocaleString() + 'EA', bar.x, bar.y - 2);
+                        ctx.restore();
+                    });
+                }
+            };
+
+            trendChartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '강화 수량 (EA)',
+                        data: dataArr,
+                        backgroundColor: 'rgba(0, 176, 255, 0.65)',
+                        borderColor: '#00B0FF',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    barPercentage: 0.55,
+                    categoryPercentage: 0.65,
+                    layout: { padding: { top: 18 } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#475569', font: { size: 10 } },
+                            grid: { color: '#CBD5E1' }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#475569',
+                                font: { size: 10 },
+                                maxRotation: packingViewMode === 'daily' ? 45 : 0,
+                                autoSkip: true,
+                                maxTicksLimit: packingViewMode === 'daily' ? 20 : 15
+                            },
+                            grid: { display: false }
+                        }
+                    }
+                },
+                plugins: [packingBarTopPlugin]
+            });
+        }
+
         // 설정 패널 제어
         function openSettingsModal() {
             document.getElementById('inputPubUrl').value = safeLocalStorage.getItem('sheet_pub_url') || '';
