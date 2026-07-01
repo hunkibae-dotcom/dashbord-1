@@ -303,50 +303,6 @@
 
                     <div id="exportStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('exportStatusDetail')" onmouseleave="hideHover('exportStatusDetail')">
                         <p class="text-base font-semibold text-slate-400 uppercase tracking-wider mb-4">수출 표준품 현황</p>
-                        <div class="pt-2">
-                            <div class="pb-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="kpiReceivedQty" class="text-2xl font-bold text-slate-100"></span>
-                                        <span class="text-xs text-slate-400">EA</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-t border-slate-700/80"></div>
-                            <div class="pt-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="kpiReceivedCodes" class="text-2xl font-bold text-slate-100"></span>
-                                        <span class="text-[10px] text-slate-500 uppercase">CODE</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="pt-4">
-                                <p class="text-[11px] text-slate-500">마지막 업데이트 : <span id="kpiLastReceivedDate" class="hidden">-</span></p>
-                            </div>
-                        </div>
-                        <div id="exportStatusDetail" onmouseenter="showHover('exportStatusDetail')" onmouseleave="hideHover('exportStatusDetail')" class="absolute left-0 top-full z-50 mt-3 w-full rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 p-4 shadow-2xl transition-opacity transition-transform duration-200 ease-out opacity-0 translate-y-2 pointer-events-none">
-                            <div class="text-sm font-semibold text-white mb-3">상세 현황</div>
-                            <div class="grid gap-2.5 text-xs text-slate-400">
-                                <div class="flex justify-between items-center">
-                                    <span>총 입고</span>
-                                    <span class="font-mono"><span id="hoverReceivedQty" class="text-slate-200 font-bold">-</span>EA / <span id="hoverReceivedCodes" class="text-slate-200 font-bold">-</span>CODE</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span>총 미입고</span>
-                                    <span class="font-mono"><span id="hoverNotReceivedQty" class="text-accentRed font-bold">-</span>EA / <span id="hoverNotReceivedCodes" class="text-accentRed font-bold">-</span>CODE</span>
-                                </div>
-                            </div>
-                            <div class="border-t border-slate-700/60 mt-3 pt-3 text-xs text-slate-300">
-                                <div class="font-medium text-slate-100">최근 입고된 품목</div>
-                                <div class="mt-1 text-slate-300">
-                                    <span id="hoverRecentReceivedItem">-</span>
-                                    <span id="hoverRecentReceivedExtra" class="block text-slate-500 text-[10px] mt-0.5"></span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div id="shippedStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('shippedStatusDetail')" onmouseleave="hideHover('shippedStatusDetail')">
