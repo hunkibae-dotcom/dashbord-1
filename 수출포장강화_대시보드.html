@@ -1074,12 +1074,17 @@
                 if (rawStatusNorm.includes('미입고') || rawStatusNorm.includes('일부입고') || rawStatusNorm.includes('입고대기')) {
                     statusDisplay = statusVal;
                     statusCategory = '미입고';
-                } else if (rawStatusNorm.includes('출고완료')) {
-                    statusDisplay = '출고완료';
-                    statusCategory = '입고';
+                } else if (rawStatusNorm.includes('출고완료') || rawStatusNorm === '출고') {
+                    // "출고" = 강화포장 후 출고 완료
+                    statusDisplay = statusVal;
+                    statusCategory = '출고';
+                } else if (rawStatusNorm === '피킹') {
+                    // "피킹" = 강화 없이 출고
+                    statusDisplay = '피킹';
+                    statusCategory = '피킹';
                 } else if (rawStatusNorm.includes('포장완료')) {
                     statusDisplay = '포장완료';
-                    statusCategory = '입고';
+                    statusCategory = '포장완료';
                 } else if (rawStatusNorm.includes('포장대기')) {
                     statusDisplay = '포장대기';
                     statusCategory = '미입고';
@@ -1088,7 +1093,7 @@
                     statusCategory = '입고';
                 } else {
                     statusDisplay = statusVal;
-                    statusCategory = rawStatusNorm.includes('입고') ? '입고' : '미입고';
+                    statusCategory = '미입고';
                 }
 
                 let countryVal = indices.country !== -1 && indices.country < row.length && row[indices.country] ? row[indices.country].toString().trim() : 'DOMESTIC';
@@ -1100,8 +1105,11 @@
                 const parsedCost = indices.cost !== -1 && indices.cost < row.length && row[indices.cost] ? parseInt(row[indices.cost].toString().replace(/[^0-9]/g, '')) || 0 : 0;
 
                 const targetQtyVal = parsedTargetQty || qtyVal;
-                const strengthenedQtyVal = parsedStrengthenedQty !== null ? parsedStrengthenedQty : (statusCategory === '입고' ? qtyVal : 0);
-                const shippedQtyVal = parsedShippedQty !== null ? parsedShippedQty : (rawStatusNorm.includes('출고완료') ? qtyVal : 0);
+                // 출고: 강화+출고 모두 qty / 피킹: 강화=0, 출고=qty / 포장완료: 강화=qty, 출고=0
+                const strengthenedQtyVal = parsedStrengthenedQty !== null ? parsedStrengthenedQty
+                    : (statusCategory === '출고' || statusCategory === '포장완료' || statusCategory === '입고') ? qtyVal : 0;
+                const shippedQtyVal = parsedShippedQty !== null ? parsedShippedQty
+                    : (statusCategory === '출고' || statusCategory === '피킹') ? qtyVal : 0;
 
                 const getCell = (field) => indices[field] !== -1 && indices[field] < row.length && row[indices[field]] ? row[indices[field]].toString().trim() : '-';
 
