@@ -339,11 +339,27 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
-                        <div class="flex justify-between items-center mb-4">
+                        <div class="flex justify-between items-center mb-3">
                             <h3 class="text-sm font-bold text-white flex items-center gap-1.5">
-                                <i class="fa-solid fa-chart-column text-accentBlue"></i> 월별 포장 강화 현황
+                                <i class="fa-solid fa-chart-column text-accentBlue"></i> 포장 강화 현황
                             </h3>
-                            <span class="text-[11px] text-slate-400">월별 강화 수량 합계</span>
+                            <div class="flex items-center gap-2">
+                                <select id="packingYearSelect" onchange="setPackingYear(this.value)"
+                                    class="text-[11px] bg-slate-700 text-slate-200 border border-slate-600 rounded px-2 py-0.5 cursor-pointer outline-none">
+                                </select>
+                                <div class="relative flex bg-slate-700 rounded-lg p-0.5" style="min-width:120px">
+                                    <div id="packingModeSlider" class="absolute top-0.5 bottom-0.5 rounded-md bg-accentBlue transition-all duration-200" style="width:33.33%;left:66.66%"></div>
+                                    <button onclick="setPackingViewMode('daily')" id="packingBtn_daily"
+                                        class="relative z-10 text-[10px] font-semibold px-2.5 py-0.5 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#94a3b8">일별</button>
+                                    <button onclick="setPackingViewMode('weekly')" id="packingBtn_weekly"
+                                        class="relative z-10 text-[10px] font-semibold px-2.5 py-0.5 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#94a3b8">주간별</button>
+                                    <button onclick="setPackingViewMode('monthly')" id="packingBtn_monthly"
+                                        class="relative z-10 text-[10px] font-semibold px-2.5 py-0.5 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#ffffff">월간별</button>
+                                </div>
+                            </div>
                         </div>
                         <div class="relative h-60 w-full">
                             <canvas id="trendChart"></canvas>
