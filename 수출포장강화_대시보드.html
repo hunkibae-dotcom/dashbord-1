@@ -558,26 +558,23 @@
 
     </main>
 
-    <div id="chartDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300">
+    <div id="chartDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300" onclick="if(event.target===this) closeChartDetailModal()">
         <div class="bg-panelBg border border-borderSlate p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl relative">
-            <button onclick="closeChartDetailModal()" class="absolute right-4 top-4 text-slate-400 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
             <div class="flex items-center gap-3 mb-4">
                 <div class="bg-accentBlue/10 text-accentBlue p-2.5 rounded-xl border border-accentBlue/20">
                     <i class="fa-solid fa-chart-bar text-xl"></i>
                 </div>
                 <div>
                     <h3 class="text-lg font-bold text-white" id="chartModalTitle">상세 차수 내역</h3>
-                    <p class="text-xs text-slate-400">제품구분별 상세 차수 리스트</p>
+                    <p class="text-xs text-slate-400">제품구분별 상세 품목 리스트</p>
                 </div>
             </div>
-            
+
             <div class="max-h-64 overflow-y-auto border border-borderSlate/60 rounded-xl">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-darkBg/60 text-slate-400 text-[11px] font-semibold border-b border-borderSlate">
-                            <th class="py-2.5 px-4">제품 구분명</th>
+                            <th class="py-2.5 px-4">품목코드</th>
                             <th class="py-2.5 px-4 text-right">실적 수량</th>
                         </tr>
                     </thead>
@@ -585,13 +582,10 @@
                         </tbody>
                 </table>
             </div>
-            
-            <div class="flex justify-between items-center mt-4">
+
+            <div class="flex justify-start items-center mt-4">
                 <button onclick="exportChartModalData()" class="flex items-center gap-1.5 bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-xs px-4 py-2.5 rounded-xl font-semibold border border-accentBlue/30 transition-colors active:scale-95">
                     <i class="fa-solid fa-file-arrow-down text-[11px]"></i> 데이터 출력
-                </button>
-                <button onclick="closeChartDetailModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
-                    닫기
                 </button>
             </div>
         </div>
