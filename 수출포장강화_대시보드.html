@@ -307,43 +307,6 @@
 
                     <div id="shippedStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('shippedStatusDetail')" onmouseleave="hideHover('shippedStatusDetail')">
                         <p class="text-base font-semibold text-slate-400 uppercase tracking-wider mb-4">출고 완료</p>
-                        <div class="pt-2">
-                            <div class="pb-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="generalKpiShippedQty" class="text-2xl font-bold text-accentOrange"></span>
-                                        <span class="text-xs text-slate-400">EA</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="border-t border-slate-700/80"></div>
-                            <div class="pt-3">
-                                <div class="flex items-end justify-between">
-                                    <span class="text-sm text-slate-400 font-semibold">총</span>
-                                    <div class="flex items-end gap-1.5">
-                                        <span id="generalKpiShippedCodes" class="text-2xl font-bold text-accentOrange"></span>
-                                        <span class="text-[10px] text-slate-500 uppercase">CODE</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="pt-4">
-                                <p class="text-[11px] text-slate-500">최근 출고일 : <span id="recentShippedDate" class="hidden">-</span></p>
-                            </div>
-                        </div>
-                        <div id="shippedStatusDetail" onmouseenter="showHover('shippedStatusDetail')" onmouseleave="hideHover('shippedStatusDetail')" class="absolute left-0 top-full z-50 mt-3 w-full rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 p-4 shadow-2xl transition-opacity transition-transform duration-200 ease-out opacity-0 translate-y-2 pointer-events-none">
-                            <div class="text-sm font-semibold text-white mb-3">상세 현황</div>
-                            <div class="grid gap-2.5 text-xs text-slate-400">
-                                <div class="flex justify-between items-center">
-                                    <span>총 출고</span>
-                                    <span class="font-mono"><span id="hoverShippedTotalQty" class="text-yellow-400 font-bold">-</span>EA / <span id="hoverShippedTotalCodes" class="text-yellow-400 font-bold">-</span>CODE</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span>피킹</span>
-                                    <span class="font-mono"><span id="hoverShippedPickingQty" class="text-accentBlue font-bold">-</span>EA / <span id="hoverShippedPickingCodes" class="text-accentBlue font-bold">-</span>CODE</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div id="strengthenedStatusCard" onclick="onCard4Click()" class="bg-panelBg border border-accentOrange/20 rounded-3xl p-5 shadow-xl relative overflow-hidden cursor-pointer transition-all duration-200 ease-out hover:scale-[1.04] hover:shadow-lg hover:shadow-accentOrange/15 hover:border-accentOrange/50 active:scale-[1.01]">
