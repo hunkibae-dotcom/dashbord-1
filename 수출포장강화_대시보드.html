@@ -2391,11 +2391,11 @@
 
         function renderPackingChart() {
             let labels = [], dataArr = [];
+            _packingLabelMeta = [];
 
             if (packingViewMode === 'daily') {
-                // 이번주 월~금 고정
                 const today = new Date();
-                const dow = today.getDay(); // 0=일
+                const dow = today.getDay();
                 const toMon = dow === 0 ? -6 : 1 - dow;
                 const mon = new Date(today);
                 mon.setDate(today.getDate() + toMon);
@@ -2404,15 +2404,16 @@
                     const d = new Date(mon);
                     d.setDate(mon.getDate() + i);
                     const ds = _dateStr(d);
-                    labels.push((d.getMonth()+1) + '/' + d.getDate() + '(' + DAY[d.getDay()] + ')');
+                    const lbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + DAY[d.getDay()] + ')';
+                    labels.push(lbl);
                     dataArr.push(_packingDateQtyMap[ds] || 0);
+                    _packingLabelMeta.push({ label: lbl, dates: [ds] });
                 }
 
             } else if (packingViewMode === 'weekly') {
-                // 이번달 주간 (월~금 기준)
                 const today = new Date();
                 const yr = today.getFullYear();
-                const mo = today.getMonth(); // 0-indexed
+                const mo = today.getMonth();
                 const firstOfMonth = new Date(yr, mo, 1);
                 const fdow = firstOfMonth.getDay();
                 const toMon = fdow === 0 ? -6 : 1 - fdow;
@@ -2423,21 +2424,25 @@
                     const wkFri = new Date(wkStart);
                     wkFri.setDate(wkStart.getDate() + 4);
                     var wkTotal = 0;
+                    var wkDates = [];
                     for (var j = 0; j < 5; j++) {
                         const dd = new Date(wkStart);
                         dd.setDate(wkStart.getDate() + j);
-                        wkTotal += _packingDateQtyMap[_dateStr(dd)] || 0;
+                        const ds2 = _dateStr(dd);
+                        wkDates.push(ds2);
+                        wkTotal += _packingDateQtyMap[ds2] || 0;
                     }
                     const sL = (wkStart.getMonth()+1) + '/' + wkStart.getDate();
                     const eL = (wkFri.getMonth()+1)   + '/' + wkFri.getDate();
-                    labels.push(sL + '~' + eL);
+                    const lbl2 = sL + '~' + eL;
+                    labels.push(lbl2);
                     dataArr.push(wkTotal);
+                    _packingLabelMeta.push({ label: lbl2, dates: wkDates });
                     wkStart.setDate(wkStart.getDate() + 7);
                     if (labels.length > 7) break;
                 }
 
             } else {
-                // 월간: 선택 연도 1~12월 전체 (데이터 없는 달도 0으로 표시)
                 const yr = packingSelectedYear || String(new Date().getFullYear());
                 const MO_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
                 const totals = new Array(12).fill(0);
@@ -2448,6 +2453,10 @@
                 });
                 labels  = MO_LABELS;
                 dataArr = totals;
+                for (var mi2 = 0; mi2 < 12; mi2++) {
+                    const moStr = yr + '-' + String(mi2+1).padStart(2,'0');
+                    _packingLabelMeta.push({ label: MO_LABELS[mi2], prefix: moStr });
+                }
             }
 
             if (trendChartInstance) { trendChartInstance.destroy(); trendChartInstance = null; }
