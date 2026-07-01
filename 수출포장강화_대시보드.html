@@ -1877,8 +1877,9 @@
             const card1CODE = k1Raw !== '' ? parseInt(k1Raw).toLocaleString() : receivedCodesCount.toLocaleString();
 
             const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value; };
-            setVal('kpiReceivedQty', card1EA);
-            setVal('kpiReceivedCodes', card1CODE);
+            // 카드1 데이터 비활성화
+            // setVal('kpiReceivedQty', card1EA);
+            // setVal('kpiReceivedCodes', card1CODE);
 
             setVal('hoverReceivedQty', receivedQty.toLocaleString());
             setVal('hoverReceivedCodes', receivedCodesCount.toLocaleString());
