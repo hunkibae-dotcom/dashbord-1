@@ -1057,7 +1057,7 @@
                 let rawQtyStr = indices.qty !== -1 && indices.qty < row.length && row[indices.qty] ? row[indices.qty].toString().trim() : '';
                 let qtyVal = parseInt(rawQtyStr.replace(/[^0-9]/g, '')) || 0;
                 
-                if (rawCodeStr === '' || qtyVal === 0) continue;
+                if (rawCodeStr === '') continue;
 
                 let dateVal = indices.date !== -1 && indices.date < row.length && row[indices.date] ? normalizeDate(row[indices.date]) : '-';
                 let regDateVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? normalizeDate(row[indices.regDate]) : dateVal;
