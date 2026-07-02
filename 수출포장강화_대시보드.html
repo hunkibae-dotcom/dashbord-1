@@ -377,7 +377,7 @@
                                        transform:scale(1);transition:background 0.18s,color 0.18s,transform 0.18s;user-select:none;flex-shrink:0;"
                                 onmouseenter="this.style.background='rgba(148,163,184,0.42)';this.style.color='#334155';this.style.transform='scale(1.12)';"
                                 onmouseleave="this.style.background='rgba(148,163,184,0.22)';this.style.color='#64748B';this.style.transform='scale(1)';">‹</button>
-                            <span id="packingNavLabel" style="font-size:12px;color:#94A3B8;font-weight:500;user-select:none;"></span>
+                            <span id="packingNavLabel" style="font-size:13.5px;color:#94A3B8;font-weight:500;user-select:none;"></span>
                             <button id="packingNavNext" onclick="navigatePackingChart(1)"
                                 style="display:flex;align-items:center;justify-content:center;
                                        background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
@@ -2553,7 +2553,7 @@
                         if (!val) return;
                         ctx.save();
                         ctx.fillStyle = '#0284C7';
-                        ctx.font = 'bold ' + (hov === i ? 12 : 10) + 'px Inter, sans-serif';
+                        ctx.font = 'bold ' + (hov === i ? 13.5 : 11.5) + 'px Inter, sans-serif';
                         ctx.textAlign = 'center';
                         ctx.textBaseline = 'bottom';
                         ctx.fillText(val.toLocaleString() + 'EA', bar.x, bar.y - 2);
