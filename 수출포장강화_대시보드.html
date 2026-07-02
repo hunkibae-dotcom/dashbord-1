@@ -535,34 +535,28 @@
                             <p class="text-[17.5px] text-slate-400 mt-0.5">클릭하여 다른 제품코드로 검색 가능</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3 bg-darkBg/60 px-4 py-2.5 rounded-lg border border-borderSlate/60 font-mono text-[17.5px]">
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-500 font-semibold">W</span>
-                            <span class="text-slate-600">:</span>
-                            <span class="text-accentBlue font-bold" id="specW">-</span>
-                            <span class="text-slate-500 text-[17.5px]">mm</span>
+                    <div class="bg-darkBg/60 px-4 py-3 rounded-lg border border-borderSlate/60 font-mono">
+                        <div class="grid grid-cols-5 gap-x-3 gap-y-0.5 text-center">
+                            <!-- 라벨행 -->
+                            <div class="text-[13.5px] text-slate-500 font-semibold border-b border-borderSlate/40 pb-1">W (mm)</div>
+                            <div class="text-[13.5px] text-slate-500 font-semibold border-b border-borderSlate/40 pb-1">D (mm)</div>
+                            <div class="text-[13.5px] text-slate-500 font-semibold border-b border-borderSlate/40 pb-1">H (mm)</div>
+                            <div class="text-[13.5px] text-slate-500 font-semibold border-b border-borderSlate/40 pb-1">G (kg)</div>
+                            <div class="text-[13.5px] text-accentGreen/70 font-semibold border-b border-borderSlate/40 pb-1">CBM (m³)</div>
+                            <!-- 평균값행 -->
+                            <div class="text-[17.5px] font-bold text-accentBlue pt-1.5" id="specW">-</div>
+                            <div class="text-[17.5px] font-bold text-accentBlue pt-1.5" id="specD">-</div>
+                            <div class="text-[17.5px] font-bold text-accentBlue pt-1.5" id="specH">-</div>
+                            <div class="text-[17.5px] font-bold text-accentGreen pt-1.5" id="specG">-</div>
+                            <div class="text-[17.5px] font-bold text-accentGreen pt-1.5" id="specCBM">-</div>
+                            <!-- 오차행 -->
+                            <div class="text-[12px] pt-0.5" id="specWTol"><span class="text-slate-600">-</span></div>
+                            <div class="text-[12px] pt-0.5" id="specDTol"><span class="text-slate-600">-</span></div>
+                            <div class="text-[12px] pt-0.5" id="specHTol"><span class="text-slate-600">-</span></div>
+                            <div class="text-[12px] pt-0.5" id="specGTol"><span class="text-slate-600">-</span></div>
+                            <div class="text-[12px] pt-0.5" id="specCBMTol"><span class="text-slate-600">-</span></div>
                         </div>
-                        <span class="text-slate-700">|</span>
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-500 font-semibold">D</span>
-                            <span class="text-slate-600">:</span>
-                            <span class="text-accentBlue font-bold" id="specD">-</span>
-                            <span class="text-slate-500 text-[17.5px]">mm</span>
-                        </div>
-                        <span class="text-slate-700">|</span>
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-500 font-semibold">H</span>
-                            <span class="text-slate-600">:</span>
-                            <span class="text-accentBlue font-bold" id="specH">-</span>
-                            <span class="text-slate-500 text-[17.5px]">mm</span>
-                        </div>
-                        <span class="text-slate-700">|</span>
-                        <div class="flex items-center gap-1">
-                            <span class="text-slate-500 font-semibold">G</span>
-                            <span class="text-slate-600">:</span>
-                            <span class="text-accentGreen font-bold" id="specG">-</span>
-                            <span class="text-slate-500 text-[17.5px]">kg</span>
-                        </div>
+                        <div class="text-[12px] text-slate-600 mt-1.5 text-right" id="specSampleCount"></div>
                     </div>
                 </div>
 
