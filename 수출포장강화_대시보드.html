@@ -263,44 +263,30 @@
                             </p>
                             <span id="card1TodayDateLabel" class="text-[12px] text-slate-500 font-mono">-</span>
                         </div>
-                        <!-- 오늘 통계 -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="bg-darkBg/50 rounded-xl p-2.5 border border-borderSlate/40 text-center">
-                                <div class="text-[12px] text-slate-500 mb-0.5">금일 등록</div>
-                                <div class="flex items-end justify-center gap-1">
-                                    <span id="card1TodayQty" class="text-[21.5px] font-bold text-accentBlue">-</span>
-                                    <span class="text-[12px] text-slate-500 mb-0.5">EA</span>
-                                </div>
-                                <div class="text-[12px] text-slate-600"><span id="card1TodayItems">-</span>건</div>
+                        <!-- 포장대기 단일 박스 -->
+                        <div class="bg-darkBg/50 rounded-xl p-2.5 border border-borderSlate/40 text-center">
+                            <div class="text-[12px] text-slate-500 mb-0.5">포장대기</div>
+                            <div class="flex items-end justify-center gap-1">
+                                <span id="card1PendingQty" class="text-[21.5px] font-bold text-accentOrange">-</span>
+                                <span class="text-[12px] text-slate-500 mb-0.5">EA</span>
                             </div>
-                            <div class="bg-darkBg/50 rounded-xl p-2.5 border border-borderSlate/40 text-center">
-                                <div class="text-[12px] text-slate-500 mb-0.5">포장대기</div>
-                                <div class="flex items-end justify-center gap-1">
-                                    <span id="card1PendingQty" class="text-[21.5px] font-bold text-accentOrange">-</span>
-                                    <span class="text-[12px] text-slate-500 mb-0.5">EA</span>
-                                </div>
-                                <div class="text-[12px] text-slate-600"><span id="card1PendingItems">-</span>건</div>
-                            </div>
+                            <div class="text-[12px] text-slate-600"><span id="card1PendingItems">-</span>건</div>
                         </div>
                         <!-- 작업 인원 -->
-                        <div>
-                            <div class="flex items-center justify-between mb-1.5">
+                        <div class="flex flex-col gap-1.5">
+                            <div class="flex items-center justify-between">
                                 <span class="text-[13.5px] font-semibold text-slate-400 flex items-center gap-1">
                                     <i class="fa-solid fa-users text-[12px] text-slate-500"></i> 금일 작업 인원
                                 </span>
-                                <button onclick="openCard1WorkerModal()" class="text-[12px] text-accentBlue hover:text-sky-300 transition-colors flex items-center gap-0.5">
-                                    <i class="fa-solid fa-pen text-[10px]"></i> 편집
+                                <button onclick="openWorkerRegisterModal()" class="text-[12px] text-accentBlue hover:text-sky-300 transition-colors flex items-center gap-0.5 font-semibold">
+                                    <i class="fa-solid fa-plus text-[10px]"></i> 등록
                                 </button>
                             </div>
-                            <div id="card1DeptTabs" class="flex gap-1 flex-wrap mb-1.5"></div>
-                            <div id="card1WorkerChips" class="flex flex-wrap gap-1"></div>
-                            <div id="card1NoWorkers" class="text-[12px] text-slate-600 text-center py-1 hidden">편집으로 인원 추가</div>
+                            <!-- 오늘 등록된 작업자 표시 -->
+                            <div id="card1WorkerDisplay" class="min-h-[36px]">
+                                <div class="text-[12px] text-slate-600 text-center py-1">등록된 작업 인원이 없습니다</div>
+                            </div>
                         </div>
-                        <!-- 메모 -->
-                        <textarea id="card1Memo"
-                            placeholder="금일 메모 (특이사항, 지시사항...)"
-                            class="w-full bg-darkBg/40 border border-borderSlate/40 rounded-lg px-2.5 py-1.5 text-[13.5px] text-slate-300 placeholder-slate-600 resize-none focus:outline-none focus:border-accentBlue/50 transition-colors"
-                            rows="2" oninput="saveCard1Memo()"></textarea>
                     </div>
 
                     <div id="exportStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-5 shadow-xl relative" onmouseenter="showHover('exportStatusDetail')" onmouseleave="hideHover('exportStatusDetail')">
