@@ -616,6 +616,34 @@
 
     </main>
 
+    <!-- 작업 인원 편집 모달 -->
+    <div id="card1WorkerModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this)closeCard1WorkerModal()">
+        <div class="bg-panelBg border border-borderSlate rounded-2xl p-5 w-[400px] max-w-[95vw] shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center justify-between">
+                <h3 class="text-[17.5px] font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-users text-accentBlue"></i> 작업 인원 관리
+                </h3>
+                <button onclick="closeCard1WorkerModal()" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-[17.5px]"></i>
+                </button>
+            </div>
+            <div id="card1DeptList" class="space-y-3 max-h-[340px] overflow-y-auto pr-1"></div>
+            <div class="flex gap-2">
+                <input id="card1NewDeptInput" type="text" placeholder="새 부서명 입력"
+                    class="flex-1 bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors"
+                    onkeydown="if(event.key==='Enter')addCard1Dept()">
+                <button onclick="addCard1Dept()"
+                    class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[14.5px] px-4 py-2 rounded-lg transition-colors">
+                    + 부서
+                </button>
+            </div>
+            <button onclick="closeCard1WorkerModal()"
+                class="w-full bg-accentGreen hover:bg-emerald-400 text-darkBg font-bold text-[17.5px] py-2.5 rounded-xl transition-colors">
+                저장 완료
+            </button>
+        </div>
+    </div>
+
     <div id="chartDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300" onclick="if(event.target===this) closeChartDetailModal()">
         <div class="bg-panelBg border border-borderSlate p-6 rounded-2xl max-w-4xl w-full mx-4 shadow-2xl relative">
             <div class="flex items-center gap-3 mb-4">
