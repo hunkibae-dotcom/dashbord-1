@@ -2618,22 +2618,22 @@
             if (!prev || !next) return;
 
             if (packingViewMode === 'monthly') {
-                prev.style.display = 'none';
-                next.style.display = 'none';
+                prev.style.visibility = 'hidden';
+                next.style.visibility = 'hidden';
                 return;
             }
-            prev.style.display = 'flex';
-            next.style.display = 'flex';
+            prev.style.visibility = 'visible';
+            next.style.visibility = 'visible';
 
             const atCurrent = packingViewMode === 'daily'
                 ? packingDailyWeekOffset >= 0
                 : packingWeeklyMonthOffset >= 0;
 
-            next.style.opacity = atCurrent ? '0.25' : '0.75';
-            next.style.cursor  = atCurrent ? 'not-allowed' : 'pointer';
+            next.style.opacity       = atCurrent ? '0.30' : '0.90';
+            next.style.cursor        = atCurrent ? 'not-allowed' : 'pointer';
             next.style.pointerEvents = atCurrent ? 'none' : 'auto';
-            prev.style.opacity = '0.75';
-            prev.style.cursor  = 'pointer';
+            prev.style.opacity       = '0.90';
+            prev.style.cursor        = 'pointer';
             prev.style.pointerEvents = 'auto';
         }
 
