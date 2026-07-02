@@ -339,19 +339,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
-                        <div class="grid items-center mb-3" style="grid-template-columns:auto 1fr auto 1fr auto;gap:6px">
-                            <!-- 이전 화살표 -->
-                            <button id="packingNavPrev" onclick="navigatePackingChart(-1)"
-                                style="visibility:hidden;display:flex;align-items:center;justify-content:center;
-                                       background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
-                                       border-radius:7px;width:26px;height:26px;font-size:18px;line-height:1;cursor:pointer;
-                                       transform:scale(1);transition:background 0.18s,color 0.18s,transform 0.18s;user-select:none;flex-shrink:0;"
-                                onmouseenter="this.style.background='rgba(148,163,184,0.42)';this.style.color='#334155';this.style.transform='scale(1.12)';"
-                                onmouseleave="this.style.background='rgba(148,163,184,0.22)';this.style.color='#64748B';this.style.transform='scale(1)';">‹</button>
+                        <div class="flex items-center justify-between mb-2">
                             <h3 class="text-[16px] font-bold text-white flex items-center gap-1.5">
                                 <i class="fa-solid fa-chart-column text-accentBlue"></i> 포장 강화 현황
                             </h3>
-                            <div class="flex items-center gap-2 justify-center">
+                            <div class="flex items-center gap-2">
                                 <select id="packingYearSelect" onchange="setPackingYear(this.value)"
                                     class="text-[13px] rounded px-2 py-0.5 cursor-pointer outline-none font-semibold"
                                     style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD">
@@ -368,8 +360,6 @@
                                         class="relative z-10 text-[12px] font-semibold py-1 rounded-md transition-colors duration-200"
                                         style="flex:1;color:#ffffff;white-space:nowrap;padding-left:6px;padding-right:6px">월간별</button>
                                 </div>
-                            </div>
-                            <div class="flex justify-end">
                                 <button onclick="downloadPackingChartData()"
                                     class="flex items-center gap-1 text-[13px] font-semibold px-2.5 py-1 rounded-lg transition-colors duration-150"
                                     style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
@@ -377,9 +367,19 @@
                                     <i class="fa-solid fa-download text-[12px]"></i> 데이터 출력
                                 </button>
                             </div>
-                            <!-- 다음 화살표 -->
+                        </div>
+                        <!-- 네비게이션 화살표 행 -->
+                        <div id="packingNavRow" class="flex items-center justify-between mb-2" style="display:none!important;">
+                            <button id="packingNavPrev" onclick="navigatePackingChart(-1)"
+                                style="display:flex;align-items:center;justify-content:center;
+                                       background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
+                                       border-radius:7px;width:26px;height:26px;font-size:18px;line-height:1;cursor:pointer;
+                                       transform:scale(1);transition:background 0.18s,color 0.18s,transform 0.18s;user-select:none;flex-shrink:0;"
+                                onmouseenter="this.style.background='rgba(148,163,184,0.42)';this.style.color='#334155';this.style.transform='scale(1.12)';"
+                                onmouseleave="this.style.background='rgba(148,163,184,0.22)';this.style.color='#64748B';this.style.transform='scale(1)';">‹</button>
+                            <span id="packingNavLabel" style="font-size:12px;color:#94A3B8;font-weight:500;user-select:none;"></span>
                             <button id="packingNavNext" onclick="navigatePackingChart(1)"
-                                style="visibility:hidden;display:flex;align-items:center;justify-content:center;
+                                style="display:flex;align-items:center;justify-content:center;
                                        background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
                                        border-radius:7px;width:26px;height:26px;font-size:18px;line-height:1;cursor:not-allowed;
                                        transform:scale(1);opacity:0.35;transition:background 0.18s,color 0.18s,transform 0.18s,opacity 0.18s;user-select:none;flex-shrink:0;"
