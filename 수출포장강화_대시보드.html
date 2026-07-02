@@ -3165,25 +3165,28 @@
                 display.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:6px 0;">등록된 작업 인원이 없습니다</div>';
                 return;
             }
-            // 부서별 그룹핑
+            // 부서별 그룹핑 (count 우선, 이름 있으면 표시)
             const deptMap = {};
-            let totalWorkers = 0;
+            let totalCount = 0;
             todayLogs.forEach(r => {
                 const dept = r.dept || '미지정';
-                if (!deptMap[dept]) deptMap[dept] = [];
-                r.workers.forEach(w => { if (!deptMap[dept].includes(w)) deptMap[dept].push(w); });
+                if (!deptMap[dept]) deptMap[dept] = { count: 0, workers: [] };
+                const cnt = r.count || r.workers.length || 0;
+                deptMap[dept].count += cnt;
+                totalCount += cnt;
+                r.workers.forEach(w => { if (!deptMap[dept].workers.includes(w)) deptMap[dept].workers.push(w); });
             });
-            Object.values(deptMap).forEach(ws => totalWorkers += ws.length);
 
             let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:12px;font-weight:700;color:#38BDF8;">총 ${totalWorkers}명</span>
+                <span style="font-size:12px;font-weight:700;color:#38BDF8;">총 ${totalCount}명</span>
                 <span style="font-size:11px;color:#475569;">작업 참여</span>
             </div>`;
-            Object.entries(deptMap).forEach(([dept, workers]) => {
+            Object.entries(deptMap).forEach(([dept, info]) => {
+                const nameStr = info.workers.length ? info.workers.join(' · ') : info.count + '명';
                 html += `<div style="margin-bottom:4px;">
                     <span style="font-size:11px;color:#64748B;font-weight:600;">${dept}</span>
-                    <span style="font-size:11px;color:#94A3B8;margin-left:4px;">·</span>
-                    <span style="font-size:13px;color:#CBD5E1;font-weight:600;margin-left:4px;">${workers.join(' · ')}</span>
+                    <span style="font-size:11px;color:#475569;margin:0 4px;">·</span>
+                    <span style="font-size:13px;color:#CBD5E1;font-weight:600;">${nameStr}</span>
                 </div>`;
             });
             display.innerHTML = html;
