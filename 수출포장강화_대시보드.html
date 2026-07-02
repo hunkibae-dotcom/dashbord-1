@@ -104,15 +104,15 @@
             </div>
             <div>
                 <h1 class="text-[21.5px] font-bold tracking-tight text-white flex items-center gap-2">
-                    수출 표준품 포장강화 대시보드 <span class="text-[16px] bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded-full border border-accentBlue/20">SYSTEM</span>
+                    수출 표준품 포장강화 대시보드 <span class="text-[17.5px] bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded-full border border-accentBlue/20">SYSTEM</span>
                 </h1>
             </div>
         </div>
     </header>
 
     <div class="max-w-[1600px] w-full mx-auto px-2 pt-3 flex justify-start">
-        <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="flex items-center gap-1.5 text-[16px] text-slate-600 hover:text-slate-800 bg-panelBg border border-borderSlate px-3 py-1.5 rounded-lg transition-all duration-200 hover:border-slate-400 hover:bg-slate-100/80 hover:scale-[1.02] active:scale-[0.98]">
-            <i class="fa-solid fa-sidebar text-[16px]" id="sidebarToggleIcon"></i>
+        <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="flex items-center gap-1.5 text-[17.5px] text-slate-600 hover:text-slate-800 bg-panelBg border border-borderSlate px-3 py-1.5 rounded-lg transition-all duration-200 hover:border-slate-400 hover:bg-slate-100/80 hover:scale-[1.02] active:scale-[0.98]">
+            <i class="fa-solid fa-sidebar text-[17.5px]" id="sidebarToggleIcon"></i>
             <span id="sidebarToggleLabel">사이드바 숨기기</span>
         </button>
     </div>
@@ -126,19 +126,19 @@
                 
                 <div class="space-y-4">
                     <div class="p-3 bg-darkBg/40 rounded-lg border border-borderSlate/60">
-                        <label class="block text-[16px] font-bold text-accentBlue uppercase tracking-wider mb-2 flex items-center gap-1">
+                        <label class="block text-[17.5px] font-bold text-accentBlue uppercase tracking-wider mb-2 flex items-center gap-1">
                             <i class="fa-regular fa-calendar-check"></i> 1. 조회 날짜 설정
                         </label>
                         <div class="grid grid-cols-2 gap-2">
                             <div>
                                 <span class="block text-[12px] text-slate-500 mb-0.5">조회 시작일</span>
                                 <input type="date" id="startDateFilter" onchange="applyFilters()" onclick="try{this.showPicker()}catch(e){}"
-                                       class="w-full bg-panelBg text-slate-200 px-2 py-1.5 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px] text-center cursor-pointer select-none">
+                                       class="w-full bg-panelBg text-slate-200 px-2 py-1.5 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] text-center cursor-pointer select-none">
                             </div>
                             <div>
                                 <span class="block text-[12px] text-slate-500 mb-0.5">조회 종료일</span>
                                 <input type="date" id="endDateFilter" onchange="applyFilters()" onclick="try{this.showPicker()}catch(e){}"
-                                       class="w-full bg-panelBg text-slate-200 px-2 py-1.5 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px] text-center cursor-pointer select-none">
+                                       class="w-full bg-panelBg text-slate-200 px-2 py-1.5 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] text-center cursor-pointer select-none">
                             </div>
                         </div>
                     </div>
@@ -150,10 +150,10 @@
                             <label class="block text-[13px] font-semibold text-slate-400 mb-1">수출건 차수 검색</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                                    <i class="fa-solid fa-folder-tree text-[16px]"></i>
+                                    <i class="fa-solid fa-folder-tree text-[17.5px]"></i>
                                 </span>
                                 <input type="text" id="roundFilter" oninput="applyFilters()" placeholder="예: FAM-110, FAM-131" 
-                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px] transition-colors">
+                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] transition-colors">
                             </div>
                         </div>
 
@@ -161,10 +161,10 @@
                             <label class="block text-[13px] font-semibold text-slate-400 mb-1">제품 코드 검색</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                                    <i class="fa-solid fa-barcode text-[16px]"></i>
+                                    <i class="fa-solid fa-barcode text-[17.5px]"></i>
                                 </span>
                                 <input type="text" id="productCodeFilter" oninput="applyFilters()" placeholder="예: CAC2083SN, FAD0016NO" 
-                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px] transition-colors">
+                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] transition-colors">
                             </div>
                         </div>
 
@@ -172,28 +172,28 @@
                             <label class="block text-[13px] font-semibold text-slate-400 mb-1">국가별 검색</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
-                                    <i class="fa-solid fa-globe text-[16px]"></i>
+                                    <i class="fa-solid fa-globe text-[17.5px]"></i>
                                 </span>
                                 <input type="text" id="countryFilter" oninput="applyFilters()" placeholder="예: FAM, NY, TOF, INICS" 
-                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px] transition-colors">
+                                       class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] transition-colors">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2 mt-5">
-                    <button onclick="applyFilters()" class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[16px] py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-accentBlue/10">
+                    <button onclick="applyFilters()" class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[17.5px] py-2.5 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-accentBlue/10">
                         <i class="fa-solid fa-magnifying-glass"></i> 검색하기
                     </button>
-                    <button onclick="resetFilters()" class="bg-slate-200 hover:bg-slate-100 text-slate-600 text-[16px] py-2.5 rounded-lg font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5 border border-slate-300">
+                    <button onclick="resetFilters()" class="bg-slate-200 hover:bg-slate-100 text-slate-600 text-[17.5px] py-2.5 rounded-lg font-semibold transition-all active:scale-95 flex items-center justify-center gap-1.5 border border-slate-300">
                         <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
                     </button>
                 </div>
 
                 <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
                    target="_blank"
-                   class="mt-4 w-full bg-transparent hover:bg-slate-100 hover:scale-[1.02] text-slate-500 text-[16px] px-4 py-2.5 rounded-lg border border-slate-300 font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-95">
-                    <i class="fa-solid fa-file-excel text-[16px]"></i> 강화포장 데이터시트
+                   class="mt-4 w-full bg-transparent hover:bg-slate-100 hover:scale-[1.02] text-slate-500 text-[17.5px] px-4 py-2.5 rounded-lg border border-slate-300 font-semibold flex items-center justify-center gap-2 transition-all duration-200 active:scale-95">
+                    <i class="fa-solid fa-file-excel text-[17.5px]"></i> 강화포장 데이터시트
                 </a>
 
                 <div style="display:none">
@@ -211,37 +211,37 @@
 
                 <div class="space-y-1">
                     <span class="block text-[12px] font-bold text-slate-400 uppercase tracking-wider">시스템 연결 상태</span>
-                    <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-3 py-2 rounded-lg text-[16px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20">
+                    <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-3 py-2 rounded-lg text-[17.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20">
                         <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
                         연동 대기 중
                     </div>
                 </div>
 
-                <div class="bg-darkBg/50 p-3 rounded-lg border border-borderSlate/60 text-[16px] flex flex-col gap-1">
+                <div class="bg-darkBg/50 p-3 rounded-lg border border-borderSlate/60 text-[17.5px] flex flex-col gap-1">
                     <span class="block text-[13px] font-semibold text-slate-500">동기화 시각</span>
-                    <span class="text-orange-500 font-bold text-[16px]" id="syncTimestamp">초기 로드 대기</span>
+                    <span class="text-orange-500 font-bold text-[17.5px]" id="syncTimestamp">초기 로드 대기</span>
                 </div>
 
                 <div class="flex flex-col gap-2.5 pt-2">
-                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[16px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold">
+                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold">
                         <i class="fa-solid fa-arrows-rotate" id="syncIcon"></i> 실시간 시트 갱신
                     </button>
 
-                    <label class="w-full bg-blue-100 hover:bg-blue-200 text-blue-600 text-[16px] px-4 py-3 rounded-lg border border-blue-200 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-semibold text-center">
+                    <label class="w-full bg-blue-100 hover:bg-blue-200 text-blue-600 text-[17.5px] px-4 py-3 rounded-lg border border-blue-200 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-semibold text-center">
                         <i class="fa-solid fa-file-import"></i> CSV 파일 업로드
                         <input type="file" id="csvFileInput" accept=".csv" multiple class="hidden" onchange="handleCsvUpload(event)">
                     </label>
 
-                    <button onclick="openSettingsModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[16px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="구글 시트 연동 설정">
+                    <button onclick="openSettingsModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="구글 시트 연동 설정">
                         <i class="fa-solid fa-cog"></i> 연동 설정
                     </button>
 
-                    <button onclick="resetConnectionSettings()" class="w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[16px] px-4 py-3 rounded-lg border border-red-900/30 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="저장된 연동 설정 초기화">
+                    <button onclick="resetConnectionSettings()" class="w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[17.5px] px-4 py-3 rounded-lg border border-red-900/30 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="저장된 연동 설정 초기화">
                         <i class="fa-solid fa-power-off"></i> 연동 초기화
                     </button>
                 </div>
 
-                <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-3 rounded-lg border border-slate-700/60 text-[16px] space-y-1.5">
+                <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-3 rounded-lg border border-slate-700/60 text-[17.5px] space-y-1.5">
                     <div class="flex items-center justify-between text-[12px] font-bold text-slate-400 uppercase tracking-wider">
                         <span>현재 사용중인 데이터 탭</span>
                         <button onclick="clearUploadedData()" class="text-accentRed hover:text-red-400 transition-colors" title="업로드 데이터 초기화 및 데모 복원">
@@ -259,17 +259,17 @@
                         <div class="pt-2">
                             <div class="pb-3">
                                 <div class="flex items-end justify-between">
-                                    <span class="text-[16px] text-slate-400 font-semibold">총</span>
+                                    <span class="text-[17.5px] text-slate-400 font-semibold">총</span>
                                     <div class="flex items-end gap-1.5">
                                         <span id="generalKpiRemainingQty" class="text-[25.5px] font-bold text-accentRed"></span>
-                                        <span class="text-[16px] text-slate-400">EA</span>
+                                        <span class="text-[17.5px] text-slate-400">EA</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="border-t border-slate-700/80"></div>
                             <div class="pt-3">
                                 <div class="flex items-end justify-between">
-                                    <span class="text-[16px] text-slate-400 font-semibold">총</span>
+                                    <span class="text-[17.5px] text-slate-400 font-semibold">총</span>
                                     <div class="flex items-end gap-1.5">
                                         <span id="generalKpiRemainingCodes" class="text-[25.5px] font-bold text-accentRed"></span>
                                         <span class="text-[12px] text-slate-500 uppercase">CODE</span>
@@ -281,8 +281,8 @@
                             </div>
                         </div>
                         <div id="remainingStatusDetail" onmouseenter="showHover('remainingStatusDetail')" onmouseleave="hideHover('remainingStatusDetail')" class="absolute left-0 top-full z-50 mt-3 w-full rounded-2xl bg-slate-900/80 backdrop-blur-sm border border-slate-700 text-slate-300 p-4 shadow-2xl transition-opacity transition-transform duration-200 ease-out opacity-0 translate-y-2 pointer-events-none">
-                            <div class="text-[16px] font-semibold text-white mb-3">상세 현황</div>
-                            <div class="grid gap-2.5 text-[16px] text-slate-400">
+                            <div class="text-[17.5px] font-semibold text-white mb-3">상세 현황</div>
+                            <div class="grid gap-2.5 text-[17.5px] text-slate-400">
                                 <div class="flex justify-between items-center">
                                     <span>포장대기</span>
                                     <span class="font-mono"><span id="hoverStockWaitingQty" class="text-white font-bold">-</span>EA / <span id="hoverStockWaitingCodes" class="text-white font-bold">-</span>CODE</span>
@@ -292,7 +292,7 @@
                                     <span class="font-mono"><span id="hoverStockDoneQty" class="text-accentGreen font-bold">-</span>EA / <span id="hoverStockDoneCodes" class="text-accentGreen font-bold">-</span>CODE</span>
                                 </div>
                             </div>
-                            <div class="border-t border-slate-700/60 mt-3 pt-3 text-[16px] text-slate-300">
+                            <div class="border-t border-slate-700/60 mt-3 pt-3 text-[17.5px] text-slate-300">
                                 <div class="font-medium text-slate-100">총 PALET</div>
                                 <div class="mt-1 text-slate-300">
                                     <span id="hoverStockPallets">-</span>
@@ -323,7 +323,7 @@
                                 <span id="card4DDay" class="text-[12px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold shrink-0">-</span>
                             </div>
                             <div class="border-t border-slate-700/80"></div>
-                            <div class="text-[16px] text-slate-400 space-y-2 font-mono">
+                            <div class="text-[17.5px] text-slate-400 space-y-2 font-mono">
                                 <div class="flex items-center justify-between">
                                     <span>상차일</span>
                                     <span id="card4LoadDate" class="text-slate-300 font-bold">-</span>
@@ -340,7 +340,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
                         <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-[16px] font-bold text-white flex items-center gap-1.5">
+                            <h3 class="text-[17.5px] font-bold text-white flex items-center gap-1.5">
                                 <i class="fa-solid fa-chart-column text-accentBlue"></i> 포장 강화 현황
                             </h3>
                             <div class="flex items-center gap-2">
@@ -395,7 +395,7 @@
 
                     <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-[16px] font-bold text-white flex items-center gap-1.5">
+                            <h3 class="text-[17.5px] font-bold text-white flex items-center gap-1.5">
                                 <i class="fa-solid fa-chart-column text-accentBlue"></i> 제품별 실적 비교
                             </h3>
                             <button onclick="downloadExportRoundChartData()"
@@ -415,13 +415,13 @@
         <div id="tablePanel" class="bg-panelBg border border-borderSlate rounded-xl shadow-lg flex flex-col overflow-hidden lg:col-start-2 lg:col-span-3 lg:row-start-2">
                     <div class="px-6 py-4 border-b border-borderSlate flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-panelBg">
                         <div>
-                            <h3 class="text-[16px] font-bold text-white flex items-center gap-1.5">
+                            <h3 class="text-[17.5px] font-bold text-white flex items-center gap-1.5">
                                 <i class="fa-solid fa-table-list text-accentBlue"></i> 수출 포장 관리 현황
                             </h3>
-                            <p class="text-[16px] text-slate-400 mt-0.5"> 각 헤더를 클릭하여 실시간으로 정렬이 가능합니다.</p>
+                            <p class="text-[17.5px] text-slate-400 mt-0.5"> 각 헤더를 클릭하여 실시간으로 정렬이 가능합니다.</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <button onclick="exportToCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[16px] px-3 py-2 rounded border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-all active:scale-95">
+                            <button onclick="exportToCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-3 py-2 rounded border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-all active:scale-95">
                                 <i class="fa-solid fa-file-csv"></i> 현재 필터 데이터 출력
                             </button>
                         </div>
@@ -430,7 +430,7 @@
                     <div class="overflow-x-auto w-full max-h-[640px]">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-darkBg text-slate-400 text-[16px] font-semibold uppercase tracking-wider sticky top-0 z-10 border-b border-borderSlate select-none">
+                                <tr class="bg-darkBg text-slate-400 text-[17.5px] font-semibold uppercase tracking-wider sticky top-0 z-10 border-b border-borderSlate select-none">
                                     <th onclick="handleSort('regDate')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
                                         등록일자 (포장일) <span id="sort-icon-regDate" class="text-[12px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
                                     </th>
@@ -459,37 +459,37 @@
                                         출고(EA) <span id="sort-icon-shippedQty" class="text-[12px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
                                     </th>
                                     <th class="py-3 px-4 text-center relative" id="statusDropdownTh">
-                                        <button onclick="toggleStatusDropdown(event)" class="flex items-center gap-1 mx-auto text-slate-400 hover:text-white transition-colors text-[16px] font-semibold uppercase tracking-wider">
+                                        <button onclick="toggleStatusDropdown(event)" class="flex items-center gap-1 mx-auto text-slate-400 hover:text-white transition-colors text-[17.5px] font-semibold uppercase tracking-wider">
                                             상태 <span id="statusFilterLabel" class="text-accentBlue font-bold hidden"></span>
                                             <i class="fa-solid fa-chevron-down text-[14px] text-slate-500 ml-0.5" id="statusDropdownArrow"></i>
                                         </button>
                                         <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-panelBg border border-borderSlate rounded-lg shadow-xl min-w-[120px] py-1 text-left">
-                                            <button onclick="selectStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[16px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
+                                            <button onclick="selectStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
                                                 <i class="fa-solid fa-list text-[12px] text-slate-400"></i> 전체
                                             </button>
                                             <div class="my-1 border-t border-borderSlate/40"></div>
-                                            <button onclick="selectStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[16px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
+                                            <button onclick="selectStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
                                                 <i class="fa-solid fa-circle text-[13px]"></i> 출고
                                             </button>
-                                            <button onclick="selectStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[16px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
+                                            <button onclick="selectStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
                                                 <i class="fa-solid fa-circle text-[13px]"></i> 피킹
                                             </button>
-                                            <button onclick="selectStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[16px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
+                                            <button onclick="selectStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
                                                 <i class="fa-solid fa-circle text-[13px]"></i> 포장완료
                                             </button>
-                                            <button onclick="selectStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[16px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
+                                            <button onclick="selectStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
                                                 <i class="fa-solid fa-circle text-[13px]"></i> 미입고
                                             </button>
                                         </div>
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="tableBody" class="text-[16px] divide-y divide-borderSlate/40">
+                            <tbody id="tableBody" class="text-[17.5px] divide-y divide-borderSlate/40">
                                 </tbody>
                         </table>
                     </div>
 
-                    <div class="bg-darkBg/30 px-6 py-3 border-t border-borderSlate/60 text-[16px] text-slate-400 flex justify-between items-center">
+                    <div class="bg-darkBg/30 px-6 py-3 border-t border-borderSlate/60 text-[17.5px] text-slate-400 flex justify-between items-center">
                         <div>총 <span id="matchCount" class="text-accentBlue font-bold">0</span>건 중 <span id="totalDisplayCount" class="text-white">0</span>건 표시 중</div>
                         <div class="flex items-center gap-1">
                             <span class="h-1.5 w-1.5 rounded-full bg-accentGreen animate-pulse"></span> 누적 가동 수율: <span id="packagingRateAvg" class="text-accentGreen font-bold">100%</span>
@@ -502,12 +502,12 @@
                 <div class="bg-darkBg/50 border-b border-borderSlate/60 px-5 py-4 flex items-center justify-between flex-shrink-0">
                     <div class="flex items-center gap-3">
                         <div class="bg-accentBlue/10 p-2 rounded-lg border border-accentBlue/20 text-accentBlue">
-                            <i class="fa-solid fa-cube text-[16px]"></i>
+                            <i class="fa-solid fa-cube text-[17.5px]"></i>
                         </div>
-                        <span class="text-[16px] bg-indigo-500/10 text-accentBlue px-3 py-1.5 rounded-full border border-indigo-500/20 font-bold uppercase tracking-wider">제품 상세스펙 및 이력</span>
+                        <span class="text-[17.5px] bg-indigo-500/10 text-accentBlue px-3 py-1.5 rounded-full border border-indigo-500/20 font-bold uppercase tracking-wider">제품 상세스펙 및 이력</span>
                     </div>
                     <button onclick="exitProductDetailView()" class="bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white w-8 h-8 rounded-lg border border-white/10 hover:border-white/20 flex items-center justify-center transition-all duration-200 active:scale-95">
-                        <i class="fa-solid fa-xmark text-[16px]"></i>
+                        <i class="fa-solid fa-xmark text-[17.5px]"></i>
                     </button>
                 </div>
 
@@ -522,39 +522,39 @@
                                 <h2 class="text-[21.5px] font-bold tracking-tight text-white cursor-pointer hover:text-accentBlue transition-colors" id="detailProductCode" onclick="startEditProductCode()" title="클릭하여 다른 제품 검색">PRODUCT_CODE</h2>
                                 <input type="text" id="detailProductCodeInput" class="hidden text-[21.5px] font-bold tracking-tight text-white bg-transparent border-b-2 border-accentBlue outline-none w-48 uppercase" onkeydown="handleProductCodeInputKey(event)" onblur="cancelEditProductCode()" />
                                 <button onclick="startEditProductCode()" class="opacity-0 group-hover:opacity-100 transition-opacity text-slate-500 hover:text-accentBlue" title="제품코드 변경">
-                                    <i class="fa-solid fa-pen text-[16px]"></i>
+                                    <i class="fa-solid fa-pen text-[17.5px]"></i>
                                 </button>
                             </div>
-                            <p class="text-[16px] text-slate-400 mt-0.5">클릭하여 다른 제품코드로 검색 가능</p>
+                            <p class="text-[17.5px] text-slate-400 mt-0.5">클릭하여 다른 제품코드로 검색 가능</p>
                         </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-3 bg-darkBg/60 px-4 py-2.5 rounded-lg border border-borderSlate/60 font-mono text-[16px]">
+                    <div class="flex flex-wrap items-center gap-3 bg-darkBg/60 px-4 py-2.5 rounded-lg border border-borderSlate/60 font-mono text-[17.5px]">
                         <div class="flex items-center gap-1">
                             <span class="text-slate-500 font-semibold">W</span>
                             <span class="text-slate-600">:</span>
                             <span class="text-accentBlue font-bold" id="specW">-</span>
-                            <span class="text-slate-500 text-[16px]">mm</span>
+                            <span class="text-slate-500 text-[17.5px]">mm</span>
                         </div>
                         <span class="text-slate-700">|</span>
                         <div class="flex items-center gap-1">
                             <span class="text-slate-500 font-semibold">D</span>
                             <span class="text-slate-600">:</span>
                             <span class="text-accentBlue font-bold" id="specD">-</span>
-                            <span class="text-slate-500 text-[16px]">mm</span>
+                            <span class="text-slate-500 text-[17.5px]">mm</span>
                         </div>
                         <span class="text-slate-700">|</span>
                         <div class="flex items-center gap-1">
                             <span class="text-slate-500 font-semibold">H</span>
                             <span class="text-slate-600">:</span>
                             <span class="text-accentBlue font-bold" id="specH">-</span>
-                            <span class="text-slate-500 text-[16px]">mm</span>
+                            <span class="text-slate-500 text-[17.5px]">mm</span>
                         </div>
                         <span class="text-slate-700">|</span>
                         <div class="flex items-center gap-1">
                             <span class="text-slate-500 font-semibold">G</span>
                             <span class="text-slate-600">:</span>
                             <span class="text-accentGreen font-bold" id="specG">-</span>
-                            <span class="text-slate-500 text-[16px]">kg</span>
+                            <span class="text-slate-500 text-[17.5px]">kg</span>
                         </div>
                     </div>
                 </div>
@@ -563,13 +563,13 @@
                     <div class="px-4 py-3 border-b border-borderSlate/60 flex items-center justify-between bg-darkBg/30 select-none flex-shrink-0">
                         <div class="flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-accentBlue"></span>
-                            <h3 class="text-[16px] font-bold text-white uppercase tracking-wider">수출 제품 세부 진행 이력</h3>
+                            <h3 class="text-[17.5px] font-bold text-white uppercase tracking-wider">수출 제품 세부 진행 이력</h3>
                         </div>
-                        <span class="text-[16px] text-slate-500">품목별 수주 수량 및 진행</span>
+                        <span class="text-[17.5px] text-slate-500">품목별 수주 수량 및 진행</span>
                     </div>
 
                     <div class="overflow-auto w-full">
-                        <table class="min-w-max w-full text-left border-collapse text-[16px]">
+                        <table class="min-w-max w-full text-left border-collapse text-[17.5px]">
                             <thead>
                                 <tr class="bg-darkBg/60 text-slate-400 font-semibold uppercase tracking-wider border-b border-borderSlate/60 select-none whitespace-nowrap">
                                     <th onclick="handleDetailSort('regDate')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
@@ -617,7 +617,7 @@
                 </div>
                 <div>
                     <h3 class="text-[21.5px] font-bold text-white" id="chartModalTitle">상세 차수 내역</h3>
-                    <p class="text-[16px] text-slate-400">제품구분별 상세 품목 리스트</p>
+                    <p class="text-[17.5px] text-slate-400">제품구분별 상세 품목 리스트</p>
                 </div>
             </div>
 
@@ -632,13 +632,13 @@
                             <th class="py-2.5 px-3 text-right">수량(EA)</th>
                         </tr>
                     </thead>
-                    <tbody id="chartModalTableBody" class="text-[16px] divide-y divide-borderSlate/40">
+                    <tbody id="chartModalTableBody" class="text-[17.5px] divide-y divide-borderSlate/40">
                         </tbody>
                 </table>
             </div>
 
             <div class="flex justify-start items-center mt-4">
-                <button onclick="exportChartModalData()" class="flex items-center gap-1.5 bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-[16px] px-4 py-2.5 rounded-xl font-semibold border border-accentBlue/30 transition-colors active:scale-95">
+                <button onclick="exportChartModalData()" class="flex items-center gap-1.5 bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-accentBlue/30 transition-colors active:scale-95">
                     <i class="fa-solid fa-file-arrow-down text-[13px]"></i> 데이터 출력
                 </button>
             </div>
@@ -653,7 +653,7 @@
                 </div>
                 <div>
                     <h3 class="text-[21.5px] font-bold text-white" id="packingModalTitle">포장 상세 내역</h3>
-                    <p class="text-[16px] text-slate-400" id="packingModalSubtitle">포장일 기준 품목 리스트</p>
+                    <p class="text-[17.5px] text-slate-400" id="packingModalSubtitle">포장일 기준 품목 리스트</p>
                 </div>
             </div>
             <div class="max-h-80 overflow-y-auto border border-borderSlate/60 rounded-xl">
@@ -667,11 +667,11 @@
                             <th class="py-2.5 px-3 text-right">수량(EA)</th>
                         </tr>
                     </thead>
-                    <tbody id="packingModalTableBody" class="text-[16px] divide-y divide-borderSlate/40"></tbody>
+                    <tbody id="packingModalTableBody" class="text-[17.5px] divide-y divide-borderSlate/40"></tbody>
                 </table>
             </div>
             <div class="flex justify-start items-center mt-4">
-                <button onclick="exportPackingModalData()" class="flex items-center gap-1.5 bg-sky-400/10 hover:bg-sky-400/20 text-sky-500 text-[16px] px-4 py-2.5 rounded-xl font-semibold border border-sky-400/30 transition-colors active:scale-95">
+                <button onclick="exportPackingModalData()" class="flex items-center gap-1.5 bg-sky-400/10 hover:bg-sky-400/20 text-sky-500 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-sky-400/30 transition-colors active:scale-95">
                     <i class="fa-solid fa-file-arrow-down text-[13px]"></i> 데이터 출력
                 </button>
             </div>
@@ -689,29 +689,29 @@
                 </div>
                 <div>
                     <h3 class="text-[21.5px] font-bold text-white">구글 시트 연동 설정</h3>
-                    <p class="text-[16px] text-slate-400">실시간 연동할 스프레드시트의 주소를 관리합니다.</p>
+                    <p class="text-[17.5px] text-slate-400">실시간 연동할 스프레드시트의 주소를 관리합니다.</p>
                 </div>
             </div>
             
-            <div class="space-y-4 my-5 text-[16px]">
+            <div class="space-y-4 my-5 text-[17.5px]">
                 <div>
-                    <label class="block text-[16px] font-bold text-slate-400 uppercase tracking-wider mb-2">웹에 게시 방식으로 연동하기</label>
+                    <label class="block text-[17.5px] font-bold text-slate-400 uppercase tracking-wider mb-2">웹에 게시 방식으로 연동하기</label>
                     <p class="text-[13px] text-slate-400 leading-relaxed">아래에 공개된 구글 시트 CSV 주소를 입력하면 이 대시보드가 실시간으로 데이터를 가져옵니다.</p>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-[16px] font-bold text-slate-400 uppercase tracking-wider">구글 시트 웹에 게시 CSV 주소</label>
+                    <label class="block text-[17.5px] font-bold text-slate-400 uppercase tracking-wider">구글 시트 웹에 게시 CSV 주소</label>
                     <input type="text" id="inputPubUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" 
-                           class="w-full bg-darkBg text-slate-200 px-3 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[16px]">
+                           class="w-full bg-darkBg text-slate-200 px-3 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px]">
                     <p class="text-[13px] text-slate-500">예시: 구글 스프레드시트의 파일 → 웹에 게시 → CSV로 발행 후 복사한 URL</p>
                 </div>
             </div>
 
             <div class="flex justify-end gap-2.5 border-t border-borderSlate/40 pt-4 mt-2">
-                <button onclick="closeSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[16px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
+                <button onclick="closeSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
                     취소
                 </button>
-                <button onclick="saveConnectionSettings()" class="bg-accentGreen hover:bg-emerald-400 text-darkBg font-bold text-[16px] px-5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-accentGreen/10">
+                <button onclick="saveConnectionSettings()" class="bg-accentGreen hover:bg-emerald-400 text-darkBg font-bold text-[17.5px] px-5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-accentGreen/10">
                     <i class="fa-solid fa-save"></i> 설정 저장 및 갱신
                 </button>
             </div>
@@ -729,26 +729,26 @@
                 </div>
                 <div>
                     <h3 class="text-[21.5px] font-bold text-white">구글 시트 연동 오류 안내</h3>
-                    <p class="text-[16px] text-slate-400">구글 워크스페이스 보안 및 로컬 CORS 제한 해결 방법</p>
+                    <p class="text-[17.5px] text-slate-400">구글 워크스페이스 보안 및 로컬 CORS 제한 해결 방법</p>
                 </div>
             </div>
             
-            <div class="space-y-4 my-4 text-[16px] leading-relaxed text-slate-300">
-                <p class="text-[16px] text-accentOrange bg-accentOrange/10 border border-accentOrange/20 p-3 rounded-lg font-semibold">
+            <div class="space-y-4 my-4 text-[17.5px] leading-relaxed text-slate-300">
+                <p class="text-[17.5px] text-accentOrange bg-accentOrange/10 border border-accentOrange/20 p-3 rounded-lg font-semibold">
                     💡 다운로드한 로컬 파일('file://')은 브라우저 보안 규정상 일반 스프레드시트 공유 링크를 직접 조회하는 것이 차단됩니다. 아래의 <strong>[웹에 게시]</strong> 기능을 적용하시면 로컬 PC 환경에서도 실시간 연동이 정상 개시됩니다!
                 </p>
 
-                <p class="text-[16px] text-accentGreen bg-accentGreen/10 border border-accentGreen/20 p-3 rounded-lg leading-normal">
+                <p class="text-[17.5px] text-accentGreen bg-accentGreen/10 border border-accentGreen/20 p-3 rounded-lg leading-normal">
                     <strong>가장 확실하고 간편한 우회 해결책:</strong><br>
                     컴퓨터에 구글 시트를 CSV 파일로 다운로드하신 뒤, 우측 상단 <strong>[CSV 업로드]</strong> 단추를 클릭해 연동하시면 보안 차단 없이 1초 만에 백프로 정상 연동됩니다!
                 </p>
             </div>
 
             <div class="flex justify-end gap-2.5">
-                <button onclick="closeHelpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[16px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
+                <button onclick="closeHelpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
                     닫기
                 </button>
-                <button onclick="openSettingsModal(); closeHelpModal();" class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[16px] px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all">
+                <button onclick="openSettingsModal(); closeHelpModal();" class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[17.5px] px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all">
                     <i class="fa-solid fa-cog"></i> 설정 열기
                 </button>
             </div>
@@ -759,7 +759,7 @@
         <div class="bg-panelBg border border-borderSlate p-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm">
             <div id="toastIcon" class="p-2 rounded-lg text-white"></div>
             <div>
-                <h4 id="toastTitle" class="text-[16px] font-bold text-white">알림</h4>
+                <h4 id="toastTitle" class="text-[17.5px] font-bold text-white">알림</h4>
                 <p id="toastMessage" class="text-[13px] text-slate-400 mt-0.5 leading-normal"></p>
             </div>
         </div>
@@ -937,13 +937,13 @@
                 const indicator = document.getElementById('connIndicator');
                 const hasLiveSheet = keys.some(k => k.startsWith('sheet_'));
                 if (hasLiveSheet) {
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-green-100 text-green-700 border border-green-300';
+                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[17.5px] font-semibold bg-green-100 text-green-700 border border-green-300';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-accentGreen animate-pulse"></span>
                         사내 보안망 실시간 연결됨 (LIVE)
                     `;
                 } else {
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-blue-500/10 text-accentBlue border border-blue-500/20';
+                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[17.5px] font-semibold bg-blue-500/10 text-accentBlue border border-blue-500/20';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-accentBlue animate-pulse"></span>
                         다중 CSV 병합 완료
@@ -954,7 +954,7 @@
                 listSpan.innerText = '대기 중';
                 
                 const indicator = document.getElementById('connIndicator');
-                indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-amber-100 text-amber-700 border border-amber-300';
+                indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[17.5px] font-semibold bg-amber-100 text-amber-700 border border-amber-300';
                 indicator.innerHTML = `
                     <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
                     연동 대기 중
@@ -1390,13 +1390,13 @@
             const indicator = document.getElementById('connIndicator');
             if (isOnline) {
                 if (type === 'bypass') {
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-green-100 text-green-700 border border-green-300';
+                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[17.5px] font-semibold bg-green-100 text-green-700 border border-green-300';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-accentGreen animate-pulse"></span>
                         사내 보안망 실시간 연결됨 (LIVE)
                     `;
                 } else {
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-green-100 text-green-700 border border-green-300';
+                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[17.5px] font-semibold bg-green-100 text-green-700 border border-green-300';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-accentGreen animate-pulse"></span>
                         구글 시트 라이브 연결됨
@@ -1406,7 +1406,7 @@
                 const listSpanText = document.getElementById('loadedFilesList').innerText;
                 if (listSpanText && listSpanText !== '대기 중') return;
 
-                indicator.className = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[16px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20';
+                indicator.className = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[17.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20';
                 indicator.innerHTML = `
                     <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
                     로컬 오프라인 모드
@@ -1717,14 +1717,14 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-[16px] text-slate-400 text-center whitespace-nowrap">${normalizeDate(item.regDate)}</td>
-                    <td class="py-3 px-3 text-center text-slate-500 font-bold text-[16px] whitespace-nowrap">*</td>
+                    <td class="py-3 px-4 font-mono text-[17.5px] text-slate-400 text-center whitespace-nowrap">${normalizeDate(item.regDate)}</td>
+                    <td class="py-3 px-3 text-center text-slate-500 font-bold text-[17.5px] whitespace-nowrap">*</td>
                     <td class="py-3 px-4 font-semibold text-white whitespace-nowrap">${item.round}</td>
                     <td class="py-3 px-4 font-mono font-medium text-center whitespace-nowrap" style="color:#64748B;">${item.code}</td>
                     <td class="py-3 px-4 font-semibold text-slate-400 font-mono text-center whitespace-nowrap">${item.color || 'WW'}</td>
                     <td class="py-3 px-4 text-center font-bold text-slate-300 font-mono whitespace-nowrap">${item.qty}EA</td>
-                    <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[16px] ${statusBadge}">${item.statusLabel || item.status}</span></td>
-                    <td class="py-3 px-4 text-slate-500 font-mono text-[16px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
+                    <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge}">${item.statusLabel || item.status}</span></td>
+                    <td class="py-3 px-4 text-slate-500 font-mono text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
                     <td class="py-3 px-4 font-bold font-mono text-center whitespace-nowrap" style="color:#38BDF8;">${shortDate(item.date)}</td>
                 `;
                 tbody.appendChild(tr);
@@ -2164,18 +2164,18 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="py-3.5 px-4 font-mono text-[16px] text-slate-400 text-center">${normalizeDate(item.regDate)}</td>
-                    <td class="py-3.5 px-4 font-semibold text-white text-[14.5px] text-center">${item.round}</td>
-                    <td class="py-3.5 px-4 font-mono text-[16px]">
+                    <td class="py-3.5 px-4 font-mono text-[17.5px] text-slate-400 text-center">${normalizeDate(item.regDate)}</td>
+                    <td class="py-3.5 px-4 font-semibold text-white text-[16px] text-center">${item.round}</td>
+                    <td class="py-3.5 px-4 font-mono text-[17.5px]">
                         <span class="cursor-pointer transition-colors font-semibold" style="color:#64748B;" onmouseenter="this.style.color='#475569'" onmouseleave="this.style.color='#64748B'" onclick="openDetailPanelFromTable('${item.code}')">${item.code}</span>
                     </td>
                     <td class="py-3.5 px-4 font-bold text-slate-300 text-center">${item.qty.toLocaleString()}</td>
-                    <td class="py-3.5 px-4 text-slate-500 font-mono text-[16px] text-center">${shortDate(item.dueDate)}</td>
-                    <td class="py-3.5 px-4 text-slate-500 font-mono text-[16px] text-center">${shortDate(item.date)}</td>
+                    <td class="py-3.5 px-4 text-slate-500 font-mono text-[17.5px] text-center">${shortDate(item.dueDate)}</td>
+                    <td class="py-3.5 px-4 text-slate-500 font-mono text-[17.5px] text-center">${shortDate(item.date)}</td>
                     <td class="py-3.5 px-4 text-center font-semibold text-slate-300">${item.targetQty.toLocaleString()}</td>
                     <td class="py-3.5 px-4 text-center font-bold" style="color:#F87171;">${item.strengthenedQty.toLocaleString()}</td>
                     <td class="py-3.5 px-4 text-center font-bold" style="color:#38BDF8;">${item.shippedQty.toLocaleString()}</td>
-                    <td class="py-3.5 px-4 text-center"><span class="px-2.5 py-0.5 rounded text-[16px] ${badgeClass}">${item.statusLabel || item.status}</span></td>`;
+                    <td class="py-3.5 px-4 text-center"><span class="px-2.5 py-0.5 rounded text-[17.5px] ${badgeClass}">${item.statusLabel || item.status}</span></td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -2822,7 +2822,7 @@
             var tbody = document.getElementById('packingModalTableBody');
             tbody.innerHTML = '';
             if (items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500 text-[16px]">데이터 없음</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500 text-[17.5px]">데이터 없음</td></tr>';
             } else {
                 items.forEach(function(item) {
                     var tr = document.createElement('tr');
