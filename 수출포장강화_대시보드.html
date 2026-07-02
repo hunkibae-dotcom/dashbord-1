@@ -2598,6 +2598,66 @@
                 },
                 plugins: [packingBarTopPlugin]
             });
+            updatePackingNavArrows();
+        }
+
+        function updatePackingNavArrows() {
+            const prev = document.getElementById('packingNavPrev');
+            const next = document.getElementById('packingNavNext');
+            if (!prev || !next) return;
+
+            if (packingViewMode === 'monthly') {
+                prev.style.display = 'none';
+                next.style.display = 'none';
+                return;
+            }
+            prev.style.display = 'flex';
+            next.style.display = 'flex';
+
+            const atCurrent = packingViewMode === 'daily'
+                ? packingDailyWeekOffset >= 0
+                : packingWeeklyMonthOffset >= 0;
+
+            next.style.opacity = atCurrent ? '0.25' : '0.75';
+            next.style.cursor  = atCurrent ? 'not-allowed' : 'pointer';
+            next.style.pointerEvents = atCurrent ? 'none' : 'auto';
+            prev.style.opacity = '0.75';
+            prev.style.cursor  = 'pointer';
+            prev.style.pointerEvents = 'auto';
+        }
+
+        function navigatePackingChart(dir) {
+            if (packingViewMode === 'monthly') return;
+            if (packingViewMode === 'daily') {
+                if (packingDailyWeekOffset + dir > 0) return;
+                packingDailyWeekOffset += dir;
+            } else {
+                if (packingWeeklyMonthOffset + dir > 0) return;
+                packingWeeklyMonthOffset += dir;
+            }
+
+            const wrap = document.getElementById('packingChartWrap');
+            if (!wrap) { renderPackingChart(); return; }
+
+            // 현재 차트 fade + slide out
+            wrap.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+            wrap.style.opacity = '0';
+            wrap.style.transform = 'translateX(' + (dir > 0 ? '-40px' : '40px') + ')';
+
+            setTimeout(function() {
+                renderPackingChart();
+                // 반대쪽에서 진입 준비
+                wrap.style.transition = 'none';
+                wrap.style.opacity = '0';
+                wrap.style.transform = 'translateX(' + (dir > 0 ? '40px' : '-40px') + ')';
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        wrap.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                        wrap.style.opacity = '1';
+                        wrap.style.transform = 'translateX(0)';
+                    });
+                });
+            }, 160);
         }
 
         function downloadPackingChartData() {
