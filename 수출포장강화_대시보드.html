@@ -3039,6 +3039,199 @@
             applyFilters();
         }
 
+        // ============================================================
+        // 카드1 — 금일 작업 계획
+        // ============================================================
+        const CARD1_KEY = 'dashCard1_v2';
+
+        function getCard1Data() {
+            try {
+                const d = JSON.parse(localStorage.getItem(CARD1_KEY));
+                if (d && Array.isArray(d.departments)) return d;
+            } catch(e) {}
+            return { departments: [], activeDept: '', todayChecked: [], memo: '' };
+        }
+        function saveCard1Raw(data) { localStorage.setItem(CARD1_KEY, JSON.stringify(data)); }
+
+        function initCard1() {
+            const today = new Date();
+            const DAY = ['일','월','화','수','목','금','토'];
+            const lbl = today.getFullYear() + '.' + String(today.getMonth()+1).padStart(2,'0') + '.' + String(today.getDate()).padStart(2,'0') + ' (' + DAY[today.getDay()] + ')';
+            const el = document.getElementById('card1TodayDateLabel');
+            if (el) el.textContent = lbl;
+            const data = getCard1Data();
+            const memo = document.getElementById('card1Memo');
+            if (memo) memo.value = data.memo || '';
+            _card1RenderTabs();
+            _card1RenderChips();
+        }
+
+        function updateCard1Stats() {
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+            const todayItems = (state.data || []).filter(item => normalizeDate(item.regDate) === todayStr);
+            const todayQty   = todayItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
+            const pendingItems = (state.data || []).filter(item => {
+                const s = ((item.statusLabel || item.status || '') + '').replace(/\s/g,'');
+                return s === '포장대기' || s === '미입고' || s === '피킹';
+            });
+            const pendingQty = pendingItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
+            const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            sv('card1TodayQty',    todayQty.toLocaleString());
+            sv('card1TodayItems',  todayItems.length);
+            sv('card1PendingQty',  pendingQty.toLocaleString());
+            sv('card1PendingItems',pendingItems.length);
+        }
+
+        function _card1RenderTabs() {
+            const data = getCard1Data();
+            const container = document.getElementById('card1DeptTabs');
+            if (!container) return;
+            if (!data.departments.length) { container.innerHTML = ''; return; }
+            if (!data.activeDept || !data.departments.find(d => d.name === data.activeDept)) {
+                data.activeDept = data.departments[0].name;
+                saveCard1Raw(data);
+            }
+            container.innerHTML = data.departments.map(dept => {
+                const active = dept.name === data.activeDept;
+                return `<button onclick="card1SetDept('${dept.name.replace(/'/g,"\\'")}')"
+                    style="font-size:12px;font-weight:600;padding:2px 10px;border-radius:8px;border:1px solid ${active?'#0369A1':'#334155'};
+                           background:${active?'#0369A1':'transparent'};color:${active?'#fff':'#64748B'};cursor:pointer;transition:all 0.15s;">${dept.name}</button>`;
+            }).join('');
+        }
+
+        function card1SetDept(name) {
+            const data = getCard1Data(); data.activeDept = name; saveCard1Raw(data);
+            _card1RenderTabs(); _card1RenderChips();
+        }
+
+        function _card1RenderChips() {
+            const data = getCard1Data();
+            const chips = document.getElementById('card1WorkerChips');
+            const none  = document.getElementById('card1NoWorkers');
+            if (!chips) return;
+            const dept = data.departments.find(d => d.name === data.activeDept);
+            if (!dept || !dept.workers.length) {
+                chips.innerHTML = '';
+                if (none) none.classList.remove('hidden');
+                return;
+            }
+            if (none) none.classList.add('hidden');
+            chips.innerHTML = dept.workers.map(w => {
+                const on = data.todayChecked.includes(w);
+                return `<button onclick="card1ToggleWorker('${w.replace(/'/g,"\\'")}')"
+                    style="display:flex;align-items:center;gap:5px;font-size:13px;font-weight:600;
+                           padding:3px 10px;border-radius:999px;cursor:pointer;transition:all 0.15s;
+                           border:1px solid ${on?'#38BDF8':'#334155'};
+                           background:${on?'rgba(56,189,248,0.12)':'transparent'};
+                           color:${on?'#38BDF8':'#475569'};">
+                    <i class="fa-solid fa-${on?'check':'user'}" style="font-size:10px;"></i>${w}</button>`;
+            }).join('');
+        }
+
+        function card1ToggleWorker(w) {
+            const data = getCard1Data();
+            const i = data.todayChecked.indexOf(w);
+            if (i >= 0) data.todayChecked.splice(i, 1); else data.todayChecked.push(w);
+            saveCard1Raw(data); _card1RenderChips();
+        }
+
+        function saveCard1Memo() {
+            const data = getCard1Data();
+            const m = document.getElementById('card1Memo');
+            data.memo = m ? m.value : '';
+            saveCard1Raw(data);
+        }
+
+        // --- 편집 모달 ---
+        function openCard1WorkerModal() {
+            document.getElementById('card1WorkerModal').classList.remove('hidden');
+            _card1RenderEditor();
+        }
+        function closeCard1WorkerModal() {
+            document.getElementById('card1WorkerModal').classList.add('hidden');
+            _card1RenderTabs(); _card1RenderChips();
+        }
+
+        function _card1RenderEditor() {
+            const data = getCard1Data();
+            const container = document.getElementById('card1DeptList');
+            if (!container) return;
+            if (!data.departments.length) {
+                container.innerHTML = `<p style="text-align:center;color:#475569;font-size:13px;padding:16px 0;">아직 부서가 없습니다. 아래에서 추가하세요.</p>`;
+                return;
+            }
+            container.innerHTML = data.departments.map((dept, di) => `
+                <div style="background:rgba(15,23,42,0.5);border:1px solid #1E293B;border-radius:12px;padding:12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                        <span style="font-size:15px;font-weight:700;color:#fff;">${dept.name}</span>
+                        <button onclick="card1RemoveDept(${di})" style="color:#475569;background:none;border:none;cursor:pointer;font-size:13px;" title="부서 삭제">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+                        ${dept.workers.map((w, wi) => `
+                            <span style="display:flex;align-items:center;gap:4px;font-size:13px;background:#1E293B;color:#CBD5E1;padding:2px 8px;border-radius:999px;border:1px solid #334155;">
+                                ${w}
+                                <button onclick="card1RemoveWorker(${di},${wi})" style="background:none;border:none;cursor:pointer;color:#475569;font-size:10px;padding:0;margin-left:2px;" title="삭제">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </span>`).join('')}
+                        ${!dept.workers.length ? `<span style="font-size:12px;color:#475569;">인원 없음</span>` : ''}
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <input id="c1nw_${di}" type="text" placeholder="이름 입력"
+                            style="flex:1;background:#0F172A;border:1px solid #334155;border-radius:8px;padding:4px 10px;font-size:13px;color:#E2E8F0;outline:none;"
+                            onkeydown="if(event.key==='Enter')card1AddWorker(${di})">
+                        <button onclick="card1AddWorker(${di})"
+                            style="background:#334155;color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:13px;cursor:pointer;transition:background 0.15s;"
+                            onmouseenter="this.style.background='#475569'" onmouseleave="this.style.background='#334155'">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function addCard1Dept() {
+            const inp = document.getElementById('card1NewDeptInput');
+            const name = inp ? inp.value.trim() : '';
+            if (!name) return;
+            const data = getCard1Data();
+            if (data.departments.find(d => d.name === name)) return;
+            data.departments.push({ name, workers: [] });
+            if (!data.activeDept) data.activeDept = name;
+            saveCard1Raw(data);
+            inp.value = '';
+            _card1RenderEditor();
+        }
+
+        function card1RemoveDept(di) {
+            const data = getCard1Data();
+            data.departments.splice(di, 1);
+            if (!data.departments.find(d => d.name === data.activeDept))
+                data.activeDept = data.departments[0] ? data.departments[0].name : '';
+            saveCard1Raw(data); _card1RenderEditor();
+        }
+
+        function card1AddWorker(di) {
+            const inp = document.getElementById('c1nw_' + di);
+            const name = inp ? inp.value.trim() : '';
+            if (!name) return;
+            const data = getCard1Data();
+            if (!data.departments[di] || data.departments[di].workers.includes(name)) return;
+            data.departments[di].workers.push(name);
+            saveCard1Raw(data); inp.value = ''; _card1RenderEditor();
+        }
+
+        function card1RemoveWorker(di, wi) {
+            const data = getCard1Data();
+            const removed = data.departments[di].workers.splice(wi, 1)[0];
+            const ci = data.todayChecked.indexOf(removed);
+            if (ci >= 0) data.todayChecked.splice(ci, 1);
+            saveCard1Raw(data); _card1RenderEditor();
+        }
+        // ============================================================
+
         function exportToCSV() {
             const headers = ['등록일자','건명','제품코드','수량','납기일','상차일','대상(EA)','강화(EA)','출고(EA)','강화비용','상태'];
             const rows = state.filteredData.map(item => [
