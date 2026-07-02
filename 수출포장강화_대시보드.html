@@ -3205,8 +3205,9 @@
             if (deptInp) deptInp.value = '';
             if (memoInp) memoInp.value = '';
             if (statusEl) { statusEl.classList.add('hidden'); statusEl.textContent = ''; }
+            const cntInp = document.getElementById('wrm_countInput');
+            if (cntInp) cntInp.value = 0;
             _wrmRenderChips();
-            _wrmRenderCount();
             const btn = document.getElementById('wrm_submitBtn');
             if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
             modal.classList.remove('hidden');
