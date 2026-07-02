@@ -3297,18 +3297,25 @@
             const matchedList = state.data.filter(item => item.code.toLowerCase() === _currentDetailProductCode.toLowerCase());
             if (matchedList.length === 0) return;
 
-            // 스펙 데이터 (패널에 표시된 값 그대로 가져오기)
+            // 스펙 데이터 (패널에 표시된 평균/오차값 가져오기)
             const specW = document.getElementById('specW').innerText || '-';
             const specD = document.getElementById('specD').innerText || '-';
             const specH = document.getElementById('specH').innerText || '-';
             const specG = document.getElementById('specG').innerText || '-';
+            const specCBM = document.getElementById('specCBM').innerText || '-';
+            const getCleanTol = id => (document.getElementById(id).innerText || '-').replace(/[^\d±.균일]/g, '') || '-';
+            const wTol = getCleanTol('specWTol');
+            const dTol = getCleanTol('specDTol');
+            const hTol = getCleanTol('specHTol');
+            const gTol = getCleanTol('specGTol');
+            const cbmTol = getCleanTol('specCBMTol');
 
             const q = v => '"' + (v == null ? '' : v) + '"';
             const row = arr => arr.map(q).join(',');
 
             const specSection = [
-                row(['제품코드', 'W (mm)', 'D (mm)', 'H (mm)', 'G (kg)']),
-                row([_currentDetailProductCode, specW, specD, specH, specG]),
+                row(['제품코드', 'W 평균(mm)', 'W 오차', 'D 평균(mm)', 'D 오차', 'H 평균(mm)', 'H 오차', 'G 평균(kg)', 'G 오차', 'CBM 평균(m³)', 'CBM 오차']),
+                row([_currentDetailProductCode, specW, wTol, specD, dTol, specH, hTol, specG, gTol, specCBM, cbmTol]),
                 '',
             ];
 
