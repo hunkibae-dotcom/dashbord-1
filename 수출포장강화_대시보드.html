@@ -372,22 +372,22 @@
                         </div>
                         <div class="relative h-72 w-full" style="overflow:hidden;">
                             <button id="packingNavPrev" onclick="navigatePackingChart(-1)"
-                                style="display:none;position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:10;
-                                       background:rgba(15,23,42,0.45);border:1px solid rgba(148,163,184,0.25);color:#94A3B8;
+                                style="display:none;position:absolute;left:0;top:50%;transform:translateY(-50%) scale(1);z-index:10;
+                                       background:rgba(148,163,184,0.10);border:1px solid rgba(148,163,184,0.18);color:#94A3B8;
                                        border-radius:8px;width:28px;height:48px;font-size:22px;line-height:1;cursor:pointer;
-                                       align-items:center;justify-content:center;transition:background 0.15s,color 0.15s;user-select:none;"
-                                onmouseenter="this.style.background='rgba(15,23,42,0.75)';this.style.color='#E2E8F0';"
-                                onmouseleave="this.style.background='rgba(15,23,42,0.45)';this.style.color='#94A3B8';">‹</button>
+                                       align-items:center;justify-content:center;transition:background 0.18s,color 0.18s,transform 0.18s;user-select:none;"
+                                onmouseenter="this.style.background='rgba(148,163,184,0.28)';this.style.color='#475569';this.style.transform='translateY(-50%) scale(1.13)';"
+                                onmouseleave="this.style.background='rgba(148,163,184,0.10)';this.style.color='#94A3B8';this.style.transform='translateY(-50%) scale(1)';">‹</button>
                             <div id="packingChartWrap" style="position:absolute;inset:0;transition:opacity 0.25s ease,transform 0.25s ease;">
                                 <canvas id="trendChart"></canvas>
                             </div>
                             <button id="packingNavNext" onclick="navigatePackingChart(1)"
-                                style="display:none;position:absolute;right:0;top:50%;transform:translateY(-50%);z-index:10;
-                                       background:rgba(15,23,42,0.45);border:1px solid rgba(148,163,184,0.25);color:#94A3B8;
+                                style="display:none;position:absolute;right:0;top:50%;transform:translateY(-50%) scale(1);z-index:10;
+                                       background:rgba(148,163,184,0.10);border:1px solid rgba(148,163,184,0.18);color:#94A3B8;
                                        border-radius:8px;width:28px;height:48px;font-size:22px;line-height:1;cursor:not-allowed;
-                                       align-items:center;justify-content:center;opacity:0.25;transition:background 0.15s,color 0.15s,opacity 0.15s;user-select:none;"
-                                onmouseenter="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(15,23,42,0.75)';this.style.color='#E2E8F0';}"
-                                onmouseleave="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(15,23,42,0.45)';this.style.color='#94A3B8';}">›</button>
+                                       align-items:center;justify-content:center;opacity:0.25;transition:background 0.18s,color 0.18s,transform 0.18s,opacity 0.18s;user-select:none;"
+                                onmouseenter="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(148,163,184,0.28)';this.style.color='#475569';this.style.transform='translateY(-50%) scale(1.13)';}"
+                                onmouseleave="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(148,163,184,0.10)';this.style.color='#94A3B8';this.style.transform='translateY(-50%) scale(1)';}">›</button>
                         </div>
                     </div>
 
