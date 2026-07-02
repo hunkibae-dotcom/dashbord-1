@@ -280,9 +280,14 @@
                                 <span class="text-[13.5px] font-semibold text-slate-400 flex items-center gap-1">
                                     <i class="fa-solid fa-users text-[12px] text-slate-500"></i> 금일 작업 인원
                                 </span>
-                                <button onclick="openWorkerRegisterModal()" class="text-[12px] text-accentBlue hover:text-sky-300 transition-colors flex items-center gap-0.5 font-semibold">
-                                    <i class="fa-solid fa-plus text-[10px]"></i> 등록
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="resetTodayWorkers()" class="text-[11px] text-slate-500 hover:text-red-400 transition-colors flex items-center gap-0.5" title="오늘 등록 인원 초기화">
+                                        <i class="fa-solid fa-rotate-left text-[9px]"></i> 초기화
+                                    </button>
+                                    <button onclick="openWorkerRegisterModal()" class="text-[12px] text-accentBlue hover:text-sky-300 transition-colors flex items-center gap-0.5 font-semibold">
+                                        <i class="fa-solid fa-plus text-[10px]"></i> 등록
+                                    </button>
+                                </div>
                             </div>
                             <div id="card1WorkerDisplay" class="min-h-[28px]">
                                 <div class="text-[12px] text-slate-600 text-center py-1">등록된 작업 인원이 없습니다</div>
