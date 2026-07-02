@@ -3146,14 +3146,21 @@
         }
 
         function updateCard1Stats() {
-            const pendingItems = (state.data || []).filter(item => {
-                const s = ((item.statusLabel || item.status || '') + '').replace(/\s/g,'');
-                return s === '포장대기' || s === '미입고' || s === '피킹';
+            // 충주공장 재고 시트 기준: J열(진행) = '포장대기' | '미확인' 인 항목의 D열(수량) 합산
+            const stockSheetKey = Object.keys(datasetMap).find(k => k.includes('충주공장 재고'));
+            const stockData = stockSheetKey ? (datasetMap[stockSheetKey] || []) : [];
+            let pendingQty = 0;
+            let pendingCount = 0;
+            stockData.forEach(item => {
+                const s = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
+                if (s.includes('포장대기') || s.includes('미확인')) {
+                    pendingQty += parseInt(item.qty) || 0;
+                    pendingCount++;
+                }
             });
-            const pendingQty = pendingItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
             const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
             sv('card1PendingQty',  pendingQty.toLocaleString());
-            sv('card1PendingItems',pendingItems.length);
+            sv('card1PendingItems', pendingCount);
         }
 
         // 오늘 작업 인원 카드 표시
