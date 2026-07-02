@@ -2494,9 +2494,7 @@
                         wkDates.push(ds2);
                         wkTotal += _packingDateQtyMap[ds2] || 0;
                     }
-                    const sL = (wkStart.getMonth()+1) + '/' + wkStart.getDate();
-                    const eL = (wkFri.getMonth()+1)   + '/' + wkFri.getDate();
-                    const lbl2 = sL + '~' + eL;
+                    const lbl2 = (mo + 1) + '월 ' + (labels.length + 1) + '주차';
                     labels.push(lbl2);
                     dataArr.push(wkTotal);
                     _packingLabelMeta.push({ label: lbl2, dates: wkDates });
