@@ -389,7 +389,13 @@
                                 <span class="text-[13px] text-slate-500 font-semibold flex items-center gap-1">
                                     <i class="fa-solid fa-calendar-xmark text-[11px]"></i> 납기일 · 상차일 변경 내역
                                 </span>
-                                <span id="noticeChangeBadge" class="text-[11px] bg-accentOrange/20 text-accentOrange px-1.5 py-0.5 rounded-full font-bold" style="display:none;"></span>
+                                <div class="flex items-center gap-1.5">
+                                    <span id="noticeChangeBadge" class="text-[11px] bg-accentOrange/20 text-accentOrange px-1.5 py-0.5 rounded-full font-bold" style="display:none;"></span>
+                                    <button onclick="clearNoticeChangeLog()" title="변경 알림 지우기" class="flex items-center gap-1 text-[11px] text-slate-500 hover:text-red-400 transition-colors px-1.5 py-0.5 rounded-md hover:bg-red-500/10">
+                                        <i class="fa-solid fa-bell-slash text-[10px]"></i>
+                                        <span>알림 지우기</span>
+                                    </button>
+                                </div>
                             </div>
                             <div id="noticeDateChanges" class="space-y-1 max-h-[110px] overflow-y-auto">
                                 <div class="text-[12px] text-slate-600 text-center py-3">
