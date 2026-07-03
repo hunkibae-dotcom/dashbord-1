@@ -954,6 +954,13 @@
 
             // 3. 5분 주기 자동 갱신 (포장대기 등 수량 자동 업데이트)
             setInterval(() => syncWithGoogleSheets(), 5 * 60 * 1000);
+
+            // 4. 전달사항 카드: 저장된 변경 로그 즉시 렌더링
+            (function() {
+                let log = [];
+                try { log = JSON.parse(localStorage.getItem(DATE_CHANGE_LOG_KEY) || '[]'); } catch(e) {}
+                renderNoticeDateChanges(log);
+            })();
         });
 
         // 다중 파일 로드 시 중복 행 증발 방지 및 결합 파이프라인
