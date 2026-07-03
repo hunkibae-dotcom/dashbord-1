@@ -3405,9 +3405,9 @@
                     const status = item.statusLabel || item.status || '-';
                     const statusColor = status.includes('출고') ? '#34D399' : status.includes('완료') ? '#60A5FA' : '#94A3B8';
                     return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.12);">
-                        <span style="color:#CBD5E1;font-weight:600;flex:1;font-size:12px;">${item.code || '-'}</span>
+                        <span style="color:#1E293B;font-weight:700;flex:1;font-size:12px;">${item.code || '-'}</span>
                         <span style="color:#64748B;font-size:11px;">${item.color || '-'}</span>
-                        <span style="color:#E2E8F0;font-weight:700;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</span>
+                        <span style="color:#1E293B;font-weight:800;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</span>
                         <span style="color:${statusColor};font-size:11px;">${status}</span>
                     </div>`;
                 }).join('');
