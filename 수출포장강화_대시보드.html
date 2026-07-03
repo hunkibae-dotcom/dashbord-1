@@ -3490,6 +3490,11 @@
 
         let _noticeChangeLog = [];
 
+        function clearNoticeChangeLog() {
+            localStorage.setItem(DATE_CHANGE_LOG_KEY, '[]');
+            renderNoticeDateChanges([]);
+        }
+
         function renderNoticeDateChanges(log) {
             _noticeChangeLog = log || [];
             const el = document.getElementById('noticeDateChanges');
