@@ -3352,7 +3352,7 @@
 
         function _yesterdayStr() {
             const d = new Date();
-            d.setDate(d.getDate() - 1);
+            do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0); // 일요일 건너뜀
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
