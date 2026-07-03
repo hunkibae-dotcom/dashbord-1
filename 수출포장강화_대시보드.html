@@ -3367,7 +3367,7 @@
             const ymd = _yesterdayStr();
             const yDate = new Date(ymd);
             const DAY = ['일','월','화','수','목','금','토'];
-            const lbl = (yDate.getMonth()+1) + '/' + yDate.getDate() + ' (' + DAY[yDate.getDay()] + ')';
+            const lbl = yDate.getFullYear() + '.' + String(yDate.getMonth()+1).padStart(2,'0') + '.' + String(yDate.getDate()).padStart(2,'0') + ' (' + DAY[yDate.getDay()] + ')';
             const lblEl = document.getElementById('prevDayLabel');
             if (lblEl) lblEl.textContent = lbl;
 
