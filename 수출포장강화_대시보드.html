@@ -2657,10 +2657,10 @@
                                 const isHov = hov.di === di && hov.i === i;
                                 ctx.save();
                                 ctx.fillStyle = di === 0 ? '#EF4444' : '#0EA5E9';
-                                ctx.font = `bold ${isHov ? 13.5 : 11.5}px Inter, sans-serif`;
+                                ctx.font = `bold ${isHov ? 14.5 : 12.5}px Inter, sans-serif`;
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'bottom';
-                                ctx.fillText(val.toLocaleString() + 'EA', bar.x, bar.y - 2);
+                                ctx.fillText(val.toLocaleString(), bar.x, bar.y - 2);
                                 ctx.restore();
                             });
                         });
