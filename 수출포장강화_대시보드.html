@@ -3396,9 +3396,9 @@
                         extraTotal += parseInt(log.extraCount) || 0;
                     });
                     const total = allWorkers.length + extraTotal;
-                    let parts = [`<span style="color:#94A3B8;font-weight:700;">총 ${total}명</span>`];
-                    if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#CBD5E1;">${w}</span>`).join(' · '));
-                    if (extraTotal > 0) parts.push(`<span style="color:#94A3B8;">용역 ${extraTotal}명</span>`);
+                    let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${total}명</span>`];
+                    if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
+                    if (extraTotal > 0) parts.push(`<span style="color:#CBD5E1;">용역 ${extraTotal}명</span>`);
                     workerEl.innerHTML = parts.join(' · ');
                 }
             }
