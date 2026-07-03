@@ -767,6 +767,31 @@
         </div>
     </div>
 
+    <!-- 연동 초기화 확인 모달 -->
+    <div id="resetConnectionModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this)closeResetConnection()">
+        <div class="bg-panelBg border border-borderSlate rounded-2xl p-5 w-[360px] max-w-[95vw] shadow-2xl flex flex-col gap-4">
+            <div class="flex items-center gap-3">
+                <div style="padding:10px;border-radius:12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#F87171;font-size:18px;flex-shrink:0;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <p class="text-[15px] font-bold text-white">주의</p>
+                    <p class="text-[12.5px] text-slate-400 mt-0.5">이 작업은 되돌릴 수 없습니다</p>
+                </div>
+            </div>
+            <div class="bg-darkBg/60 rounded-xl px-4 py-3 border border-borderSlate/40 text-center">
+                <p class="text-[13.5px] text-slate-200 font-semibold">연동 설정을 초기화 하시겠습니까?</p>
+                <p class="text-[11.5px] text-slate-500 mt-1">저장된 구글 시트 주소 및 연동 데이터가 모두 삭제됩니다</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="closeResetConnection()" class="flex-1 py-2 rounded-xl text-[13.5px] font-semibold text-slate-300 border border-borderSlate hover:bg-slate-700/40 transition-colors">취소</button>
+                <button onclick="closeResetConnection();resetConnectionSettings();" class="flex-1 py-2 rounded-xl text-[13.5px] font-semibold text-white transition-colors" style="background:rgba(239,68,68,0.85);border:1px solid rgba(239,68,68,0.5);" onmouseenter="this.style.background='rgba(239,68,68,1)'" onmouseleave="this.style.background='rgba(239,68,68,0.85)'">
+                    <i class="fa-solid fa-power-off mr-1.5 text-[12px]"></i>초기화
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 데이터 탭 제거 확인 모달 -->
     <div id="removeDataTabModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this)closeRemoveDataTab()">
         <div class="bg-panelBg border border-borderSlate rounded-2xl p-5 w-[360px] max-w-[95vw] shadow-2xl flex flex-col gap-4">
