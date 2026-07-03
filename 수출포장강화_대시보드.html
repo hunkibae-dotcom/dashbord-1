@@ -248,6 +248,11 @@
                     <span id="nearestLoadDate"></span>
                     <span id="nearestDueDate"></span>
                 </div>
+
+                <button onclick="syncWithGoogleSheets()" id="syncBtn"
+                    class="mt-auto w-full bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-[14.5px] px-4 py-3 rounded-lg border border-accentBlue/25 hover:border-accentBlue/50 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold">
+                    <i class="fa-solid fa-arrows-rotate" id="syncIcon"></i> 실시간 시트 갱신
+                </button>
         </div>
 
         <div id="sidebarBottom" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl flex flex-col gap-4">
