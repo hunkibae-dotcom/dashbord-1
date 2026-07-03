@@ -3835,9 +3835,10 @@
         function renderCard1WorkerDisplay() {
             const display = document.getElementById('card1WorkerDisplay');
             if (!display) return;
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             const todayLogs = getWorkerLogs().filter(r => r.date === _todayStr());
             if (!todayLogs.length) {
-                display.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:6px 0;">등록된 작업 인원이 없습니다</div>';
+                display.innerHTML = `<div style="font-size:12px;color:${isLight?'#64748B':'#475569'};text-align:center;padding:6px 0;">등록된 작업 인원이 없습니다</div>`;
                 return;
             }
             // 부서별 그룹핑 (count 우선, 이름 있으면 표시)
@@ -3857,8 +3858,8 @@
             });
 
             let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:12px;font-weight:700;color:#38BDF8;">총 ${totalCount}명</span>
-                <span style="font-size:11px;color:#475569;">작업 참여</span>
+                <span style="font-size:12px;font-weight:700;color:${isLight?'#0369A1':'#38BDF8'};">총 ${totalCount}명</span>
+                <span style="font-size:11px;color:${isLight?'#334155':'#475569'};">작업 참여</span>
             </div>`;
             Object.entries(deptMap).forEach(([dept, info]) => {
                 // 이름있는 인원 표시 + 외N명(용역)이 있으면 "용역 N명" 추가
@@ -3866,9 +3867,9 @@
                 if (info.extraCount > 0) nameParts.push('용역 ' + info.extraCount + '명');
                 const nameStr = nameParts.length ? nameParts.join(' · ') : info.count + '명';
                 html += `<div style="margin-bottom:4px;">
-                    <span style="font-size:11px;color:#64748B;font-weight:600;">${dept}</span>
-                    <span style="font-size:11px;color:#475569;margin:0 4px;">·</span>
-                    <span style="font-size:13px;color:#CBD5E1;font-weight:600;">${nameStr}</span>
+                    <span style="font-size:11px;color:${isLight?'#334155':'#64748B'};font-weight:600;">${dept}</span>
+                    <span style="font-size:11px;color:${isLight?'#94A3B8':'#475569'};margin:0 4px;">·</span>
+                    <span style="font-size:13px;color:${isLight?'#0F172A':'#CBD5E1'};font-weight:700;">${nameStr}</span>
                 </div>`;
             });
             display.innerHTML = html;
