@@ -3190,11 +3190,9 @@
         
         // [추가] 연동 설정 완전 초기화 함수
         function resetConnectionSettings() {
-            if(confirm("저장된 모든 연동 설정(주소)을 삭제하고 초기화하시겠습니까?")) {
-                safeLocalStorage.setItem('sheet_pub_url', '');
-                clearUploadedData(); // 화면 데이터도 함께 데모 상태로 초기화
-                showNotification('초기화 완료', '모든 연동 설정이 깨끗하게 지워졌습니다.', 'success');
-            }
+            safeLocalStorage.setItem('sheet_pub_url', '');
+            clearUploadedData();
+            showNotification('초기화 완료', '모든 연동 설정이 깨끗하게 지워졌습니다.', 'success');
         }
 
         // 🌟 [안전 가드 장착]: G-Suite Iframe의 로컬 스토리지 차단 정책 우회용 보안 모듈 장착 🌟
