@@ -3329,30 +3329,99 @@
             renderNoticeDateChanges(changeLog);
         }
 
+        let _noticeChangeLog = [];
+
         function renderNoticeDateChanges(log) {
+            _noticeChangeLog = log || [];
             const el = document.getElementById('noticeDateChanges');
             const badge = document.getElementById('noticeChangeBadge');
             if (!el) return;
-            if (!log || !log.length) {
-                el.innerHTML = '<div class="text-[12px] text-slate-600 text-center py-3">변경 내역 없음<br><span class="text-[11px] text-slate-700">동기화 시 자동 감지됩니다</span></div>';
+            if (!_noticeChangeLog.length) {
+                el.innerHTML = '<div style="color:#64748B;font-size:12px;text-align:center;padding:12px 0;">변경 내역 없음<br><span style="font-size:11px;color:#475569;">동기화 시 자동 감지됩니다</span></div>';
                 if (badge) badge.style.display = 'none';
                 return;
             }
-            if (badge) { badge.textContent = log.length; badge.style.display = 'inline-flex'; }
-            el.innerHTML = log.map(c => {
-                const warn = c.isEarlier ? '<i class="fa-solid fa-triangle-exclamation text-amber-400 text-[10px] shrink-0"></i>' : '<i class="fa-solid fa-arrow-right-arrow-left text-slate-600 text-[9px] shrink-0"></i>';
-                const fieldStyle = c.field === 'dueDate' ? 'background:#4C1D9520;color:#A78BFA' : 'background:#0C4A6E20;color:#38BDF8';
-                const toStyle = c.isEarlier ? 'color:#FBBF24;font-weight:700' : 'color:#CBD5E1;font-weight:600';
-                const rowBg = c.isEarlier ? 'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)' : 'background:rgba(30,41,59,0.4);border:1px solid rgba(71,85,105,0.2)';
-                return `<div class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px]" style="${rowBg}">
+            if (badge) { badge.textContent = _noticeChangeLog.length; badge.style.display = 'inline-flex'; }
+            el.innerHTML = _noticeChangeLog.map((c, idx) => {
+                const warn = c.isEarlier
+                    ? '<i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;font-size:10px;flex-shrink:0;"></i>'
+                    : '<i class="fa-solid fa-arrow-right-arrow-left" style="color:#7DD3FC;font-size:9px;flex-shrink:0;"></i>';
+                const fieldBg = c.field === 'dueDate'
+                    ? 'background:rgba(167,139,250,0.25);color:#C4B5FD;'
+                    : 'background:rgba(56,189,248,0.2);color:#7DD3FC;';
+                const toStyle = c.isEarlier ? 'color:#FCD34D;font-weight:700;' : 'color:#F1F5F9;font-weight:600;';
+                const rowNormal = c.isEarlier ? 'rgba(245,158,11,0.13)' : 'rgba(148,163,184,0.1)';
+                const rowHover  = c.isEarlier ? 'rgba(245,158,11,0.24)' : 'rgba(148,163,184,0.22)';
+                const borderColor = c.isEarlier ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.2)';
+                return `<div style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;font-size:11px;cursor:pointer;background:${rowNormal};border:1px solid ${borderColor};transition:background 100ms;"
+                    onmouseenter="this.style.background='${rowHover}'"
+                    onmouseleave="this.style.background='${rowNormal}'"
+                    onclick="showNoticeDetail(${idx})">
                     ${warn}
-                    <span class="font-semibold text-slate-300 shrink-0">${c.round}</span>
-                    <span class="px-1 py-0.5 rounded text-[10px] font-semibold shrink-0" style="${fieldStyle}">${c.label}</span>
-                    <span class="text-slate-500 shrink-0">${c.from}</span>
-                    <span class="text-slate-600 text-[9px]">→</span>
-                    <span class="shrink-0" style="${toStyle}">${c.to}</span>
+                    <span style="font-weight:700;color:#E2E8F0;flex-shrink:0;">${c.round}</span>
+                    <span style="padding:1px 5px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;${fieldBg}">${c.label}</span>
+                    <span style="color:#94A3B8;flex-shrink:0;">${c.from}</span>
+                    <span style="color:#475569;font-size:9px;">→</span>
+                    <span style="${toStyle}flex-shrink:0;">${c.to}</span>
                 </div>`;
             }).join('');
+        }
+
+        function showNoticeDetail(idx) {
+            const c = _noticeChangeLog[idx];
+            if (!c) return;
+            const iconEl = document.getElementById('ndmIcon');
+            if (c.isEarlier) {
+                iconEl.style.cssText = 'padding:8px;border-radius:12px;border:1px solid rgba(245,158,11,0.35);background:rgba(245,158,11,0.12);color:#F59E0B;font-size:15px;';
+                iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else {
+                iconEl.style.cssText = 'padding:8px;border-radius:12px;border:1px solid rgba(56,189,248,0.3);background:rgba(56,189,248,0.1);color:#38BDF8;font-size:15px;';
+                iconEl.innerHTML = '<i class="fa-solid fa-calendar-days"></i>';
+            }
+            document.getElementById('ndmRound').textContent = c.round;
+            document.getElementById('ndmLabel').textContent = c.label + ' 변경 내역';
+            document.getElementById('ndmFrom').textContent = c.from;
+            const toEl = document.getElementById('ndmTo');
+            toEl.textContent = c.to;
+            toEl.style.color = c.isEarlier ? '#FCD34D' : '#F1F5F9';
+            const diffEl = document.getElementById('ndmDiff');
+            const pTs = _parseDateTS(c.from), cTs = _parseDateTS(c.to);
+            if (pTs && cTs) {
+                const days = Math.round((cTs - pTs) / 86400000);
+                if (days < 0) {
+                    diffEl.textContent = Math.abs(days) + '일 앞당겨짐';
+                    diffEl.style.cssText = 'background:rgba(245,158,11,0.2);color:#FBBF24;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;';
+                } else {
+                    diffEl.textContent = days + '일 연장됨';
+                    diffEl.style.cssText = 'background:rgba(148,163,184,0.15);color:#94A3B8;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;';
+                }
+            } else { diffEl.textContent = ''; diffEl.style.cssText = ''; }
+            const products = (state.data || []).filter(item => (item.round || '').trim() === c.round);
+            const listEl = document.getElementById('ndmProductList');
+            if (!products.length) {
+                listEl.innerHTML = '<div style="color:#475569;font-size:12px;text-align:center;padding:8px;">제품 정보 없음</div>';
+            } else {
+                listEl.innerHTML = products.map(item => {
+                    const status = item.statusLabel || item.status || '-';
+                    const statusColor = status.includes('출고') ? '#34D399' : status.includes('완료') ? '#60A5FA' : '#94A3B8';
+                    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.12);">
+                        <span style="color:#CBD5E1;font-weight:600;flex:1;font-size:12px;">${item.code || '-'}</span>
+                        <span style="color:#64748B;font-size:11px;">${item.color || '-'}</span>
+                        <span style="color:#E2E8F0;font-weight:700;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</span>
+                        <span style="color:${statusColor};font-size:11px;">${status}</span>
+                    </div>`;
+                }).join('');
+            }
+            const atEl = document.getElementById('ndmAt');
+            if (c.at) {
+                const d = new Date(c.at);
+                atEl.textContent = '감지: ' + d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+            } else { atEl.textContent = ''; }
+            document.getElementById('noticeDetailModal').classList.remove('hidden');
+        }
+
+        function closeNoticeDetail() {
+            document.getElementById('noticeDetailModal').classList.add('hidden');
         }
 
         function showPendingDetail() {
