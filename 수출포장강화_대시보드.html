@@ -244,7 +244,7 @@
                 <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-3 rounded-lg border border-slate-700/60 text-[17.5px] space-y-1.5">
                     <div class="flex items-center justify-between text-[13.5px] font-bold text-slate-400 uppercase tracking-wider">
                         <span>현재 사용중인 데이터 탭</span>
-                        <button onclick="clearUploadedData()" class="text-accentRed hover:text-red-400 transition-colors" title="업로드 데이터 초기화 및 데모 복원">
+                        <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;" onmouseenter="this.style.transform='scale(1.18)'" onmouseleave="this.style.transform='scale(1)'">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
