@@ -3224,6 +3224,89 @@
             sv('card1PendingItems', pendingCount);
         }
 
+        // ── 전달사항 카드 (슬라이드 + 납기/상차일 변경 감지) ──
+        let _noticeSlideIdx = 0;
+        const NOTICE_SLIDE_COUNT = 3;
+        const DATE_SNAPSHOT_KEY = 'dashDateSnapshot_v1';
+        const DATE_CHANGE_LOG_KEY = 'dashDateChangeLog_v1';
+
+        function noticeSlide(dir) {
+            _noticeSlideIdx = (_noticeSlideIdx + dir + NOTICE_SLIDE_COUNT) % NOTICE_SLIDE_COUNT;
+            for (let i = 0; i < NOTICE_SLIDE_COUNT; i++) {
+                const el = document.getElementById('noticeSlide_' + i);
+                if (el) el.classList.toggle('hidden', i !== _noticeSlideIdx);
+            }
+            const ind = document.getElementById('noticeSlideIndicator');
+            if (ind) ind.textContent = (_noticeSlideIdx + 1) + '/' + NOTICE_SLIDE_COUNT;
+        }
+
+        function _parseDateTS(s) {
+            if (!s || s === '-') return null;
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s).getTime();
+            if (/^\d{2}-\d{2}$/.test(s)) return new Date(new Date().getFullYear() + '-' + s).getTime();
+            return null;
+        }
+
+        function detectDateChanges(data) {
+            if (!data || !data.length) return;
+            // 건명(round)별 첫 번째 납기일·상차일 수집
+            const current = {};
+            data.forEach(item => {
+                const round = (item.round || '').trim();
+                if (!round || current[round]) return;
+                current[round] = { dueDate: item.dueDate || '', date: item.date || '' };
+            });
+            let prev = {};
+            try { prev = JSON.parse(localStorage.getItem(DATE_SNAPSHOT_KEY) || '{}'); } catch(e) {}
+            let changeLog = [];
+            try { changeLog = JSON.parse(localStorage.getItem(DATE_CHANGE_LOG_KEY) || '[]'); } catch(e) {}
+            const now = new Date().toISOString();
+            Object.entries(current).forEach(([round, curr]) => {
+                const p = prev[round];
+                if (!p) return;
+                [['dueDate','납기일'], ['date','상차일']].forEach(([field, label]) => {
+                    const pRaw = (p[field] || '').trim();
+                    const cRaw = (curr[field] || '').trim();
+                    if (!pRaw || !cRaw || pRaw === cRaw) return;
+                    const pDisp = shortDate(pRaw), cDisp = shortDate(cRaw);
+                    const pTs = _parseDateTS(pDisp), cTs = _parseDateTS(cDisp);
+                    const isEarlier = pTs && cTs ? cTs < pTs : false;
+                    // 중복 방지: 같은 round+field 최신 기록과 동일하면 skip
+                    const dup = changeLog.find(c => c.round === round && c.field === field && c.from === pDisp && c.to === cDisp);
+                    if (!dup) changeLog.unshift({ round, field, label, from: pDisp, to: cDisp, isEarlier, at: now });
+                });
+            });
+            localStorage.setItem(DATE_SNAPSHOT_KEY, JSON.stringify(current));
+            localStorage.setItem(DATE_CHANGE_LOG_KEY, JSON.stringify(changeLog.slice(0, 50)));
+            renderNoticeDateChanges(changeLog);
+        }
+
+        function renderNoticeDateChanges(log) {
+            const el = document.getElementById('noticeDateChanges');
+            const badge = document.getElementById('noticeChangeBadge');
+            if (!el) return;
+            if (!log || !log.length) {
+                el.innerHTML = '<div class="text-[12px] text-slate-600 text-center py-3">변경 내역 없음<br><span class="text-[11px] text-slate-700">동기화 시 자동 감지됩니다</span></div>';
+                if (badge) badge.style.display = 'none';
+                return;
+            }
+            if (badge) { badge.textContent = log.length; badge.style.display = 'inline-flex'; }
+            el.innerHTML = log.map(c => {
+                const warn = c.isEarlier ? '<i class="fa-solid fa-triangle-exclamation text-amber-400 text-[10px] shrink-0"></i>' : '<i class="fa-solid fa-arrow-right-arrow-left text-slate-600 text-[9px] shrink-0"></i>';
+                const fieldStyle = c.field === 'dueDate' ? 'background:#4C1D9520;color:#A78BFA' : 'background:#0C4A6E20;color:#38BDF8';
+                const toStyle = c.isEarlier ? 'color:#FBBF24;font-weight:700' : 'color:#CBD5E1;font-weight:600';
+                const rowBg = c.isEarlier ? 'background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2)' : 'background:rgba(30,41,59,0.4);border:1px solid rgba(71,85,105,0.2)';
+                return `<div class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px]" style="${rowBg}">
+                    ${warn}
+                    <span class="font-semibold text-slate-300 shrink-0">${c.round}</span>
+                    <span class="px-1 py-0.5 rounded text-[10px] font-semibold shrink-0" style="${fieldStyle}">${c.label}</span>
+                    <span class="text-slate-500 shrink-0">${c.from}</span>
+                    <span class="text-slate-600 text-[9px]">→</span>
+                    <span class="shrink-0" style="${toStyle}">${c.to}</span>
+                </div>`;
+            }).join('');
+        }
+
         function showPendingDetail() {
             clearTimeout(_pendingDetailTimeout);
             _populatePendingDetail();
