@@ -3343,6 +3343,67 @@
         let _pendingDetailItems = [];
         let _pendingDetailTimeout = null;
 
+        function _yesterdayStr() {
+            const d = new Date();
+            d.setDate(d.getDate() - 1);
+            return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+
+        function _matchesDate(regDate, targetYMD) {
+            if (!regDate || regDate === '-') return false;
+            const rd = regDate.toString().trim();
+            const tMD = targetYMD.slice(5); // MM-DD
+            return rd === targetYMD || rd === tMD || normalizeDate(rd) === tMD;
+        }
+
+        function updatePrevDayCard() {
+            const ymd = _yesterdayStr();
+            const yDate = new Date(ymd);
+            const DAY = ['일','월','화','수','목','금','토'];
+            const lbl = (yDate.getMonth()+1) + '/' + yDate.getDate() + ' (' + DAY[yDate.getDay()] + ')';
+            const lblEl = document.getElementById('prevDayLabel');
+            if (lblEl) lblEl.textContent = lbl;
+
+            // 전날 작업 인원 (localStorage)
+            const logs = getWorkerLogs().filter(r => r.date === ymd);
+            const workerEl = document.getElementById('prevDayWorkers');
+            if (workerEl) {
+                if (!logs.length) {
+                    workerEl.innerHTML = '<span style="color:#475569;">등록된 인원 없음</span>';
+                } else {
+                    const allWorkers = [], seenWorkers = new Set();
+                    let extraTotal = 0;
+                    logs.forEach(log => {
+                        (log.workers || []).forEach(w => { if (w && !seenWorkers.has(w)) { seenWorkers.add(w); allWorkers.push(w); } });
+                        extraTotal += parseInt(log.extraCount) || 0;
+                    });
+                    const total = allWorkers.length + extraTotal;
+                    let parts = [`<span style="color:#94A3B8;font-weight:700;">총 ${total}명</span>`];
+                    if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#CBD5E1;">${w}</span>`).join(' · '));
+                    if (extraTotal > 0) parts.push(`<span style="color:#94A3B8;">용역 ${extraTotal}명</span>`);
+                    workerEl.innerHTML = parts.join(' · ');
+                }
+            }
+
+            // 전날 포장완료 내역 (state.data 기준 regDate 매칭)
+            const items = (state.data || []).filter(item => _matchesDate(item.regDate, ymd));
+            const countEl = document.getElementById('prevDayItemCount');
+            if (countEl) countEl.textContent = items.length ? items.length + '건' : '';
+            const itemsEl = document.getElementById('prevDayItems');
+            if (!itemsEl) return;
+            if (!items.length) {
+                itemsEl.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:12px 0;">전일 포장완료 내역 없음</div>';
+                return;
+            }
+            itemsEl.innerHTML = items.map(item => `
+                <div style="display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:8px;background:rgba(30,41,59,0.4);border:1px solid rgba(71,85,105,0.2);font-size:11px;">
+                    <span style="color:#64748B;font-weight:600;flex-shrink:0;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.round||''}">${item.round||'-'}</span>
+                    <span style="color:#CBD5E1;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.code||'-'}</span>
+                    <span style="color:#64748B;flex-shrink:0;">${item.color||'-'}</span>
+                    <span style="color:#38BDF8;font-weight:700;flex-shrink:0;">${(parseInt(item.qty)||0).toLocaleString()}EA</span>
+                </div>`).join('');
+        }
+
         function updateCard1Stats() {
             // 충주공장 재고 시트 기준: J열(진행) = '포장대기' | '미확인' 인 항목의 D열(수량) 합산
             const stockSheetKey = Object.keys(datasetMap).find(k => k.includes('충주공장 재고'));
