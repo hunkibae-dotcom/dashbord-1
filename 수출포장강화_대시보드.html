@@ -3270,6 +3270,8 @@
         document.documentElement.setAttribute('data-theme', 'light');
 
         let sidebarVisible = true;
+        document.body.dataset.sb = 'open';
+
         function toggleSidebar() {
             sidebarVisible = !sidebarVisible;
             const top       = document.getElementById('sidebarTop');
@@ -3288,6 +3290,7 @@
                     tableView.classList.add('lg:col-start-2', 'lg:col-span-3');
                 }
                 label.innerText = '사이드바 숨기기';
+                document.body.dataset.sb = 'open';
             } else {
                 top.classList.add('hidden');
                 bottom.classList.add('hidden');
@@ -3298,6 +3301,7 @@
                     tableView.classList.add('lg:col-start-1', 'lg:col-span-4');
                 }
                 label.innerText = '사이드바 펼치기';
+                document.body.dataset.sb = 'closed';
             }
         }
 
