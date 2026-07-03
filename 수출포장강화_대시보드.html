@@ -3371,7 +3371,7 @@
             const lblEl = document.getElementById('prevDayLabel');
             if (lblEl) lblEl.textContent = lbl;
 
-            // 전날 작업 인원 (localStorage)
+            // 전날 작업 인원 (localStorage — 카드1 작업 인원 등록 연동)
             const logs = getWorkerLogs().filter(r => r.date === ymd);
             const workerEl = document.getElementById('prevDayWorkers');
             if (workerEl) {
@@ -3392,8 +3392,70 @@
                 }
             }
 
-            // 전날 포장완료 내역 (state.data 기준 regDate 매칭)
-            const items = (state.data || []).filter(item => _matchesDate(item.regDate, ymd));
+            // 전날 포장완료 내역 — rawShippedRows(출고 완료) + rawStockRows(충주공장 재고) H열(포장일) 직접 조회
+            function _pqty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g, '')) || 0) : 0; }
+            function _hasD(row) { return row && row.some(c => c && c.toString().trim()); }
+
+            const items = [];
+            const seenKeys = new Set();
+
+            // 1) 출고 완료 시트: H열(index 7)=포장일, B열(index 1)=제품코드, D열(index 3)=수량
+            const shippedRows = state.rawShippedRows;
+            if (shippedRows && shippedRows.length > 1) {
+                const sHdr = shippedRows[0].map(h => (h||'').toString().trim());
+                let siRound = -1, siColor = -1;
+                sHdr.forEach((h, hi) => {
+                    if (siRound < 0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound = hi;
+                    if (siColor < 0 && (h==='색상'||h==='컬러')) siColor = hi;
+                });
+                if (siRound < 0) siRound = 2;
+                if (siColor < 0) siColor = 5;
+                for (let i = 1; i < shippedRows.length; i++) {
+                    const row = shippedRows[i];
+                    if (!_hasD(row)) continue;
+                    const d = normalizeDate((row[7]||'').toString().trim());
+                    if (d !== ymd) continue;
+                    const round = (row[siRound]||'').toString().trim() || '-';
+                    const code  = (row[1]||'').toString().trim() || '-';
+                    const color = (row[siColor]||'').toString().trim() || '-';
+                    const qty   = _pqty(row[3]);
+                    const key   = round + '|' + code + '|' + color;
+                    if (!seenKeys.has(key)) { seenKeys.add(key); items.push({ round, code, color, qty }); }
+                    else { const f = items.find(x => x.round===round&&x.code===code&&x.color===color); if(f) f.qty += qty; }
+                }
+            }
+
+            // 2) 충주공장 재고 시트: H열(index 7)=포장일, D열(index 3)=수량, 중복키 합산
+            const stockRows = state.rawStockRows;
+            if (stockRows && stockRows.length > 1) {
+                const hdr = stockRows[0].map(h => (h||'').toString().trim());
+                let iR = -1, iC = -1, iCl = -1;
+                hdr.forEach((h, hi) => {
+                    if (iR < 0 && (h==='건명'||h==='수주건명')) iR = hi;
+                    if (iC < 0 && (h==='제품코드'||h==='품목코드')) iC = hi;
+                    if (iCl < 0 && (h==='색상'||h==='컬러')) iCl = hi;
+                });
+                if (iR < 0) iR = 1; if (iC < 0) iC = 2; if (iCl < 0) iCl = 5;
+                const grouped = {};
+                for (let j = 1; j < stockRows.length; j++) {
+                    const sr = stockRows[j];
+                    if (!_hasD(sr)) continue;
+                    const sd = normalizeDate((sr[7]||'').toString().trim());
+                    if (sd !== ymd) continue;
+                    const round = (sr[iR]||'').toString().trim() || '-';
+                    const code  = (sr[iC]||'').toString().trim() || '-';
+                    const color = (sr[iCl]||'').toString().trim() || '-';
+                    const gKey  = round + '|' + code + '|' + color;
+                    if (!grouped[gKey]) grouped[gKey] = { round, code, color, qty: 0 };
+                    grouped[gKey].qty += _pqty(sr[3]);
+                }
+                Object.values(grouped).forEach(g => {
+                    const key = g.round + '|' + g.code + '|' + g.color;
+                    if (!seenKeys.has(key)) { seenKeys.add(key); items.push(g); }
+                    else { const f = items.find(x => x.round===g.round&&x.code===g.code&&x.color===g.color); if(f) f.qty += g.qty; }
+                });
+            }
+
             const countEl = document.getElementById('prevDayItemCount');
             if (countEl) countEl.textContent = items.length ? items.length + '건' : '';
             const itemsEl = document.getElementById('prevDayItems');
@@ -3404,10 +3466,10 @@
             }
             itemsEl.innerHTML = items.map(item => `
                 <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:rgba(30,41,59,0.4);border:1px solid rgba(71,85,105,0.2);font-size:13px;">
-                    <span style="color:#64748B;font-weight:600;flex-shrink:0;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.round||''}">${item.round||'-'}</span>
-                    <span style="color:#CBD5E1;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.code||'-'}</span>
-                    <span style="color:#64748B;flex-shrink:0;">${item.color||'-'}</span>
-                    <span style="color:#38BDF8;font-weight:700;flex-shrink:0;">${(parseInt(item.qty)||0).toLocaleString()}EA</span>
+                    <span style="color:#64748B;font-weight:600;flex-shrink:0;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.round}">${item.round}</span>
+                    <span style="color:#CBD5E1;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.code}</span>
+                    <span style="color:#64748B;flex-shrink:0;">${item.color}</span>
+                    <span style="color:#38BDF8;font-weight:700;flex-shrink:0;">${(item.qty||0).toLocaleString()}EA</span>
                 </div>`).join('');
         }
 
