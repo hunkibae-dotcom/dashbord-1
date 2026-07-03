@@ -2209,6 +2209,14 @@
             card4DDay.className = 'text-[13.5px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-bold';
             document.getElementById('card4LoadDate').innerText = '-';
             document.getElementById('card4DueDate').innerText = '-';
+            const el4TQ = document.getElementById('card4TotalQty');
+            const el4DQ = document.getElementById('card4DoneQty');
+            const el4Bar = document.getElementById('card4ProgressBar');
+            const el4Pct = document.getElementById('card4ProgressPct');
+            if (el4TQ) el4TQ.innerText = '-';
+            if (el4DQ) el4DQ.innerText = '-';
+            if (el4Bar) el4Bar.style.width = '0%';
+            if (el4Pct) el4Pct.innerText = '0%';
         }
 
         function exitProductDetailView() {
