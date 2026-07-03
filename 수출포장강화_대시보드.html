@@ -2175,6 +2175,20 @@
                 const card4DDay = document.getElementById('card4DDay');
                 card4DDay.innerText = ddayText;
                 card4DDay.className = ddayClass;
+
+                // 해당 건명 전체 수량 집계
+                const roundItems = list.filter(x => x.round === nearestItem.round);
+                const totalQty = roundItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
+                const doneQty  = roundItems.reduce((s, x) => s + (parseInt(x.strengthenedQty) || 0) + (parseInt(x.shippedQty) || 0), 0);
+                const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
+                const el4TQ = document.getElementById('card4TotalQty');
+                const el4DQ = document.getElementById('card4DoneQty');
+                const el4Bar = document.getElementById('card4ProgressBar');
+                const el4Pct = document.getElementById('card4ProgressPct');
+                if (el4TQ) el4TQ.innerText = totalQty.toLocaleString() + ' EA';
+                if (el4DQ) el4DQ.innerText = doneQty.toLocaleString() + ' EA';
+                if (el4Bar) el4Bar.style.width = pct + '%';
+                if (el4Pct) el4Pct.innerText = pct + '%';
             } else {
                 clearNearestScheduleUI();
             }
