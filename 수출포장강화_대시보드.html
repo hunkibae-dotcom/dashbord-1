@@ -3682,19 +3682,21 @@
                 return;
             }
             if (badge) { badge.textContent = _noticeChangeLog.length; badge.style.display = 'inline-flex'; }
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
             el.innerHTML = _noticeChangeLog.map((c, idx) => {
                 const warn = c.isEarlier
                     ? '<i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;font-size:10px;flex-shrink:0;"></i>'
                     : '';
                 const fieldBg = c.field === 'dueDate'
-                    ? 'background:rgba(167,139,250,0.25);color:#C4B5FD;'
-                    : 'background:rgba(56,189,248,0.2);color:#7DD3FC;';
-                const rowNormal = c.isEarlier ? 'rgba(245,158,11,0.13)' : 'rgba(148,163,184,0.1)';
-                const rowHover  = c.isEarlier ? 'rgba(245,158,11,0.24)' : 'rgba(148,163,184,0.22)';
-                const borderColor = c.isEarlier ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.2)';
-                const roundColor = c.isEarlier ? '#FDE68A' : '#CBD5E1';
-                const fromColor  = c.isEarlier ? '#94A3B8' : '#64748B';
-                const toColor    = c.isEarlier ? '#FCD34D' : '#E2E8F0';
+                    ? (isLight ? 'background:rgba(139,92,246,0.15);color:#7C3AED;' : 'background:rgba(167,139,250,0.25);color:#C4B5FD;')
+                    : (isLight ? 'background:rgba(14,165,233,0.12);color:#0369A1;' : 'background:rgba(56,189,248,0.2);color:#7DD3FC;');
+                const rowNormal   = c.isEarlier ? (isLight ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.13)') : (isLight ? 'rgba(100,116,139,0.1)' : 'rgba(148,163,184,0.1)');
+                const rowHover    = c.isEarlier ? (isLight ? 'rgba(245,158,11,0.18)' : 'rgba(245,158,11,0.24)') : (isLight ? 'rgba(100,116,139,0.2)'  : 'rgba(148,163,184,0.22)');
+                const borderColor = c.isEarlier ? (isLight ? 'rgba(245,158,11,0.35)' : 'rgba(245,158,11,0.3)') : (isLight ? 'rgba(100,116,139,0.3)'  : 'rgba(148,163,184,0.2)');
+                const roundColor  = c.isEarlier ? (isLight ? '#92400E' : '#FDE68A') : (isLight ? '#1E293B' : '#CBD5E1');
+                const fromColor   = c.isEarlier ? (isLight ? '#78350F' : '#94A3B8') : (isLight ? '#334155' : '#64748B');
+                const toColor     = c.isEarlier ? (isLight ? '#B45309' : '#FCD34D') : (isLight ? '#0F172A' : '#E2E8F0');
+                const arrowColor  = isLight ? '#94A3B8' : '#64748B';
                 return `<div style="display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;font-size:13px;cursor:pointer;background:${rowNormal};border:1px solid ${borderColor};transition:background 100ms;"
                     onmouseenter="this.style.background='${rowHover}'"
                     onmouseleave="this.style.background='${rowNormal}'"
@@ -3703,7 +3705,7 @@
                     <span style="font-weight:700;color:${roundColor};flex-shrink:0;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:56px;" title="${c.round}">${c.round}</span>
                     <span style="padding:1px 5px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;${fieldBg}">${c.label}</span>
                     <span style="color:${fromColor};font-weight:600;flex-shrink:0;">${c.from}</span>
-                    <span style="color:#64748B;font-size:9px;flex-shrink:0;">→</span>
+                    <span style="color:${arrowColor};font-size:9px;flex-shrink:0;">→</span>
                     <span style="color:${toColor};font-weight:700;flex:1;min-width:0;">${c.to}</span>
                     <span id="noticeCb_${idx}" onclick="toggleNoticeCheck(${idx}, event)"
                         style="flex-shrink:0;width:15px;height:15px;border-radius:4px;border:1.5px solid rgba(100,116,139,0.5);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 100ms,border-color 100ms;">
