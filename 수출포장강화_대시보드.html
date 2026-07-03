@@ -3285,15 +3285,13 @@
 
         function toggleSidebar() {
             sidebarVisible = !sidebarVisible;
-            const top       = document.getElementById('sidebarTop');
-            const bottom    = document.getElementById('sidebarBottom');
+            const wrapper   = document.getElementById('sidebarWrapper');
             const label     = document.getElementById('sidebarToggleLabel');
             const dashView  = document.getElementById('generalDashboardView');
             const tableView = document.getElementById('tablePanel');
 
             if (sidebarVisible) {
-                top.classList.remove('hidden');
-                bottom.classList.remove('hidden');
+                wrapper.classList.remove('hidden');
                 dashView.classList.remove('lg:col-start-1', 'lg:col-span-4');
                 dashView.classList.add('lg:col-start-2', 'lg:col-span-3');
                 if (tableView) {
@@ -3303,8 +3301,7 @@
                 label.innerText = '사이드바 숨기기';
                 document.body.dataset.sb = 'open';
             } else {
-                top.classList.add('hidden');
-                bottom.classList.add('hidden');
+                wrapper.classList.add('hidden');
                 dashView.classList.remove('lg:col-start-2', 'lg:col-span-3');
                 dashView.classList.add('lg:col-start-1', 'lg:col-span-4');
                 if (tableView) {
