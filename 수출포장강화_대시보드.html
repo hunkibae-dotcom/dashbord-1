@@ -3215,19 +3215,19 @@
             Object.entries(groups).forEach(([round, items]) => {
                 const groupQty = items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
                 html += `<div class="mb-2.5">
-                    <div class="flex items-center justify-between mb-1 pb-0.5 border-b border-slate-700/40">
-                        <span class="text-slate-400 font-semibold text-[11.5px] tracking-wide">${round}</span>
-                        <span class="text-accentOrange font-bold text-[11.5px]">${groupQty.toLocaleString()} EA</span>
+                    <div class="flex items-center justify-between mb-1 pb-0.5" style="border-bottom:1px solid rgba(148,163,184,0.4);">
+                        <span style="color:#334155;font-weight:700;font-size:11.5px;letter-spacing:0.03em;">${round}</span>
+                        <span style="color:#EA580C;font-weight:700;font-size:11.5px;">${groupQty.toLocaleString()} EA</span>
                     </div>`;
                 items.forEach(item => {
                     const qty = parseInt(item.qty) || 0;
                     const status = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
-                    const statusColor = status.includes('미확인') ? 'color:#F87171' : 'color:#64748B';
+                    const statusColor = status.includes('미확인') ? 'color:#DC2626' : 'color:#0EA5E9';
                     html += `<div class="flex items-center gap-2 py-0.5">
-                        <span class="font-mono text-slate-300 flex-1">${item.code || '-'}</span>
-                        <span class="text-slate-500">${item.color || '-'}</span>
-                        <span class="font-bold text-slate-200 w-[52px] text-right">${qty.toLocaleString()} EA</span>
-                        <span class="text-[10.5px] w-[40px] text-right" style="${statusColor}">${status || '-'}</span>
+                        <span style="font-family:monospace;color:#1E293B;flex:1;">${item.code || '-'}</span>
+                        <span style="color:#64748B;">${item.color || '-'}</span>
+                        <span style="font-weight:700;color:#1E293B;width:52px;text-align:right;">${qty.toLocaleString()} EA</span>
+                        <span style="font-size:10.5px;width:44px;text-align:right;${statusColor}">${status || '-'}</span>
                     </div>`;
                 });
                 html += '</div>';
