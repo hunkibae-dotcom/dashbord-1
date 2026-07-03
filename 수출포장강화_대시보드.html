@@ -3224,7 +3224,7 @@
                     const status = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
                     const statusColor = status.includes('미확인') ? 'color:#DC2626' : 'color:#0EA5E9';
                     html += `<div class="flex items-center gap-2 py-0.5">
-                        <span style="font-family:monospace;color:#1E293B;flex:1;">${item.code || '-'}</span>
+                        <span style="color:#334155;font-weight:500;flex:1;letter-spacing:0.01em;">${item.code || '-'}</span>
                         <span style="color:#64748B;">${item.color || '-'}</span>
                         <span style="font-weight:700;color:#1E293B;width:52px;text-align:right;">${qty.toLocaleString()} EA</span>
                         <span style="font-size:10.5px;width:44px;text-align:right;${statusColor}">${status || '-'}</span>
