@@ -3551,14 +3551,36 @@
         }
 
         let _noticeChangeLog = [];
+        let _noticeChecked = new Set();
+
+        function toggleNoticeCheck(idx, el) {
+            el.stopPropagation();
+            const cb = document.getElementById('noticeCb_' + idx);
+            if (!cb) return;
+            if (_noticeChecked.has(idx)) {
+                _noticeChecked.delete(idx);
+                cb.style.background = 'transparent';
+                cb.style.borderColor = 'rgba(100,116,139,0.5)';
+                cb.innerHTML = '';
+            } else {
+                _noticeChecked.add(idx);
+                cb.style.background = '#EF4444';
+                cb.style.borderColor = '#EF4444';
+                cb.innerHTML = '<i class="fa-solid fa-check" style="font-size:8px;color:#fff;"></i>';
+            }
+        }
 
         function clearNoticeChangeLog() {
-            localStorage.setItem(DATE_CHANGE_LOG_KEY, '[]');
-            renderNoticeDateChanges([]);
+            if (_noticeChecked.size === 0) return;
+            const remaining = _noticeChangeLog.filter((_, i) => !_noticeChecked.has(i));
+            _noticeChecked.clear();
+            localStorage.setItem(DATE_CHANGE_LOG_KEY, JSON.stringify(remaining));
+            renderNoticeDateChanges(remaining);
         }
 
         function renderNoticeDateChanges(log) {
             _noticeChangeLog = log || [];
+            _noticeChecked.clear();
             const el = document.getElementById('noticeDateChanges');
             const badge = document.getElementById('noticeChangeBadge');
             if (!el) return;
@@ -3575,7 +3597,6 @@
                 const fieldBg = c.field === 'dueDate'
                     ? 'background:rgba(167,139,250,0.25);color:#C4B5FD;'
                     : 'background:rgba(56,189,248,0.2);color:#7DD3FC;';
-                const toStyle = c.isEarlier ? 'color:#FCD34D;font-weight:700;' : 'color:#F1F5F9;font-weight:600;';
                 const rowNormal = c.isEarlier ? 'rgba(245,158,11,0.13)' : 'rgba(148,163,184,0.1)';
                 const rowHover  = c.isEarlier ? 'rgba(245,158,11,0.24)' : 'rgba(148,163,184,0.22)';
                 const borderColor = c.isEarlier ? 'rgba(245,158,11,0.3)' : 'rgba(148,163,184,0.2)';
@@ -3588,7 +3609,10 @@
                     <span style="padding:1px 5px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;${fieldBg}">${c.label}</span>
                     <span style="color:#1E293B;font-weight:600;flex-shrink:0;">${c.from}</span>
                     <span style="color:#64748B;font-size:9px;">→</span>
-                    <span style="color:#1E293B;font-weight:700;flex-shrink:0;">${c.to}</span>
+                    <span style="color:#1E293B;font-weight:700;flex-shrink:0;flex:1;">${c.to}</span>
+                    <span id="noticeCb_${idx}" onclick="toggleNoticeCheck(${idx}, event)"
+                        style="flex-shrink:0;width:15px;height:15px;border-radius:4px;border:1.5px solid rgba(100,116,139,0.5);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 100ms,border-color 100ms;">
+                    </span>
                 </div>`;
             }).join('');
         }
