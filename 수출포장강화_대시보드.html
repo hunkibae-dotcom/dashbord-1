@@ -95,6 +95,30 @@
         html[data-theme="light"] #prevDayItems .pdi-color { color: #475569 !important; }
         html[data-theme="light"] #prevDayItems .pdi-qty   { color: #0284C7 !important; }
 
+        /* ── 사이드바 열림: 4-카드 영역 compact ── */
+        body[data-sb="open"] #topCardGrid { gap: 12px; }
+        body[data-sb="open"] #topCardGrid > div { padding: 14px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[17\.5px\] { font-size: 14px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[15px\]   { font-size: 12.5px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[13\.5px\]{ font-size: 11.5px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[13px\]   { font-size: 11px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[12px\]   { font-size: 10.5px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[11px\]   { font-size: 10px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[21\.5px\]{ font-size: 17px !important; }
+        body[data-sb="open"] #topCardGrid .text-\[16px\]   { font-size: 13px !important; }
+
+        /* ── 사이드바 닫힘: 4-카드 영역 expanded ── */
+        body[data-sb="closed"] #topCardGrid { gap: 20px; }
+        body[data-sb="closed"] #topCardGrid > div { padding: 22px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[17\.5px\] { font-size: 21px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[15px\]   { font-size: 18px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[13\.5px\]{ font-size: 16px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[13px\]   { font-size: 15px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[12px\]   { font-size: 14px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[11px\]   { font-size: 13px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[21\.5px\]{ font-size: 27px !important; }
+        body[data-sb="closed"] #topCardGrid .text-\[16px\]   { font-size: 19px !important; }
+
         /* 스크롤바 */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--c-darkBg); }
