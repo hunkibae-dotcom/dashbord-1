@@ -3156,22 +3156,83 @@
             renderCard1WorkerDisplay();
         }
 
+        let _pendingDetailItems = [];
+        let _pendingDetailTimeout = null;
+
         function updateCard1Stats() {
             // 충주공장 재고 시트 기준: J열(진행) = '포장대기' | '미확인' 인 항목의 D열(수량) 합산
             const stockSheetKey = Object.keys(datasetMap).find(k => k.includes('충주공장 재고'));
             const stockData = stockSheetKey ? (datasetMap[stockSheetKey] || []) : [];
             let pendingQty = 0;
             let pendingCount = 0;
+            _pendingDetailItems = [];
             stockData.forEach(item => {
                 const s = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
                 if (s.includes('포장대기') || s.includes('미확인')) {
                     pendingQty += parseInt(item.qty) || 0;
                     pendingCount++;
+                    _pendingDetailItems.push(item);
                 }
             });
             const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
             sv('card1PendingQty',  pendingQty.toLocaleString());
             sv('card1PendingItems', pendingCount);
+        }
+
+        function showPendingDetail() {
+            clearTimeout(_pendingDetailTimeout);
+            _populatePendingDetail();
+            const el = document.getElementById('card1PendingDetail');
+            if (el) el.classList.remove('hidden');
+        }
+
+        function hidePendingDetail() {
+            _pendingDetailTimeout = setTimeout(() => {
+                const el = document.getElementById('card1PendingDetail');
+                if (el) el.classList.add('hidden');
+            }, 120);
+        }
+
+        function _populatePendingDetail() {
+            const body = document.getElementById('card1PendingDetailBody');
+            const totalEl = document.getElementById('card1PendingDetailTotal');
+            if (!body) return;
+            if (!_pendingDetailItems || !_pendingDetailItems.length) {
+                body.innerHTML = '<div class="text-slate-500 text-center py-3">포장대기 항목 없음</div>';
+                if (totalEl) totalEl.textContent = '';
+                return;
+            }
+            // 건명(round)별 그룹화
+            const groups = {};
+            _pendingDetailItems.forEach(item => {
+                const round = item.round || '미지정';
+                if (!groups[round]) groups[round] = [];
+                groups[round].push(item);
+            });
+            const totalQty = _pendingDetailItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
+            if (totalEl) totalEl.textContent = '총 ' + totalQty.toLocaleString() + ' EA';
+            let html = '';
+            Object.entries(groups).forEach(([round, items]) => {
+                const groupQty = items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
+                html += `<div class="mb-2.5">
+                    <div class="flex items-center justify-between mb-1 pb-0.5 border-b border-slate-700/40">
+                        <span class="text-slate-400 font-semibold text-[11.5px] tracking-wide">${round}</span>
+                        <span class="text-accentOrange font-bold text-[11.5px]">${groupQty.toLocaleString()} EA</span>
+                    </div>`;
+                items.forEach(item => {
+                    const qty = parseInt(item.qty) || 0;
+                    const status = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
+                    const statusColor = status.includes('미확인') ? 'color:#F87171' : 'color:#64748B';
+                    html += `<div class="flex items-center gap-2 py-0.5">
+                        <span class="font-mono text-slate-300 flex-1">${item.code || '-'}</span>
+                        <span class="text-slate-500">${item.color || '-'}</span>
+                        <span class="font-bold text-slate-200 w-[52px] text-right">${qty.toLocaleString()} EA</span>
+                        <span class="text-[10.5px] w-[40px] text-right" style="${statusColor}">${status || '-'}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            });
+            body.innerHTML = html;
         }
 
         function resetTodayWorkers() {
