@@ -2171,15 +2171,15 @@
                 }
 
                 tr.innerHTML = `
-                    <td class="py-3 px-4 font-mono text-[17.5px] text-slate-600 text-center whitespace-nowrap">${normalizeDate(item.regDate)}</td>
+                    <td class="py-3 px-4 text-[17.5px] text-slate-600 text-center whitespace-nowrap">${normalizeDate(item.regDate)}</td>
                     <td class="py-3 px-3 text-center text-slate-500 font-bold text-[17.5px] whitespace-nowrap">*</td>
                     <td class="py-3 px-4 font-semibold text-white whitespace-nowrap">${item.round}</td>
-                    <td class="py-3 px-4 font-mono font-medium text-center whitespace-nowrap" style="color:#334155;">${item.code}</td>
-                    <td class="py-3 px-4 font-semibold text-slate-400 font-mono text-center whitespace-nowrap">${item.color || 'WW'}</td>
-                    <td class="py-3 px-4 text-center font-bold text-slate-300 font-mono whitespace-nowrap">${item.qty}EA</td>
+                    <td class="py-3 px-4 font-medium text-center whitespace-nowrap" style="color:#334155;">${item.code}</td>
+                    <td class="py-3 px-4 font-semibold text-slate-400 text-center whitespace-nowrap">${item.color || 'WW'}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-300 whitespace-nowrap">${item.qty}EA</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge}">${item.statusLabel || item.status}</span></td>
-                    <td class="py-3 px-4 text-slate-600 font-mono text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
-                    <td class="py-3 px-4 text-slate-600 font-mono text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
+                    <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
+                    <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
                 `;
                 tbody.appendChild(tr);
             });
