@@ -4328,11 +4328,7 @@
             tbody.innerHTML = '';
 
             const sorted = Object.keys(itemMap)
-                .map(k => {
-                    const it = itemMap[k];
-                    return { cat: it.cat, round: it.round, code: it.code, color: it.color,
-                             val: statusType === '강화완료' ? it.strengthened : it.shipped };
-                })
+                .map(k => itemMap[k])
                 .filter(r => r.val > 0)
                 .sort((a, b) => b.val - a.val);
 
