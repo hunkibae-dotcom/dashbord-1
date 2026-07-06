@@ -4123,7 +4123,7 @@
             const scriptUrl = localStorage.getItem('sheet_pub_url') ||
                 'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
             try {
-                const payload = { action: 'addWorkerLog', date, dept, extraCount: _wrmCount, workers: record.workers, memo };
+                const payload = { action: 'addWorkerLog', date, dept, totalCount: record.count, workers: record.workers, memo };
                 const res = await fetch(scriptUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain' },
