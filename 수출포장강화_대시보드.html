@@ -3652,28 +3652,31 @@
             const items = [];
             const seenKeys = new Set();
 
-            // 1) 출고 완료 시트: H열(index 7)=포장일, B열(index 1)=제품코드, D열(index 3)=수량
+            // 1) 출고 완료 시트: A열(index 0)=제품구분, H열(index 7)=포장일, B열(index 1)=제품코드, D열(index 3)=수량
             const shippedRows = state.rawShippedRows;
             if (shippedRows && shippedRows.length > 1) {
                 const sHdr = shippedRows[0].map(h => (h||'').toString().trim());
-                let siRound = -1, siColor = -1;
+                let siRound = -1, siColor = -1, siCat = -1;
                 sHdr.forEach((h, hi) => {
                     if (siRound < 0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound = hi;
                     if (siColor < 0 && (h==='색상'||h==='컬러')) siColor = hi;
+                    if (siCat  < 0 && (h==='제품구분'||h==='제품 구분')) siCat = hi;
                 });
                 if (siRound < 0) siRound = 2;
                 if (siColor < 0) siColor = 5;
+                if (siCat  < 0) siCat  = 0;
                 for (let i = 1; i < shippedRows.length; i++) {
                     const row = shippedRows[i];
                     if (!_hasD(row)) continue;
                     const d = normalizeDate((row[7]||'').toString().trim());
                     if (d !== ymd) continue;
+                    const cat   = (row[siCat]||'').toString().trim() || '-';
                     const round = (row[siRound]||'').toString().trim() || '-';
                     const code  = (row[1]||'').toString().trim() || '-';
                     const color = (row[siColor]||'').toString().trim() || '-';
                     const qty   = _pqty(row[3]);
                     const key   = round + '|' + code + '|' + color;
-                    if (!seenKeys.has(key)) { seenKeys.add(key); items.push({ round, code, color, qty }); }
+                    if (!seenKeys.has(key)) { seenKeys.add(key); items.push({ cat, round, code, color, qty }); }
                     else { const f = items.find(x => x.round===round&&x.code===code&&x.color===color); if(f) f.qty += qty; }
                 }
             }
@@ -3682,24 +3685,26 @@
             const stockRows = state.rawStockRows;
             if (stockRows && stockRows.length > 1) {
                 const hdr = stockRows[0].map(h => (h||'').toString().trim());
-                let iR = -1, iC = -1, iCl = -1;
+                let iR = -1, iC = -1, iCl = -1, iCat = -1;
                 hdr.forEach((h, hi) => {
-                    if (iR < 0 && (h==='건명'||h==='수주건명')) iR = hi;
-                    if (iC < 0 && (h==='제품코드'||h==='품목코드')) iC = hi;
-                    if (iCl < 0 && (h==='색상'||h==='컬러')) iCl = hi;
+                    if (iR   < 0 && (h==='건명'||h==='수주건명')) iR = hi;
+                    if (iC   < 0 && (h==='제품코드'||h==='품목코드')) iC = hi;
+                    if (iCl  < 0 && (h==='색상'||h==='컬러')) iCl = hi;
+                    if (iCat < 0 && (h==='제품구분'||h==='제품 구분')) iCat = hi;
                 });
-                if (iR < 0) iR = 1; if (iC < 0) iC = 2; if (iCl < 0) iCl = 5;
+                if (iR < 0) iR = 1; if (iC < 0) iC = 2; if (iCl < 0) iCl = 5; if (iCat < 0) iCat = 0;
                 const grouped = {};
                 for (let j = 1; j < stockRows.length; j++) {
                     const sr = stockRows[j];
                     if (!_hasD(sr)) continue;
                     const sd = normalizeDate((sr[7]||'').toString().trim());
                     if (sd !== ymd) continue;
+                    const cat   = (sr[iCat]||'').toString().trim() || '-';
                     const round = (sr[iR]||'').toString().trim() || '-';
                     const code  = (sr[iC]||'').toString().trim() || '-';
                     const color = (sr[iCl]||'').toString().trim() || '-';
                     const gKey  = round + '|' + code + '|' + color;
-                    if (!grouped[gKey]) grouped[gKey] = { round, code, color, qty: 0 };
+                    if (!grouped[gKey]) grouped[gKey] = { cat, round, code, color, qty: 0 };
                     grouped[gKey].qty += _pqty(sr[3]);
                 }
                 Object.values(grouped).forEach(g => {
