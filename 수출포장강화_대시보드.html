@@ -1187,18 +1187,26 @@
 
         function combineDatasets() {
             let combined = [];
+            let stockData = [];
             const keys = Object.keys(datasetMap);
 
             const hasRealUploads = keys.some(k => k !== 'default');
 
-            // 수출 표준품 현황 + 출고 완료 행을 그대로 이어붙임 (중복 제거 없음)
-            // 충주공장 재고는 완전 제외
+            // 수출 표준품 현황 + 출고 완료 행을 그대로 이어붙임
             keys.forEach(k => {
                 if (hasRealUploads && k === 'default') return;
-                if (k.includes('충주공장 재고')) return;
+                if (k.includes('충주공장 재고')) {
+                    stockData = [...stockData, ...(datasetMap[k] || [])];
+                    return;
+                }
                 combined = [...combined, ...(datasetMap[k] || [])];
             });
-            
+
+            // 충주공장 재고 중 수출 표준품/출고 완료에 없는 항목만 병합 (round+code 기준 중복 제외)
+            if (stockData.length > 0) {
+                combined = mergeStockIntoBase(combined, stockData);
+            }
+
             // 전체 결합 데이터에 제품 스펙 전파 백필(Backfill) 작동
             state.data = backfillSpecs(combined);
             
