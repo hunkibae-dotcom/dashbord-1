@@ -1010,10 +1010,13 @@
                 <div class="bg-sky-400/10 text-sky-400 p-2.5 rounded-xl border border-sky-400/20">
                     <i class="fa-solid fa-box-open text-[21.5px]"></i>
                 </div>
-                <div>
+                <div class="flex-1">
                     <h3 class="text-[21.5px] font-bold text-white" id="packingModalTitle">포장 상세 내역</h3>
                     <p class="text-[17.5px] text-slate-400" id="packingModalSubtitle">포장일 기준 품목 리스트</p>
                 </div>
+                <button onclick="exportPackingModalData()" class="flex items-center gap-1.5 bg-sky-400/10 hover:bg-sky-400/20 text-sky-500 text-[14.5px] px-3 py-2 rounded-xl font-semibold border border-sky-400/30 transition-colors active:scale-95">
+                    <i class="fa-solid fa-file-arrow-down text-[13px]"></i> 데이터 출력
+                </button>
             </div>
             <div class="max-h-80 overflow-y-auto border border-borderSlate/60 rounded-xl">
                 <table class="w-full text-left border-collapse">
@@ -1028,11 +1031,6 @@
                     </thead>
                     <tbody id="packingModalTableBody" class="text-[17.5px] divide-y divide-borderSlate/40"></tbody>
                 </table>
-            </div>
-            <div class="flex justify-start items-center mt-4">
-                <button onclick="exportPackingModalData()" class="flex items-center gap-1.5 bg-sky-400/10 hover:bg-sky-400/20 text-sky-500 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-sky-400/30 transition-colors active:scale-95">
-                    <i class="fa-solid fa-file-arrow-down text-[14.5px]"></i> 데이터 출력
-                </button>
             </div>
         </div>
     </div>
