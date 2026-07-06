@@ -3171,14 +3171,25 @@
                     const d1 = new Date(slot.dates[slot.dates.length - 1].replace(/-/g, '/'));
                     lbl.textContent = slot.label + ' (' + (d0.getMonth()+1) + '/' + d0.getDate() + '~' + (d1.getMonth()+1) + '/' + d1.getDate() + ')';
                 }
-            } else {
+            } else if (packingViewMode === 'weekly') {
                 const t = new Date(today.getFullYear(), today.getMonth() + packingWeeklyMonthOffset, 1);
                 if (lbl) lbl.textContent = t.getFullYear() + '년 ' + (t.getMonth()+1) + '월';
+            } else {
+                // monthly
+                const curHalfIdx = today.getFullYear() * 2 + (today.getMonth() >= 6 ? 1 : 0);
+                const tgtHalfIdx = curHalfIdx + packingMonthlyHalfOffset;
+                const tgtYear    = Math.floor(tgtHalfIdx / 2);
+                const tgtHalf    = tgtHalfIdx % 2;
+                const startMo    = tgtHalf * 6 + 1;    // 1-indexed
+                const endMo      = startMo + 5;
+                if (lbl) lbl.textContent = tgtYear + '년 ' + startMo + '~' + endMo + '월';
             }
 
             const atCurrent = packingViewMode === 'daily'
                 ? packingDailyWeekOffset >= 0
-                : packingWeeklyMonthOffset >= 0;
+                : packingViewMode === 'weekly'
+                    ? packingWeeklyMonthOffset >= 0
+                    : packingMonthlyHalfOffset >= 0;
 
             next.style.opacity       = atCurrent ? '0.30' : '0.90';
             next.style.cursor        = atCurrent ? 'not-allowed' : 'pointer';
