@@ -2649,8 +2649,7 @@
 
             const countryMap = {};
 
-            // 제품구분별 집계: 출고 완료 시트(rawShippedRows) A열(index 0)=제품구분 기준
-            // D열(index 3)=수량, E열(index 4)=수주건명, I열(index 8)=진행
+            // 1) 출고 완료 시트: 강화완료 + 출고완료 집계
             const shippedSheetRows = state.rawShippedRows;
             if (shippedSheetRows && shippedSheetRows.length > 1) {
                 for (let i = 1; i < shippedSheetRows.length; i++) {
@@ -2664,22 +2663,53 @@
                     const qty      = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g, '')) || 0 : 0;
                     const progress = row[8] ? row[8].toString().trim() : '';
 
-                    if (!countryMap[label]) {
-                        countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
-                    }
-                    if (roundVal && !countryMap[label].rounds[roundVal]) {
-                        countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
-                    }
+                    if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
+                    if (roundVal && !countryMap[label].rounds[roundVal]) countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
 
-                    // 강화완료: 모든 행 합산
                     countryMap[label].strengthened += qty;
                     if (roundVal) countryMap[label].rounds[roundVal].strengthened += qty;
 
-                    // 출고완료: 진행 = "출고"인 행만
                     if (progress === '출고') {
                         countryMap[label].shipped += qty;
                         if (roundVal) countryMap[label].rounds[roundVal].shipped += qty;
                     }
+                }
+            }
+
+            // 2) 수출 표준품 현황 시트: 포장완료 상태 항목을 강화완료에 추가
+            const mainRows = state.rawCsvRows;
+            if (mainRows && mainRows.length > 1) {
+                const mHdr = mainRows[0].map(h => (h||'').toString().trim().replace(/\s+/g,'').toLowerCase());
+                let miCat=-1, miQty=-1, miRound=-1, miStatus=-1;
+                mHdr.forEach((h, hi) => {
+                    if (miCat<0   && (h==='제품구분'||h==='제품분류')) miCat=hi;
+                    if (miQty<0   && h==='수량') miQty=hi;
+                    if (miRound<0 && (h==='수주건명'||h==='건명'||h==='차수')) miRound=hi;
+                    if (miStatus<0 && (h==='진행상태'||h==='진행'||h==='상태')) miStatus=hi;
+                });
+                if (miCat<0)    miCat=0;
+                if (miQty<0)    miQty=3;
+                if (miRound<0)  miRound=4;
+                if (miStatus<0) miStatus=7;
+
+                for (let i = 1; i < mainRows.length; i++) {
+                    const row = mainRows[i];
+                    if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
+
+                    const progress = (row[miStatus]||'').toString().trim();
+                    if (!progress.includes('포장완료')) continue;
+
+                    const label = (row[miCat]||'').toString().trim().replace(/\s+/g,'');
+                    if (!label) continue;
+
+                    const roundVal = (row[miRound]||'').toString().trim();
+                    const qty = row[miQty] ? parseInt(row[miQty].toString().replace(/[^0-9]/g,'')) || 0 : 0;
+
+                    if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
+                    if (roundVal && !countryMap[label].rounds[roundVal]) countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
+
+                    countryMap[label].strengthened += qty;
+                    if (roundVal) countryMap[label].rounds[roundVal].strengthened += qty;
                 }
             }
 
