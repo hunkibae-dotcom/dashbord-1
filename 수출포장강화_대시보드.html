@@ -4321,45 +4321,21 @@
                 }
             }
 
-            // 2) 수출 표준품 현황 시트: 포장완료 항목 → 강화완료에 합산
+            // 2) 수출 표준품 현황: 포장완료 항목 → 강화완료에 합산 (mapCSVData로 이미 파싱된 state.data 사용)
             if (statusType === '강화완료') {
-                const mainRows = state.rawCsvRows;
-                if (mainRows && mainRows.length > 1) {
-                    const mHdr = mainRows[0].map(h => (h||'').toString().trim().replace(/\s+/g,'').toLowerCase());
-                    let miCat=-1, miQty=-1, miRound=-1, miColor=-1, miCode=-1, miStatus=-1;
-                    mHdr.forEach((h, hi) => {
-                        if (miCat<0    && (h==='제품구분'||h==='제품분류')) miCat=hi;
-                        if (miQty<0    && h==='수량') miQty=hi;
-                        if (miRound<0  && (h==='수주건명'||h==='건명'||h==='차수')) miRound=hi;
-                        if (miColor<0  && (h==='색상'||h==='컬러')) miColor=hi;
-                        if (miCode<0   && (h==='품목코드'||h==='제품코드')) miCode=hi;
-                        if (miStatus<0 && (h==='진행상태'||h==='진행'||h==='상태')) miStatus=hi;
-                    });
-                    if (miCat<0)    miCat=0;
-                    if (miQty<0)    miQty=3;
-                    if (miRound<0)  miRound=4;
-                    if (miColor<0)  miColor=2;
-                    if (miCode<0)   miCode=1;
-                    if (miStatus<0) miStatus=7;
-
-                    for (let i = 1; i < mainRows.length; i++) {
-                        const row = mainRows[i];
-                        if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
-                        const cat = (row[miCat]||'').toString().trim().replace(/\s+/g,'');
-                        if (cat !== country) continue;
-                        const progress = (row[miStatus]||'').toString().trim();
-                        if (!progress.includes('포장완료')) continue;
-
-                        const round = (row[miRound]||'').toString().trim() || '-';
-                        const code  = (row[miCode]||'').toString().trim().toUpperCase() || '-';
-                        const color = (row[miColor]||'').toString().trim() || '-';
-                        const qty   = row[miQty] ? parseInt(row[miQty].toString().replace(/[^0-9]/g,'')) || 0 : 0;
-
-                        const key = cat + '|' + round + '|' + code + '|' + color;
-                        if (!itemMap[key]) itemMap[key] = { cat, round, code, color, strengthened: 0, shipped: 0 };
-                        itemMap[key].strengthened += qty;
-                    }
-                }
+                (state.data || []).forEach(item => {
+                    const cat = (item.country || '').replace(/\s+/g, '');
+                    if (cat !== country) return;
+                    const status = (item.status || '').replace(/\s+/g, '');
+                    if (!status.includes('포장완료')) return;
+                    const round = item.round || '-';
+                    const code  = (item.code || '-').toUpperCase();
+                    const color = item.color || '-';
+                    const qty   = parseInt(item.qty) || 0;
+                    const key = cat + '|' + round + '|' + code + '|' + color;
+                    if (!itemMap[key]) itemMap[key] = { cat, round, code, color, strengthened: 0, shipped: 0 };
+                    itemMap[key].strengthened += qty;
+                });
             }
 
             document.getElementById('chartModalTitle').innerText = country + ' 상세품목';
