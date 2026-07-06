@@ -3040,19 +3040,24 @@
                 }
 
             } else {
-                const yr = packingSelectedYear || String(new Date().getFullYear());
-                const MO_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-                const totals = new Array(12).fill(0);
-                Object.keys(_packingDateQtyMap).forEach(function(d) {
-                    if (!d.startsWith(yr)) return;
-                    const mi = parseInt(d.slice(5,7)) - 1;
-                    totals[mi] += _packingDateQtyMap[d];
-                });
-                labels  = MO_LABELS;
-                dataArr = totals;
-                for (var mi2 = 0; mi2 < 12; mi2++) {
-                    const moStr = yr + '-' + String(mi2+1).padStart(2,'0');
-                    _packingLabelMeta.push({ label: MO_LABELS[mi2], prefix: moStr });
+                // 반기별 표시: 0=현재반기(1~6월 또는 7~12월), -1=이전반기 ...
+                const _today = new Date();
+                const curHalfIdx = _today.getFullYear() * 2 + (_today.getMonth() >= 6 ? 1 : 0);
+                const tgtHalfIdx = curHalfIdx + packingMonthlyHalfOffset;
+                const tgtYear    = Math.floor(tgtHalfIdx / 2);
+                const tgtHalf    = tgtHalfIdx % 2; // 0=상반기(1~6월), 1=하반기(7~12월)
+                const startMo    = tgtHalf * 6;    // 0-indexed: 0=Jan, 6=Jul
+                const yr         = String(tgtYear);
+                const MO_LABELS  = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+                for (let mi = startMo; mi < startMo + 6; mi++) {
+                    const moStr = yr + '-' + String(mi + 1).padStart(2, '0');
+                    let total = 0;
+                    Object.keys(_packingDateQtyMap).forEach(function(d) {
+                        if (d.startsWith(moStr)) total += _packingDateQtyMap[d];
+                    });
+                    labels.push(MO_LABELS[mi]);
+                    dataArr.push(total);
+                    _packingLabelMeta.push({ label: MO_LABELS[mi], prefix: moStr });
                 }
             }
 
