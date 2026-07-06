@@ -1185,6 +1185,45 @@
             return result;
         }
 
+        // 포장완료 상태 항목의 포장일(regDate)을 충주공장 재고 시트에서 가져와 업데이트
+        function backfillPackingDatesFromStock() {
+            if (!state.rawStockRows || state.rawStockRows.length <= 1 || !state.data) return;
+            const stockRows = state.rawStockRows;
+            const hdr = stockRows[0].map(h => (h || '').toString().trim());
+            let iRound = -1, iCode = -1;
+            hdr.forEach((h, i) => {
+                if (iRound < 0 && (h === '건명' || h === '수주건명')) iRound = i;
+                if (iCode  < 0 && (h === '제품코드' || h === '품목코드')) iCode  = i;
+            });
+            if (iRound < 0) iRound = 1;
+            if (iCode  < 0) iCode  = 2;
+
+            // round|code → 가장 최근 포장일 맵 구성
+            const stockDateMap = {};
+            for (let i = 1; i < stockRows.length; i++) {
+                const row = stockRows[i];
+                if (!row || !row.some(c => c && c.toString().trim())) continue;
+                const round    = (row[iRound] || '').toString().trim();
+                const code     = (row[iCode]  || '').toString().trim().toUpperCase();
+                const packDate = normalizeDate((row[7] || '').toString().trim()); // H열=포장일
+                if (!round || !code || !packDate || packDate === '-') continue;
+                const key = round + '|' + code;
+                if (!stockDateMap[key] || packDate > stockDateMap[key]) {
+                    stockDateMap[key] = packDate;
+                }
+            }
+
+            // 상태가 포장완료인 항목의 regDate를 충주공장 재고의 포장일로 교체
+            state.data.forEach(item => {
+                const isPackingComplete = (item.status === '포장완료') || (item.statusLabel === '포장완료');
+                if (!isPackingComplete) return;
+                const key = (item.round || '') + '|' + (item.code || '');
+                if (stockDateMap[key]) {
+                    item.regDate = stockDateMap[key];
+                }
+            });
+        }
+
         function combineDatasets() {
             let combined = [];
             const keys = Object.keys(datasetMap);
