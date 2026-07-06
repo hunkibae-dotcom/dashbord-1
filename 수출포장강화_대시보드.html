@@ -939,19 +939,21 @@
                 <button onclick="closePrevDayDetail()" class="text-slate-500 hover:text-white text-[18px] transition-colors"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <!-- 테이블 -->
-            <div class="overflow-x-auto rounded-xl border border-borderSlate/60">
-                <table class="w-full text-[13px]">
-                    <thead>
-                        <tr class="bg-darkBg/80 text-slate-400 font-semibold uppercase tracking-wider">
-                            <th class="py-2.5 px-3 text-center">제품구분</th>
-                            <th class="py-2.5 px-3 text-center">건명</th>
-                            <th class="py-2.5 px-3 text-center">단품코드</th>
-                            <th class="py-2.5 px-3 text-center">컬러</th>
-                            <th class="py-2.5 px-3 text-center">수량</th>
-                        </tr>
-                    </thead>
-                    <tbody id="pddTableBody" class="divide-y divide-borderSlate/30"></tbody>
-                </table>
+            <div class="border border-borderSlate/60 rounded-xl overflow-hidden">
+                <div class="overflow-y-auto max-h-[240px]">
+                    <table class="w-full text-left border-collapse text-[12px]" style="border-spacing:0;">
+                        <thead>
+                            <tr class="text-slate-400 font-semibold" style="white-space:nowrap;">
+                                <th class="py-2 px-3 border-b border-borderSlate/60" style="position:sticky;top:0;z-index:2;background:var(--c-darkBg);">제품구분</th>
+                                <th class="py-2 px-3 border-b border-borderSlate/60" style="position:sticky;top:0;z-index:2;background:var(--c-darkBg);">건명</th>
+                                <th class="py-2 px-3 border-b border-borderSlate/60" style="position:sticky;top:0;z-index:2;background:var(--c-darkBg);">단품코드</th>
+                                <th class="py-2 px-3 border-b border-borderSlate/60" style="position:sticky;top:0;z-index:2;background:var(--c-darkBg);">컬러</th>
+                                <th class="py-2 px-3 border-b border-borderSlate/60 text-right" style="position:sticky;top:0;z-index:2;background:var(--c-darkBg);">수량</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pddTableBody" class="divide-y divide-borderSlate/30"></tbody>
+                    </table>
+                </div>
             </div>
             <div id="pddFooter" class="text-right text-[12px] text-slate-500"></div>
         </div>
