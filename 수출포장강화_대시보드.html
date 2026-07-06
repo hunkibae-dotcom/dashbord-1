@@ -2989,22 +2989,17 @@
             _packingLabelMeta = [];
 
             if (packingViewMode === 'daily') {
-                const today = new Date();
-                const dow = today.getDay();
-                const toMon = dow === 0 ? -6 : 1 - dow;
-                const mon = new Date(today);
-                // 이번주 월요일 + 주 오프셋 적용
-                mon.setDate(today.getDate() + toMon + packingDailyWeekOffset * 7);
+                const slots = _getDailySlots();
+                const slotIdx = Math.min(slots.length - 1, -packingDailyWeekOffset);
+                const slot = slots[Math.max(0, slotIdx)];
                 const DAY = ['일','월','화','수','목','금','토'];
-                for (var i = 0; i < 5; i++) {
-                    const d = new Date(mon);
-                    d.setDate(mon.getDate() + i);
-                    const ds = _dateStr(d);
+                (slot ? slot.dates : []).forEach(function(ds) {
+                    const d = new Date(ds.replace(/-/g, '/'));
                     const lbl = (d.getMonth()+1) + '/' + d.getDate() + '(' + DAY[d.getDay()] + ')';
                     labels.push(lbl);
                     dataArr.push(_packingDateQtyMap[ds] || 0);
                     _packingLabelMeta.push({ label: lbl, dates: [ds] });
-                }
+                });
 
             } else if (packingViewMode === 'weekly') {
                 const today = new Date();
