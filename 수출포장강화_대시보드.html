@@ -4392,6 +4392,7 @@
         function exportChartModalData() {
             const modal = document.getElementById('chartDetailModal');
             const statusType = modal.dataset.statusType || '';
+            const country = modal.dataset.country || '';
             const rows = document.querySelectorAll('#chartModalTableBody tr');
             if (!rows.length) return;
 
