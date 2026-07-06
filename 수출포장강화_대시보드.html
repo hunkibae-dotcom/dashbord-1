@@ -3159,10 +3159,6 @@
             const lbl  = document.getElementById('packingNavLabel');
             if (!prev || !next || !row) return;
 
-            if (packingViewMode === 'monthly') {
-                row.style.display = 'none';
-                return;
-            }
             row.style.display = 'flex';
             const today = new Date();
 
