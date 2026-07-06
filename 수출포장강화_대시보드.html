@@ -3721,9 +3721,8 @@
             document.getElementById('pddMeta').textContent = items.length + '건 · 총 ' + totalQty.toLocaleString() + ' BOX';
             document.getElementById('pddFooter').textContent = '합계 ' + totalQty.toLocaleString() + ' BOX';
             const tbody = document.getElementById('pddTableBody');
-            tbody.innerHTML = items.map((it, idx) => {
-                const bg = idx % 2 === 0 ? even : '';
-                return `<tr style="${bg}">
+            tbody.innerHTML = items.map((it) => {
+                return `<tr style="${even}">
                     <td style="padding:8px 12px;text-align:center;color:${sc};font-weight:600;">${it.cat || '-'}</td>
                     <td style="padding:8px 12px;text-align:center;color:${tc};font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
                     <td style="padding:8px 12px;text-align:center;color:${tc};font-weight:700;font-family:monospace;">${it.code || '-'}</td>
