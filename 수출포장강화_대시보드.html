@@ -99,6 +99,8 @@
         html[data-theme="light"] button[onclick="clearNoticeChangeLog()"] { color: #334155 !important; border-color: rgba(100,116,139,0.4) !important; }
         html[data-theme="light"] button[onclick="clearNoticeChangeLog()"] i { color: #475569 !important; }
 
+        /* 상태 칼럼 배지 한 줄 강제 */
+        #tableBody td:last-child span { white-space: nowrap; }
         /* 사이드바 열림 시 상태 칼럼 폰트 크기 축소 (-1.5px) */
         body[data-sb="open"] #tableBody td:last-child span { font-size: 16px !important; }
 
