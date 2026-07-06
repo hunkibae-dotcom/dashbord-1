@@ -3754,15 +3754,14 @@
                 roundMap[r].count++;
                 roundMap[r].totalQty += parseInt(item.qty) || 0;
             });
-            const isLightPdi = document.documentElement.getAttribute('data-theme') === 'light';
-            const pdiRowNormal   = isLightPdi ? 'rgba(100,116,139,0.10)' : 'rgba(148,163,184,0.13)';
-            const pdiRowHover    = isLightPdi ? 'rgba(51,65,85,0.15)'    : 'rgba(14,165,233,0.12)';
-            const pdiBorderNorm  = isLightPdi ? 'rgba(100,116,139,0.28)' : 'rgba(148,163,184,0.25)';
-            const pdiBorderHover = isLightPdi ? 'rgba(51,65,85,0.45)'    : 'rgba(56,189,248,0.35)';
-            const pdiRoundColor  = isLightPdi ? '#1E293B' : '#BAE6FD';
-            const pdiCountColor  = isLightPdi ? '#334155' : '#94A3B8';
-            const pdiBoxColor    = isLightPdi ? '#1E293B' : '#38BDF8';
-            const pdiChevron     = isLightPdi ? '#334155' : '#38BDF8';
+            const pdiRowNormal   = 'rgba(100,116,139,0.10)';
+            const pdiRowHover    = 'rgba(51,65,85,0.15)';
+            const pdiBorderNorm  = 'rgba(100,116,139,0.28)';
+            const pdiBorderHover = 'rgba(51,65,85,0.45)';
+            const pdiRoundColor  = '#1E293B';
+            const pdiCountColor  = '#334155';
+            const pdiBoxColor    = '#1E293B';
+            const pdiChevron     = '#334155';
             itemsEl.innerHTML = Object.entries(roundMap).map(([round, info]) => `
                 <div class="pdi-row" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${pdiRowNormal};border:1px solid ${pdiBorderNorm};font-size:13px;cursor:pointer;transition:background 100ms,border-color 100ms;"
                     onmouseenter="this.style.background='${pdiRowHover}';this.style.borderColor='${pdiBorderHover}'"
