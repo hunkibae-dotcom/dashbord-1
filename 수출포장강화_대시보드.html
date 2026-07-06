@@ -2910,27 +2910,28 @@
                 const mo = targetDate.getMonth();
                 const firstOfMonth = new Date(yr, mo, 1);
                 const fdow = firstOfMonth.getDay();
-                // 주 소속은 월요일 기준: 해당 달의 첫 번째 월요일부터 시작
-                const daysToFirstMon = fdow === 1 ? 0 : fdow === 0 ? 1 : 8 - fdow;
-                const wkStart = new Date(yr, mo, 1 + daysToFirstMon);
+                // 해당 달 1일이 속한 주의 월요일부터 시작 (이전 달 날짜 포함 가능)
+                const daysBack = (fdow + 6) % 7;
+                const wkStart = new Date(yr, mo, 1 - daysBack);
                 const lastOfMonth = new Date(yr, mo + 1, 0);
 
                 while (wkStart <= lastOfMonth) {
-                    const wkFri = new Date(wkStart);
-                    wkFri.setDate(wkStart.getDate() + 4);
                     var wkTotal = 0;
                     var wkDates = [];
                     for (var j = 0; j < 5; j++) {
                         const dd = new Date(wkStart);
                         dd.setDate(wkStart.getDate() + j);
+                        if (dd.getMonth() !== mo) continue; // 해당 월 날짜만 집계
                         const ds2 = _dateStr(dd);
                         wkDates.push(ds2);
                         wkTotal += _packingDateQtyMap[ds2] || 0;
                     }
-                    const lbl2 = (mo + 1) + '월 ' + (labels.length + 1) + '주차';
-                    labels.push(lbl2);
-                    dataArr.push(wkTotal);
-                    _packingLabelMeta.push({ label: lbl2, dates: wkDates });
+                    if (wkDates.length > 0) {
+                        const lbl2 = (mo + 1) + '월 ' + (labels.length + 1) + '주차';
+                        labels.push(lbl2);
+                        dataArr.push(wkTotal);
+                        _packingLabelMeta.push({ label: lbl2, dates: wkDates });
+                    }
                     wkStart.setDate(wkStart.getDate() + 7);
                     if (labels.length > 7) break;
                 }
