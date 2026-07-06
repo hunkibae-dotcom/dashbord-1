@@ -3585,13 +3585,6 @@
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
-        function _matchesDate(regDate, targetYMD) {
-            if (!regDate || regDate === '-') return false;
-            const rd = regDate.toString().trim();
-            const tMD = targetYMD.slice(5); // MM-DD
-            return rd === targetYMD || rd === tMD || normalizeDate(rd) === tMD;
-        }
-
         function updatePrevDayCard() {
             const ymd = _yesterdayStr();
             const yDate = new Date(ymd);
