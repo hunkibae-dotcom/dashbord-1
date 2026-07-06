@@ -3719,15 +3719,54 @@
                 itemsEl.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:12px 0;">전일 포장완료 내역 없음</div>';
                 return;
             }
-            itemsEl.innerHTML = items.map(item => `
-                <div class="pdi-row" style="display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:8px;background:rgba(148,163,184,0.13);border:1px solid rgba(148,163,184,0.25);font-size:13px;transition:background 100ms;"
-                    onmouseenter="this.style.background='rgba(148,163,184,0.23)'"
-                    onmouseleave="this.style.background='rgba(148,163,184,0.13)'">
-                    <span class="pdi-round" style="padding:1px 6px;border-radius:4px;background:rgba(56,189,248,0.22);color:#BAE6FD;font-size:11px;font-weight:700;flex-shrink:0;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${item.round}">${item.round}</span>
-                    <span class="pdi-code" style="color:#E2E8F0;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.code}</span>
-                    <span class="pdi-color" style="color:#CBD5E1;font-size:12px;font-weight:600;flex-shrink:0;">${item.color}</span>
-                    <span class="pdi-qty" style="color:#38BDF8;font-weight:800;flex-shrink:0;">${(item.qty||0).toLocaleString()}<span style="font-size:10px;font-weight:600;margin-left:1px;">BOX</span></span>
+
+            // 건명별 그룹화
+            _prevDayAllItems = items;
+            const roundMap = {};
+            items.forEach(item => {
+                const r = item.round || '-';
+                if (!roundMap[r]) roundMap[r] = { count: 0, totalQty: 0 };
+                roundMap[r].count++;
+                roundMap[r].totalQty += parseInt(item.qty) || 0;
+            });
+            itemsEl.innerHTML = Object.entries(roundMap).map(([round, info]) => `
+                <div class="pdi-row" style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:rgba(148,163,184,0.13);border:1px solid rgba(148,163,184,0.25);font-size:13px;cursor:pointer;transition:background 100ms;"
+                    onmouseenter="this.style.background='rgba(56,189,248,0.12)';this.style.borderColor='rgba(56,189,248,0.35)'"
+                    onmouseleave="this.style.background='rgba(148,163,184,0.13)';this.style.borderColor='rgba(148,163,184,0.25)'"
+                    onclick="openPrevDayDetail('${round.replace(/'/g, "\\'")}')">
+                    <i class="fa-solid fa-chevron-right" style="color:#38BDF8;font-size:9px;flex-shrink:0;"></i>
+                    <span class="pdi-round" style="color:#BAE6FD;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${round}">${round}</span>
+                    <span style="color:#94A3B8;font-size:11.5px;flex-shrink:0;">${info.count}건</span>
+                    <span style="color:#38BDF8;font-weight:800;flex-shrink:0;">${info.totalQty.toLocaleString()}<span style="font-size:10px;font-weight:600;margin-left:1px;"> BOX</span></span>
                 </div>`).join('');
+        }
+
+        let _prevDayAllItems = [];
+
+        function openPrevDayDetail(round) {
+            const items = _prevDayAllItems.filter(it => it.round === round);
+            if (!items.length) return;
+            document.getElementById('pddRound').textContent = round;
+            const totalQty = items.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
+            document.getElementById('pddMeta').textContent = items.length + '건 · 총 ' + totalQty.toLocaleString() + ' BOX';
+            document.getElementById('pddFooter').textContent = '합계 ' + totalQty.toLocaleString() + ' BOX';
+            const tbody = document.getElementById('pddTableBody');
+            tbody.innerHTML = items.map((it, idx) => {
+                const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.06)' : '';
+                const category = (it.code || '').replace(/[0-9]/g, '').replace(/[LRNS]+$/, '').slice(0, 3) || '-';
+                return `<tr style="${bg}">
+                    <td style="padding:8px 12px;text-align:center;color:#94A3B8;font-weight:600;">${category}</td>
+                    <td style="padding:8px 12px;color:#BAE6FD;font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
+                    <td style="padding:8px 12px;color:#E2E8F0;font-weight:700;font-family:monospace;">${it.code || '-'}</td>
+                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:rgba(148,163,184,0.2);color:#CBD5E1;font-size:11px;font-weight:700;">${it.color || '-'}</span></td>
+                    <td style="padding:8px 12px;text-align:right;color:#38BDF8;font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:#64748B;">BOX</span></td>
+                </tr>`;
+            }).join('');
+            document.getElementById('prevDayDetailModal').classList.remove('hidden');
+        }
+
+        function closePrevDayDetail() {
+            document.getElementById('prevDayDetailModal').classList.add('hidden');
         }
 
         function updateCard1Stats() {
