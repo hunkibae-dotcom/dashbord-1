@@ -3782,13 +3782,13 @@
             document.getElementById('pddFooter').textContent = '합계 ' + totalQty.toLocaleString() + ' BOX';
             const tbody = document.getElementById('pddTableBody');
             tbody.innerHTML = items.map((it, idx) => {
-                const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.06)' : '';
+                const bg = idx % 2 === 0 ? 'background:rgba(0,0,0,0.04)' : '';
                 return `<tr style="${bg}">
-                    <td style="padding:8px 12px;text-align:center;color:#94A3B8;font-weight:600;">${it.cat || '-'}</td>
-                    <td style="padding:8px 12px;color:#CBD5E1;font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
-                    <td style="padding:8px 12px;color:#E2E8F0;font-weight:700;font-family:monospace;">${it.code || '-'}</td>
-                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:rgba(148,163,184,0.15);color:#CBD5E1;font-size:11px;font-weight:600;">${it.color || '-'}</span></td>
-                    <td style="padding:8px 12px;text-align:right;color:#E2E8F0;font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:#64748B;">BOX</span></td>
+                    <td style="padding:8px 12px;text-align:center;color:rgba(0,0,0,0.85);font-weight:600;">${it.cat || '-'}</td>
+                    <td style="padding:8px 12px;text-align:center;color:rgba(0,0,0,0.85);font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
+                    <td style="padding:8px 12px;text-align:center;color:rgba(0,0,0,0.85);font-weight:700;font-family:monospace;">${it.code || '-'}</td>
+                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:rgba(0,0,0,0.07);color:rgba(0,0,0,0.85);font-size:11px;font-weight:600;">${it.color || '-'}</span></td>
+                    <td style="padding:8px 12px;text-align:center;color:rgba(0,0,0,0.85);font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:rgba(0,0,0,0.55);">BOX</span></td>
                 </tr>`;
             }).join('');
             document.getElementById('prevDayDetailModal').classList.remove('hidden');
