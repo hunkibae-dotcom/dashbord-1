@@ -2924,6 +2924,66 @@
             return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
         }
 
+        // 일별 보기: 같은 달에 속한 날짜끼리만 묶은 슬롯 목록 (인덱스 0 = 가장 최근)
+        // 달 경계에 걸친 주는 두 슬롯으로 분리 (새 달 슬롯 → 이전 달 슬롯 순)
+        function _computeDailySlots() {
+            const today = new Date();
+            const toMon = today.getDay() === 0 ? -6 : 1 - today.getDay();
+            const thisMon = new Date(today);
+            thisMon.setDate(today.getDate() + toMon);
+
+            function _weekNumInMonth(calMon, targetMo) {
+                // calMon: 해당 캘린더 주의 월요일, targetMo: 0-indexed 월
+                const yr = calMon.getFullYear();
+                const fom = new Date(yr, targetMo, 1);
+                const fdow = fom.getDay();
+                const firstMon = new Date(yr, targetMo, 1 - (fdow + 6) % 7);
+                return Math.round((calMon - firstMon) / (7 * 86400000)) + 1;
+            }
+
+            const slots = [];
+            for (let w = 0; w <= 104; w++) {
+                const mon = new Date(thisMon);
+                mon.setDate(thisMon.getDate() - w * 7);
+                const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
+
+                if (mon.getMonth() === fri.getMonth()) {
+                    // 한 달 안에 완전히 속하는 주
+                    const dates = [];
+                    for (let d = 0; d < 5; d++) {
+                        const dd = new Date(mon); dd.setDate(mon.getDate() + d);
+                        dates.push(_dateStr(dd));
+                    }
+                    const mo = mon.getMonth() + 1;
+                    const wk = _weekNumInMonth(mon, mon.getMonth());
+                    slots.push({ label: mo + '월 ' + wk + '주차', dates: dates });
+                } else {
+                    // 달 경계에 걸친 주 → 새 달(금 기준) 슬롯 먼저, 이전 달(월 기준) 슬롯 다음
+                    const newMo = fri.getMonth(), oldMo = mon.getMonth();
+                    const newDates = [], oldDates = [];
+                    for (let d = 0; d < 5; d++) {
+                        const dd = new Date(mon); dd.setDate(mon.getDate() + d);
+                        if (dd.getMonth() === newMo) newDates.push(_dateStr(dd));
+                        else oldDates.push(_dateStr(dd));
+                    }
+                    if (newDates.length > 0) {
+                        const wk = _weekNumInMonth(mon, newMo);
+                        slots.push({ label: (newMo + 1) + '월 ' + wk + '주차', dates: newDates });
+                    }
+                    if (oldDates.length > 0) {
+                        const wk = _weekNumInMonth(mon, oldMo);
+                        slots.push({ label: (oldMo + 1) + '월 ' + wk + '주차', dates: oldDates });
+                    }
+                }
+            }
+            return slots;
+        }
+        let _dailySlotsCache = null;
+        function _getDailySlots() {
+            if (!_dailySlotsCache) _dailySlotsCache = _computeDailySlots();
+            return _dailySlotsCache;
+        }
+
         function renderPackingChart() {
             let labels = [], dataArr = [];
             _packingLabelMeta = [];
