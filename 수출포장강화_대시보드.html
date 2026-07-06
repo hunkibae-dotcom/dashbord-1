@@ -1088,43 +1088,6 @@
         </div>
     </div>
 
-    <div id="helpModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300">
-        <div class="bg-panelBg border border-borderSlate p-6 rounded-2xl max-w-lg w-full mx-4 shadow-2xl relative">
-            <button onclick="closeHelpModal()" class="absolute right-4 top-4 text-slate-400 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-[21.5px]"></i>
-            </button>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-red-500/10 text-accentRed p-2.5 rounded-xl border border-red-500/20">
-                    <i class="fa-solid fa-circle-exclamation text-[21.5px]"></i>
-                </div>
-                <div>
-                    <h3 class="text-[21.5px] font-bold text-white">구글 시트 연동 오류 안내</h3>
-                    <p class="text-[17.5px] text-slate-400">구글 워크스페이스 보안 및 로컬 CORS 제한 해결 방법</p>
-                </div>
-            </div>
-            
-            <div class="space-y-4 my-4 text-[17.5px] leading-relaxed text-slate-300">
-                <p class="text-[17.5px] text-accentOrange bg-accentOrange/10 border border-accentOrange/20 p-3 rounded-lg font-semibold">
-                    💡 다운로드한 로컬 파일('file://')은 브라우저 보안 규정상 일반 스프레드시트 공유 링크를 직접 조회하는 것이 차단됩니다. 아래의 <strong>[웹에 게시]</strong> 기능을 적용하시면 로컬 PC 환경에서도 실시간 연동이 정상 개시됩니다!
-                </p>
-
-                <p class="text-[17.5px] text-accentGreen bg-accentGreen/10 border border-accentGreen/20 p-3 rounded-lg leading-normal">
-                    <strong>가장 확실하고 간편한 우회 해결책:</strong><br>
-                    컴퓨터에 구글 시트를 CSV 파일로 다운로드하신 뒤, 우측 상단 <strong>[CSV 업로드]</strong> 단추를 클릭해 연동하시면 보안 차단 없이 1초 만에 백프로 정상 연동됩니다!
-                </p>
-            </div>
-
-            <div class="flex justify-end gap-2.5">
-                <button onclick="closeHelpModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
-                    닫기
-                </button>
-                <button onclick="openSettingsModal(); closeHelpModal();" class="bg-accentBlue hover:bg-sky-400 text-darkBg font-bold text-[17.5px] px-4 py-2.5 rounded-xl flex items-center gap-1.5 transition-all">
-                    <i class="fa-solid fa-cog"></i> 설정 열기
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div id="toastAlert" class="fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-panelBg border border-borderSlate p-4 rounded-xl shadow-2xl flex items-center gap-3 max-w-sm">
             <div id="toastIcon" class="p-2 rounded-lg text-white"></div>
