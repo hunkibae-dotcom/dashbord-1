@@ -3837,7 +3837,9 @@
             }).join('');
         }
 
+        let _ndmCurrentIdx = -1;
         function showNoticeDetail(idx) {
+            _ndmCurrentIdx = idx;
             const c = _noticeChangeLog[idx];
             if (!c) return;
             const iconEl = document.getElementById('ndmIcon');
