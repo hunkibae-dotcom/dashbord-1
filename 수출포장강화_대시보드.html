@@ -3835,23 +3835,6 @@
         let _noticeChangeLog = [];
         let _noticeChecked = new Set();
 
-        function toggleNoticeCheck(idx, el) {
-            el.stopPropagation();
-            const cb = document.getElementById('noticeCb_' + idx);
-            if (!cb) return;
-            if (_noticeChecked.has(idx)) {
-                _noticeChecked.delete(idx);
-                cb.style.background = 'transparent';
-                cb.style.borderColor = 'rgba(100,116,139,0.5)';
-                cb.innerHTML = '';
-            } else {
-                _noticeChecked.add(idx);
-                cb.style.background = '#EF4444';
-                cb.style.borderColor = '#EF4444';
-                cb.innerHTML = '<i class="fa-solid fa-check" style="font-size:8px;color:#fff;"></i>';
-            }
-        }
-
         function clearNoticeChangeLog() {
             if (!_noticeChangeLog.length) return;
             _noticeChecked.clear();
