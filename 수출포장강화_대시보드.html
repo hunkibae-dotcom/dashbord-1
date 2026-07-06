@@ -3200,8 +3200,10 @@
         }
 
         function navigatePackingChart(dir) {
-            if (packingViewMode === 'monthly') return;
-            if (packingViewMode === 'daily') {
+            if (packingViewMode === 'monthly') {
+                if (packingMonthlyHalfOffset + dir > 0) return;
+                packingMonthlyHalfOffset += dir;
+            } else if (packingViewMode === 'daily') {
                 if (packingDailyWeekOffset + dir > 0) return;
                 const _slots = _getDailySlots();
                 if (packingDailyWeekOffset + dir < -(_slots.length - 1)) return;
