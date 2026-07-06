@@ -2526,10 +2526,6 @@
             // Q1(index 16) = 총 EA, O1(index 14) = 총 CODE
             const shippedQ1 = shippedRows && shippedRows[0] && shippedRows[0][16] != null ? shippedRows[0][16].toString().replace(/[^0-9]/g, '') : '';
             const shippedO1 = shippedRows && shippedRows[0] && shippedRows[0][14] != null ? shippedRows[0][14].toString().replace(/[^0-9]/g, '') : '';
-            // 카드3 데이터 비활성화
-            // setVal('generalKpiShippedQty', shippedQ1 !== '' ? parseInt(shippedQ1).toLocaleString() : totalShippedFilt.toLocaleString());
-            // setVal('generalKpiShippedCodes', shippedO1 !== '' ? parseInt(shippedO1).toLocaleString() : shippedCodesCount.toLocaleString());
-
             // 최근 출고일: H열(index 7) 포장일 컬럼에서 최대 날짜 추출
             let latestShippedDate = null;
             if (shippedRows && shippedRows.length > 1) {
