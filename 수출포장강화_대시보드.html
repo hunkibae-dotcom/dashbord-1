@@ -4276,43 +4276,10 @@
         }
 
         function openChartDetailModal(country, statusType) {
-            const shippedRows = state.rawShippedRows;
             var itemMap = {};
 
-            // 1) 출고 완료 시트
-            if (shippedRows && shippedRows.length > 1) {
-                var sHdr = shippedRows[0].map(function(h){ return (h||'').toString().trim(); });
-                var siRound=-1, siColor=-1, siStatus=-1;
-                sHdr.forEach(function(h, hi) {
-                    if(siRound<0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound=hi;
-                    if(siColor<0 && (h==='색상'||h==='컬러')) siColor=hi;
-                    if(siStatus<0 && (h==='진행'||h==='진행상태'||h==='상태')) siStatus=hi;
-                });
-                if(siRound<0) siRound=2;
-                if(siColor<0) siColor=5;
-                if(siStatus<0) siStatus=8;
-
-                for (let i = 1; i < shippedRows.length; i++) {
-                    const row = shippedRows[i];
-                    if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
-                    const cat = (row[0]||'').toString().trim().replace(/\s+/g, '');
-                    if (cat !== country) continue;
-
-                    const round    = (row[siRound]||'').toString().trim() || '-';
-                    const code     = (row[1]||'').toString().trim().toUpperCase() || '-';
-                    const color    = (row[siColor]||'').toString().trim() || '-';
-                    const qty      = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g,'')) || 0 : 0;
-                    const progress = (row[siStatus]||'').toString().trim();
-
-                    const key = cat + '|' + round + '|' + code + '|' + color;
-                    if (!itemMap[key]) itemMap[key] = { cat, round, code, color, strengthened: 0, shipped: 0 };
-                    itemMap[key].strengthened += qty;
-                    if (progress === '출고') itemMap[key].shipped += qty;
-                }
-            }
-
-            // 2) 수출 표준품 현황: 포장완료 항목 → 강화완료에 합산 (mapCSVData로 이미 파싱된 state.data 사용)
             if (statusType === '강화완료') {
+                // 수출 표준품 현황 시트: 포장완료 항목 → 강화완료 상세
                 (state.data || []).forEach(item => {
                     const cat = (item.country || '').replace(/\s+/g, '');
                     if (cat !== country) return;
@@ -4323,9 +4290,35 @@
                     const color = item.color || '-';
                     const qty   = parseInt(item.qty) || 0;
                     const key = cat + '|' + round + '|' + code + '|' + color;
-                    if (!itemMap[key]) itemMap[key] = { cat, round, code, color, strengthened: 0, shipped: 0 };
-                    itemMap[key].strengthened += qty;
+                    if (!itemMap[key]) itemMap[key] = { cat, round, code, color, val: 0 };
+                    itemMap[key].val += qty;
                 });
+            } else {
+                // 출고 완료 시트: 전체 항목 → 출고완료 상세
+                const shippedRows = state.rawShippedRows;
+                if (shippedRows && shippedRows.length > 1) {
+                    var sHdr = shippedRows[0].map(function(h){ return (h||'').toString().trim(); });
+                    var siRound=-1, siColor=-1;
+                    sHdr.forEach(function(h, hi) {
+                        if(siRound<0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound=hi;
+                        if(siColor<0 && (h==='색상'||h==='컬러')) siColor=hi;
+                    });
+                    if(siRound<0) siRound=4;
+                    if(siColor<0) siColor=2;
+                    for (let i = 1; i < shippedRows.length; i++) {
+                        const row = shippedRows[i];
+                        if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
+                        const cat = (row[0]||'').toString().trim().replace(/\s+/g, '');
+                        if (cat !== country) continue;
+                        const round = (row[siRound]||'').toString().trim() || '-';
+                        const code  = (row[1]||'').toString().trim().toUpperCase() || '-';
+                        const color = (row[siColor]||'').toString().trim() || '-';
+                        const qty   = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g,'')) || 0 : 0;
+                        const key = cat + '|' + round + '|' + code + '|' + color;
+                        if (!itemMap[key]) itemMap[key] = { cat, round, code, color, val: 0 };
+                        itemMap[key].val += qty;
+                    }
+                }
             }
 
             document.getElementById('chartModalTitle').innerText = country + ' 상세품목';
