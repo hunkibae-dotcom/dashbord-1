@@ -4101,6 +4101,11 @@
             _wrmCount = parseInt(document.getElementById('wrm_countInput')?.value || '0') || _wrmCount;
             if (!dept) { _wrmShowStatus('부서명을 입력하세요.', '#F59E0B'); return; }
             if (_wrmCount === 0) { _wrmShowStatus('인원 수를 1명 이상으로 입력하세요.', '#F59E0B'); return; }
+            if (_wrmCount < _wrmWorkers.length) { _wrmShowStatus('총 인원이 등록된 이름 수보다 적습니다.', '#F59E0B'); return; }
+
+            // totalCount = 사용자가 입력한 총 인원, extraCount = 총 - 이름 등록 인원 (용역)
+            const _totalCount = _wrmCount;
+            const _extraCount = _totalCount - _wrmWorkers.length;
 
             // localStorage 저장
             const logs = getWorkerLogs();
@@ -4109,8 +4114,8 @@
                 id: now.getTime().toString(),
                 date,
                 dept,
-                count: _wrmWorkers.length + _wrmCount,   // 총인원 = 이름있는 인원 + 외 N명
-                extraCount: _wrmCount,                   // 용역으로 들어갈 추가 인원 수
+                count: _totalCount,
+                extraCount: _extraCount,
                 workers: [..._wrmWorkers],
                 memo,
                 registeredAt: date + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
