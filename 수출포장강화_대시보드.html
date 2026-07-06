@@ -3071,9 +3071,14 @@
                 const toMon = (today.getDay() === 0 ? -6 : 1 - today.getDay());
                 mon.setDate(today.getDate() + toMon + packingDailyWeekOffset * 7);
                 const fri = new Date(mon); fri.setDate(mon.getDate() + 4);
-                const mo  = mon.getMonth() + 1;
-                const wkInMon = Math.ceil(mon.getDate() / 7);
-                if (lbl) lbl.textContent = mo + '월 ' + wkInMon + '주차 (' + mo + '/' + mon.getDate() + '~' + (fri.getMonth()+1) + '/' + fri.getDate() + ')';
+                // 월/금이 달을 넘으면 금요일 기준 월로 레이블 결정
+                const lblDate = (fri.getMonth() !== mon.getMonth()) ? fri : mon;
+                const mo  = lblDate.getMonth() + 1;
+                const firstOfLblMonth = new Date(lblDate.getFullYear(), lblDate.getMonth(), 1);
+                const fdowLbl = firstOfLblMonth.getDay();
+                const firstMonOfLblMonth = new Date(lblDate.getFullYear(), lblDate.getMonth(), 1 - (fdowLbl + 6) % 7);
+                const wkInMon = Math.round((mon - firstMonOfLblMonth) / (7 * 86400000)) + 1;
+                if (lbl) lbl.textContent = mo + '월 ' + wkInMon + '주차 (' + (mon.getMonth()+1) + '/' + mon.getDate() + '~' + (fri.getMonth()+1) + '/' + fri.getDate() + ')';
             } else {
                 const t = new Date(today.getFullYear(), today.getMonth() + packingWeeklyMonthOffset, 1);
                 if (lbl) lbl.textContent = t.getFullYear() + '년 ' + (t.getMonth()+1) + '월';
