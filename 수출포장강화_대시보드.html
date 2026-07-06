@@ -997,7 +997,22 @@
             <!-- 해당 건 제품 목록 -->
             <div>
                 <p class="text-[12px] text-slate-400 font-semibold mb-2 flex items-center gap-1"><i class="fa-solid fa-boxes-stacked text-[10px]"></i> 해당 건 제품 목록</p>
-                <div id="ndmProductList" class="space-y-1 max-h-[180px] overflow-y-auto"></div>
+                <div class="border border-borderSlate/60 rounded-xl overflow-hidden">
+                    <div class="overflow-y-auto max-h-[180px]">
+                        <table class="w-full text-left border-collapse text-[12px]">
+                            <thead>
+                                <tr class="bg-darkBg/80 text-slate-400 font-semibold border-b border-borderSlate/60 sticky top-0" style="white-space:nowrap;">
+                                    <th class="py-2 px-3">제품구분</th>
+                                    <th class="py-2 px-3">제품코드</th>
+                                    <th class="py-2 px-3">색상</th>
+                                    <th class="py-2 px-3 text-right">수량(EA)</th>
+                                    <th class="py-2 px-3 text-center">진행</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ndmProductList" class="divide-y divide-borderSlate/30"></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
             <!-- 감지 시각 -->
             <div class="text-right text-[11px] text-slate-600" id="ndmAt"></div>
