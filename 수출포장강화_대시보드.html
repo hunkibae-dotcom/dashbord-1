@@ -3912,14 +3912,14 @@
             } else {
                 listEl.innerHTML = products.map((item, idx) => {
                     const status = item.statusLabel || item.status || '-';
-                    const statusColor = status.includes('출고') ? '#34D399' : status.includes('완료') ? '#60A5FA' : '#94A3B8';
+                    const statusColor = status.includes('출고') ? '#059669' : status.includes('완료') ? '#2563EB' : '#64748B';
                     const cat = item.country || '-';
-                    const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.05)' : '';
+                    const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.06)' : '';
                     return `<tr style="${bg}">
-                        <td style="padding:6px 12px;color:#94A3B8;font-size:12px;">${cat}</td>
-                        <td style="padding:6px 12px;color:#E2E8F0;font-weight:700;font-size:12px;font-family:monospace;">${item.code || '-'}</td>
-                        <td style="padding:6px 12px;color:#94A3B8;font-size:12px;">${item.color || '-'}</td>
-                        <td style="padding:6px 12px;text-align:right;color:#E2E8F0;font-weight:800;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</td>
+                        <td style="padding:6px 12px;color:#64748B;font-size:12px;">${cat}</td>
+                        <td style="padding:6px 12px;color:#1E293B;font-weight:700;font-size:12px;font-family:monospace;">${item.code || '-'}</td>
+                        <td style="padding:6px 12px;color:#64748B;font-size:12px;">${item.color || '-'}</td>
+                        <td style="padding:6px 12px;text-align:right;color:#1E293B;font-weight:800;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</td>
                         <td style="padding:6px 12px;text-align:center;color:${statusColor};font-size:11px;font-weight:600;">${status}</td>
                     </tr>`;
                 }).join('');
