@@ -3779,11 +3779,10 @@
         function openPrevDayDetail(round) {
             const items = _prevDayAllItems.filter(it => it.round === round);
             if (!items.length) return;
-            const isL = document.documentElement.getAttribute('data-theme') === 'light';
-            const tc  = isL ? '#111111' : '#E2E8F0';   // 주 텍스트
-            const sc  = isL ? '#444444' : '#94A3B8';   // 보조 텍스트
-            const bdg = isL ? 'rgba(0,0,0,0.08)' : 'rgba(148,163,184,0.2)'; // 배지 배경
-            const even= isL ? 'background:rgba(0,0,0,0.04)' : 'background:rgba(255,255,255,0.04)';
+            const tc  = '#111111';
+            const sc  = '#444444';
+            const bdg = 'rgba(0,0,0,0.08)';
+            const even= 'background:rgba(0,0,0,0.04)';
             document.getElementById('pddRound').textContent = round;
             const totalQty = items.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
             document.getElementById('pddMeta').textContent = items.length + '건 · 총 ' + totalQty.toLocaleString() + ' BOX';
