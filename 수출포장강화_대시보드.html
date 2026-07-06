@@ -2676,22 +2676,23 @@
                 }
             }
 
-            // 2) 수출 표준품 현황: 포장완료 항목을 강화완료에 추가 (mapCSVData로 이미 파싱된 state.data 사용)
+            // 2) 수출 표준품 현황: 전체 제품구분 등록 + 포장완료 항목을 강화완료에 추가 (state.data 사용)
             (state.data || []).forEach(item => {
+                const label = (item.country || '').replace(/\s+/g, '');
+                if (!label || label === 'DOMESTIC') return;
+                // 제품구분이 있으면 0으로라도 countryMap에 등록
+                if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
                 const status = (item.status || '').replace(/\s+/g, '');
                 if (!status.includes('포장완료')) return;
-                const label = (item.country || '').replace(/\s+/g, '');
-                if (!label) return;
                 const roundVal = item.round || '';
                 const qty = parseInt(item.qty) || 0;
-                if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
                 if (roundVal && !countryMap[label].rounds[roundVal]) countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
                 countryMap[label].strengthened += qty;
                 if (roundVal) countryMap[label].rounds[roundVal].strengthened += qty;
             });
 
             const countryLabels = Object.keys(countryMap)
-                .filter(c => (countryMap[c].strengthened > 0 || countryMap[c].shipped > 0) && c !== '미구성')
+                .filter(c => c !== '미구성' && c !== 'DOMESTIC' && c !== '')
                 .sort();
             const strengthenedData = countryLabels.map(c => countryMap[c].strengthened > 0 ? countryMap[c].strengthened : null);
             const shippedData      = countryLabels.map(c => countryMap[c].shipped      > 0 ? countryMap[c].shipped      : null);
