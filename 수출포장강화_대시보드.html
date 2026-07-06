@@ -3714,22 +3714,19 @@
         function openPrevDayDetail(round) {
             const items = _prevDayAllItems.filter(it => it.round === round);
             if (!items.length) return;
-            const tc  = '#111111';
-            const sc  = '#444444';
-            const bdg = 'rgba(0,0,0,0.08)';
-            const even= 'background:rgba(0,0,0,0.04)';
             document.getElementById('pddRound').textContent = round;
             const totalQty = items.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
             document.getElementById('pddMeta').textContent = items.length + '건 · 총 ' + totalQty.toLocaleString() + ' BOX';
             document.getElementById('pddFooter').textContent = '합계 ' + totalQty.toLocaleString() + ' BOX';
             const tbody = document.getElementById('pddTableBody');
-            tbody.innerHTML = items.map((it) => {
-                return `<tr style="${even}">
-                    <td style="padding:8px 12px;text-align:center;color:${sc};font-weight:600;">${it.cat || '-'}</td>
-                    <td style="padding:8px 12px;text-align:center;color:${tc};font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
-                    <td style="padding:8px 12px;text-align:center;color:${tc};font-weight:700;font-family:monospace;">${it.code || '-'}</td>
-                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:${bdg};color:${tc};font-size:11px;font-weight:600;">${it.color || '-'}</span></td>
-                    <td style="padding:8px 12px;text-align:center;color:${tc};font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:${sc};">BOX</span></td>
+            tbody.innerHTML = items.map((it, idx) => {
+                const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.06)' : '';
+                return `<tr style="${bg}">
+                    <td style="padding:6px 12px;color:#64748B;font-size:12px;">${it.cat || '-'}</td>
+                    <td style="padding:6px 12px;color:#334155;font-weight:700;font-size:12px;white-space:nowrap;">${it.round || '-'}</td>
+                    <td style="padding:6px 12px;color:#1E293B;font-weight:700;font-size:12px;font-family:monospace;">${it.code || '-'}</td>
+                    <td style="padding:6px 12px;color:#64748B;font-size:12px;">${it.color || '-'}</td>
+                    <td style="padding:6px 12px;text-align:right;color:#1E293B;font-weight:800;font-size:12px;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:#64748B;">BOX</span></td>
                 </tr>`;
             }).join('');
             document.getElementById('prevDayDetailModal').classList.remove('hidden');
