@@ -3757,20 +3757,30 @@
         function openPrevDayDetail(round) {
             const items = _prevDayAllItems.filter(it => it.round === round);
             if (!items.length) return;
+            const isL = document.documentElement.getAttribute('data-theme') === 'light';
             document.getElementById('pddRound').textContent = round;
             const totalQty = items.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
             document.getElementById('pddMeta').textContent = items.length + '건 · 총 ' + totalQty.toLocaleString() + ' BOX';
             document.getElementById('pddFooter').textContent = '합계 ' + totalQty.toLocaleString() + ' BOX';
             const tbody = document.getElementById('pddTableBody');
+            // 테마별 색상
+            const catColor  = isL ? '#334155' : '#94A3B8';
+            const rndColor  = isL ? '#0369A1' : '#BAE6FD';
+            const codeColor = isL ? '#1E293B' : '#E2E8F0';
+            const clrBg     = isL ? 'rgba(100,116,139,0.15)' : 'rgba(148,163,184,0.2)';
+            const clrColor  = isL ? '#334155' : '#CBD5E1';
+            const qtyColor  = isL ? '#0369A1' : '#38BDF8';
+            const boxColor  = isL ? '#475569' : '#64748B';
+            const rowEven   = isL ? 'background:rgba(100,116,139,0.07)' : 'background:rgba(148,163,184,0.06)';
             tbody.innerHTML = items.map((it, idx) => {
-                const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.06)' : '';
+                const bg = idx % 2 === 0 ? rowEven : '';
                 const category = (it.code || '').replace(/[0-9]/g, '').replace(/[LRNS]+$/, '').slice(0, 3) || '-';
                 return `<tr style="${bg}">
-                    <td style="padding:8px 12px;text-align:center;color:#94A3B8;font-weight:600;">${category}</td>
-                    <td style="padding:8px 12px;color:#BAE6FD;font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
-                    <td style="padding:8px 12px;color:#E2E8F0;font-weight:700;font-family:monospace;">${it.code || '-'}</td>
-                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:rgba(148,163,184,0.2);color:#CBD5E1;font-size:11px;font-weight:700;">${it.color || '-'}</span></td>
-                    <td style="padding:8px 12px;text-align:right;color:#38BDF8;font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:#64748B;">BOX</span></td>
+                    <td style="padding:8px 12px;text-align:center;color:${catColor};font-weight:600;">${category}</td>
+                    <td style="padding:8px 12px;color:${rndColor};font-weight:700;white-space:nowrap;">${it.round || '-'}</td>
+                    <td style="padding:8px 12px;color:${codeColor};font-weight:700;font-family:monospace;">${it.code || '-'}</td>
+                    <td style="padding:8px 12px;text-align:center;"><span style="padding:1px 7px;border-radius:4px;background:${clrBg};color:${clrColor};font-size:11px;font-weight:700;">${it.color || '-'}</span></td>
+                    <td style="padding:8px 12px;text-align:right;color:${qtyColor};font-weight:800;">${(parseInt(it.qty)||0).toLocaleString()} <span style="font-size:10px;color:${boxColor};">BOX</span></td>
                 </tr>`;
             }).join('');
             document.getElementById('prevDayDetailModal').classList.remove('hidden');
