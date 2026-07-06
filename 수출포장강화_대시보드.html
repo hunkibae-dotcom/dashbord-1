@@ -3784,11 +3784,10 @@
         }
 
         function clearNoticeChangeLog() {
-            if (_noticeChecked.size === 0) return;
-            const remaining = _noticeChangeLog.filter((_, i) => !_noticeChecked.has(i));
+            if (!_noticeChangeLog.length) return;
             _noticeChecked.clear();
-            localStorage.setItem(DATE_CHANGE_LOG_KEY, JSON.stringify(remaining));
-            renderNoticeDateChanges(remaining);
+            localStorage.setItem(DATE_CHANGE_LOG_KEY, JSON.stringify([]));
+            renderNoticeDateChanges([]);
         }
 
         function renderNoticeDateChanges(log) {
