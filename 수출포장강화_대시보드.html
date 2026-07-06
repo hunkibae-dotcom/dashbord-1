@@ -1200,7 +1200,10 @@
 
             // 전체 결합 데이터에 제품 스펙 전파 백필(Backfill) 작동
             state.data = backfillSpecs(combined);
-            
+
+            // 포장완료 항목의 포장일을 충주공장 재고 시트에서 업데이트
+            backfillPackingDatesFromStock();
+
             // 3단계 정렬 정위치 복원을 위한 원래 데이터 인덱스 기억
             state.data.forEach((item, idx) => {
                 item.originalIndex = idx;
