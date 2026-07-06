@@ -3796,6 +3796,16 @@
             renderNoticeDateChanges([]);
         }
 
+        function deleteCurrentNotice() {
+            if (_ndmCurrentIdx < 0 || _ndmCurrentIdx >= _noticeChangeLog.length) return;
+            const remaining = _noticeChangeLog.filter((_, i) => i !== _ndmCurrentIdx);
+            _noticeChecked.clear();
+            _ndmCurrentIdx = -1;
+            localStorage.setItem(DATE_CHANGE_LOG_KEY, JSON.stringify(remaining));
+            renderNoticeDateChanges(remaining);
+            closeNoticeDetail();
+        }
+
         function renderNoticeDateChanges(log) {
             _noticeChangeLog = log || [];
             _noticeChecked.clear();
