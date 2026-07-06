@@ -3987,17 +3987,20 @@
             const products = (state.data || []).filter(item => (item.round || '').trim() === c.round);
             const listEl = document.getElementById('ndmProductList');
             if (!products.length) {
-                listEl.innerHTML = '<div style="color:#475569;font-size:12px;text-align:center;padding:8px;">제품 정보 없음</div>';
+                listEl.innerHTML = '<tr><td colspan="5" style="color:#475569;font-size:12px;text-align:center;padding:10px;">제품 정보 없음</td></tr>';
             } else {
-                listEl.innerHTML = products.map(item => {
+                listEl.innerHTML = products.map((item, idx) => {
                     const status = item.statusLabel || item.status || '-';
                     const statusColor = status.includes('출고') ? '#34D399' : status.includes('완료') ? '#60A5FA' : '#94A3B8';
-                    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:8px;background:rgba(148,163,184,0.08);border:1px solid rgba(148,163,184,0.12);">
-                        <span style="color:#1E293B;font-weight:700;flex:1;font-size:12px;">${item.code || '-'}</span>
-                        <span style="color:#64748B;font-size:11px;">${item.color || '-'}</span>
-                        <span style="color:#1E293B;font-weight:800;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</span>
-                        <span style="color:${statusColor};font-size:11px;">${status}</span>
-                    </div>`;
+                    const cat = item.country || '-';
+                    const bg = idx % 2 === 0 ? 'background:rgba(148,163,184,0.05)' : '';
+                    return `<tr style="${bg}">
+                        <td style="padding:6px 12px;color:#94A3B8;font-size:12px;">${cat}</td>
+                        <td style="padding:6px 12px;color:#E2E8F0;font-weight:700;font-size:12px;font-family:monospace;">${item.code || '-'}</td>
+                        <td style="padding:6px 12px;color:#94A3B8;font-size:12px;">${item.color || '-'}</td>
+                        <td style="padding:6px 12px;text-align:right;color:#E2E8F0;font-weight:800;font-size:12px;">${(parseInt(item.qty)||0).toLocaleString()} EA</td>
+                        <td style="padding:6px 12px;text-align:center;color:${statusColor};font-size:11px;font-weight:600;">${status}</td>
+                    </tr>`;
                 }).join('');
             }
             const atEl = document.getElementById('ndmAt');
