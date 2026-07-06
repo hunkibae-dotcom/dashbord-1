@@ -847,10 +847,13 @@
                 <div class="bg-accentBlue/10 text-accentBlue p-2.5 rounded-xl border border-accentBlue/20">
                     <i class="fa-solid fa-chart-bar text-[21.5px]"></i>
                 </div>
-                <div>
+                <div class="flex-1">
                     <h3 class="text-[21.5px] font-bold text-white" id="chartModalTitle">상세 차수 내역</h3>
                     <p class="text-[17.5px] text-slate-400">제품구분별 상세 품목 리스트</p>
                 </div>
+                <button onclick="exportChartModalData()" class="flex items-center gap-1.5 bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-[14.5px] px-3 py-2 rounded-xl font-semibold border border-accentBlue/30 transition-colors active:scale-95">
+                    <i class="fa-solid fa-file-arrow-down text-[13px]"></i> 데이터 출력
+                </button>
             </div>
 
             <div class="max-h-80 overflow-y-auto border border-borderSlate/60 rounded-xl">
@@ -867,12 +870,6 @@
                     <tbody id="chartModalTableBody" class="text-[17.5px] divide-y divide-borderSlate/40">
                         </tbody>
                 </table>
-            </div>
-
-            <div class="flex justify-start items-center mt-4">
-                <button onclick="exportChartModalData()" class="flex items-center gap-1.5 bg-accentBlue/10 hover:bg-accentBlue/20 text-accentBlue text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-accentBlue/30 transition-colors active:scale-95">
-                    <i class="fa-solid fa-file-arrow-down text-[14.5px]"></i> 데이터 출력
-                </button>
             </div>
         </div>
     </div>
