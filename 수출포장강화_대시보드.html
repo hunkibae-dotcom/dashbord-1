@@ -2459,17 +2459,6 @@
             const card1CODE = k1Raw !== '' ? parseInt(k1Raw).toLocaleString() : receivedCodesCount.toLocaleString();
 
             const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.innerText = value; };
-            // 카드1 데이터 비활성화
-            // setVal('kpiReceivedQty', card1EA);
-            // setVal('kpiReceivedCodes', card1CODE);
-
-            // 카드2 상세현황 비활성화
-            // setVal('hoverReceivedQty', receivedQty.toLocaleString());
-            // setVal('hoverReceivedCodes', receivedCodesCount.toLocaleString());
-            // setVal('hoverNotReceivedQty', notReceivedQty.toLocaleString());
-            // setVal('hoverNotReceivedCodes', notReceivedCodesCount.toLocaleString());
-            // setVal('hoverRecentReceivedItem', latestReceivedItem);
-            // setVal('hoverRecentReceivedExtra', receivedExtra);
 
             const lastDateStr = absoluteLatestReceivedDate
                 ? absoluteLatestReceivedDate.toISOString().slice(0, 10)
