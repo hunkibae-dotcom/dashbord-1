@@ -3562,17 +3562,22 @@
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
 
-            // 동일 상차일 전체 건 표시: 날짜 필터로 해당 날 전체를 보여줌
-            if (_card4NearestDate) {
-                document.getElementById('roundFilter').value = '';
-                document.getElementById('startDateFilter').value = _card4NearestDate;
-                document.getElementById('endDateFilter').value = _card4NearestDate;
+            if (_card4SameDateRounds.length > 0) {
+                // 수출 일정과 동일한 건명 목록으로만 필터링
+                const roundSet = new Set(_card4SameDateRounds);
+                state.filteredData = (state.data || []).filter(item => item.round && roundSet.has(item.round));
+                sortData();
+                switchToGeneralDashboardView();
+                updateKPIs();
+                renderTable();
+                renderCharts();
+                updateSortHeaders();
             } else {
-                // fallback: 단일 건명 필터
+                // fallback
                 document.getElementById('roundFilter').value = el.dataset.primaryRound || roundName;
+                applyFilters();
             }
 
-            applyFilters();
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
