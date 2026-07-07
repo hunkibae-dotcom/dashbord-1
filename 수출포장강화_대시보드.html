@@ -4610,12 +4610,15 @@
             const tip = document.getElementById('card4HoverTooltip');
             if (tip.style.display === 'none') return;
             const margin = 12;
-            let x = e.clientX + margin;
-            let y = e.clientY + margin;
             const tw = tip.offsetWidth || 300;
             const th = tip.offsetHeight || 120;
+            let x = e.clientX + margin;
+            let y = e.clientY + margin;
             if (x + tw > window.innerWidth - 8) x = e.clientX - tw - margin;
             if (y + th > window.innerHeight - 8) y = e.clientY - th - margin;
+            // 화면이 좁아 위 계산이 음수/초과로 튕겨나가도 항상 뷰포트 안쪽에 보이도록 최종 보정
+            x = Math.max(8, Math.min(x, window.innerWidth - tw - 8));
+            y = Math.max(8, Math.min(y, window.innerHeight - th - 8));
             tip.style.left = x + 'px';
             tip.style.top  = y + 'px';
         }
@@ -4623,6 +4626,14 @@
         function hideCard4Tooltip() {
             document.getElementById('card4HoverTooltip').style.display = 'none';
         }
+
+        // 터치 기기: 카드 밖을 탭하면 상세 팝업 닫기
+        document.addEventListener('click', function(e) {
+            const tip = document.getElementById('card4HoverTooltip');
+            if (!tip || tip.style.display !== 'block') return;
+            const card = document.getElementById('strengthenedStatusCard');
+            if (card && !card.contains(e.target)) hideCard4Tooltip();
+        });
 
         // PWA: 서비스 워커 등록 (network-first라 수정 후 배포하면 앱에도 바로 반영됨)
         if ('serviceWorker' in navigator) {
