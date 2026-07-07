@@ -2769,6 +2769,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    onHover: (event, activeElements) => {
+                        event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+                    },
                     onClick: (event, activeElements) => {
                         if (activeElements.length > 0) {
                             const index = activeElements[0].index;
