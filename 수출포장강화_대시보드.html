@@ -2230,28 +2230,46 @@
                     ? 'text-[13.5px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold'
                     : 'text-[13.5px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold';
 
+                // 동일 상차일인 모든 항목 수집
+                const sameDateItems = list.filter(x => {
+                    if (!x.date || x.date === '-') return false;
+                    const d = new Date(x.date);
+                    if (isNaN(d.getTime())) return false;
+                    const dr = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    return dr.getTime() === loadDateReset.getTime();
+                });
+
+                // 고유 건명 추출 (순서 유지)
+                const uniqueRounds = [];
+                sameDateItems.forEach(x => { if (x.round && !uniqueRounds.includes(x.round)) uniqueRounds.push(x.round); });
+                const primaryRound = uniqueRounds[0] || nearestItem.round;
+                const displayRound = uniqueRounds.length > 1
+                    ? primaryRound + ' 외 ' + (uniqueRounds.length - 1) + '건'
+                    : primaryRound;
+
                 // 사이드바 카드 업데이트
                 const ddayEl = document.getElementById('nearestDDay');
                 if (ddayEl) { ddayEl.innerText = ddayText; ddayEl.className = ddayClass; }
                 const nrEl = document.getElementById('nearestRoundName');
-                if (nrEl) nrEl.innerText = nearestItem.round;
+                if (nrEl) nrEl.innerText = displayRound;
                 const nlEl = document.getElementById('nearestLoadDate');
                 if (nlEl) nlEl.innerText = normalizeDate(nearestItem.date);
                 const ndEl = document.getElementById('nearestDueDate');
                 if (ndEl) ndEl.innerText = normalizeDate(nearestItem.dueDate);
 
                 // 4번 카드 동기화
-                document.getElementById('card4RoundName').innerText = nearestItem.round;
+                const card4RoundEl = document.getElementById('card4RoundName');
+                card4RoundEl.innerText = displayRound;
+                card4RoundEl.dataset.primaryRound = primaryRound;
                 document.getElementById('card4LoadDate').innerText = normalizeDate(nearestItem.date);
                 document.getElementById('card4DueDate').innerText = normalizeDate(nearestItem.dueDate);
                 const card4DDay = document.getElementById('card4DDay');
                 card4DDay.innerText = ddayText;
                 card4DDay.className = ddayClass;
 
-                // 해당 건명 전체 수량 집계
-                const roundItems = list.filter(x => x.round === nearestItem.round);
-                const totalQty = roundItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
-                const doneQty  = roundItems.reduce((s, x) => s + (parseInt(x.strengthenedQty) || 0) + (parseInt(x.shippedQty) || 0), 0);
+                // 동일 상차일 전체 수량 합산
+                const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
+                const doneQty  = sameDateItems.reduce((s, x) => s + (parseInt(x.strengthenedQty) || 0) + (parseInt(x.shippedQty) || 0), 0);
                 const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
                 const el4TQ = document.getElementById('card4TotalQty');
                 const el4DQ = document.getElementById('card4DoneQty');
@@ -2649,7 +2667,7 @@
 
             const countryMap = {};
 
-            // 1) 수출 표준품 현황 시트: 포장완료 상태 항목 → 강화완료 수량
+            // 1) 수출 표준품 현황 시트: 전체 제품구분 등록 + 포장완료 → 강화완료에 합산
             (state.data || []).forEach(item => {
                 const label = (item.country || '').replace(/\s+/g, '');
                 if (!label || label === 'DOMESTIC') return;
@@ -2663,7 +2681,7 @@
                 if (roundVal) countryMap[label].rounds[roundVal].strengthened += qty;
             });
 
-            // 2) 출고 완료 시트: 전체 항목 → 출고완료 수량
+            // 2) 출고 완료 시트: 전체 항목 → 출고완료 + 강화완료에도 합산 (출고된 항목도 강화완료된 것)
             const shippedSheetRows = state.rawShippedRows;
             if (shippedSheetRows && shippedSheetRows.length > 1) {
                 for (let i = 1; i < shippedSheetRows.length; i++) {
@@ -2675,8 +2693,12 @@
                     const qty = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g, '')) || 0 : 0;
                     if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
                     if (roundVal && !countryMap[label].rounds[roundVal]) countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
+                    countryMap[label].strengthened += qty;
                     countryMap[label].shipped += qty;
-                    if (roundVal) countryMap[label].rounds[roundVal].shipped += qty;
+                    if (roundVal) {
+                        countryMap[label].rounds[roundVal].strengthened += qty;
+                        countryMap[label].rounds[roundVal].shipped += qty;
+                    }
                 }
             }
 
@@ -3511,7 +3533,8 @@
         }
 
         function onCard4Click() {
-            const roundName = document.getElementById('card4RoundName').innerText.trim();
+            const el = document.getElementById('card4RoundName');
+            const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
             document.getElementById('roundFilter').value = roundName;
             applyFilters();
