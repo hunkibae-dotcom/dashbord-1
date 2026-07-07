@@ -4003,13 +4003,19 @@
             clearTimeout(_pendingDetailTimeout);
             _populatePendingDetail();
             const el = document.getElementById('card1PendingDetail');
-            if (el) el.classList.remove('hidden');
+            if (el) {
+                el.style.maxHeight = '360px';
+                el.style.opacity = '1';
+            }
         }
 
         function hidePendingDetail() {
             _pendingDetailTimeout = setTimeout(() => {
                 const el = document.getElementById('card1PendingDetail');
-                if (el) el.classList.add('hidden');
+                if (el) {
+                    el.style.maxHeight = '0';
+                    el.style.opacity = '0';
+                }
             }, 120);
         }
 
