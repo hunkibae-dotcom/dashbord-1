@@ -4013,10 +4013,11 @@
             _pendingDetailTimeout = setTimeout(() => {
                 const el = document.getElementById('card1PendingDetail');
                 if (el) {
+                    el.style.transition = 'max-height 0.15s ease-in,opacity 0.1s ease';
                     el.style.maxHeight = '0';
                     el.style.opacity = '0';
                 }
-            }, 120);
+            }, 40);
         }
 
         function _populatePendingDetail() {
