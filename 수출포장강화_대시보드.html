@@ -4494,5 +4494,77 @@
             });
         })();
     </script>
+
+    <!-- 수출 일정 카드 호버 툴팁 -->
+    <div id="card4HoverTooltip" style="
+        display:none;
+        position:fixed;
+        z-index:9999;
+        pointer-events:none;
+        min-width:280px;
+        max-width:340px;
+        background:rgba(15,23,42,0.82);
+        backdrop-filter:blur(12px);
+        -webkit-backdrop-filter:blur(12px);
+        border:1px solid rgba(203,213,225,0.15);
+        border-radius:14px;
+        padding:14px 16px;
+        box-shadow:0 8px 32px rgba(0,0,0,0.28);
+    ">
+        <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">수출 일정 상세</div>
+        <div id="card4TooltipBody"></div>
+    </div>
+
+    <script>
+        function showCard4Tooltip(e) {
+            if (!_card4TooltipData || _card4TooltipData.length === 0) return;
+
+            // 건명별로 그룹핑
+            const roundMap = {};
+            _card4TooltipData.forEach(item => {
+                const r = item.round || '-';
+                if (!roundMap[r]) roundMap[r] = { dueDate: item.dueDate || '-', loadDate: item.date || '-', qty: 0 };
+                roundMap[r].qty += parseInt(item.targetQty) || parseInt(item.qty) || 0;
+            });
+
+            const rows = Object.entries(roundMap).map(([round, d]) => {
+                return `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px solid rgba(148,163,184,0.1);">
+                    <div style="font-size:13px;font-weight:700;color:#E2E8F0;">${round}</div>
+                    <div style="display:flex;gap:12px;font-size:11.5px;color:#94A3B8;">
+                        <span>납기 <span style="color:#CBD5E1;font-weight:600;">${normalizeDate(d.dueDate)}</span></span>
+                        <span>상차 <span style="color:#CBD5E1;font-weight:600;">${normalizeDate(d.loadDate)}</span></span>
+                        <span style="margin-left:auto;color:#38BDF8;font-weight:700;">${d.qty.toLocaleString()} EA</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('card4TooltipBody').innerHTML = rows;
+            const tip = document.getElementById('card4HoverTooltip');
+            tip.style.display = 'block';
+            positionCard4Tooltip(e);
+        }
+
+        function moveCard4Tooltip(e) {
+            positionCard4Tooltip(e);
+        }
+
+        function positionCard4Tooltip(e) {
+            const tip = document.getElementById('card4HoverTooltip');
+            if (tip.style.display === 'none') return;
+            const margin = 12;
+            let x = e.clientX + margin;
+            let y = e.clientY + margin;
+            const tw = tip.offsetWidth || 300;
+            const th = tip.offsetHeight || 120;
+            if (x + tw > window.innerWidth - 8) x = e.clientX - tw - margin;
+            if (y + th > window.innerHeight - 8) y = e.clientY - th - margin;
+            tip.style.left = x + 'px';
+            tip.style.top  = y + 'px';
+        }
+
+        function hideCard4Tooltip() {
+            document.getElementById('card4HoverTooltip').style.display = 'none';
+        }
+    </script>
 </body>
 </html>
