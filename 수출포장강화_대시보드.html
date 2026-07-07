@@ -4301,8 +4301,37 @@
         function openChartDetailModal(country, statusType) {
             var itemMap = {};
 
+            // 출고 완료 시트 공통 파싱 헬퍼 (강화완료·출고완료 양쪽에서 사용)
+            const shippedRows = state.rawShippedRows;
+            function collectShippedItems(targetCat) {
+                const map = {};
+                if (!shippedRows || shippedRows.length < 2) return map;
+                var sHdr = shippedRows[0].map(function(h){ return (h||'').toString().trim(); });
+                var siRound=-1, siColor=-1;
+                sHdr.forEach(function(h, hi) {
+                    if(siRound<0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound=hi;
+                    if(siColor<0 && (h==='색상'||h==='컬러')) siColor=hi;
+                });
+                if(siRound<0) siRound=4;
+                if(siColor<0) siColor=2;
+                for (let i = 1; i < shippedRows.length; i++) {
+                    const row = shippedRows[i];
+                    if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
+                    const cat = (row[0]||'').toString().trim().replace(/\s+/g, '');
+                    if (cat !== targetCat) continue;
+                    const round = (row[siRound]||'').toString().trim() || '-';
+                    const code  = (row[1]||'').toString().trim().toUpperCase() || '-';
+                    const color = (row[siColor]||'').toString().trim() || '-';
+                    const qty   = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g,'')) || 0 : 0;
+                    const key = cat + '|' + round + '|' + code + '|' + color;
+                    if (!map[key]) map[key] = { cat, round, code, color, val: 0 };
+                    map[key].val += qty;
+                }
+                return map;
+            }
+
             if (statusType === '강화완료') {
-                // 수출 표준품 현황 시트: 포장완료 항목 → 강화완료 상세
+                // 수출 표준품 현황: 포장완료 항목 + 출고 완료 시트 전체 (출고된 항목도 강화완료됨)
                 (state.data || []).forEach(item => {
                     const cat = (item.country || '').replace(/\s+/g, '');
                     if (cat !== country) return;
@@ -4316,30 +4345,17 @@
                     if (!itemMap[key]) itemMap[key] = { cat, round, code, color, val: 0 };
                     itemMap[key].val += qty;
                 });
+                const shippedMap = collectShippedItems(country);
+                Object.keys(shippedMap).forEach(k => {
+                    if (!itemMap[k]) itemMap[k] = { ...shippedMap[k] };
+                    else itemMap[k].val += shippedMap[k].val;
+                });
             } else {
                 // 출고 완료 시트: 전체 항목 → 출고완료 상세
-                const shippedRows = state.rawShippedRows;
-                if (shippedRows && shippedRows.length > 1) {
-                    var sHdr = shippedRows[0].map(function(h){ return (h||'').toString().trim(); });
-                    var siRound=-1, siColor=-1;
-                    sHdr.forEach(function(h, hi) {
-                        if(siRound<0 && (h==='수출건명'||h==='건명'||h==='수주건명')) siRound=hi;
-                        if(siColor<0 && (h==='색상'||h==='컬러')) siColor=hi;
-                    });
-                    if(siRound<0) siRound=4;
-                    if(siColor<0) siColor=2;
-                    for (let i = 1; i < shippedRows.length; i++) {
-                        const row = shippedRows[i];
-                        if (!row || row.every(c => !c || c.toString().trim() === '')) continue;
-                        const cat = (row[0]||'').toString().trim().replace(/\s+/g, '');
-                        if (cat !== country) continue;
-                        const round = (row[siRound]||'').toString().trim() || '-';
-                        const code  = (row[1]||'').toString().trim().toUpperCase() || '-';
-                        const color = (row[siColor]||'').toString().trim() || '-';
-                        const qty   = row[3] ? parseInt(row[3].toString().replace(/[^0-9]/g,'')) || 0 : 0;
-                        const key = cat + '|' + round + '|' + code + '|' + color;
-                        if (!itemMap[key]) itemMap[key] = { cat, round, code, color, val: 0 };
-                        itemMap[key].val += qty;
+                itemMap = collectShippedItems(country);
+                {
+                    // dummy block to consume original loop variables
+                    const _dummy = null;
                     }
                 }
             }
