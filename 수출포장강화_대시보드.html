@@ -2269,8 +2269,9 @@
                 card4DDay.innerText = ddayText;
                 card4DDay.className = ddayClass;
 
-                // 툴팁용 데이터 저장
+                // 툴팁 및 클릭 필터용 데이터 저장
                 _card4TooltipData = sameDateItems;
+                _card4NearestDate = nearestItem.date || '';
 
                 // 동일 상차일 전체 수량 합산
                 const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
