@@ -4020,7 +4020,7 @@
                 groups[round].push(item);
             });
             const totalQty = _pendingDetailItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
-            if (totalEl) totalEl.textContent = '총 ' + totalQty.toLocaleString() + ' EA';
+            if (totalEl) totalEl.textContent = '총 ' + totalQty.toLocaleString() + ' BOX';
             let html = '';
             Object.entries(groups).forEach(([round, items]) => {
                 const groupQty = items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
