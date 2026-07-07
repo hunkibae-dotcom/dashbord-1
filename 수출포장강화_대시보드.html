@@ -2314,10 +2314,12 @@
             document.getElementById('card4DueDate').innerText = '-';
             const el4TQ = document.getElementById('card4TotalQty');
             const el4DQ = document.getElementById('card4DoneQty');
+            const el4RQ = document.getElementById('card4RemainQty');
             const el4Bar = document.getElementById('card4ProgressBar');
             const el4Pct = document.getElementById('card4ProgressPct');
             if (el4TQ) el4TQ.innerText = '-';
             if (el4DQ) el4DQ.innerText = '-';
+            if (el4RQ) el4RQ.innerText = '-';
             if (el4Bar) el4Bar.style.width = '0%';
             if (el4Pct) el4Pct.innerText = '0%';
         }
