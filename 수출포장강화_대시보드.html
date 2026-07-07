@@ -4422,11 +4422,11 @@
                 sorted.forEach(({ cat, round, code, color, val }) => {
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-800/40 transition-colors';
-                    tr.innerHTML = '<td class="py-2.5 px-3 text-slate-400 text-[14.5px]">' + (cat||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-slate-300">' + (round||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-accentBlue font-semibold">' + code + '</td>'
-                                 + '<td class="py-2.5 px-3 text-slate-400 text-[14.5px]">' + (color||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-right text-white font-bold">' + val.toLocaleString() + ' BOX</td>';
+                    tr.innerHTML = '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (cat||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">' + (round||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-accentBlue font-semibold whitespace-nowrap">' + code + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (color||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-right text-white font-bold whitespace-nowrap">' + val.toLocaleString() + ' BOX</td>';
                     tbody.appendChild(tr);
                 });
             }
