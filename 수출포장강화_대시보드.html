@@ -4353,11 +4353,6 @@
             } else {
                 // 출고 완료 시트: 전체 항목 → 출고완료 상세
                 itemMap = collectShippedItems(country);
-                {
-                    // dummy block to consume original loop variables
-                    const _dummy = null;
-                    }
-                }
             }
 
             document.getElementById('chartModalTitle').innerText = country + ' 상세품목';
