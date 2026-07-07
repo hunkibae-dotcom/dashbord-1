@@ -2287,9 +2287,12 @@
                 _card4NearestDate = nearestItem.date || '';
                 _card4SameDateRounds = uniqueRounds.slice();
 
-                // 동일 상차일 전체 수량 합산
-                const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
-                const doneQty  = sameDateItems.reduce((s, x) => s + (parseInt(x.strengthenedQty) || 0) + (parseInt(x.shippedQty) || 0), 0);
+                // 동일 상차일 전체 수량: 총수량 / 포장완료 = 강화완료 / 그외 = 남은수량
+                const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
+                const doneQty  = sameDateItems.reduce((s, x) => {
+                    const st = (x.status || '').replace(/\s+/g, '');
+                    return s + (st.includes('포장완료') ? (parseInt(x.qty) || 0) : 0);
+                }, 0);
                 const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
                 const el4TQ = document.getElementById('card4TotalQty');
                 const el4DQ = document.getElementById('card4DoneQty');
