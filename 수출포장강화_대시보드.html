@@ -2268,6 +2268,9 @@
                 card4DDay.innerText = ddayText;
                 card4DDay.className = ddayClass;
 
+                // 툴팁용 데이터 저장
+                _card4TooltipData = sameDateItems;
+
                 // 동일 상차일 전체 수량 합산
                 const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.targetQty) || parseInt(x.qty) || 0), 0);
                 const doneQty  = sameDateItems.reduce((s, x) => s + (parseInt(x.strengthenedQty) || 0) + (parseInt(x.shippedQty) || 0), 0);
