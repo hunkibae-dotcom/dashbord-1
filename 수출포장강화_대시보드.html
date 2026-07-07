@@ -409,7 +409,7 @@
                         <div class="absolute right-4 top-4 text-accentOrange opacity-60">
                             <i class="fa-solid fa-bell text-[25.5px] animate-bounce"></i>
                         </div>
-                        <p class="text-[17.5px] font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <p class="text-[14.5px] font-semibold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-accentOrange animate-pulse"></span>
                             수출 일정
                         </p>
@@ -2200,8 +2200,9 @@
             });
         }
 
-        // 수출 표준품 현황 시트에서 상차일이 입력된 모든 항목 표출
+        // 수출 표준품 현황 시트에서 상차일 기준 가장 가까운 미래 일정 표출
         function updateNearestSchedule() {
+            // 수출 표준품 현황 시트 데이터만 사용
             const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
             const list = exportKey ? datasetMap[exportKey] : [];
             if (!list || list.length === 0) {
@@ -2212,94 +2213,101 @@
             const now = new Date();
             const todayReset = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-            // 상차일이 입력된 모든 항목 수집 (날짜 필터 없음)
-            const allScheduledItems = list.filter(item => {
-                if (!item.date || item.date === '-') return false;
-                const d = new Date(item.date);
-                return !isNaN(d.getTime());
-            });
-
-            if (allScheduledItems.length === 0) {
-                clearNearestScheduleUI();
-                return;
-            }
-
-            // D-Day 표시: 가장 임박한 미래(오늘 포함) 상차일 기준
             let nearestItem = null;
             let minDiff = Infinity;
-            allScheduledItems.forEach(item => {
-                const d = new Date(item.date);
-                const dr = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                const diff = dr.getTime() - todayReset.getTime();
-                if (diff >= 0 && diff < minDiff) {
+
+            list.forEach(item => {
+                // 상차일(date)이 있는 항목만 대상
+                if (!item.date || item.date === '-') return;
+                const loadDate = new Date(item.date);
+                if (isNaN(loadDate.getTime())) return;
+
+                const compareDate = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const diff = compareDate.getTime() - todayReset.getTime();
+
+                // 오늘 포함 미래 상차일만 대상
+                if (diff < 0) return;
+
+                if (diff < minDiff) {
                     minDiff = diff;
                     nearestItem = item;
                 }
             });
-            // 미래 상차일이 없으면 첫 번째 항목 사용
-            if (!nearestItem) nearestItem = allScheduledItems[0];
 
-            const loadDate = new Date(nearestItem.date);
-            const loadDateReset = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
-            const diffDays = Math.ceil((loadDateReset.getTime() - todayReset.getTime()) / (1000 * 60 * 60 * 24));
-            const ddayText = diffDays === 0 ? 'D-Day' : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
-            const ddayClass = diffDays === 0
-                ? 'text-[13.5px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold'
-                : diffDays > 0
-                    ? 'text-[13.5px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold'
-                    : 'text-[13.5px] bg-slate-500/10 text-slate-400 border border-slate-500/20 px-2 py-0.5 rounded-full font-bold';
+            if (nearestItem) {
+                // 상차일 기준 D-Day 계산
+                const loadDate = new Date(nearestItem.date);
+                const loadDateReset = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const diffDays = Math.ceil((loadDateReset.getTime() - todayReset.getTime()) / (1000 * 60 * 60 * 24));
 
-            // 고유 건명 추출 (전체 상차일 있는 항목 기준, 순서 유지)
-            const uniqueRounds = [];
-            allScheduledItems.forEach(x => { if (x.round && !uniqueRounds.includes(x.round)) uniqueRounds.push(x.round); });
-            const primaryRound = uniqueRounds[0] || nearestItem.round;
-            const displayRound = uniqueRounds.length > 1
-                ? primaryRound + ' 외 ' + (uniqueRounds.length - 1) + '건'
-                : primaryRound;
+                const ddayText = diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
+                const ddayClass = diffDays === 0
+                    ? 'text-[13.5px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold'
+                    : 'text-[13.5px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold';
 
-            // 사이드바 카드 업데이트 (납기일·상차일은 가장 임박한 항목 기준)
-            const ddayEl = document.getElementById('nearestDDay');
-            if (ddayEl) { ddayEl.innerText = ddayText; ddayEl.className = ddayClass; }
-            const nrEl = document.getElementById('nearestRoundName');
-            if (nrEl) nrEl.innerText = displayRound;
-            const nlEl = document.getElementById('nearestLoadDate');
-            if (nlEl) nlEl.innerText = normalizeDate(nearestItem.date);
-            const ndEl = document.getElementById('nearestDueDate');
-            if (ndEl) ndEl.innerText = normalizeDate(nearestItem.dueDate);
+                // 동일 상차일인 모든 항목 수집
+                const sameDateItems = list.filter(x => {
+                    if (!x.date || x.date === '-') return false;
+                    const d = new Date(x.date);
+                    if (isNaN(d.getTime())) return false;
+                    const dr = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    return dr.getTime() === loadDateReset.getTime();
+                });
 
-            // 4번 카드 동기화
-            const card4RoundEl = document.getElementById('card4RoundName');
-            card4RoundEl.innerText = displayRound;
-            card4RoundEl.dataset.primaryRound = primaryRound;
-            document.getElementById('card4LoadDate').innerText = normalizeDate(nearestItem.date);
-            document.getElementById('card4DueDate').innerText = normalizeDate(nearestItem.dueDate);
-            const card4DDay = document.getElementById('card4DDay');
-            card4DDay.innerText = ddayText;
-            card4DDay.className = ddayClass;
+                // 고유 건명 추출 (순서 유지)
+                const uniqueRounds = [];
+                sameDateItems.forEach(x => { if (x.round && !uniqueRounds.includes(x.round)) uniqueRounds.push(x.round); });
+                const primaryRound = uniqueRounds[0] || nearestItem.round;
+                const displayRound = uniqueRounds.length > 1
+                    ? primaryRound + ' 외 ' + (uniqueRounds.length - 1) + '건'
+                    : primaryRound;
 
-            // 툴팁 및 클릭 필터용 데이터: 전체 상차일 있는 항목
-            _card4TooltipData = allScheduledItems;
-            _card4NearestDate = nearestItem.date || '';
-            _card4SameDateRounds = uniqueRounds.slice();
+                // 사이드바 카드 업데이트
+                const ddayEl = document.getElementById('nearestDDay');
+                if (ddayEl) { ddayEl.innerText = ddayText; ddayEl.className = ddayClass; }
+                const nrEl = document.getElementById('nearestRoundName');
+                if (nrEl) nrEl.innerText = displayRound;
+                const nlEl = document.getElementById('nearestLoadDate');
+                if (nlEl) nlEl.innerText = normalizeDate(nearestItem.date);
+                const ndEl = document.getElementById('nearestDueDate');
+                if (ndEl) ndEl.innerText = normalizeDate(nearestItem.dueDate);
 
-            // 수량: 전체 상차일 있는 항목 기준
-            const totalQty = allScheduledItems.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
-            const doneQty  = allScheduledItems.reduce((s, x) => {
-                const st = (x.status || '').replace(/\s+/g, '');
-                return s + (st.includes('포장완료') ? (parseInt(x.qty) || 0) : 0);
-            }, 0);
-            const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
-            const el4TQ = document.getElementById('card4TotalQty');
-            const el4DQ = document.getElementById('card4DoneQty');
-            const el4Bar = document.getElementById('card4ProgressBar');
-            const el4Pct = document.getElementById('card4ProgressPct');
-            const remainQty = Math.max(0, totalQty - doneQty);
-            if (el4TQ) el4TQ.innerText = totalQty.toLocaleString() + ' BOX';
-            if (el4DQ) el4DQ.innerText = doneQty.toLocaleString() + ' BOX';
-            const el4RQ = document.getElementById('card4RemainQty');
-            if (el4RQ) el4RQ.innerText = remainQty.toLocaleString() + ' BOX';
-            if (el4Bar) el4Bar.style.width = pct + '%';
-            if (el4Pct) el4Pct.innerText = pct + '%';
+                // 4번 카드 동기화
+                const card4RoundEl = document.getElementById('card4RoundName');
+                card4RoundEl.innerText = displayRound;
+                card4RoundEl.dataset.primaryRound = primaryRound;
+                document.getElementById('card4LoadDate').innerText = normalizeDate(nearestItem.date);
+                document.getElementById('card4DueDate').innerText = normalizeDate(nearestItem.dueDate);
+                const card4DDay = document.getElementById('card4DDay');
+                card4DDay.innerText = ddayText;
+                card4DDay.className = ddayClass;
+
+                // 툴팁 및 클릭 필터용 데이터 저장
+                _card4TooltipData = sameDateItems;
+                _card4NearestDate = nearestItem.date || '';
+                _card4SameDateRounds = uniqueRounds.slice();
+
+                // 동일 상차일 전체 수량: 총수량 / 포장완료 = 강화완료 / 그외 = 남은수량
+                const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
+                const doneQty  = sameDateItems.reduce((s, x) => {
+                    const st = (x.status || '').replace(/\s+/g, '');
+                    return s + (st.includes('포장완료') ? (parseInt(x.qty) || 0) : 0);
+                }, 0);
+                const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
+                const el4TQ = document.getElementById('card4TotalQty');
+                const el4DQ = document.getElementById('card4DoneQty');
+                const el4Bar = document.getElementById('card4ProgressBar');
+                const el4Pct = document.getElementById('card4ProgressPct');
+                const remainQty = Math.max(0, totalQty - doneQty);
+                if (el4TQ) el4TQ.innerText = totalQty.toLocaleString() + ' BOX';
+                if (el4DQ) el4DQ.innerText = doneQty.toLocaleString() + ' BOX';
+                const el4RQ = document.getElementById('card4RemainQty');
+                if (el4RQ) el4RQ.innerText = remainQty.toLocaleString() + ' BOX';
+                if (el4Bar) el4Bar.style.width = pct + '%';
+                if (el4Pct) el4Pct.innerText = pct + '%';
+            } else {
+                clearNearestScheduleUI();
+            }
         }
 
         function clearNearestScheduleUI() {
@@ -3915,7 +3923,7 @@
                 const fromColor   = c.isEarlier ? '#78350F' : '#334155';
                 const toColor     = c.isEarlier ? '#B45309' : '#0F172A';
                 const arrowColor  = '#94A3B8';
-                return `<div style="display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;font-size:14px;cursor:pointer;background:${rowNormal};border:1px solid ${borderColor};transition:background 100ms;"
+                return `<div style="display:flex;align-items:center;gap:5px;padding:7px 9px;border-radius:8px;font-size:13px;cursor:pointer;background:${rowNormal};border:1px solid ${borderColor};transition:background 100ms;"
                     onmouseenter="this.style.background='${rowHover}'"
                     onmouseleave="this.style.background='${rowNormal}'"
                     onclick="showNoticeDetail(${idx})">
