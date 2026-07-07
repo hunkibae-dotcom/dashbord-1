@@ -2191,7 +2191,7 @@
                     <td class="py-3 px-4 font-semibold text-white whitespace-nowrap">${item.round}</td>
                     <td class="py-3 px-4 font-medium text-center whitespace-nowrap" style="color:#334155;">${item.code}</td>
                     <td class="py-3 px-4 font-semibold text-slate-400 text-center whitespace-nowrap">${item.color || 'WW'}</td>
-                    <td class="py-3 px-4 text-center font-bold text-slate-300 whitespace-nowrap">${item.qty}EA</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-300 whitespace-nowrap">${item.qty} BOX</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge}">${item.statusLabel || item.status}</span></td>
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
@@ -2466,7 +2466,7 @@
                             item.round || null,
                             item.code  || null,
                             item.color || null,
-                            item.qty   ? item.qty.toLocaleString() + ' EA' : null
+                            item.qty   ? item.qty.toLocaleString() + ' BOX' : null
                         ].filter(Boolean);
                         latestReceivedItem = parts.join(' - ') || '-';
                     }
