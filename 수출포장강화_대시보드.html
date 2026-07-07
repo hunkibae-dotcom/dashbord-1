@@ -3542,9 +3542,20 @@
             const el = document.getElementById('card4RoundName');
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
-            document.getElementById('roundFilter').value = roundName;
+
+            // 동일 상차일 전체 건 표시: 날짜 필터로 해당 날 전체를 보여줌
+            if (_card4NearestDate) {
+                document.getElementById('roundFilter').value = '';
+                document.getElementById('startDateFilter').value = _card4NearestDate;
+                document.getElementById('endDateFilter').value = _card4NearestDate;
+            } else {
+                // fallback: 단일 건명 필터
+                document.getElementById('roundFilter').value = el.dataset.primaryRound || roundName;
+            }
+
             applyFilters();
-            document.getElementById('roundFilter').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const tableEl = document.getElementById('mainTableWrapper') || document.querySelector('table');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function resetFilters() {
