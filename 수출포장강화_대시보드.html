@@ -3560,7 +3560,18 @@
             applyFilters();
         }
 
-        function onCard4Click() {
+        function onCard4Click(e) {
+            // 터치(호버 불가) 기기에서는 필터/스크롤 없이 상세 팝업만 토글
+            if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) {
+                const tip = document.getElementById('card4HoverTooltip');
+                if (tip && tip.style.display === 'block') {
+                    hideCard4Tooltip();
+                } else if (e) {
+                    showCard4Tooltip(e);
+                }
+                return;
+            }
+
             const el = document.getElementById('card4RoundName');
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
