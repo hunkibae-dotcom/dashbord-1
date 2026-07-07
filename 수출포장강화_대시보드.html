@@ -4595,6 +4595,13 @@
         function hideCard4Tooltip() {
             document.getElementById('card4HoverTooltip').style.display = 'none';
         }
+
+        // PWA: 서비스 워커 등록 (network-first라 수정 후 배포하면 앱에도 바로 반영됨)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('SW 등록 실패:', err));
+            });
+        }
     </script>
 </body>
 </html>
