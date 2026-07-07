@@ -3427,11 +3427,11 @@
                 items.forEach(function(item) {
                     var tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-800/40 transition-colors';
-                    tr.innerHTML = '<td class="py-2.5 px-3 text-slate-400 text-[14.5px]">' + (item.cat||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-slate-300">' + (item.round||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-accentBlue font-semibold">' + item.code + '</td>'
-                                 + '<td class="py-2.5 px-3 text-slate-400 text-[14.5px]">' + (item.color||'-') + '</td>'
-                                 + '<td class="py-2.5 px-3 text-right text-white font-bold">' + item.qty.toLocaleString() + ' BOX</td>';
+                    tr.innerHTML = '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (item.cat||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">' + (item.round||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-accentBlue font-semibold whitespace-nowrap">' + item.code + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (item.color||'-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-right text-white font-bold whitespace-nowrap">' + item.qty.toLocaleString() + ' BOX</td>';
                     tbody.appendChild(tr);
                 });
             }
