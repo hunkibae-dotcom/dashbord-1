@@ -2052,21 +2052,10 @@
                 return val.toString().trim().replace(/[a-zA-Z가-힣]+$/g, '').trim() || '-';
             };
 
-            // 동일 제품코드의 스펙 데이터: 충주공장 재고 + 출고 완료 시트 우선, 없으면 수출 표준품 현황
-            const specSheetKeys = Object.keys(datasetMap).filter(k =>
-                k.includes('충주공장 재고') || k.includes('출고 완료')
-            );
-            let allSpecItems = specSheetKeys.flatMap(k =>
+            // 동일 제품코드의 스펙 데이터: 모든 시트에서 수집 후 평균 계산
+            const allSpecItems = Object.keys(datasetMap).flatMap(k =>
                 (datasetMap[k] || []).filter(item => item.code && item.code.toLowerCase() === productCode.toLowerCase())
             );
-            // 스펙 컬럼이 하나도 없으면 수출 표준품 현황도 포함
-            const hasSpec = allSpecItems.some(i => i.specW || i.specD || i.specH || i.specG);
-            if (!hasSpec) {
-                allSpecItems = [
-                    ...allSpecItems,
-                    ...(state.data || []).filter(item => item.code && item.code.toLowerCase() === productCode.toLowerCase())
-                ];
-            }
 
             const getSpecStats = (field) => {
                 const vals = allSpecItems.map(i => parseFloat(stripUnit(i[field]))).filter(v => !isNaN(v) && v > 0);
