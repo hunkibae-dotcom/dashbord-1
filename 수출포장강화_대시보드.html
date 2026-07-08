@@ -2653,9 +2653,30 @@
                 return;
             }
 
+            // 제품코드별 스펙 룩업 맵 (CBM·중량용)
+            const _specLookup = {};
+            const _su = v => { if (!v || v === '-') return NaN; return parseFloat(v.toString().replace(/[a-zA-Z가-힣\s]+$/g, '')); };
+            Object.keys(datasetMap).forEach(k => {
+                (datasetMap[k] || []).forEach(si => {
+                    if (!si.code) return;
+                    const c = si.code.toUpperCase();
+                    if (!_specLookup[c]) _specLookup[c] = { w:[], d:[], h:[], g:[] };
+                    const w=_su(si.specW), d=_su(si.specD), h=_su(si.specH), g=_su(si.specG);
+                    if (!isNaN(w)&&w>0) _specLookup[c].w.push(w);
+                    if (!isNaN(d)&&d>0) _specLookup[c].d.push(d);
+                    if (!isNaN(h)&&h>0) _specLookup[c].h.push(h);
+                    if (!isNaN(g)&&g>0) _specLookup[c].g.push(g);
+                });
+            });
+            const _avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+
             state.filteredData.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150';
+                const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[],g:[]};
+                const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h), _gA=_avg(_sp.g);
+                const _cbm = (_wA&&_dA&&_hA) ? ((_wA*_dA*_hA)/1e9).toFixed(4) : '-';
+                const _wgt = _gA ? _gA.toFixed(1) : '-';
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
                 if (item.status === '출고') {
