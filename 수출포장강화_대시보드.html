@@ -2092,8 +2092,9 @@
                 cbmCount = cbmVals.length;
             }
 
-            const renderTol = (tol, isZero) => {
+            const renderTol = (tol, isZero, count) => {
                 if (tol === null) return '<span style="color:#94A3B8;">-</span>';
+                if (count <= 1) return '<span style="color:#F59E0B;">데이터 부족</span>';
                 const n = parseFloat(tol);
                 if (n === 0 || isZero) return '<span style="color:#64748B;">±0 균일</span>';
                 return '<span style="color:#475569;">±' + tol + '</span>';
@@ -2105,11 +2106,11 @@
             document.getElementById('specG').innerText = gS.avg;
             document.getElementById('specCBM').innerText = cbmAvg;
 
-            document.getElementById('specWTol').innerHTML = renderTol(wS.tol, wS.tol === '0');
-            document.getElementById('specDTol').innerHTML = renderTol(dS.tol, dS.tol === '0');
-            document.getElementById('specHTol').innerHTML = renderTol(hS.tol, hS.tol === '0');
-            document.getElementById('specGTol').innerHTML = renderTol(gS.tol, gS.tol === '0');
-            document.getElementById('specCBMTol').innerHTML = renderTol(cbmTol, cbmTol === '0.0000');
+            document.getElementById('specWTol').innerHTML = renderTol(wS.tol, wS.tol === '0', wS.count);
+            document.getElementById('specDTol').innerHTML = renderTol(dS.tol, dS.tol === '0', dS.count);
+            document.getElementById('specHTol').innerHTML = renderTol(hS.tol, hS.tol === '0', hS.count);
+            document.getElementById('specGTol').innerHTML = renderTol(gS.tol, gS.tol === '0', gS.count);
+            document.getElementById('specCBMTol').innerHTML = renderTol(cbmTol, cbmTol === '0.0000', cbmCount);
 
             const sampleN = Math.max(wS.count, dS.count, hS.count, gS.count, cbmCount);
             document.getElementById('specSampleCount').innerText = sampleN > 0 ? '(n=' + sampleN + ' 작업 기록 기준)' : '';
