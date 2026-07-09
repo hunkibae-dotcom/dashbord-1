@@ -1931,6 +1931,12 @@
                     const numB = Number(valB.toString().replace(/[^0-9]/g, '')) || 0;
                     return (numA - numB) * multiDir;
                 }
+
+                if (key === '_cbm' || key === '_wgt') {
+                    const numA = valA != null ? parseFloat(valA) : -Infinity;
+                    const numB = valB != null ? parseFloat(valB) : -Infinity;
+                    return (numA - numB) * multiDir;
+                }
                 
                 const strA = valA.toString();
                 const strB = valB.toString();
