@@ -625,8 +625,12 @@
                                     <th onclick="handleSort('shippedQty')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
                                         출고(BOX) <span id="sort-icon-shippedQty" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
                                     </th>
-                                    <th class="py-3 px-2 text-center">CBM</th>
-                                    <th class="py-3 px-2 text-center">중량(kg)</th>
+                                    <th onclick="handleSort('_cbm')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
+                                        CBM <span id="sort-icon-_cbm" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
+                                    </th>
+                                    <th onclick="handleSort('_wgt')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
+                                        중량(kg) <span id="sort-icon-_wgt" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
+                                    </th>
                                     <th class="py-3 px-4 text-center relative" id="statusDropdownTh">
                                         <button onclick="toggleStatusDropdown(event)" class="flex items-center gap-1 mx-auto text-slate-400 hover:text-white transition-colors text-[16px] font-semibold uppercase tracking-wider">
                                             상태 <span id="statusFilterLabel" class="text-accentBlue font-bold hidden"></span>
