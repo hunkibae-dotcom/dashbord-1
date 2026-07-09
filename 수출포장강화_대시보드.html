@@ -2679,8 +2679,10 @@
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150';
                 const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[],g:[]};
                 const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h), _gA=_avg(_sp.g);
-                const _cbm = (_wA&&_dA&&_hA) ? ((_wA*_dA*_hA)/1e9).toFixed(4) : '-';
-                const _wgt = _gA ? _gA.toFixed(1) : '-';
+                item._cbm = (_wA&&_dA&&_hA) ? (_wA*_dA*_hA)/1e9 : null;
+                item._wgt = _gA || null;
+                const _cbm = item._cbm != null ? item._cbm.toFixed(4) : '-';
+                const _wgt = item._wgt != null ? item._wgt.toFixed(1) : '-';
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
                 if (item.status === '출고') {
