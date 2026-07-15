@@ -4442,14 +4442,17 @@
                 const ok = text.includes('success') || text.includes('OK') || res.ok;
                 if (ok) {
                     _wrmShowStatus('<i class="fa-solid fa-check-circle"></i> 등록 완료! 구글 시트에 전송됐습니다.', '#22C55E');
+                    btn.disabled = false; btn.style.opacity = '1';
+                    setTimeout(() => closeWorkerRegisterModal(), 1800);
                 } else {
-                    _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 전송 확인 필요)', '#F59E0B');
+                    _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 응답 이상 - status ' + res.status + ': ' + text.slice(0, 80) + ')', '#F59E0B');
+                    btn.disabled = false; btn.style.opacity = '1';
                 }
             } catch(e) {
-                _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 연결 오류: Apps Script doPost 설정 필요)', '#F59E0B');
+                _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (네트워크/CORS 오류: ' + (e && e.message ? e.message : e) + ')', '#F59E0B');
+                btn.disabled = false; btn.style.opacity = '1';
             }
-            btn.disabled = false; btn.style.opacity = '1';
-            setTimeout(() => closeWorkerRegisterModal(), 1800);
+            // 실패 시에는 원인을 확인할 수 있도록 자동으로 닫지 않음 (X 버튼으로 직접 닫기)
         }
 
         function _wrmShowStatus(html, color) {
