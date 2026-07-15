@@ -4957,6 +4957,93 @@
                 navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('SW 등록 실패:', err));
             });
         }
+
+        // ─── 상세창/모달 좌우 드래그(스와이프)로 닫기 — 마우스(PC)·터치(모바일) 공용 ───
+        function enableSwipeToDismiss(card, closeFn, closeDistance) {
+            if (!card) return;
+            const CLOSE_DISTANCE = closeDistance || 100;
+            let startX = 0, startY = 0, dx = 0, dragging = false, decided = false, isHorizontal = false;
+
+            function onPointerMove(e) {
+                const curDx = e.clientX - startX;
+                const curDy = e.clientY - startY;
+                if (!decided) {
+                    if (Math.abs(curDx) > 8 || Math.abs(curDy) > 8) {
+                        decided = true;
+                        isHorizontal = Math.abs(curDx) > Math.abs(curDy);
+                        if (isHorizontal) {
+                            dragging = true;
+                            card.style.transition = 'none';
+                            card.style.userSelect = 'none';
+                        }
+                    }
+                }
+                if (dragging && isHorizontal) {
+                    if (e.cancelable) e.preventDefault();
+                    dx = curDx;
+                    card.style.transform = 'translateX(' + dx + 'px)';
+                    card.style.opacity = String(Math.max(0.35, 1 - Math.abs(dx) / (CLOSE_DISTANCE * 2.2)));
+                }
+            }
+
+            function onPointerUp(e) {
+                card.removeEventListener('pointermove', onPointerMove);
+                card.removeEventListener('pointerup', onPointerUp);
+                card.removeEventListener('pointercancel', onPointerUp);
+                card.style.userSelect = '';
+                if (!dragging) return;
+                dragging = false;
+                card.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+                if (Math.abs(dx) > CLOSE_DISTANCE) {
+                    const dir = dx > 0 ? 1 : -1;
+                    card.style.transform = 'translateX(' + (dir * (window.innerWidth + 100)) + 'px)';
+                    card.style.opacity = '0';
+                    setTimeout(function() {
+                        closeFn();
+                        card.style.transition = '';
+                        card.style.transform = '';
+                        card.style.opacity = '';
+                    }, 220);
+                } else {
+                    card.style.transform = 'translateX(0px)';
+                    card.style.opacity = '1';
+                    setTimeout(function() {
+                        card.style.transition = '';
+                        card.style.transform = '';
+                        card.style.opacity = '';
+                    }, 220);
+                }
+            }
+
+            card.addEventListener('pointerdown', function(e) {
+                if (e.button !== undefined && e.button !== 0) return; // 마우스 좌클릭만
+                startX = e.clientX; startY = e.clientY;
+                dx = 0; dragging = false; decided = false; isHorizontal = false;
+                card.addEventListener('pointermove', onPointerMove);
+                card.addEventListener('pointerup', onPointerUp);
+                card.addEventListener('pointercancel', onPointerUp);
+            });
+        }
+
+        (function initSwipeToDismiss() {
+            enableSwipeToDismiss(document.getElementById('productDetailView'), exitProductDetailView);
+            const modalCloseMap = {
+                chartDetailModal: closeChartDetailModal,
+                packingDetailModal: closePackingDetailModal,
+                workerRegisterModal: closeWorkerRegisterModal,
+                settingsModal: closeSettingsModal,
+                resetConnectionModal: closeResetConnection,
+                removeDataTabModal: closeRemoveDataTab,
+                prevDayDetailModal: closePrevDayDetail,
+                noticeDetailModal: closeNoticeDetail
+            };
+            Object.keys(modalCloseMap).forEach(function(id) {
+                const modal = document.getElementById(id);
+                if (!modal) return;
+                const card = modal.querySelector(':scope > div');
+                enableSwipeToDismiss(card, modalCloseMap[id]);
+            });
+        })();
     </script>
 </body>
 </html>
