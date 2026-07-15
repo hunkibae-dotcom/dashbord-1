@@ -3450,6 +3450,23 @@
             URL.revokeObjectURL(url);
         }
 
+        // 차트/포장 상세 모달 공용 모바일 카드 리스트 마크업 생성 ({cat, round, code, color, qty})
+        function _buildDetailCardsHtml(items) {
+            if (!items.length) return '<div class="py-8 text-center text-slate-500 text-[13px]">데이터 없음</div>';
+            return items.map(function(item) {
+                return '<div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl p-3 flex flex-col gap-1.5">'
+                     + '<div class="flex items-center justify-between gap-2">'
+                     + '<span class="text-accentBlue font-mono font-semibold text-[14.5px]">' + item.code + '</span>'
+                     + '<span class="text-white font-bold text-[15px]">' + item.qty.toLocaleString() + ' BOX</span>'
+                     + '</div>'
+                     + '<div class="flex items-center justify-between text-[12.5px] text-slate-400">'
+                     + '<span>' + (item.round || '-') + '</span>'
+                     + '<span>' + (item.cat || '-') + ' · ' + (item.color || '-') + '</span>'
+                     + '</div>'
+                     + '</div>';
+            }).join('');
+        }
+
         function openPackingDetailModal(idx) {
             const meta = _packingLabelMeta[idx];
             if (!meta) return;
