@@ -731,18 +731,18 @@
 
         <div id="productDetailBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="exitProductDetailView()"></div>
         <div id="productDetailView" class="fixed top-0 right-0 h-full w-[1040px] max-w-full z-50 bg-panelBg border-l border-borderSlate/70 shadow-2xl flex flex-col overflow-hidden transform translate-x-full transition-transform duration-300 ease-out">
-                <div class="bg-darkBg/50 border-b border-borderSlate/60 px-5 py-4 flex items-center justify-between flex-shrink-0">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-accentBlue/10 p-2 rounded-lg border border-accentBlue/20 text-accentBlue">
+                <div class="bg-darkBg/50 border-b border-borderSlate/60 px-3 md:px-5 py-3 md:py-4 flex items-center justify-between gap-2 flex-shrink-0">
+                    <div class="flex items-center gap-2 md:gap-3 min-w-0">
+                        <div class="bg-accentBlue/10 p-2 rounded-lg border border-accentBlue/20 text-accentBlue shrink-0">
                             <i class="fa-solid fa-cube text-[17.5px]"></i>
                         </div>
-                        <span class="text-[17.5px] bg-indigo-500/10 text-accentBlue px-3 py-1.5 rounded-full border border-indigo-500/20 font-bold uppercase tracking-wider">제품 상세스펙 및 이력</span>
+                        <span class="text-[12.5px] md:text-[17.5px] bg-indigo-500/10 text-accentBlue px-2 md:px-3 py-1 md:py-1.5 rounded-full border border-indigo-500/20 font-bold uppercase tracking-wider whitespace-nowrap truncate">제품 상세스펙 및 이력</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5 md:gap-2 shrink-0">
                         <button onclick="exportDetailPanelCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-3 py-2 rounded border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-all active:scale-95">
-                            <i class="fa-solid fa-file-csv"></i> 현재 필터 데이터 출력
+                            <i class="fa-solid fa-file-csv"></i> <span class="hidden md:inline">현재 필터 데이터 출력</span>
                         </button>
-                        <button onclick="exitProductDetailView()" class="bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white w-8 h-8 rounded-lg border border-white/10 hover:border-white/20 flex items-center justify-center transition-all duration-200 active:scale-95">
+                        <button onclick="exitProductDetailView()" class="bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white w-8 h-8 rounded-lg border border-white/10 hover:border-white/20 flex items-center justify-center transition-all duration-200 active:scale-95 shrink-0">
                             <i class="fa-solid fa-xmark text-[17.5px]"></i>
                         </button>
                     </div>
