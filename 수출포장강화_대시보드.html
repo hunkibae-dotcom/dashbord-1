@@ -4678,6 +4678,9 @@
                 });
             }
 
+            const chartCardsWrap = document.getElementById('chartModalCardsMobile');
+            if (chartCardsWrap) chartCardsWrap.innerHTML = _buildDetailCardsHtml(sorted.map(r => ({ cat: r.cat, round: r.round, code: r.code, color: r.color, qty: r.val })));
+
             document.getElementById('chartDetailModal').classList.remove('hidden');
         }
 
