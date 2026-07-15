@@ -243,7 +243,7 @@
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
                                     <i class="fa-solid fa-barcode text-[17.5px]"></i>
                                 </span>
-                                <input type="text" id="productCodeFilter" oninput="applyFilters()" placeholder="예: CAC2083SN, FAD0016NO" 
+                                <input type="text" id="productCodeFilter" onkeydown="if(event.key==='Enter'){this.blur();applyFilters();}" placeholder="예: CAC2083SN, FAD0016NO"
                                        class="w-full bg-darkBg text-slate-200 pl-9 pr-4 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px] transition-colors">
                             </div>
                         </div>
