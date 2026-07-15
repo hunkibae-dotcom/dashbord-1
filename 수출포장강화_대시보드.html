@@ -4079,7 +4079,8 @@
                     code:   (sr[iCode]   || '').toString().trim(),
                     qty:    parseInt((sr[iQty]  || '0').toString().replace(/[^0-9]/g,'')) || 0,
                     round:  (sr[iRound]  || '').toString().trim(),
-                    status: (sr[iStatus] || '').toString().trim()
+                    status: (sr[iStatus] || '').toString().trim(),
+                    color:  iColor >= 0 ? (sr[iColor] || '').toString().trim() : ''
                 });
             }
 
