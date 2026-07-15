@@ -3569,6 +3569,8 @@
                     tbody.appendChild(tr);
                 });
             }
+            var packingCardsWrap = document.getElementById('packingModalCardsMobile');
+            if (packingCardsWrap) packingCardsWrap.innerHTML = _buildDetailCardsHtml(items);
             document.getElementById('packingDetailModal').classList.remove('hidden');
         }
 
