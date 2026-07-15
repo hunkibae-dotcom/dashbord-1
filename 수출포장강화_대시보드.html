@@ -192,9 +192,15 @@
         <div class="w-9 h-9 shrink-0"></div>
     </header>
 
+    <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="closeFilterDrawer()"></div>
+    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[320px] max-w-[85vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-4 p-4 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out">
+        <div class="flex items-center justify-between">
+            <span class="text-[15px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-accentBlue"></i>검색 · 데이터 연동</span>
+            <button onclick="closeFilterDrawer()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-[18px]"></i></button>
+        </div>
+
     <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start">
 
-        <div id="sidebarWrapper" class="lg:col-start-1 lg:row-start-1 lg:row-span-2 self-stretch flex flex-col gap-4">
         <div id="sidebarTop" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl flex flex-col flex-1">
                 <h2 class="text-[14.5px] font-bold text-white mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-sliders text-accentBlue"></i> 수출/제품 상세검색
