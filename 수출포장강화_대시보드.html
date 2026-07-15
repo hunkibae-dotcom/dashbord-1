@@ -179,25 +179,18 @@
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
 
-    <header class="bg-panelBg border-b border-borderSlate px-8 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="bg-gradient-to-tr from-accentBlue to-accentGreen p-2.5 rounded-lg text-darkBg font-bold text-[21.5px] shadow-lg shadow-accentBlue/10">
+    <header class="bg-panelBg border-b border-borderSlate px-3 py-4 flex items-center sticky top-0 z-50">
+        <button onclick="openFilterDrawer()" id="sidebarToggleBtn" class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="검색·필터 / 데이터 연동">
+            <i class="fa-solid fa-bars text-[18px]"></i>
+        </button>
+        <div class="flex-1 flex items-center justify-center gap-2 min-w-0 px-2">
+            <div class="bg-gradient-to-tr from-accentBlue to-accentGreen p-2 rounded-lg text-darkBg font-bold text-[16px] shadow-lg shadow-accentBlue/10 shrink-0">
                 <i class="fa-solid fa-box"></i>
             </div>
-            <div>
-                <h1 class="text-[21.5px] font-bold tracking-tight text-white flex items-center gap-2">
-                    수출 표준품 포장강화 대시보드 <span class="text-[17.5px] bg-accentBlue/10 text-accentBlue px-2 py-0.5 rounded-full border border-accentBlue/20">SYSTEM</span>
-                </h1>
-            </div>
+            <h1 class="text-[20.5px] font-bold tracking-tight text-white truncate">포장강화 대시보드</h1>
         </div>
+        <div class="w-9 h-9 shrink-0"></div>
     </header>
-
-    <div class="max-w-[1600px] w-full mx-auto px-2 pt-3 flex justify-start">
-        <button onclick="toggleSidebar()" id="sidebarToggleBtn" class="flex items-center gap-1.5 text-[17.5px] text-slate-600 hover:text-slate-800 bg-panelBg border border-borderSlate px-3 py-1.5 rounded-lg transition-colors duration-150 hover:border-slate-400 hover:bg-slate-100/80">
-            <i class="fa-solid fa-sidebar text-[17.5px]" id="sidebarToggleIcon"></i>
-            <span id="sidebarToggleLabel" class="font-bold text-slate-600" style="letter-spacing:0.01em;">사이드바 숨기기</span>
-        </button>
-    </div>
 
     <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start">
 
