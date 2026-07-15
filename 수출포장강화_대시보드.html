@@ -155,6 +155,26 @@
         ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
+        /* ── 모바일: KPI 카드 4개 / 차트 2개 좌우 스와이프 캐러셀 ── */
+        #tableCardsMobile { display: none; }
+        @media (max-width: 767px) {
+            #topCardGrid, #chartRow {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            #topCardGrid::-webkit-scrollbar, #chartRow::-webkit-scrollbar { display: none; }
+            #topCardGrid > *, #chartRow > * {
+                flex: 0 0 100%;
+                scroll-snap-align: center;
+            }
+            /* 메인 표: 좁은 화면에서는 가로 스크롤 표 대신 카드 리스트로 표시 */
+            #tableScrollWrap { display: none; }
+            #tableCardsMobile { display: flex; flex-direction: column; }
+        }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
