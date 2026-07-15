@@ -3972,6 +3972,92 @@
         const DATE_SNAPSHOT_KEY = 'dashDateSnapshot_v1';
         const DATE_CHANGE_LOG_KEY = 'dashDateChangeLog_v1';
 
+        function updatePalletSlide() {
+            const body   = document.getElementById('palletSlideBody');
+            const badge  = document.getElementById('palletTotalBadge');
+            if (!body) return;
+
+            const stockRows = state.rawStockRows;
+            if (!stockRows || stockRows.length <= 1) {
+                body.innerHTML = '<div style="color:#64748B;font-size:12px;text-align:center;padding:12px 0;">충주공장 재고 데이터 없음</div>';
+                if (badge) badge.style.display = 'none';
+                return;
+            }
+
+            // 헤더에서 컬럼 인덱스 동적 감지
+            const hdr = stockRows[0].map(h => (h || '').toString().trim());
+            let iCode=-1, iQty=-1, iRound=-1, iStatus=-1, iPallet=-1;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g,'').toUpperCase();
+                if (iCode   < 0 && (hn==='제품코드'||hn==='품목코드')) iCode   = i;
+                if (iQty    < 0 && (hn==='수량'||hn==='EA'))           iQty    = i;
+                if (iRound  < 0 && (hn==='건명'||hn==='수주건명'))      iRound  = i;
+                if (iStatus < 0 && (hn==='진행'||hn==='상태'||hn==='STATUS')) iStatus = i;
+                if (iPallet < 0 && (hn.includes('파렛트')||hn.includes('PALET')||hn.includes('적재'))) iPallet = i;
+            });
+            if (iCode   < 0) iCode   = 1;
+            if (iQty    < 0) iQty    = 3;
+            if (iRound  < 0) iRound  = 4;
+            if (iStatus < 0) iStatus = 9;
+            if (iPallet < 0) iPallet = 10;
+
+            // 파렛트별 그룹핑
+            const palletMap = {};
+            for (let i = 1; i < stockRows.length; i++) {
+                const sr = stockRows[i];
+                if (!sr || sr.every(c => !c || c.toString().trim() === '')) continue;
+                const palletRaw = (sr[iPallet] || '').toString().trim();
+                if (!palletRaw) continue;
+                // "적재 N" → 숫자 추출, 없으면 그대로 사용
+                const palletKey = palletRaw;
+                const palletNum = parseInt(palletRaw.replace(/[^0-9]/g, '')) || 0;
+                if (!palletMap[palletKey]) palletMap[palletKey] = { num: palletNum, label: palletRaw, items: [] };
+                palletMap[palletKey].items.push({
+                    code:   (sr[iCode]   || '').toString().trim(),
+                    qty:    parseInt((sr[iQty]  || '0').toString().replace(/[^0-9]/g,'')) || 0,
+                    round:  (sr[iRound]  || '').toString().trim(),
+                    status: (sr[iStatus] || '').toString().trim()
+                });
+            }
+
+            const pallets = Object.values(palletMap).sort((a, b) => a.num - b.num);
+            if (!pallets.length) {
+                body.innerHTML = '<div style="color:#64748B;font-size:12px;text-align:center;padding:12px 0;">파렛트 배정 데이터 없음</div>';
+                if (badge) badge.style.display = 'none';
+                return;
+            }
+
+            if (badge) { badge.textContent = pallets.length + ' PALET'; badge.style.display = 'inline-flex'; }
+
+            body.innerHTML = pallets.map(p => {
+                const totalQty = p.items.reduce((s, x) => s + x.qty, 0);
+                const doneCount = p.items.filter(x => x.status.replace(/\s/g,'').includes('포장완료')).length;
+                const allDone = doneCount === p.items.length;
+                const headerBg   = allDone ? 'rgba(14,165,233,0.1)' : 'rgba(100,116,139,0.12)';
+                const headerColor = allDone ? '#38BDF8' : '#94A3B8';
+                const itemRows = p.items.map(item => {
+                    const isDone = item.status.replace(/\s/g,'').includes('포장완료');
+                    const codeColor  = isDone ? '#38BDF8' : '#CBD5E1';
+                    const statusDot  = isDone
+                        ? '<span style="width:5px;height:5px;border-radius:50%;background:#38BDF8;display:inline-block;flex-shrink:0;"></span>'
+                        : '<span style="width:5px;height:5px;border-radius:50%;background:#F59E0B;display:inline-block;flex-shrink:0;"></span>';
+                    return `<div style="display:flex;align-items:center;gap:5px;padding:2px 0;font-size:11.5px;">
+                        ${statusDot}
+                        <span style="color:${codeColor};font-weight:600;flex:1;">${item.code}</span>
+                        <span style="color:#64748B;font-size:10.5px;">${item.round}</span>
+                        <span style="color:#2563EB;font-weight:700;margin-left:4px;">${item.qty.toLocaleString()} BOX</span>
+                    </div>`;
+                }).join('');
+                return `<div style="border-radius:8px;overflow:hidden;border:1px solid rgba(100,116,139,0.2);margin-bottom:4px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:${headerBg};">
+                        <span style="font-size:12px;font-weight:700;color:${headerColor};">${p.label}</span>
+                        <span style="font-size:10.5px;color:#64748B;">${doneCount}/${p.items.length}건 · <span style="color:#2563EB;font-weight:700;">${totalQty.toLocaleString()} BOX</span></span>
+                    </div>
+                    <div style="padding:4px 8px 5px;">${itemRows}</div>
+                </div>`;
+            }).join('');
+        }
+
         function noticeSlide(dir) {
             _noticeSlideIdx = (_noticeSlideIdx + dir + NOTICE_SLIDE_COUNT) % NOTICE_SLIDE_COUNT;
             for (let i = 0; i < NOTICE_SLIDE_COUNT; i++) {
