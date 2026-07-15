@@ -2710,6 +2710,7 @@
                 });
             });
             const _avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+            const cardHtmlParts = [];
 
             state.filteredData.forEach(item => {
                 const tr = document.createElement('tr');
@@ -2749,7 +2750,28 @@
                     <td class="py-3.5 px-2 text-center text-slate-400 text-[15px]">${_wgt}</td>
                     <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-[13px] ${badgeClass}">${item.statusLabel || item.status}</span></td>`;
                 tbody.appendChild(tr);
+
+                cardHtmlParts.push(`
+                    <div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl p-3 flex flex-col gap-2">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-mono font-semibold text-[15px]" style="color:#334155;" onclick="openDetailPanelFromTable('${item.code}')">${item.code}</span>
+                            <span class="px-2 py-0.5 rounded text-[12px] ${badgeClass}">${item.statusLabel || item.status}</span>
+                        </div>
+                        <div class="text-[14px] font-bold text-white">${item.round}</div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12.5px] text-slate-500 pt-2 border-t border-borderSlate/30">
+                            <div class="flex justify-between"><span>수량</span><span class="text-slate-200 font-semibold">${item.qty.toLocaleString()}</span></div>
+                            <div class="flex justify-between"><span>강화(BOX)</span><span class="font-semibold" style="color:#F87171;">${item.strengthenedQty.toLocaleString()}</span></div>
+                            <div class="flex justify-between"><span>출고(BOX)</span><span class="font-semibold" style="color:#38BDF8;">${item.shippedQty.toLocaleString()}</span></div>
+                            <div class="flex justify-between"><span>등록일</span><span class="text-slate-300">${normalizeDate(item.regDate)}</span></div>
+                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
+                            <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
+                            <div class="flex justify-between"><span>CBM</span><span class="text-slate-300">${_cbm}</span></div>
+                            <div class="flex justify-between"><span>중량(kg)</span><span class="text-slate-300">${_wgt}</span></div>
+                        </div>
+                    </div>`);
             });
+
+            if (cardsWrap) cardsWrap.innerHTML = cardHtmlParts.join('');
         }
 
         // 차트 가공 렌더러
