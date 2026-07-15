@@ -4112,7 +4112,7 @@
                     return `<div style="display:grid;grid-template-columns:10px 1fr 1fr auto auto;align-items:center;column-gap:6px;padding:2.5px 0;font-size:11.5px;">
                         ${statusDot}
                         <span style="color:#78350F;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.round}</span>
-                        <span style="color:${isDone ? '#38BDF8' : '#5B21B6'};font-weight:600;white-space:nowrap;">${item.code}</span>
+                        <span style="color:${codeColor};font-weight:600;white-space:nowrap;">${item.code}</span>
                         ${colorCell}
                         <span style="color:#2563EB;font-weight:700;white-space:nowrap;text-align:right;">${item.qty.toLocaleString()} BOX</span>
                     </div>`;
