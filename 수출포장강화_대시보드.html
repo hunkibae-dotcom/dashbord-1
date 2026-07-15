@@ -3595,37 +3595,17 @@
         // 🌟 [안전 가드 장착]: G-Suite Iframe의 로컬 스토리지 차단 정책 우회용 보안 모듈 장착 🌟
         document.documentElement.setAttribute('data-theme', 'light');
 
-        let sidebarVisible = true;
-        document.body.dataset.sb = 'open';
+        // 사이드바는 이제 항상 오버레이 드로어라 본문은 항상 '펼침 상태' 레이아웃(넓은 폭) 고정
+        document.body.dataset.sb = 'closed';
 
-        function toggleSidebar() {
-            sidebarVisible = !sidebarVisible;
-            const wrapper   = document.getElementById('sidebarWrapper');
-            const label     = document.getElementById('sidebarToggleLabel');
-            const dashView  = document.getElementById('generalDashboardView');
-            const tableView = document.getElementById('tablePanel');
+        function openFilterDrawer() {
+            document.getElementById('sidebarWrapper').classList.remove('-translate-x-full');
+            document.getElementById('sidebarBackdrop').classList.remove('hidden');
+        }
 
-            if (sidebarVisible) {
-                wrapper.classList.remove('hidden');
-                dashView.classList.remove('lg:col-start-1', 'lg:col-span-4');
-                dashView.classList.add('lg:col-start-2', 'lg:col-span-3');
-                if (tableView) {
-                    tableView.classList.remove('lg:col-start-1', 'lg:col-span-4');
-                    tableView.classList.add('lg:col-start-2', 'lg:col-span-3');
-                }
-                label.innerText = '사이드바 숨기기';
-                document.body.dataset.sb = 'open';
-            } else {
-                wrapper.classList.add('hidden');
-                dashView.classList.remove('lg:col-start-2', 'lg:col-span-3');
-                dashView.classList.add('lg:col-start-1', 'lg:col-span-4');
-                if (tableView) {
-                    tableView.classList.remove('lg:col-start-2', 'lg:col-span-3');
-                    tableView.classList.add('lg:col-start-1', 'lg:col-span-4');
-                }
-                label.innerText = '사이드바 펼치기';
-                document.body.dataset.sb = 'closed';
-            }
+        function closeFilterDrawer() {
+            document.getElementById('sidebarWrapper').classList.add('-translate-x-full');
+            document.getElementById('sidebarBackdrop').classList.add('hidden');
         }
 
         // 모바일 캐러셀(카드/차트) 스와이프 위치 점 표시기
