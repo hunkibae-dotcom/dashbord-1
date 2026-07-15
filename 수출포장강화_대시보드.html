@@ -193,17 +193,16 @@
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
 
-    <header class="bg-panelBg border-b border-borderSlate px-3 py-4 flex items-center sticky top-0 z-50">
+    <header class="bg-panelBg border-b border-borderSlate px-3 py-4 flex items-center gap-3 sticky top-0 z-50">
         <button onclick="openFilterDrawer()" id="sidebarToggleBtn" class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="검색·필터 / 데이터 연동">
             <i class="fa-solid fa-bars text-[18px]"></i>
         </button>
-        <div class="flex-1 flex items-center justify-center gap-2 min-w-0 px-2">
+        <div class="flex items-center gap-2 min-w-0">
             <div class="bg-gradient-to-tr from-accentBlue to-accentGreen p-2 rounded-lg text-darkBg font-bold text-[16px] shadow-lg shadow-accentBlue/10 shrink-0">
                 <i class="fa-solid fa-box"></i>
             </div>
             <h1 class="text-[20.5px] font-bold tracking-tight text-white truncate">포장강화 대시보드</h1>
         </div>
-        <div class="w-9 h-9 shrink-0"></div>
     </header>
 
     <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="closeFilterDrawer()"></div>
