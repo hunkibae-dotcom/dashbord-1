@@ -1,4 +1,4 @@
-const CACHE_NAME = 'export-packing-dashboard-v1';
+const CACHE_NAME = 'export-packing-dashboard-v2';
 const APP_SHELL = [
   './수출포장강화_대시보드.html',
   './manifest.json',
@@ -29,7 +29,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
 
   event.respondWith(
-    fetch(req)
+    // cache:'no-store'로 브라우저/CDN HTTP 캐시를 건너뛰고 항상 서버에서 새로 받아옴
+    fetch(req, { cache: 'no-store' })
       .then((res) => {
         const resClone = res.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
