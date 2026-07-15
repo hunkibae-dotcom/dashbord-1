@@ -2193,6 +2193,7 @@
         // 6-2. [제품상세 테이블 그리드 그리기 (상세 3단계 정렬 구조 결합 완비)]
         function renderProductDetailTable(productCode) {
             const tbody = document.getElementById('productDetailTableBody');
+            const cardsWrap = document.getElementById('productDetailCardsMobile');
             tbody.innerHTML = '';
 
             let matchedList = state.data.filter(item => item.code.toLowerCase() === productCode.toLowerCase());
@@ -2205,6 +2206,12 @@
                             시트에 '${productCode}' 제품에 매칭되는 상세 차수 공정 기록이 존재하지 않습니다.
                         </td>
                     </tr>
+                `;
+                if (cardsWrap) cardsWrap.innerHTML = `
+                    <div class="py-12 text-center text-slate-500 text-[13px]">
+                        <i class="fa-solid fa-triangle-exclamation text-[24px] mb-2 block"></i>
+                        시트에 '${productCode}' 제품에 매칭되는 상세 차수 공정 기록이 존재하지 않습니다.
+                    </div>
                 `;
                 return;
             }
