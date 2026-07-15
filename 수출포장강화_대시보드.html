@@ -4824,8 +4824,20 @@
                 btn.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)';
             }
 
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 200) {
+            // 상세창(모달/사이드패널)이 열려있는 동안에는 TOP 버튼이 겹쳐 보이지 않도록 숨김
+            const _topBtnModalIds = ['chartDetailModal', 'packingDetailModal', 'workerRegisterModal', 'settingsModal', 'helpModal', 'resetConnectionModal', 'removeDataTabModal', 'prevDayDetailModal', 'noticeDetailModal'];
+            function isDetailViewOpen() {
+                const modalOpen = _topBtnModalIds.some(function(id) {
+                    const el = document.getElementById(id);
+                    return el && !el.classList.contains('hidden');
+                });
+                const panel = document.getElementById('productDetailView');
+                const panelOpen = panel && !panel.classList.contains('translate-x-full');
+                return modalOpen || panelOpen;
+            }
+
+            function updateTopBtnVisibility() {
+                if (window.scrollY > 200 && !isDetailViewOpen()) {
                     btn.style.opacity = '1';
                     btn.style.pointerEvents = 'auto';
                     btn.style.transform = 'translateY(-50%) scale(1)';
@@ -4835,6 +4847,14 @@
                     btn.style.transform = 'translateY(-50%) scale(0.85)';
                 }
                 applyTheme();
+            }
+
+            window.addEventListener('scroll', updateTopBtnVisibility);
+
+            _topBtnModalIds.concat(['productDetailView']).forEach(function(id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                new MutationObserver(updateTopBtnVisibility).observe(el, { attributes: true, attributeFilter: ['class'] });
             });
 
             btn.addEventListener('mouseenter', function() {
