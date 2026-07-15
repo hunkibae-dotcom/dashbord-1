@@ -2246,6 +2246,8 @@
                 matchedList.sort((a, b) => (a.originalIndex || 0) - (b.originalIndex || 0));
             }
 
+            const cardParts = [];
+
             matchedList.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150 border-b border-borderSlate/30';
@@ -2273,7 +2275,24 @@
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
                 `;
                 tbody.appendChild(tr);
+
+                cardParts.push(`
+                    <div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl p-3 flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-semibold text-white text-[14px]">${item.round}</span>
+                            <span class="px-2 py-0.5 rounded-full text-[12px] ${statusBadge}">${item.statusLabel || item.status}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-[12.5px] text-slate-500 pt-1.5 border-t border-borderSlate/30">
+                            <div class="flex justify-between"><span>색상</span><span class="text-slate-300">${item.color || 'WW'}</span></div>
+                            <div class="flex justify-between"><span>수량</span><span class="text-slate-200 font-semibold">${item.qty} BOX</span></div>
+                            <div class="flex justify-between"><span>등록일</span><span class="text-slate-300">${normalizeDate(item.regDate)}</span></div>
+                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
+                            <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
+                        </div>
+                    </div>`);
             });
+
+            if (cardsWrap) cardsWrap.innerHTML = cardParts.join('');
         }
 
         // 수출 표준품 현황 시트에서 상차일 기준 가장 가까운 미래 일정 표출
