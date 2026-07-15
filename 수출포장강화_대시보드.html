@@ -4098,7 +4098,7 @@
                 const doneCount = p.items.filter(x => x.status.replace(/\s/g,'').includes('포장완료')).length;
                 const allDone = doneCount === p.items.length;
                 const headerBg   = allDone ? 'rgba(14,165,233,0.1)' : 'rgba(100,116,139,0.12)';
-                const headerColor = allDone ? '#38BDF8' : '#94A3B8';
+                const headerColor = allDone ? '#38BDF8' : '#0F172A';
                 const itemRows = p.items.map(item => {
                     const isDone = item.status.replace(/\s/g,'').includes('포장완료');
                     const codeColor = isDone ? '#38BDF8' : '#CBD5E1';
