@@ -4048,7 +4048,7 @@
 
             // 헤더에서 컬럼 인덱스 동적 감지
             const hdr = stockRows[0].map(h => (h || '').toString().trim());
-            let iCode=-1, iQty=-1, iRound=-1, iStatus=-1, iPallet=-1;
+            let iCode=-1, iQty=-1, iRound=-1, iStatus=-1, iPallet=-1, iColor=-1;
             hdr.forEach((h, i) => {
                 const hn = h.replace(/\s/g,'').toUpperCase();
                 if (iCode   < 0 && (hn==='제품코드'||hn==='품목코드')) iCode   = i;
@@ -4056,6 +4056,7 @@
                 if (iRound  < 0 && (hn==='건명'||hn==='수주건명'))      iRound  = i;
                 if (iStatus < 0 && (hn==='진행'||hn==='상태'||hn==='STATUS')) iStatus = i;
                 if (iPallet < 0 && (hn.includes('파렛트')||hn.includes('PALET')||hn.includes('적재'))) iPallet = i;
+                if (iColor  < 0 && (hn==='색상'||hn==='COLOR'||hn==='컬러')) iColor = i;
             });
             if (iCode   < 0) iCode   = 1;
             if (iQty    < 0) iQty    = 3;
