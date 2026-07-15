@@ -1204,11 +1204,7 @@
             loadSavedSettings();
             initCard1();
 
-            // 0. 모바일(앱) 화면에서는 사이드바를 기본적으로 숨긴 상태로 시작
-            if (window.innerWidth < 1024 && sidebarVisible) {
-                toggleSidebar();
-            }
-            // 0-1. 모바일 화면에서는 상단 카드/차트 캐러셀에 스와이프 점 표시기 부착
+            // 0. 모바일 화면에서는 상단 카드/차트 캐러셀에 스와이프 점 표시기 부착
             if (window.innerWidth < 768) {
                 initSwipeDots('topCardGrid', 'topCardDots');
                 initSwipeDots('chartRow', 'chartRowDots');
