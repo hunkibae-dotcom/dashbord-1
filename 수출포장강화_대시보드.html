@@ -171,9 +171,23 @@
                 flex: 0 0 100%;
                 scroll-snap-align: center;
             }
-            /* 메인 표: 좁은 화면에서는 가로 스크롤 표 대신 카드 리스트로 표시 */
-            #tableScrollWrap { display: none; }
-            #tableCardsMobile { display: flex; flex-direction: column; }
+            /* 각종 표: 좁은 화면에서는 가로 스크롤 표 대신 카드 리스트로 표시 */
+            .mobile-table-wrap { display: none; }
+            .mobile-card-list { display: flex; flex-direction: column; }
+        }
+
+        /* ── 제품 상세 스펙: 모바일 2열 카드 / sm 이상 5열 원래 배치 ── */
+        #specGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        #specGrid > .spec-item { display: flex; flex-direction: column; gap: 0.125rem; }
+        @media (min-width: 640px) {
+            #specGrid {
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(3, auto);
+                grid-auto-flow: column;
+                column-gap: 0.75rem;
+                row-gap: 0.125rem;
+            }
+            #specGrid > .spec-item { display: contents; }
         }
     </style>
 </head>
