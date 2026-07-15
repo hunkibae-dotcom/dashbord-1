@@ -632,16 +632,16 @@
         </div>
 
         <div id="tablePanel" class="bg-panelBg border border-borderSlate rounded-xl shadow-lg flex flex-col overflow-hidden lg:col-start-1 lg:col-span-4 lg:row-start-2">
-                    <div class="px-6 py-4 border-b border-borderSlate flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-panelBg">
-                        <div>
+                    <div class="px-4 md:px-6 py-4 border-b border-borderSlate flex flex-row items-start md:items-center justify-between gap-3 bg-panelBg">
+                        <div class="min-w-0">
                             <h3 class="text-[17.5px] font-bold text-white flex items-center gap-1.5">
                                 <i class="fa-solid fa-table-list text-accentBlue"></i> 수출 포장 관리 현황
                             </h3>
-                            <p class="text-[17.5px] text-slate-400 mt-0.5"> 각 헤더를 클릭하여 실시간으로 정렬이 가능합니다.</p>
+                            <p class="text-[15px] md:text-[17.5px] text-slate-400 mt-0.5"> 각 헤더를 클릭하여 실시간으로 정렬이 가능합니다.</p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 shrink-0">
                             <button onclick="exportToCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-3 py-2 rounded border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-all active:scale-95">
-                                <i class="fa-solid fa-file-csv"></i> 현재 필터 데이터 출력
+                                <i class="fa-solid fa-file-csv"></i> <span class="hidden md:inline">현재 필터 데이터 출력</span>
                             </button>
                         </div>
                     </div>
