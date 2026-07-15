@@ -3627,6 +3627,36 @@
             }
         }
 
+        // 모바일 캐러셀(카드/차트) 스와이프 위치 점 표시기
+        function initSwipeDots(containerId, dotsId) {
+            const container = document.getElementById(containerId);
+            const dotsWrap = document.getElementById(dotsId);
+            if (!container || !dotsWrap || container.dataset.dotsInit) return;
+            container.dataset.dotsInit = '1';
+
+            const count = container.children.length;
+            if (count <= 1) return;
+
+            dotsWrap.classList.remove('hidden');
+            dotsWrap.classList.add('flex');
+            dotsWrap.innerHTML = Array.from({ length: count }, (_, i) =>
+                `<span style="width:6px;height:6px;border-radius:9999px;background:${i === 0 ? '#38BDF8' : 'rgba(148,163,184,0.35)'};transition:background 0.15s;"></span>`
+            ).join('');
+
+            let ticking = false;
+            container.addEventListener('scroll', () => {
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(() => {
+                    const idx = Math.round(container.scrollLeft / (container.clientWidth || 1));
+                    Array.from(dotsWrap.children).forEach((dot, i) => {
+                        dot.style.background = i === idx ? '#38BDF8' : 'rgba(148,163,184,0.35)';
+                    });
+                    ticking = false;
+                });
+            }, { passive: true });
+        }
+
         const safeLocalStorage = {
             getItem: function(key) {
                 try {
