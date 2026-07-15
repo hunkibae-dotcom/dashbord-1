@@ -2673,6 +2673,7 @@
         // 포장 관리 원장 테이블 마운터
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            const cardsWrap = document.getElementById('tableCardsMobile');
             tbody.innerHTML = '';
 
             if (state.filteredData.length === 0) {
@@ -2683,6 +2684,12 @@
                             조건에 부합하는 수출 시트 데이터가 감지되지 않았습니다.
                         </td>
                     </tr>
+                `;
+                if (cardsWrap) cardsWrap.innerHTML = `
+                    <div class="py-12 text-center text-slate-500">
+                        <i class="fa-solid fa-triangle-exclamation text-[31.5px] mb-2 block"></i>
+                        조건에 부합하는 수출 시트 데이터가 감지되지 않았습니다.
+                    </div>
                 `;
                 return;
             }
