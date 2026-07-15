@@ -4961,6 +4961,9 @@
         // ─── 상세창/모달 좌우 드래그(스와이프)로 닫기 — 마우스(PC)·터치(모바일) 공용 ───
         function enableSwipeToDismiss(card, closeFn, closeDistance) {
             if (!card) return;
+            // 모바일 터치: 세로 스크롤은 브라우저 네이티브로 두고, 가로 드래그만 JS가 가져오도록 설정
+            // (touch-action이 auto면 브라우저가 제스처를 먼저 가로채서 pointercancel이 뜨며 드래그가 중간에 끊김)
+            card.style.touchAction = 'pan-y';
             const CLOSE_DISTANCE = closeDistance || 100;
             let startX = 0, startY = 0, dx = 0, dragging = false, decided = false, isHorizontal = false;
 
