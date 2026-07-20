@@ -3759,23 +3759,13 @@
         }
 
         function onCard4Click(e) {
-            // 터치(호버 불가) 기기에서는 필터/스크롤 없이 상세 팝업만 토글
-            if (window.matchMedia && !window.matchMedia('(hover: hover)').matches) {
-                const tip = document.getElementById('card4HoverTooltip');
-                if (tip && tip.style.display === 'block') {
-                    hideCard4Tooltip();
-                } else if (e) {
-                    showCard4Tooltip(e);
-                }
-                return;
-            }
+            const isTouch = window.matchMedia && !window.matchMedia('(hover: hover)').matches;
 
             const el = document.getElementById('card4RoundName');
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
 
             if (_card4SameDateRounds.length > 0) {
-                // 수출 일정과 동일한 건명 목록으로만 필터링
                 const roundSet = new Set(_card4SameDateRounds);
                 state.filteredData = (state.data || []).filter(item => item.round && roundSet.has(item.round));
                 sortData();
@@ -3785,13 +3775,15 @@
                 renderCharts();
                 updateSortHeaders();
             } else {
-                // fallback
                 document.getElementById('roundFilter').value = el.dataset.primaryRound || roundName;
                 applyFilters();
             }
 
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // 터치 기기에서는 필터링 후 툴팁 표시 안 함 (hover 없으므로)
+            if (!isTouch && e) showCard4Tooltip(e);
         }
 
         function resetFilters() {
