@@ -3488,7 +3488,7 @@
             const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : '월간별';
             const yearLabel = packingSelectedYear || '';
 
-            let csv = '﻿기간,강화수량(EA)\n';
+            let csv = '﻿기간,강화수량(BOX)\n';
             labels.forEach(function(lbl, i) {
                 csv += '"' + lbl + '",' + (data[i] || 0) + '\n';
             });
