@@ -4596,10 +4596,12 @@
                 '',
             ];
 
-            const histHeaders = row(['등록일자(포장일)', '건명', '제품코드', '컬러', '수량', '진행', '납기일', '상차일']);
+            const histHeaders = row(['등록일자(포장일)', '건명', '제품코드', '컬러', '수량', '강화(BOX)', '출고(BOX)', '진행', '납기일', '상차일']);
             const histRows = matchedList.map(item => row([
                 normalizeDate(item.regDate), item.round, item.code,
-                item.color || 'WW', item.qty, item.statusLabel || item.status,
+                item.color || 'WW', item.qty,
+                item.strengthenedQty || 0, item.shippedQty || 0,
+                item.statusLabel || item.status,
                 normalizeDate(item.dueDate), normalizeDate(item.date)
             ]));
 
