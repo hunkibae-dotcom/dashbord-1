@@ -3466,7 +3466,7 @@
             const ds0 = chart.data.datasets[0] ? chart.data.datasets[0].data : [];
             const ds1 = chart.data.datasets[1] ? chart.data.datasets[1].data : [];
 
-            let csv = '﻿제품구분,강화완료(EA),출고완료(EA)\n';
+            let csv = '﻿제품구분,강화완료(BOX),출고완료(BOX)\n';
             labels.forEach(function(lbl, i) {
                 csv += '"' + lbl + '",' + (ds0[i] || 0) + ',' + (ds1[i] || 0) + '\n';
             });
@@ -4550,12 +4550,14 @@
         // ============================================================
 
         function exportToCSV() {
-            const headers = ['등록일자','건명','제품코드','수량','납기일','상차일','대상(EA)','강화(EA)','출고(EA)','강화비용','상태'];
+            const headers = ['등록일자(포장일)','건명','제품코드','수량','납기일','상차일','강화(BOX)','출고(BOX)','CBM','중량(KG)','상태'];
             const rows = state.filteredData.map(item => [
                 normalizeDate(item.regDate), item.round, item.code, item.qty,
                 normalizeDate(item.dueDate), normalizeDate(item.date),
-                item.targetQty, item.strengthenedQty, item.shippedQty,
-                item.cost, item.status
+                item.strengthenedQty, item.shippedQty,
+                item._cbm != null ? item._cbm.toFixed(4) : '-',
+                item._wgt != null ? item._wgt.toFixed(1) : '-',
+                item.status
             ]);
             const csvContent = [headers, ...rows].map(r => r.map(v => '"' + v + '"').join(',')).join('\n');
             const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
