@@ -3634,7 +3634,7 @@
             var idx = parseInt(document.getElementById('packingDetailModal').dataset.idx || '0');
             var meta = _packingLabelMeta[idx] || {};
             var rows = document.getElementById('packingModalTableBody').querySelectorAll('tr');
-            var csv = '﻿제품구분,수출건명,품목코드,색상,수량(EA)\n';
+            var csv = '﻿제품구분,수출건명,품목코드,색상,수량(BOX)\n';
             rows.forEach(function(tr) {
                 var cells = tr.querySelectorAll('td');
                 if (cells.length < 5) return;
