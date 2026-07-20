@@ -4743,7 +4743,7 @@
             const rows = document.querySelectorAll('#chartModalTableBody tr');
             if (!rows.length) return;
 
-            let csv = '﻿제품구분,수출건명,품목코드,색상,수량(EA)\n';
+            let csv = '﻿제품구분,수출건명,품목코드,색상,수량(BOX)\n';
             rows.forEach(tr => {
                 const cells = tr.querySelectorAll('td');
                 if (cells.length >= 5) {
