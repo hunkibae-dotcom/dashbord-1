@@ -4106,12 +4106,28 @@
             const spaceBar = document.getElementById('palletSpaceBar');
             const spacePct = document.getElementById('palletSpacePct');
             const spaceFill = document.getElementById('palletSpaceBarFill');
+            const spaceStatus = document.getElementById('palletSpaceStatus');
             if (spaceBar && spacePct && spaceFill) {
                 spaceBar.style.display = 'block';
                 spacePct.textContent = usedPallet + ' / ' + MAX_PALLET + ' (' + pct + '%)';
-                spacePct.style.color = pct >= 90 ? '#DC2626' : pct >= 70 ? '#F59E0B' : '#16A34A';
+                let barColor, pctColor, statusText, statusColor;
+                if (pct <= 30) {
+                    barColor = '#22C55E'; pctColor = '#16A34A';
+                    statusText = '✔ 적재 여유 충분'; statusColor = '#16A34A';
+                } else if (pct <= 70) {
+                    barColor = '#F59E0B'; pctColor = '#D97706';
+                    statusText = '● 절반 이상 적재 중'; statusColor = '#D97706';
+                } else if (pct <= 90) {
+                    barColor = '#B45309'; pctColor = '#92400E';
+                    statusText = '▲ 적재 공간 부족 — 주의'; statusColor = '#92400E';
+                } else {
+                    barColor = '#DC2626'; pctColor = '#DC2626';
+                    statusText = '✕ 추가 적재 불가'; statusColor = '#DC2626';
+                }
+                spacePct.style.color = pctColor;
                 spaceFill.style.width = pct + '%';
-                spaceFill.style.background = pct >= 90 ? '#DC2626' : pct >= 70 ? '#F59E0B' : '#22C55E';
+                spaceFill.style.background = barColor;
+                if (spaceStatus) { spaceStatus.textContent = statusText; spaceStatus.style.color = statusColor; }
             }
 
             body.innerHTML = pallets.map(p => {
