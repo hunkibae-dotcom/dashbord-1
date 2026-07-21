@@ -4410,17 +4410,17 @@
             });
 
             let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                <span style="font-size:13px;font-weight:700;color:#0369A1;">총 ${totalCount}명</span>
-                <span style="font-size:12px;color:#334155;">작업 참여</span>
+                <span style="font-size:13.5px;font-weight:700;color:#0369A1;">총 ${totalCount}명</span>
+                <span style="font-size:12.5px;color:#334155;">작업 참여</span>
             </div>`;
             Object.entries(deptMap).forEach(([dept, info]) => {
                 let nameParts = [...info.workers];
                 if (info.extraCount > 0) nameParts.push('용역 ' + info.extraCount + '명');
                 const nameStr = nameParts.length ? nameParts.join(' · ') : info.count + '명';
                 html += `<div style="margin-bottom:4px;">
-                    <span style="font-size:12px;color:#334155;font-weight:600;">${dept}</span>
-                    <span style="font-size:12px;color:#94A3B8;margin:0 4px;">·</span>
-                    <span style="font-size:14px;color:#0F172A;font-weight:700;">${nameStr}</span>
+                    <span style="font-size:12.5px;color:#334155;font-weight:600;">${dept}</span>
+                    <span style="font-size:12.5px;color:#94A3B8;margin:0 4px;">·</span>
+                    <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${nameStr}</span>
                 </div>`;
             });
             display.innerHTML = html;
