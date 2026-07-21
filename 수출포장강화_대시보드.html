@@ -4096,6 +4096,21 @@
 
             if (badge) { badge.textContent = pallets.length + ' PALET'; badge.style.display = 'inline-flex'; }
 
+            // 공간률 계산 (최대 30 파렛트 기준)
+            const MAX_PALLET = 30;
+            const usedPallet = pallets.length;
+            const pct = Math.min(Math.round((usedPallet / MAX_PALLET) * 100), 100);
+            const spaceBar = document.getElementById('palletSpaceBar');
+            const spacePct = document.getElementById('palletSpacePct');
+            const spaceFill = document.getElementById('palletSpaceBarFill');
+            if (spaceBar && spacePct && spaceFill) {
+                spaceBar.style.display = 'block';
+                spacePct.textContent = usedPallet + ' / ' + MAX_PALLET + ' (' + pct + '%)';
+                spacePct.style.color = pct >= 90 ? '#DC2626' : pct >= 70 ? '#F59E0B' : '#16A34A';
+                spaceFill.style.width = pct + '%';
+                spaceFill.style.background = pct >= 90 ? '#DC2626' : pct >= 70 ? '#F59E0B' : '#22C55E';
+            }
+
             body.innerHTML = pallets.map(p => {
                 const totalQty = p.items.reduce((s, x) => s + x.qty, 0);
                 const doneCount = p.items.filter(x => x.status.replace(/\s/g,'').includes('포장완료')).length;
