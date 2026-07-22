@@ -4100,7 +4100,7 @@
             if (badge) { badge.textContent = pallets.length + ' PALET'; badge.style.display = 'inline-flex'; }
 
             // 공간률 계산 (최대 30 파렛트 기준)
-            const MAX_PALLET = 30;
+            const MAX_PALLET = 20;
             const usedPallet = pallets.length;
             const pct = Math.min(Math.round((usedPallet / MAX_PALLET) * 100), 100);
             const spaceBar = document.getElementById('palletSpaceBar');
