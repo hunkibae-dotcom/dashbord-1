@@ -292,6 +292,46 @@
         .mi-desc  { font-size: 12px; color: var(--sub); line-height: 1.45; }
         .mi-arr   { font-size: 20px; font-weight: 200; color: var(--dim); }
 
+        /* ── Sheet factory modal ── */
+        #sheetModal {
+            position: fixed; inset: 0; z-index: 200;
+            background: rgba(0,0,0,0.55);
+            display: flex; align-items: flex-end;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.25s;
+        }
+        #sheetModal.open { opacity: 1; pointer-events: auto; }
+        .modal-sheet {
+            width: 100%; background: #1E293B;
+            border-radius: 24px 24px 0 0;
+            padding: 0 0 calc(20px + var(--safe-bot));
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+        :root[data-theme="light"] .modal-sheet { background: #fff; }
+        #sheetModal.open .modal-sheet { transform: translateY(0); }
+        .modal-handle {
+            width: 40px; height: 4px; border-radius: 2px;
+            background: var(--dim); margin: 12px auto 20px;
+        }
+        .modal-title {
+            font-size: 16px; font-weight: 700; color: var(--text);
+            padding: 0 20px 14px; border-bottom: 1px solid var(--border);
+        }
+        .factory-btn {
+            display: flex; align-items: center; gap: 14px;
+            padding: 18px 20px; cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+        }
+        .factory-btn:last-child { border-bottom: none; }
+        .factory-btn:active { background: var(--panel); }
+        .factory-dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+        .factory-name { font-size: 15px; font-weight: 600; color: var(--text); flex: 1; }
+        .factory-arr  { font-size: 18px; color: var(--dim); }
+
         /* ── Page transition ── */
         #pageVeil {
             position: fixed; inset: 0; z-index: 500;
