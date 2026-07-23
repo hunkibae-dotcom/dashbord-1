@@ -348,6 +348,24 @@
 <div id="bgLayer"></div>
 <div id="pageVeil"></div>
 
+<!-- ══ Sheet 공장 선택 모달 ══ -->
+<div id="sheetModal" onclick="if(event.target===this)closeSheetModal()">
+    <div class="modal-sheet">
+        <div class="modal-handle"></div>
+        <div class="modal-title">공장 선택</div>
+        <div class="factory-btn" onclick="openFactory('cj1')">
+            <div class="factory-dot" style="background:#00B0FF;"></div>
+            <span class="factory-name">충주 1공장</span>
+            <span class="factory-arr">›</span>
+        </div>
+        <div class="factory-btn" onclick="openFactory('cj2')">
+            <div class="factory-dot" style="background:#00E676;"></div>
+            <span class="factory-name">충주 2공장</span>
+            <span class="factory-arr">›</span>
+        </div>
+    </div>
+</div>
+
 <!-- ══════════════ SPLASH ══════════════ -->
 <div id="splash">
     <div class="spl-wrap">
