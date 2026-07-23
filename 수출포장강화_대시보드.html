@@ -5238,6 +5238,19 @@
             });
         })();
 
+        /* ── 모바일 전체현황 토글 ── */
+        function toggleMobileTable(btn) {
+            const table = document.getElementById('tablePanel');
+            const isOpen = table.classList.contains('mobile-table-open');
+            table.classList.toggle('mobile-table-open', !isOpen);
+            btn.classList.toggle('mb-primary', !isOpen);
+            if (!isOpen) {
+                setTimeout(() => table.scrollIntoView({behavior:'smooth', block:'start'}), 50);
+            } else {
+                window.scrollTo({top:0, behavior:'smooth'});
+            }
+        }
+
         /* ── 모바일 캐러셀 dots 초기화 ── */
         function _initDots(gridId, dotsId, count) {
             const dotsEl = document.getElementById(dotsId);
