@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>수출건 검사리스트 대시보드</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMzNEQzOTkiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyMkQzRUUiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iNDMiIGN5PSI0MyIgcj0iMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiLz48bGluZSB4MT0iNTUiIHkxPSI1NSIgeDI9IjcyIiB5Mj0iNzIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="검사리스트">
+<meta name="theme-color" content="#34D399">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          f1: { 50:'#EFF6FF', 100:'#DBEAFE', 400:'#60A5FA', 500:'#3B82F6', 600:'#2563EB', 700:'#1D4ED8' },
+          f2: { 50:'#F5F3FF', 100:'#EDE9FE', 400:'#A78BFA', 500:'#8B5CF6', 600:'#7C3AED', 700:'#6D28D9' },
+          accent: { 50:'#F0EEFE', 400:'#8B7CF0', 500:'#6D5CE8', 600:'#5A47D6', 700:'#4B39B8' },
+        },
+        fontFamily: { sans: ['Inter','Noto Sans KR','sans-serif'] }
+      }
+    }
+  }
+</script>
+<style>
+  body { background:#F8FAFC; color:#1E293B; }
+  ::-webkit-scrollbar { width:6px; height:6px; }
+  ::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
+
+  .nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:13px 14px; border-radius:10px; cursor:pointer; color:#64748B; transition:all .15s; font-size:14.5px; font-weight:600; white-space:nowrap; }
+  .nav-item:hover { background:#F1F5F9; color:#334155; }
+  .nav-item .nav-chevron { opacity:0; transition:opacity .15s; }
+  .nav-item.active { background:linear-gradient(135deg,#8B7CF0,#6D5CE8); color:#fff; }
+  .nav-item.active .nav-chevron { opacity:1; }
+
+  .card { background:#fff; border:1px solid #E2E8F0; border-radius:16px; }
+  .kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
+
+  .pill { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
+  .pill-done { background:#DCFCE7; color:#15803D; }
+  .pill-undone { background:#FEE2E2; color:#B91C1C; }
+  .pill-bom-y { background:#DBEAFE; color:#1D4ED8; }
+  .pill-bom-n { background:#FEF3C7; color:#B45309; }
+  .pill-yangji { background:#FEF3C7; color:#92400E; }
+  .pill-dday-over { background:#FEE2E2; color:#B91C1C; }
+  .pill-dday-soon { background:#FFEDD5; color:#C2410C; }
+  .pill-dday-ok { background:#F1F5F9; color:#64748B; }
+
+
+  .dash-line { position:relative; height:2px; background-image:linear-gradient(to right,#CBD5E1 50%,transparent 50%); background-size:10px 2px; }
+
+  .tab-btn { padding:6px 14px; border-radius:9px; font-size:13.5px; font-weight:600; border:1px solid #E2E8F0; color:#64748B; cursor:pointer; transition:all .15s; }
+  .tab-btn.active { background:#6D5CE8; color:#fff; border-color:#6D5CE8; }
+  .tab-btn:not(.active):hover { background:#F1F5F9; }
+
+  .in-field { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:9px; font-size:14.5px; padding:8px 10px 8px 32px; width:100%; outline:none; color:#1E293B; }
+  .in-field:focus { border-color:#94A3B8; background:#fff; }
+  .sel-field { background:#F8FAFC; border:1px solid #E2E8F0; border-radius:9px; font-size:14.5px; padding:8px 10px; width:100%; outline:none; color:#1E293B; }
+  .sel-field:focus { border-color:#94A3B8; background:#fff; }
+
+  .tbl-row { border-bottom:1px solid #F1F5F9; }
+  .tbl-row:hover { background:#F8FAFC; }
+
+  .code-tag { font-family:ui-monospace,monospace; font-size:12.5px; background:#F1F5F9; color:#475569; padding:1.5px 6px; border-radius:5px; }
+
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.25} }
+  .pulse-dot { animation:pulse-dot 2s infinite; }
+
+  /* ===== MOBILE APP ===== */
+  .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 0 8px; gap:3px; color:#94A3B8; font-size:10px; font-weight:700; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
+  .mobile-nav-btn.active { color:#6D5CE8; }
+  .mobile-nav-btn.active .m-nav-icon { background:#EDE9FE; }
+  .m-nav-icon { display:flex; align-items:center; justify-content:center; width:40px; height:26px; border-radius:13px; transition:background .15s; }
+  .m-nav-icon i { font-size:17px; }
+  .m-snap { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .m-snap::-webkit-scrollbar { display:none; }
+  .m-snap > div { min-width:100%; scroll-snap-align:start; box-sizing:border-box; }
+  .m-dot { width:6px; height:6px; border-radius:50%; background:#E2E8F0; transition:all .25s; cursor:pointer; }
+  .m-dot.on { width:16px; border-radius:3px; background:#6D5CE8; }
+  /* body scroll lock on mobile */
+  body.m-lock { overflow:hidden; }
+  /* filter modal: full-screen on mobile */
+  @media (max-width: 767px) {
+    #productSearchModal { padding:0 !important; align-items:flex-end !important; }
+    #productSearchModal > div { max-width:100% !important; max-height:93vh !important; border-bottom-left-radius:0 !important; border-bottom-right-radius:0 !important; }
+    #specModal { padding:0 !important; align-items:flex-end !important; }
+    #specModal > div { max-width:100% !important; max-height:93vh !important; border-bottom-left-radius:0 !important; border-bottom-right-radius:0 !important; }
+  }
+  /* mobile top button */
+  #mToTopBtn { position:absolute; right:16px; bottom:80px; width:40px; height:40px; border-radius:50%; background:#fff; border:1px solid #E2E8F0; box-shadow:0 2px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:#64748B; opacity:0; pointer-events:none; transition:opacity .2s; z-index:10; }
+  #mToTopBtn.show { opacity:1; pointer-events:auto; }
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen">
+
+<div class="flex min-h-screen">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="w-[220px] bg-white border-r border-slate-200 flex flex-col shrink-0 relative">
+    <div id="logoWrap" class="w-full flex items-center gap-2.5 px-5 pt-6 pb-2 shrink-0">
+      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
+        <i class="fa-solid fa-magnifying-glass text-[16.5px]"></i>
+      </span>
+      <div class="text-[18.5px] font-extrabold text-slate-900 font-sans" style="letter-spacing:-0.3px;">품질검사 리스트</div>
+    </div>
+
+    <div class="flex flex-col gap-2.5 w-full px-3 pt-5 pb-5">
+    <div class="nav-item active" id="navOverview" onclick="focusFactoryTop('all')">
+      <i class="fa-solid fa-grip w-4 text-center"></i>
+      <span class="flex-1">전체 현황</span>
+      <i class="fa-solid fa-chevron-right nav-chevron text-[12.5px]"></i>
+    </div>
+
+    <div class="relative group w-full">
+      <div class="nav-item w-full" id="navCj1" onclick="focusFactoryTop('cj1')">
+        <i class="fa-solid fa-industry w-4 text-center"></i>
+        <span class="flex-1">충주1공장</span>
+        <i class="fa-solid fa-chevron-right nav-chevron text-[12.5px]"></i>
+      </div>
+      <div class="absolute left-full top-[-8px] w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-f1-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f1-600 text-[14.5px]"></i></span>
+            <span class="text-[16.5px] font-bold text-slate-800">충주1공장</span>
+          </div>
+          <a href="https://docs.google.com/spreadsheets/d/1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U/edit#gid=1420932673" target="_blank" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500" title="시트 바로가기">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[13.5px]"></i>
+          </a>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative w-16 h-16 shrink-0">
+            <canvas id="flyGaugeCj1" width="64" height="64"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center text-[15.5px] font-extrabold text-slate-900" id="flyRateCj1">—</div>
+          </div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13.5px] flex-1">
+            <div><div class="text-slate-400">전체</div><div class="font-bold text-slate-800" id="flyTotalCj1">—</div></div>
+            <div><div class="text-slate-400">검사완료</div><div class="font-bold text-emerald-600" id="flyDoneCj1">—</div></div>
+            <div><div class="text-slate-400">미검사</div><div class="font-bold text-rose-600" id="flyUndoneCj1">—</div></div>
+            <div><div class="text-slate-400">누적이력</div><div class="font-bold text-slate-800" id="flyArchiveCj1">—</div></div>
+          </div>
+        </div>
+        <button onclick="focusFactory('cj1')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[13.5px] font-semibold">상세 테이블 보기</button>
+      </div>
+    </div>
+
+    <div class="relative group w-full">
+      <div class="nav-item w-full" id="navCj2" onclick="focusFactoryTop('cj2')">
+        <i class="fa-solid fa-industry w-4 text-center"></i>
+        <span class="flex-1">충주2공장</span>
+        <i class="fa-solid fa-chevron-right nav-chevron text-[12.5px]"></i>
+      </div>
+      <div class="absolute left-full top-[-8px] w-72 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-lg bg-f2-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f2-600 text-[14.5px]"></i></span>
+            <span class="text-[16.5px] font-bold text-slate-800">충주2공장</span>
+          </div>
+          <a href="https://docs.google.com/spreadsheets/d/1Gy1jIbw7j4t2A2B0N3-cwrqwCQMXd1M-S4oROGk-hg8/edit#gid=0" target="_blank" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500" title="시트 바로가기">
+            <i class="fa-solid fa-arrow-up-right-from-square text-[13.5px]"></i>
+          </a>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="relative w-16 h-16 shrink-0">
+            <canvas id="flyGaugeCj2" width="64" height="64"></canvas>
+            <div class="absolute inset-0 flex items-center justify-center text-[15.5px] font-extrabold text-slate-900" id="flyRateCj2">—</div>
+          </div>
+          <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[13.5px] flex-1">
+            <div><div class="text-slate-400">전체</div><div class="font-bold text-slate-800" id="flyTotalCj2">—</div></div>
+            <div><div class="text-slate-400">검사완료</div><div class="font-bold text-emerald-600" id="flyDoneCj2">—</div></div>
+            <div><div class="text-slate-400">미검사</div><div class="font-bold text-rose-600" id="flyUndoneCj2">—</div></div>
+            <div><div class="text-slate-400">누적이력</div><div class="font-bold text-slate-800" id="flyArchiveCj2">—</div></div>
+          </div>
+        </div>
+        <button onclick="focusFactory('cj2')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[13.5px] font-semibold">상세 테이블 보기</button>
+      </div>
+    </div>
+
+    <div class="nav-item w-full" id="navSpec" onclick="openSpecModal()">
+      <i class="fa-solid fa-list-check w-4 text-center"></i>
+      <span class="flex-1">상세스펙</span>
+    </div>
+
+    <div class="nav-item w-full" id="navProductSearch" onclick="openProductSearch()">
+      <i class="fa-solid fa-magnifying-glass w-4 text-center"></i>
+      <span class="flex-1">필터 검색</span>
+    </div>
+
+    <div class="border-t border-slate-100 my-1"></div>
+
+    <button id="syncBtn" onclick="loadData()" class="nav-item w-full">
+      <i class="fa-solid fa-arrows-rotate w-4 text-center" id="syncIcon"></i>
+      <span class="flex-1 text-left">새로고침</span>
+    </button>
+
+    <div class="relative group w-full">
+      <div class="nav-item w-full">
+        <i class="fa-solid fa-plug w-4 text-center"></i>
+        <span class="flex-1">연동상태</span>
+        <span id="syncDot" class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
+      </div>
+      <div class="absolute left-full top-[-8px] w-64 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px">
+        <div id="connStatus" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-[14.5px] text-amber-600 font-semibold mb-3">
+          <span class="h-1.5 w-1.5 rounded-full bg-amber-400 pulse-dot"></span>
+          <span id="connStatusText">연동 대기</span>
+        </div>
+        <div class="text-[12.5px] text-slate-400">마지막 동기화</div>
+        <div id="syncTime" class="text-[14.5px] text-slate-600 font-mono">—</div>
+      </div>
+    </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div class="flex-1 min-w-0">
+    <main class="max-w-[1500px] mx-auto w-full p-5 pt-8 flex flex-col gap-5">
+
+      <div id="loadWarning" class="hidden bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-xl p-3"></div>
+
+      <!-- KPI ROW -->
+      <div id="kpiRow" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-4">
+
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-cyan-50 shrink-0"><i class="fa-solid fa-box text-cyan-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">금일 포장</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between" data-factory="cj1">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
+                <span class="text-[17px] font-extrabold text-accent-600"><span id="kpiPackedCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+              <div class="flex items-center justify-between" data-factory="cj2">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
+                <span class="text-[17px] font-extrabold text-accent-600"><span id="kpiPackedCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiPackedDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-rose-50 shrink-0"><i class="fa-solid fa-hourglass-half text-rose-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">검사 대기 품목</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between" data-factory="cj1">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
+                <span class="text-[17px] font-extrabold text-slate-900"><span id="kpiWaitCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+              <div class="flex items-center justify-between" data-factory="cj2">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
+                <span class="text-[17px] font-extrabold text-slate-900"><span id="kpiWaitCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiWaitDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('미검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-emerald-50 shrink-0"><i class="fa-solid fa-circle-check text-emerald-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">검사 완료 품목</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between" data-factory="cj1">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
+                <span class="text-[17px] font-extrabold text-emerald-600"><span id="kpiDoneCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+              <div class="flex items-center justify-between" data-factory="cj2">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
+                <span class="text-[17px] font-extrabold text-emerald-600"><span id="kpiDoneCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiDoneDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-slate-100 shrink-0"><i class="fa-solid fa-box-archive text-slate-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">누적 검사완료</span>
+            </div>
+            <div class="text-[25px] font-extrabold text-slate-900" id="kpiArchive">—</div>
+            <div class="text-[11.5px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100" id="kpiArchiveBreak">충주1 — · 충주2 —</div>
+          </div>
+          <div class="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiArchiveDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 공장별 검사 현황 (충주1공장/충주2공장 개별 뷰에서만 표시) -->
+      <div id="factorySection" class="card p-5 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <h2 id="factorySectionTitle" class="text-[15px] font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-diagram-project text-slate-400"></i> 공장별 검사 현황</h2>
+          <span class="text-[12px] text-slate-400">납기 임박순 상위 항목 표시</span>
+        </div>
+        <div id="factoryGrid" class="grid grid-cols-1 gap-4 items-stretch">
+
+          <!-- 충주1공장 panel -->
+          <div id="panelCj1Wrap" class="border border-slate-200 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-f1-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f1-600"></i></span>
+                <div>
+                  <div class="text-[15px] font-bold text-slate-800">충주1공장</div>
+                  <div class="text-[12px] text-slate-400">수출건 검사 항목 리스트</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span id="cj1Badge" class="pill pill-undone">—건 미검사</span>
+                <button onclick="exportFactory('cj1')" title="데이터 출력" class="w-7 h-7 shrink-0 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><i class="fa-solid fa-file-export text-[12px]"></i></button>
+              </div>
+            </div>
+            <div id="cj1List" class="mt-2 min-h-[160px]"></div>
+          </div>
+
+          <!-- 충주2공장 panel -->
+          <div id="panelCj2Wrap" class="border border-slate-200 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-f2-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f2-600"></i></span>
+                <div>
+                  <div class="text-[15px] font-bold text-slate-800">충주2공장</div>
+                  <div class="text-[12px] text-slate-400">수출건 검사 항목 리스트</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span id="cj2Badge" class="pill pill-undone">—건 미검사</span>
+                <button onclick="exportFactory('cj2')" title="데이터 출력" class="w-7 h-7 shrink-0 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500"><i class="fa-solid fa-file-export text-[12px]"></i></button>
+              </div>
+            </div>
+            <div id="cj2List" class="mt-2 min-h-[160px]"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 누적 품질검사 차트 (전체 현황에서만 표시) -->
+      <div id="qualitySection" class="card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-[16.5px] font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-line text-slate-400"></i> 누적 품질검사 차트</h2>
+          <button onclick="exportQualityChart()" class="flex items-center gap-1.5 text-[13.5px] font-semibold text-slate-500 hover:bg-slate-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+        </div>
+        <div id="qualityChartGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+
+          <!-- 충주1공장 차트 -->
+          <div id="qcWrapCj1" class="border border-slate-200 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-f1-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f1-600"></i></span>
+                <div>
+                  <div class="text-[15.5px] font-bold text-slate-800">충주1공장</div>
+                  <div class="text-[12px] text-slate-400">누적 <span id="qcTotalCj1" class="font-bold text-f1-600">—</span>건 · 이번 기간 <span id="qcPeriodCj1" class="font-bold text-slate-600">—</span>건</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select id="qcYearCj1" onchange="setChartYear('cj1',this.value)" class="text-[12.5px] font-semibold border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600 bg-white outline-none cursor-pointer hover:border-slate-300">
+                  <option value="all">전체</option>
+                </select>
+                <div class="flex gap-1.5">
+                  <button onclick="setChartGranularity('cj1','day')" id="qcTabCj1Day" class="tab-btn active">일별</button>
+                  <button onclick="setChartGranularity('cj1','week')" id="qcTabCj1Week" class="tab-btn">주간별</button>
+                  <button onclick="setChartGranularity('cj1','month')" id="qcTabCj1Month" class="tab-btn">월간별</button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-[11.5px] text-slate-400 mb-3">
+              <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm" style="background:#3B82F655"></span>기간별 완료</span>
+              <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 rounded" style="background:#3B82F6"></span>누적 합계</span>
+            </div>
+            <div style="height:250px"><canvas id="qualityChartCj1"></canvas></div>
+          </div>
+
+          <!-- 충주2공장 차트 -->
+          <div id="qcWrapCj2" class="border border-slate-200 rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-f2-50 flex items-center justify-center"><i class="fa-solid fa-industry text-f2-600"></i></span>
+                <div>
+                  <div class="text-[15.5px] font-bold text-slate-800">충주2공장</div>
+                  <div class="text-[12px] text-slate-400">누적 <span id="qcTotalCj2" class="font-bold text-f2-600">—</span>건 · 이번 기간 <span id="qcPeriodCj2" class="font-bold text-slate-600">—</span>건</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select id="qcYearCj2" onchange="setChartYear('cj2',this.value)" class="text-[12.5px] font-semibold border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600 bg-white outline-none cursor-pointer hover:border-slate-300">
+                  <option value="all">전체</option>
+                </select>
+                <div class="flex gap-1.5">
+                  <button onclick="setChartGranularity('cj2','day')" id="qcTabCj2Day" class="tab-btn active">일별</button>
+                  <button onclick="setChartGranularity('cj2','week')" id="qcTabCj2Week" class="tab-btn">주간별</button>
+                  <button onclick="setChartGranularity('cj2','month')" id="qcTabCj2Month" class="tab-btn">월간별</button>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 text-[11.5px] text-slate-400 mb-3">
+              <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm" style="background:#8B5CF655"></span>기간별 완료</span>
+              <span class="flex items-center gap-1"><span class="inline-block w-6 h-0.5 rounded" style="background:#8B5CF6"></span>누적 합계</span>
+            </div>
+            <div style="height:250px"><canvas id="qualityChartCj2"></canvas></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="card p-5">
+          <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-bar text-slate-400"></i> 건명별 미검사 TOP 8</h2>
+          <div style="height:220px"><canvas id="topUndoneChart"></canvas></div>
+        </div>
+        <div class="card p-5">
+          <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기 임박 현황</h2>
+          <div style="height:220px"><canvas id="ddayChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h2 class="text-[16.5px] font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-slate-400"></i> 검사 항목 목록
+            <span id="tableCount" class="text-[13.5px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0건</span>
+          </h2>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="setView('all')" id="tabAll" class="tab-btn active">전체</button>
+            <button onclick="setView('cj1')" id="tabCj1" class="tab-btn">충주1공장</button>
+            <button onclick="setView('cj2')" id="tabCj2" class="tab-btn">충주2공장</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
+          <div class="relative sm:col-span-2">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[14.5px]"></i>
+            <input type="text" id="fSearch" oninput="applyFilters()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field">
+          </div>
+          <button onclick="resetFilters()" class="sel-field font-semibold text-slate-500 flex items-center justify-center gap-1.5 hover:bg-slate-100"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
+          <button onclick="exportTableData()" class="sel-field font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+        </div>
+
+        <div class="overflow-auto" style="max-height:560px">
+          <table class="w-full text-[14.5px]" style="min-width:1000px">
+            <thead class="sticky top-0 z-10 bg-white">
+              <tr class="text-[12.5px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
+                <th class="text-left py-2 pr-3 font-semibold w-8">#</th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('공장명')">공장 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-공장명"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('건명')">건명 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-건명"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('단품코드')">단품코드 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-단품코드"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('단품명칭')">단품명칭 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-단품명칭"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('색상')">색상 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-색상"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('수량')">수량 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-수량"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('BOM')">BOM <i class="fa-solid fa-sort text-[9px]" id="sortIcon-BOM"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('납기일')">납기일 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-납기일"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('포장일')">포장일 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-포장일"></i></th>
+                <th class="text-center py-2 font-semibold" style="position:relative;">
+                  <div class="inline-flex items-center gap-1 cursor-pointer hover:text-slate-600 select-none" onclick="toggleInspectDropdown(event)">
+                    <span id="inspectColLabel">검사상태</span>
+                    <i class="fa-solid fa-chevron-down text-[9px]" id="inspectColChevron"></i>
+                  </div>
+                  <div id="inspectColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 min-w-[140px] text-left">
+                    <div onclick="setColInspect('')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 전체</div>
+                    <div onclick="setColInspect('검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span> 검사완료</div>
+                    <div onclick="setColInspect('미검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-rose-600 font-medium"><span class="w-2 h-2 rounded-full bg-rose-400 shrink-0"></span> 미검사</div>
+                    <div onclick="setColInspect('양지')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-amber-700 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span> 양지(회수)</div>
+                  </div>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr><td colspan="11" class="text-center py-10 text-slate-400">데이터를 불러오는 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="noData" class="hidden text-center py-10 text-slate-400">
+          <i class="fa-solid fa-magnifying-glass text-[26.5px] mb-2 block text-slate-300"></i>
+          조건에 맞는 데이터가 없습니다.
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<button id="toTopBtn" onclick="scrollToTop()"
+  class="fixed right-5 top-1/2 -translate-y-1/2 z-50 w-10 h-10 rounded-full bg-white hover:bg-slate-50 text-slate-400 border border-slate-200 shadow-md flex items-center justify-center opacity-0 invisible translate-y-2 transition-all duration-200"
+  title="맨 위로">
+  <i class="fa-solid fa-chevron-up text-[13px]"></i>
+</button>
+
+<!-- ===== 제품 검색 모달 ===== -->
+<div id="productSearchModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeProductSearch()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span class="w-8 h-8 rounded-lg bg-accent-50 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass text-accent-600 text-[15px]"></i></span>
+        <div>
+          <h3 class="text-[15px] font-bold text-slate-800">필터 검색</h3>
+          <p class="text-[12px] text-slate-400">진행중 검사리스트 + 검사완료(출고) 이력 통합 검색</p>
+        </div>
+      </div>
+      <button onclick="closeProductSearch()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="p-5 border-b border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 shrink-0">
+      <div class="relative">
+        <i class="fa-solid fa-file-lines absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
+        <input type="text" id="psName" oninput="runProductSearch()" placeholder="건명 검색" class="in-field">
+      </div>
+      <div class="relative">
+        <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
+        <input type="text" id="psCode" oninput="runProductSearch()" placeholder="단품코드 검색" class="in-field">
+      </div>
+      <input type="date" id="psFrom" onchange="runProductSearch()" class="sel-field" title="시작일 (납기·포장·검사일 기준)">
+      <input type="date" id="psTo" onchange="runProductSearch()" class="sel-field" title="종료일">
+      <select id="psFactory" onchange="runProductSearch()" class="sel-field">
+        <option value="">공장 전체</option>
+        <option value="cj1">충주1공장</option>
+        <option value="cj2">충주2공장</option>
+      </select>
+      <button onclick="exportProductSearch()" class="sel-field font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+    </div>
+
+    <div id="psSummary" class="px-5 pt-4 pb-2 shrink-0"></div>
+
+    <div class="flex-1 overflow-auto px-5 pb-5">
+      <table class="w-full text-[13px]" style="min-width:960px">
+        <thead class="sticky top-0 z-10 bg-white">
+          <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
+            <th class="text-left py-2 pr-3 font-semibold">상태</th>
+            <th class="text-left py-2 pr-3 font-semibold">공장</th>
+            <th class="text-left py-2 pr-3 font-semibold">건명</th>
+            <th class="text-left py-2 pr-3 font-semibold">단품코드</th>
+            <th class="text-left py-2 pr-3 font-semibold">단품명칭</th>
+            <th class="text-center py-2 pr-3 font-semibold">색상</th>
+            <th class="text-center py-2 pr-3 font-semibold">수량</th>
+            <th class="text-center py-2 pr-3 font-semibold">CBM</th>
+            <th class="text-left py-2 pr-3 font-semibold">납기일</th>
+            <th class="text-left py-2 pr-3 font-semibold">포장일</th>
+            <th class="text-left py-2 font-semibold">검사일</th>
+          </tr>
+        </thead>
+        <tbody id="psTableBody"></tbody>
+      </table>
+      <div id="psNoData" class="text-center py-10 text-slate-400">
+        <i class="fa-solid fa-magnifying-glass text-[25px] mb-2 block text-slate-300"></i>
+        단품코드, 건명, 날짜, 공장으로 검색해 보세요.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 상세스펙 모달 ===== -->
+<div id="specModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeSpecModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
+    <div class="border-b border-slate-200 shrink-0">
+      <div class="flex items-center justify-between px-5 pt-4">
+        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[13px] font-bold">
+          <i class="fa-solid fa-cube"></i> 제품 상세스펙 및 이력
+        </span>
+        <button onclick="closeSpecModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="px-5 pb-4 pt-3">
+        <div class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 클릭하여 다른 제품코드로 검색가능</span></div>
+        <input type="text" id="specCodeInput" oninput="runSpecLookup()" placeholder="단품코드를 입력하세요" class="w-full text-[15px] font-bold text-slate-800 outline-none bg-transparent border-b border-transparent focus:border-accent-500">
+      </div>
+    </div>
+
+    <div id="specBody" class="flex-1 overflow-auto p-5">
+      <div id="specEmpty" class="text-center py-16 text-slate-400">
+        <i class="fa-solid fa-barcode text-[25px] mb-2 block text-slate-300"></i>
+        단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.
+      </div>
+
+      <div id="specContent" class="hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <div class="border border-slate-200 rounded-xl px-3 py-2">
+            <div class="text-[10.5px] font-bold text-slate-400 mb-1">표준품명 <span class="text-slate-300 font-normal">· 직접 입력/수정 가능</span></div>
+            <input type="text" id="specStandardName" oninput="onSpecFieldEdit()" placeholder="표준품명을 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
+          </div>
+          <div class="border border-slate-200 rounded-xl px-3 py-2">
+            <div class="text-[10.5px] font-bold text-slate-400 mb-1">단품코드의 종류 <span class="text-slate-300 font-normal">· 색상비/형태비/복합비/기획주문품/단종비 등, 직접 수정 가능</span></div>
+            <input type="text" id="specCodeType" oninput="onSpecFieldEdit()" placeholder="단품코드 종류를 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+          <div class="border border-slate-200 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">가로</div>
+            <div id="specW" class="text-[15px] font-extrabold text-slate-800">—</div>
+            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">세로</div>
+            <div id="specD" class="text-[15px] font-extrabold text-slate-800">—</div>
+            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">높이</div>
+            <div id="specH" class="text-[15px] font-extrabold text-slate-800">—</div>
+            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">중량</div>
+            <div id="specWeight" class="text-[15px] font-extrabold text-slate-800">—</div>
+            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          </div>
+          <div class="border border-slate-200 rounded-xl p-3 text-center">
+            <div class="text-[11px] font-bold text-slate-400 mb-1">CBM</div>
+            <div id="specCbm" class="text-[15px] font-extrabold text-slate-800">—</div>
+            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mb-2">
+          <h4 class="text-[14px] font-bold text-slate-800">검사 세부 진행 이력 <span id="specHistCount" class="text-[11px] font-semibold text-slate-400"></span></h4>
+          <button onclick="exportSpecHistory()" class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:bg-slate-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+        </div>
+        <div class="overflow-auto border border-slate-100 rounded-xl" style="max-height:320px">
+          <table class="w-full text-[13px]" style="min-width:720px">
+            <thead class="sticky top-0 z-10 bg-white">
+              <tr class="text-[10px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
+                <th class="text-left py-2 pl-3 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('건명')">건명 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-건명"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('단품코드')">단품코드 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-단품코드"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('색상')">색상 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-색상"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('수량')">수량 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-수량"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('검사')">진행 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-검사"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('납기일')">납기일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-납기일"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('포장일')">포장일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-포장일"></i></th>
+                <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('검사일')">검사일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-검사일"></i></th>
+              </tr>
+            </thead>
+            <tbody id="specHistBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG =====
+const FACTORIES = [
+  { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1420932673', accent:'f1' },
+  { key:'cj2', label:'충주2공장', sheetId:'1Gy1jIbw7j4t2A2B0N3-cwrqwCQMXd1M-S4oROGk-hg8', gid:'0', accent:'f2' },
+];
+// 검사완료 후 별도 탭으로 이동되는 누적 이력 시트 (진행중인 검사항목 리스트와는 별도)
+const ARCHIVES = [
+  { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1307214033', accent:'f1' },
+  { key:'cj2', label:'충주2공장', sheetId:'1Gy1jIbw7j4t2A2B0N3-cwrqwCQMXd1M-S4oROGk-hg8', gid:'1962376452', accent:'f2' },
+];
+let archiveTotals = { cj1: null, cj2: null };
+let archiveRows = [];
+let loadErrors = [];
+let lastSearchResults = [];
+let displayedRows = [];
+let tableSortKey = null;
+let tableSortDir = 'asc';
+
+// ===== STATE =====
+let allData = [];
+let filtered = [];
+let factoryTab = 'all';
+let currentView = 'all';
+let charts = {};
+
+// ===== FETCH =====
+async function loadData() {
+  setConnStatus('loading');
+  const btn = document.getElementById('syncBtn');
+  const icon = document.getElementById('syncIcon');
+  btn.disabled = true;
+  icon.classList.add('fa-spin');
+
+  loadErrors = [];
+  try {
+    // 진행중 리스트와 누적 이력(완료 탭)은 서로 독립적으로 요청 — 한쪽이 실패해도 나머지는 정상 표시
+    const [results, archives] = await Promise.all([
+      Promise.all(FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))),
+      Promise.all(ARCHIVES.map(f => fetchArchiveData(f).catch(e => { loadErrors.push(`${f.label} 검사완료 리스트(누적 이력): ${e.message}`); return null; }))),
+    ]);
+    allData = results.flat();
+    archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
+    archiveRows = archives.filter(Boolean).flatMap(t => t.items);
+    renderArchiveKPI();
+    renderQualityCharts();
+    populateFilterOptions();
+    applyFilters();
+    document.getElementById('syncTime').textContent = new Date().toLocaleTimeString('ko-KR');
+    renderLoadWarnings();
+    setConnStatus(loadErrors.length ? 'partial' : 'ok');
+  } catch (e) {
+    console.error(e);
+    setConnStatus('error');
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="11" class="text-center py-10 text-rose-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i>데이터 로드 실패: ${e.message}</td></tr>`;
+  } finally {
+    btn.disabled = false;
+    icon.classList.remove('fa-spin');
+  }
+}
+
+async function fetchFactory(f) {
+  const url = `https://docs.google.com/spreadsheets/d/${f.sheetId}/gviz/tq?tqx=out:json&gid=${f.gid}&t=${Date.now()}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+  const data = JSON.parse(jsonStr);
+  return parseRows(data.table.rows, f);
+}
+
+// 완료 이력 시트: 상단 헤더 행(O:TOTAL CORD, P:TOTAL)의 집계값 + 개별 출고 이력 행을 함께 읽어온다
+async function fetchArchiveData(f) {
+  const url = `https://docs.google.com/spreadsheets/d/${f.sheetId}/gviz/tq?tqx=out:json&gid=${f.gid}&t=${Date.now()}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
+  const data = JSON.parse(jsonStr);
+  const rawRows = data.table.rows || [];
+
+  let cord = 0, qty = 0;
+  for (const row of rawRows) {
+    if (!row.c) continue;
+    const g = (i) => {
+      if (!row.c[i]) return '';
+      return row.c[i].f ?? (row.c[i].v !== null && row.c[i].v !== undefined ? String(row.c[i].v) : '');
+    };
+    if (g(0).trim() === '건명') { cord = parseInt(g(14)) || 0; qty = parseInt(g(15)) || 0; break; }
+  }
+
+  const items = parseArchiveRows(rawRows, f);
+  return { cord, qty, items };
+}
+
+function parseRows(rows, factory) {
+  const result = [];
+  if (!rows) return result;
+  for (const row of rows) {
+    if (!row.c) continue;
+    const g = (i) => {
+      if (!row.c[i]) return '';
+      return row.c[i].f ?? (row.c[i].v !== null && row.c[i].v !== undefined ? String(row.c[i].v) : '');
+    };
+    const 건명 = g(0).trim();
+    if (!건명 || 건명.includes('검사 항목') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2' || 건명.includes('신규')) continue;
+
+    const 단품코드val = g(1).trim();
+    if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
+
+    const 검사raw = g(13).trim();
+    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : '미검사';
+    const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
+
+    result.push({
+      source: 'active',
+      공장: factory.key,
+      공장명: factory.label,
+      accent: factory.accent,
+      건명,
+      단품코드: 단품코드val,
+      색상: g(2).trim(),
+      수량: parseInt(g(3)) || 0,
+      단품명칭: g(4).trim(),
+      BOM: g(5).trim().toUpperCase(),
+      납기일: g(6).trim(),
+      포장일: g(7).trim(),
+      검사일: g(8).trim(),
+      검사: inspectStatus,
+      가로, 세로, 높이,
+      중량: parseFloat(g(12)) || 0,
+      CBM: (가로 && 세로 && 높이) ? (가로 * 세로 * 높이 / 1e9) : null,
+    });
+  }
+  return result;
+}
+
+// 검사완료 리스트(이력) 탭 — 실제 출고/포장 이력 데이터. 컬럼 배치가 진행중 리스트와 달라 별도 파서 사용
+function parseArchiveRows(rows, factory) {
+  const result = [];
+  if (!rows) return result;
+  for (const row of rows) {
+    if (!row.c) continue;
+    const g = (i) => {
+      if (!row.c[i]) return '';
+      return row.c[i].f ?? (row.c[i].v !== null && row.c[i].v !== undefined ? String(row.c[i].v) : '');
+    };
+    const 건명 = g(0).trim();
+    if (!건명 || 건명.includes('검사') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2' || 건명.includes('신규')) continue;
+
+    const 단품코드val = g(1).trim();
+    if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
+
+    const 비고raw = g(13).trim();
+    const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
+
+    result.push({
+      source: 'archive',
+      공장: factory.key,
+      공장명: factory.label,
+      accent: factory.accent,
+      건명,
+      단품코드: 단품코드val,
+      색상: g(2).trim(),
+      수량: parseInt(g(3)) || 0,
+      단품명칭: g(4).trim(),
+      포장처: g(5).trim(),
+      납기일: g(6).trim(),
+      포장일: g(7).trim(),
+      검사일: g(8).trim(),
+      검사: (비고raw === '검사') ? '검사' : '미검사',
+      가로, 세로, 높이,
+      중량: parseFloat(g(12)) || 0,
+      CBM: (가로 && 세로 && 높이) ? (가로 * 세로 * 높이 / 1e9) : null,
+    });
+  }
+  return result;
+}
+
+function parseKDate(str) {
+  if (!str) return null;
+  const m = str.match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+  if (!m) return null;
+  return new Date(+m[1], +m[2] - 1, +m[3]);
+}
+
+function ddayInfo(str) {
+  const d = parseKDate(str);
+  if (!d) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+
+// ===== FILTER OPTIONS =====
+function populateFilterOptions() {}
+
+// 테이블 컬럼 헤더 클릭 정렬(오름/내림) 공용 유틸
+const DATE_SORT_KEYS = ['납기일', '포장일', '검사일'];
+function sortByKey(rows, key, dir) {
+  if (!key) return rows;
+  const mul = dir === 'desc' ? -1 : 1;
+  return [...rows].sort((a, b) => {
+    if (key === '수량') return ((a.수량 || 0) - (b.수량 || 0)) * mul;
+    if (DATE_SORT_KEYS.includes(key)) {
+      const da = parseKDate(a[key]), db = parseKDate(b[key]);
+      if (!da && !db) return 0;
+      if (!da) return 1 * mul;
+      if (!db) return -1 * mul;
+      return (da - db) * mul;
+    }
+    return String(a[key] || '').localeCompare(String(b[key] || ''), 'ko') * mul;
+  });
+}
+function updateSortIcons(prefix, key, dir) {
+  document.querySelectorAll(`[id^="${prefix}-"]`).forEach(el => { el.className = 'fa-solid fa-sort text-[9px]'; });
+  const icon = document.getElementById(prefix + '-' + key);
+  if (icon) icon.className = 'fa-solid ' + (dir === 'asc' ? 'fa-sort-up' : 'fa-sort-down') + ' text-[9px]';
+}
+function setSortColumn(key) {
+  if (tableSortKey === key) {
+    if (tableSortDir === 'asc') { tableSortDir = 'desc'; }
+    else { tableSortKey = null; tableSortDir = 'asc'; document.querySelectorAll('[id^="sortIcon-"]').forEach(el => { el.className = 'fa-solid fa-sort text-[9px]'; }); applyFilters(); return; }
+  } else { tableSortKey = key; tableSortDir = 'asc'; }
+  updateSortIcons('sortIcon', key, tableSortDir);
+  applyFilters();
+}
+
+function setColInspect(val) {
+  colInspectFilter = val;
+  const label = document.getElementById('inspectColLabel');
+  const dd = document.getElementById('inspectColDropdown');
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '양지' ? '양지(회수) ✓' : '검사상태';
+  if (dd) dd.classList.add('hidden');
+  applyFilters();
+}
+
+function toggleInspectDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('inspectColDropdown');
+  dd.classList.toggle('hidden');
+}
+
+document.addEventListener('click', () => {
+  const dd = document.getElementById('inspectColDropdown');
+  if (dd) dd.classList.add('hidden');
+});
+
+// ===== FILTERS =====
+let colInspectFilter = '';
+
+function applyFilters() {
+  const search = document.getElementById('fSearch').value.toLowerCase();
+
+  function matchRow(d) {
+    if (search && !d.건명.toLowerCase().includes(search) &&
+        !d.단품코드.toLowerCase().includes(search) &&
+        !d.단품명칭.toLowerCase().includes(search)) return false;
+    if (colInspectFilter && d.검사 !== colInspectFilter) return false;
+    return true;
+  }
+
+  // KPI·패널·차트: 진행중 데이터만
+  filtered = allData.filter(matchRow);
+
+  // 테이블: 진행중 + 완료이력 통합
+  const allItems = [...allData, ...archiveRows];
+  let display = allItems.filter(matchRow);
+  if (factoryTab !== 'all') display = display.filter(d => d.공장 === factoryTab);
+  display = sortByKey(display, tableSortKey, tableSortDir);
+  displayedRows = display;
+
+  const chartData = factoryTab === 'all' ? filtered : filtered.filter(d => d.공장 === factoryTab);
+
+  renderKPIs(filtered);
+  renderFactoryPanels(filtered);
+  renderTable(display);
+  renderCharts(chartData);
+  renderMobileAll();
+}
+
+function exportTableData() {
+  const label = factoryTab === 'all' ? '전체' : (factoryTab === 'cj1' ? '충주1공장' : '충주2공장');
+  exportCSV(displayedRows, `검사항목목록_${label}_${new Date().toISOString().slice(0,10)}.csv`, [
+    { label:'공장', get: d => d.공장명 },
+    { label:'건명', get: d => d.건명 },
+    { label:'단품코드', get: d => d.단품코드 },
+    { label:'단품명칭', get: d => d.단품명칭 },
+    { label:'색상', get: d => d.색상 },
+    { label:'수량', get: d => d.수량 },
+    { label:'BOM', get: d => d.BOM },
+    { label:'납기일', get: d => d.납기일 },
+    { label:'포장일', get: d => d.포장일 },
+    { label:'검사일', get: d => d.검사일 },
+    { label:'검사상태', get: d => d.검사 },
+  ]);
+}
+
+function exportFactory(key) {
+  const label = key === 'cj1' ? '충주1공장' : '충주2공장';
+  const rows = filtered.filter(d => d.공장 === key);
+  exportCSV(rows, `${label}_검사리스트_${new Date().toISOString().slice(0,10)}.csv`, [
+    { label:'건명', get: d => d.건명 },
+    { label:'단품코드', get: d => d.단품코드 },
+    { label:'단품명칭', get: d => d.단품명칭 },
+    { label:'색상', get: d => d.색상 },
+    { label:'수량', get: d => d.수량 },
+    { label:'BOM', get: d => d.BOM },
+    { label:'납기일', get: d => d.납기일 },
+    { label:'포장일', get: d => d.포장일 },
+    { label:'검사일', get: d => d.검사일 },
+    { label:'검사상태', get: d => d.검사 },
+  ]);
+}
+
+function resetFilters() {
+  document.getElementById('fSearch').value = '';
+  setColInspect('');
+  applyFilters();
+}
+
+function setFactoryTab(tab) {
+  factoryTab = tab;
+  ['all','cj1','cj2'].forEach(t => {
+    document.getElementById('tab' + (t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1))).classList.toggle('active', t === tab);
+  });
+  applyFilters();
+}
+
+// 사이드바 공장 클릭 시 메인화면 전체를 해당 공장 상세현황으로 전환
+function setView(view) {
+  currentView = view;
+
+  // 상단 KPI 카드의 공장별 행: 특정 공장을 선택하면 그 공장 행만 보이게 (invisible로 감춰 카드 높이는 유지)
+  document.querySelectorAll('#kpiRow [data-factory]').forEach(el => {
+    el.classList.toggle('invisible', view !== 'all' && el.dataset.factory !== view);
+  });
+
+  setFactoryTab(view);
+
+  document.getElementById('navOverview').classList.toggle('active', view === 'all');
+  document.getElementById('navCj1').classList.toggle('active', view === 'cj1');
+  document.getElementById('navCj2').classList.toggle('active', view === 'cj2');
+
+  // 전체 현황 = 누적 품질검사 차트, 개별 공장 = 공장별 검사 현황(리스트)
+  document.getElementById('qualitySection').classList.toggle('hidden', view !== 'all');
+  document.getElementById('factorySection').classList.toggle('hidden', view === 'all');
+  document.getElementById('panelCj1Wrap').classList.toggle('hidden', view === 'cj2');
+  document.getElementById('panelCj2Wrap').classList.toggle('hidden', view === 'cj1');
+
+  const titleEl = document.getElementById('factorySectionTitle');
+  if (view === 'cj1') titleEl.innerHTML = '<i class="fa-solid fa-diagram-project text-slate-400"></i> 충주1공장 검사 대기 현황';
+  else if (view === 'cj2') titleEl.innerHTML = '<i class="fa-solid fa-diagram-project text-slate-400"></i> 충주2공장 검사 대기 현황';
+}
+
+function focusFactory(key) {
+  setView(key);
+  document.querySelector('.card:has(#tableCount)')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function focusFactoryTop(key) {
+  setView(key);
+  scrollToTop();
+}
+function scrollToTop() { window.scrollTo({ top:0, behavior:'smooth' }); }
+
+// ===== KPIs =====
+function computeStats(items) {
+  const total = items.length;
+  const done = items.filter(d => d.검사 === '검사').length;
+  const yangji = items.filter(d => d.검사 === '양지').length;
+  const undone = items.filter(d => d.검사 === '미검사').length;
+  const packedToday = items.filter(d => {
+    if (!d.포장일) return false;
+    const dd = ddayInfo(d.포장일);
+    return dd !== null && dd <= 0;
+  }).length;
+  return { total, done, undone, yangji, packedToday };
+}
+
+// KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
+// 호버 팝오버용 간단 목록: 공장명 - 건명 - N CORD - 날짜, 마지막에 "외 N건"
+function renderDetailList(items, dateField, limit) {
+  limit = limit || 8;
+  if (!items.length) return `<div class="text-[12px] text-slate-400 text-center py-3">데이터 없음</div>`;
+  const sorted = [...items].sort((a, b) => {
+    const da = parseKDate(a[dateField]), db = parseKDate(b[dateField]);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return db - da;
+  });
+  const top = sorted.slice(0, limit);
+  const header = `<div class="flex items-center justify-between gap-2 text-[10.5px] font-bold text-slate-400 uppercase tracking-wide pb-1.5 mb-1 border-b border-slate-200">
+    <span>공장명 · 건명</span>
+    <span class="shrink-0">수량 · ${dateField}</span>
+  </div>`;
+  const rows = top.map(d => `<div class="flex items-center justify-between gap-2 text-[12px] py-1.5 border-b border-slate-50 last:border-0">
+    <span class="text-slate-600 truncate max-w-[180px]"><b class="text-slate-800">${d.공장명}</b> · ${d.건명}</span>
+    <span class="text-slate-400 font-mono shrink-0 whitespace-nowrap">${d.수량 || 0}CORD · ${d[dateField] || '—'}</span>
+  </div>`).join('');
+  const more = items.length > top.length ? `<div class="text-[11.5px] text-slate-400 text-center pt-1.5">외 ${(items.length - top.length).toLocaleString()}건</div>` : '';
+  return header + rows + more;
+}
+
+// fullData 기준으로 공장별 CORD 수치를 그대로 표시
+// currentView가 특정 공장이면 그 공장만, 'all'이면 두 공장 합쳐서 하나의 목록으로 반환
+function scopedPool(cj1Arr, cj2Arr) {
+  if (currentView === 'cj1') return cj1Arr;
+  if (currentView === 'cj2') return cj2Arr;
+  return [...cj1Arr, ...cj2Arr];
+}
+
+function renderKPIs(fullData) {
+  const cj1Items = fullData.filter(d => d.공장 === 'cj1');
+  const cj2Items = fullData.filter(d => d.공장 === 'cj2');
+  const cj1 = computeStats(cj1Items);
+  const cj2 = computeStats(cj2Items);
+
+  // 1) 금일 포장
+  const cj1Packed = cj1Items.filter(d => d.포장일 && ddayInfo(d.포장일) <= 0);
+  const cj2Packed = cj2Items.filter(d => d.포장일 && ddayInfo(d.포장일) <= 0);
+  document.getElementById('kpiPackedCj1').textContent = cj1.packedToday.toLocaleString();
+  document.getElementById('kpiPackedCj2').textContent = cj2.packedToday.toLocaleString();
+  document.getElementById('kpiPackedDetail').innerHTML = renderDetailList(scopedPool(cj1Packed, cj2Packed), '포장일');
+
+  // 2) 검사 대기 품목 (미검사만, 양지는 별도)
+  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사');
+  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사');
+  document.getElementById('kpiWaitCj1').textContent = cj1.undone.toLocaleString();
+  document.getElementById('kpiWaitCj2').textContent = cj2.undone.toLocaleString();
+  document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
+
+  // 3) 검사 완료 품목: 진행중 리스트에서 이미 완료된 건 + 완료 이력(누적)까지 합산한 전체 누적 완료 건수
+  const cj1DoneActive = cj1Items.filter(d => d.검사 === '검사');
+  const cj2DoneActive = cj2Items.filter(d => d.검사 === '검사');
+  const cj1Archive = archiveRows.filter(d => d.공장 === 'cj1');
+  const cj2Archive = archiveRows.filter(d => d.공장 === 'cj2');
+  const archivedCj1 = archiveTotals.cj1 ? archiveTotals.cj1.cord : 0;
+  const archivedCj2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
+  document.getElementById('kpiDoneCj1').textContent = (cj1.done + archivedCj1).toLocaleString();
+  document.getElementById('kpiDoneCj2').textContent = (cj2.done + archivedCj2).toLocaleString();
+  document.getElementById('kpiDoneDetail').innerHTML = renderDetailList(scopedPool([...cj1DoneActive, ...cj1Archive], [...cj2DoneActive, ...cj2Archive]), '검사일');
+}
+
+// ===== ARCHIVE KPI (누적 이력) =====
+function renderArchiveKPI() {
+  const cj1 = archiveTotals.cj1, cj2 = archiveTotals.cj2;
+  const c1 = cj1 ? cj1.cord : 0;
+  const c2 = cj2 ? cj2.cord : 0;
+  document.getElementById('kpiArchive').textContent = (cj1 && cj2) ? (c1 + c2).toLocaleString() : '오류';
+  document.getElementById('kpiArchiveBreak').textContent = `충주1 ${c1.toLocaleString()}건 · 충주2 ${c2.toLocaleString()}건`;
+  const cj1Archive = archiveRows.filter(d => d.공장 === 'cj1');
+  const cj2Archive = archiveRows.filter(d => d.공장 === 'cj2');
+  document.getElementById('kpiArchiveDetail').innerHTML = renderDetailList(scopedPool(cj1Archive, cj2Archive), '포장일');
+}
+
+// KPI 카드 팝오버의 "상세보기" 버튼: 현재 선택된 공장(currentView) 기준으로 검사상태만 맞춰 테이블로 스크롤
+function viewDetailInTable(inspectValue) {
+  document.getElementById('fInspect').value = inspectValue;
+  applyFilters();
+  document.querySelector('.card:has(#tableCount)')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+// ===== FACTORY CONNECTOR PANELS =====
+function renderFactoryPanels(data) {
+  ['cj1','cj2'].forEach(key => {
+    const items = data.filter(d => d.공장 === key);
+    const undone = items.filter(d => d.검사 === '미검사');
+    const done = items.filter(d => d.검사 === '검사').length;
+    const yangji = items.filter(d => d.검사 === '양지').length;
+
+    const badgeEl = document.getElementById(key + 'Badge');
+    badgeEl.textContent = undone.length + '건 미검사' + (yangji > 0 ? ` · ${yangji}건 양지` : '');
+    badgeEl.className = 'pill ' + (undone.length === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
+
+    renderSidebarFlyout(key, items, done, undone.length);
+
+    const sorted = [...undone].sort((a, b) => {
+      const da = ddayInfo(a.납기일), db = ddayInfo(b.납기일);
+      if (da === null && db === null) return 0;
+      if (da === null) return 1;
+      if (db === null) return -1;
+      return da - db;
+    }).slice(0, 8);
+
+    const list = document.getElementById(key + 'List');
+    if (!items.length) {
+      list.innerHTML = `<div class="text-center py-10 text-slate-400 text-[13px]">데이터 없음</div>`;
+      return;
+    }
+    if (!sorted.length) {
+      list.innerHTML = `<div class="flex items-center gap-2 text-emerald-600 text-[13px] font-semibold py-8 justify-center"><i class="fa-solid fa-circle-check"></i> 모든 항목 검사 완료</div>`;
+      return;
+    }
+    list.innerHTML = `<div class="flex flex-col divide-y divide-slate-50">` + sorted.map(d => {
+      const dd = ddayInfo(d.납기일);
+      let ddBadge = '<span class="pill pill-dday-ok">납기 미정</span>';
+      let barColor = 'bg-slate-200';
+      if (dd !== null) {
+        if (dd < 0) { ddBadge = `<span class="pill pill-dday-over">지연 ${Math.abs(dd)}일</span>`; barColor = 'bg-rose-400'; }
+        else if (dd <= 7) { ddBadge = `<span class="pill pill-dday-soon">D-${dd}</span>`; barColor = 'bg-orange-400'; }
+        else ddBadge = `<span class="pill pill-dday-ok">D-${dd}</span>`;
+      }
+      return `<div class="grid items-center gap-3 py-2.5 pr-2 hover:bg-slate-50 rounded-lg transition-colors" style="grid-template-columns:4px minmax(0,1fr) 64px 56px 84px 20px">
+        <span class="h-8 rounded-full ${barColor} justify-self-center"></span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[14px] font-bold text-slate-800 truncate" title="${d.건명}">${d.건명}</span>
+            <span class="code-tag shrink-0">${d.단품코드 || '—'}</span>
+          </div>
+          <div class="text-[12px] text-slate-400 truncate mt-0.5">${d.단품명칭 || '—'}</div>
+        </div>
+        <span class="px-2 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 text-center justify-self-center">${d.색상 || '—'}</span>
+        <span class="text-[13px] font-mono text-slate-500 text-right">${d.수량 || 0}개</span>
+        <span class="justify-self-end">${ddBadge}</span>
+        <i class="fa-solid fa-chevron-right text-slate-300 text-[11px] justify-self-end"></i>
+      </div>`;
+    }).join('') + `</div>`;
+  });
+}
+
+// ===== SIDEBAR HOVER FLYOUT =====
+function renderSidebarFlyout(key, items, done, undoneCount) {
+  const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
+  const total = items.length;
+  const rate = total ? Math.round(done / total * 100) : 0;
+  const archive = archiveTotals[key];
+
+  document.getElementById('flyRate' + suffix).textContent = rate + '%';
+  document.getElementById('flyTotal' + suffix).textContent = total.toLocaleString();
+  document.getElementById('flyDone' + suffix).textContent = done.toLocaleString();
+  document.getElementById('flyUndone' + suffix).textContent = undoneCount.toLocaleString();
+  document.getElementById('flyArchive' + suffix).textContent = archive ? archive.cord.toLocaleString() + '건' : '—';
+
+  const accentColor = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
+  const ctx = document.getElementById('flyGauge' + suffix).getContext('2d');
+  if (charts['fly' + suffix]) charts['fly' + suffix].destroy();
+  charts['fly' + suffix] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { datasets: [{ data: [rate, 100 - rate], backgroundColor: [accentColor, '#E2E8F0'], borderWidth: 0 }] },
+    options: { responsive:false, cutout:'72%', plugins:{ legend:{display:false}, tooltip:{enabled:false} } }
+  });
+}
+
+// ===== TABLE =====
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  const noData = document.getElementById('noData');
+  document.getElementById('tableCount').textContent = data.length + '건';
+
+  if (!data.length) {
+    tbody.innerHTML = '';
+    noData.classList.remove('hidden');
+    return;
+  }
+  noData.classList.add('hidden');
+
+  tbody.innerHTML = data.map((d, i) => {
+    const isDone = d.검사 === '검사';
+    const isArchive = d.source === 'archive';
+    const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
+    const bomCell = d.BOM ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${d.BOM === 'Y' ? 'pill-bom-y' : 'pill-bom-n'}">${d.BOM}</span>` : `<span class="text-slate-300 text-[12px]">—</span>`;
+    const rowBg = isArchive ? 'style="background:#F8FAFC;"' : '';
+    return `<tr class="tbl-row" ${rowBg}>
+      <td class="py-2.5 pr-3 text-slate-400">${i + 1}</td>
+      <td class="py-2.5 pr-3">
+        <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span>
+      </td>
+      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
+      <td class="py-2.5 pr-3 font-mono text-slate-500 text-[13.5px]">${d.단품코드 ? `<span class="cursor-pointer text-accent-600 hover:underline" onclick="openSpecModal('${d.단품코드}')">${d.단품코드}</span>` : '—'}</td>
+      <td class="py-2.5 pr-3 text-slate-600 max-w-[220px] truncate text-[12.5px]" title="${d.단품명칭}">${d.단품명칭 || '—'}</td>
+      <td class="py-2.5 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
+      <td class="py-2.5 pr-3 text-center text-slate-600 font-mono font-bold">${d.수량 || '—'}</td>
+      <td class="py-2.5 pr-3 text-center">${bomCell}</td>
+      <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.납기일 || '—'}</td>
+      <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.포장일 || '—'}</td>
+      <td class="py-2.5 text-center">
+        <span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':'pill-undone'}"><i class="fa-solid ${d.검사==='검사'?'fa-check':d.검사==='양지'?'fa-rotate-left':'fa-xmark'}"></i> ${d.검사}</span>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== CHARTS =====
+function renderCharts(data) {
+  renderTopUndoneChart(data);
+  renderDdayChart(data);
+}
+
+function renderTopUndoneChart(data) {
+  const undone = data.filter(d => d.검사 !== '검사');
+  const counts = {};
+  undone.forEach(d => {
+    const key = d.건명 + '||' + d.공장;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  const top = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,8);
+  const labels = top.map(([k]) => { const [name] = k.split('||'); return name.length > 16 ? name.slice(0,16)+'…' : name; });
+  const colors = top.map(([k]) => k.split('||')[1] === 'cj1' ? 'rgba(59,130,246,.75)' : 'rgba(139,92,246,.75)');
+
+  const ctx = document.getElementById('topUndoneChart').getContext('2d');
+  if (charts.topUndone) charts.topUndone.destroy();
+  charts.topUndone = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: top.map(([,v]) => v), backgroundColor: colors, borderRadius:6, borderSkipped:false }] },
+    options: {
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false}, tooltip:lightTooltip() },
+      scales:{
+        x:{ grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8', font:{size:11.5}, stepSize:1, maxRotation:0, minRotation:0} },
+        y:{ grid:{display:false}, ticks:{color:'#475569', font:{size:12}} }
+      }
+    }
+  });
+}
+
+function renderDdayChart(data) {
+  const buckets = { cj1:[0,0,0,0], cj2:[0,0,0,0] };
+  data.filter(d => d.검사 !== '검사').forEach(d => {
+    const dd = ddayInfo(d.납기일);
+    const idx = dd === null ? 3 : dd < 0 ? 0 : dd <= 7 ? 1 : 2;
+    buckets[d.공장][idx] += 1;
+  });
+  const labels = ['지연','7일 이내','8일 이상','납기 미정'];
+  const ctx = document.getElementById('ddayChart').getContext('2d');
+  if (charts.dday) charts.dday.destroy();
+  charts.dday = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'충주1공장', data: buckets.cj1, backgroundColor:'rgba(59,130,246,.75)', borderRadius:6, borderSkipped:false },
+        { label:'충주2공장', data: buckets.cj2, backgroundColor:'rgba(139,92,246,.75)', borderRadius:6, borderSkipped:false },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'top', labels:{color:'#475569', font:{size:12.5}, boxWidth:10}}, tooltip:lightTooltip() },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:'#475569', font:{size:12.5}} },
+        y:{ grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8', font:{size:11.5}, stepSize:1} }
+      }
+    }
+  });
+}
+
+// ===== 누적 품질검사 차트 =====
+let chartGranularity = { cj1: 'day', cj2: 'day' };
+let chartYear = { cj1: 'all', cj2: 'all' };
+let lastQualitySeries = { cj1: null, cj2: null };
+
+function ymd(date) {
+  return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+}
+function weekStart(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() + ((day === 0 ? -6 : 1) - day));
+  return d;
+}
+
+function formatChartLabel(date, granularity) {
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  if (granularity === 'month') return date.getFullYear() + '.' + mm;
+  return mm + '.' + dd;
+}
+
+function computeCumulativeSeries(items, granularity, year) {
+  const buckets = new Map();
+  items.forEach(d => {
+    const date = parseKDate(d.검사일);
+    if (!date) return;
+    if (year && year !== 'all' && date.getFullYear() !== parseInt(year)) return;
+    let rawKey, sortDate, displayLabel;
+    if (granularity === 'day') {
+      sortDate = date; rawKey = ymd(date);
+      displayLabel = formatChartLabel(date, 'day');
+    } else if (granularity === 'week') {
+      sortDate = weekStart(date); rawKey = ymd(sortDate);
+      displayLabel = formatChartLabel(sortDate, 'week');
+    } else {
+      sortDate = new Date(date.getFullYear(), date.getMonth(), 1);
+      rawKey = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
+      displayLabel = formatChartLabel(date, 'month');
+    }
+    if (!buckets.has(rawKey)) buckets.set(rawKey, { count: 0, sortDate, displayLabel, rawKey });
+    buckets.get(rawKey).count++;
+  });
+  const sorted = [...buckets.entries()].sort((a, b) => a[1].sortDate - b[1].sortDate);
+  let cum = 0;
+  const labels = [], rawLabels = [], data = [], periodData = [];
+  sorted.forEach(([, v]) => {
+    cum += v.count;
+    labels.push(v.displayLabel);
+    rawLabels.push(v.rawKey);
+    data.push(cum);
+    periodData.push(v.count);
+  });
+  return { labels, rawLabels, data, periodData };
+}
+
+function updateYearSelectors() {
+  ['cj1', 'cj2'].forEach(key => {
+    const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
+    const items = [
+      ...allData.filter(d => d.공장 === key && d.검사 === '검사'),
+      ...archiveRows.filter(d => d.공장 === key)
+    ];
+    const years = [...new Set(items.map(d => {
+      const date = parseKDate(d.검사일);
+      return date ? date.getFullYear() : null;
+    }).filter(Boolean))].sort();
+    const select = document.getElementById('qcYear' + suffix);
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = '<option value="all">전체</option>';
+    years.forEach(y => select.innerHTML += `<option value="${y}">${y}년</option>`);
+    if (years.includes(parseInt(current))) select.value = current;
+  });
+}
+
+function renderQualityChart(key, granularity) {
+  const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
+  const archive = archiveRows.filter(d => d.공장 === key);
+  const series = computeCumulativeSeries([...activeDone, ...archive], granularity, chartYear[key]);
+  lastQualitySeries[key] = series;
+
+  const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
+  const totalEl = document.getElementById('qcTotal' + suffix);
+  const periodEl = document.getElementById('qcPeriod' + suffix);
+  const cumTotal = series.data.length ? series.data[series.data.length - 1] : 0;
+  const periodSum = series.periodData.reduce((a, b) => a + b, 0);
+  const periodMax = series.periodData.length ? Math.max(...series.periodData) : 0;
+  if (totalEl) totalEl.textContent = cumTotal.toLocaleString();
+  if (periodEl) periodEl.textContent = periodSum.toLocaleString();
+
+  const color = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
+  const canvasId = 'qualityChart' + suffix;
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const chartKey = 'quality' + key;
+  if (charts[chartKey]) charts[chartKey].destroy();
+
+  const showPoints = series.labels.length <= 30;
+  charts[chartKey] = new Chart(ctx, {
+    data: {
+      labels: series.labels,
+      datasets: [
+        {
+          type: 'bar',
+          label: '기간별 완료',
+          data: series.periodData,
+          backgroundColor: color + '44',
+          borderColor: color + '88',
+          borderWidth: 1,
+          borderRadius: 4,
+          yAxisID: 'yBar',
+          order: 2
+        },
+        {
+          type: 'line',
+          label: '누적 합계',
+          data: series.data,
+          borderColor: color,
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          tension: 0.35,
+          pointRadius: showPoints ? 3 : 0,
+          pointHoverRadius: 5,
+          pointBackgroundColor: color,
+          yAxisID: 'yCum',
+          order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          titleColor: '#334155',
+          bodyColor: '#475569',
+          borderColor: '#E2E8F0',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            title: (items) => items[0]?.label || '',
+            label: (item) => {
+              if (item.datasetIndex === 0) return `  기간 완료: ${item.raw.toLocaleString()}건`;
+              return `  누적 합계: ${item.raw.toLocaleString()}건`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#94A3B8', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }
+        },
+        yBar: {
+          position: 'left',
+          grid: { color: '#F1F5F9' },
+          ticks: { color: '#94A3B8', font: { size: 11 }, stepSize: 1 },
+          title: { display: true, text: '기간별', color: '#CBD5E1', font: { size: 10 } },
+          suggestedMax: periodMax * 3
+        },
+        yCum: {
+          position: 'right',
+          grid: { display: false },
+          ticks: { color: color + 'BB', font: { size: 11 } },
+          title: { display: true, text: '누적', color: color + '88', font: { size: 10 } }
+        }
+      }
+    }
+  });
+}
+
+function renderQualityCharts() {
+  updateYearSelectors();
+  renderQualityChart('cj1', chartGranularity.cj1);
+  renderQualityChart('cj2', chartGranularity.cj2);
+}
+
+function setChartGranularity(key, granularity) {
+  chartGranularity[key] = granularity;
+  const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
+  ['day','week','month'].forEach(g => {
+    document.getElementById('qcTab' + suffix + g.charAt(0).toUpperCase() + g.slice(1)).classList.toggle('active', g === granularity);
+  });
+  renderQualityChart(key, granularity);
+}
+
+function setChartYear(key, year) {
+  chartYear[key] = year;
+  renderQualityChart(key, chartGranularity[key]);
+}
+
+function exportQualityChart() {
+  const rows = [];
+  ['cj1','cj2'].forEach(key => {
+    const label = key === 'cj1' ? '충주1공장' : '충주2공장';
+    const series = lastQualitySeries[key];
+    if (!series) return;
+    series.rawLabels.forEach((l, i) => rows.push({ 공장: label, 구간: l, 누적건수: series.data[i] }));
+  });
+  exportCSV(rows, `누적품질검사차트_${new Date().toISOString().slice(0,10)}.csv`, [
+    { label:'공장', get: d => d.공장 },
+    { label:'구간', get: d => d.구간 },
+    { label:'누적건수', get: d => d.누적건수 },
+  ]);
+}
+
+function lightTooltip() {
+  return { backgroundColor:'#fff', titleColor:'#334155', bodyColor:'#334155', borderColor:'#E2E8F0', borderWidth:1, padding:8 };
+}
+
+// ===== STATUS =====
+function setConnStatus(state) {
+  const el = document.getElementById('connStatus');
+  const txt = document.getElementById('connStatusText');
+  const states = {
+    loading: ['bg-blue-50 border-blue-200 text-blue-600', 'bg-blue-400', '동기화 중'],
+    ok:      ['bg-emerald-50 border-emerald-200 text-emerald-600', 'bg-emerald-400', '연동 정상'],
+    partial: ['bg-amber-50 border-amber-200 text-amber-600', 'bg-amber-400', '일부 로드 실패'],
+    error:   ['bg-rose-50 border-rose-200 text-rose-600', 'bg-rose-400', '연결 오류'],
+  };
+  const [cls, dotCls, label] = states[state] || states.loading;
+  el.className = `flex items-center gap-2 px-3 py-1.5 rounded-lg border text-[13px] font-semibold mb-3 ${cls}`;
+  el.querySelector('span').className = `h-1.5 w-1.5 rounded-full ${dotCls} pulse-dot`;
+  txt.textContent = label;
+  const dot = document.getElementById('syncDot');
+  if (dot) dot.className = `w-2 h-2 rounded-full shrink-0 ${dotCls}`;
+  // Mobile status
+  const mStates = { loading:['bg-blue-50 border-blue-200 text-blue-600','bg-blue-400','동기화 중'], ok:['bg-emerald-50 border-emerald-200 text-emerald-600','bg-emerald-400','정상'], partial:['bg-amber-50 border-amber-200 text-amber-600','bg-amber-400','일부 오류'], error:['bg-rose-50 border-rose-200 text-rose-600','bg-rose-400','오류'] };
+  const [mCls2, mDotCls, mLbl] = mStates[state] || mStates.loading;
+  const mBadge = document.getElementById('mConnBadge');
+  if (mBadge) { mBadge.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-bold ${mCls2}`; const d2 = mBadge.querySelector('span.rounded-full'); if (d2) d2.className = `w-1.5 h-1.5 rounded-full ${mDotCls} pulse-dot`; }
+  setMTxt('mConnText', mLbl);
+  const mIco = document.getElementById('mSyncIco');
+  if (mIco) mIco.classList.toggle('fa-spin', state === 'loading');
+}
+
+// 개별 시트 로드가 실패했을 때 콘솔이 아니라 화면에서 바로 원인이 보이도록 배너로 표시
+function renderLoadWarnings() {
+  const box = document.getElementById('loadWarning');
+  if (!loadErrors.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.classList.remove('hidden');
+  box.innerHTML = `<div class="flex items-start gap-2">
+    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+    <div>
+      <div class="font-bold mb-1">일부 시트를 불러오지 못했어요 (아래 항목은 최신 상태가 아닐 수 있어요)</div>
+      <ul class="list-disc pl-4 space-y-0.5">${loadErrors.map(m => `<li>${m}</li>`).join('')}</ul>
+    </div>
+  </div>`;
+}
+
+// ===== SCROLL TO TOP =====
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('toTopBtn');
+  const show = window.scrollY > 400;
+  btn.classList.toggle('opacity-0', !show);
+  btn.classList.toggle('invisible', !show);
+  btn.classList.toggle('translate-y-2', !show);
+});
+
+// ===== 제품 검색 =====
+function parseInputDate(str) {
+  if (!str) return null;
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function openProductSearch() {
+  document.getElementById('productSearchModal').classList.remove('hidden');
+  runProductSearch();
+}
+function closeProductSearch() {
+  document.getElementById('productSearchModal').classList.add('hidden');
+}
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); }
+});
+
+function runProductSearch() {
+  const code = document.getElementById('psCode').value.trim().toLowerCase();
+  const name = document.getElementById('psName').value.trim().toLowerCase();
+  const fromStr = document.getElementById('psFrom').value;
+  const toStr = document.getElementById('psTo').value;
+  const factory = document.getElementById('psFactory').value;
+  const fromDate = parseInputDate(fromStr);
+  const toDate = parseInputDate(toStr);
+
+  const hasFilter = code || name || fromStr || toStr || factory;
+  const tbody = document.getElementById('psTableBody');
+  const noData = document.getElementById('psNoData');
+  const summary = document.getElementById('psSummary');
+
+  if (!hasFilter) {
+    tbody.innerHTML = '';
+    summary.innerHTML = '';
+    noData.classList.remove('hidden');
+    lastSearchResults = [];
+    return;
+  }
+
+  const pool = [...allData, ...archiveRows];
+  const results = pool.filter(d => {
+    if (code && !d.단품코드.toLowerCase().includes(code)) return false;
+    if (name && !d.건명.toLowerCase().includes(name)) return false;
+    if (factory && d.공장 !== factory) return false;
+    if (fromDate || toDate) {
+      const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
+      if (!ref) return false;
+      if (fromDate && ref < fromDate) return false;
+      if (toDate && ref > toDate) return false;
+    }
+    return true;
+  });
+
+  renderProductSearchResults(results);
+}
+
+function renderProductSearchResults(results) {
+  lastSearchResults = results;
+  const tbody = document.getElementById('psTableBody');
+  const noData = document.getElementById('psNoData');
+  const summary = document.getElementById('psSummary');
+
+  noData.classList.toggle('hidden', results.length > 0);
+  if (!results.length) { tbody.innerHTML = ''; summary.innerHTML = ''; return; }
+
+  const inspected = results.filter(d => d.검사 === '검사').length;
+  const shipped = results.filter(d => d.source === 'archive');
+  const shippedQty = shipped.reduce((s, d) => s + (d.수량 || 0), 0);
+  const uniqueCodes = new Set(results.map(d => d.단품코드).filter(Boolean)).size;
+
+  summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">검색결과</div><div class="text-[19px] font-extrabold text-slate-900">${results.length.toLocaleString()}건</div></div>
+    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">고유 단품코드</div><div class="text-[19px] font-extrabold text-slate-900">${uniqueCodes.toLocaleString()}개</div></div>
+    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">검사 완료 이력</div><div class="text-[19px] font-extrabold text-emerald-600">${inspected.toLocaleString()}건</div></div>
+    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">출고(이력) 수량</div><div class="text-[19px] font-extrabold text-accent-600">${shippedQty.toLocaleString()}개 · ${shipped.length.toLocaleString()}건</div></div>
+  </div>`;
+
+  const sorted = [...results].sort((a, b) => {
+    const da = parseKDate(a.포장일) || parseKDate(a.검사일) || parseKDate(a.납기일);
+    const db = parseKDate(b.포장일) || parseKDate(b.검사일) || parseKDate(b.납기일);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return db - da;
+  });
+
+  tbody.innerHTML = sorted.map(d => {
+    const isDone = d.검사 === '검사';
+    const isArchive = d.source === 'archive';
+    const statusLabel = STATUS_LABEL(d);
+    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : 'pill-undone';
+    const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
+    const cbmText = d.CBM ? d.CBM.toFixed(3) + ' m³' : '—';
+    return `<tr class="tbl-row">
+      <td class="py-2.5 pr-3"><span class="pill ${statusCls}">${statusLabel}</span></td>
+      <td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span></td>
+      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
+      <td class="py-2.5 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
+      <td class="py-2.5 pr-3 text-slate-600 max-w-[220px] truncate" title="${d.단품명칭}">${d.단품명칭 || '—'}</td>
+      <td class="py-2.5 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
+      <td class="py-2.5 pr-3 text-center text-slate-600 font-mono">${d.수량 || '—'}</td>
+      <td class="py-2.5 pr-3 text-center text-slate-600 font-mono text-[12px]">${cbmText}</td>
+      <td class="py-2.5 pr-3 text-slate-500 font-mono text-[12px] whitespace-nowrap">${d.납기일 || '—'}</td>
+      <td class="py-2.5 pr-3 text-slate-500 font-mono text-[12px] whitespace-nowrap">${d.포장일 || '—'}</td>
+      <td class="py-2.5 text-slate-500 font-mono text-[12px] whitespace-nowrap">${d.검사일 || '—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== 데이터 출력(CSV 내보내기) =====
+function exportCSV(rows, filename, columns) {
+  if (!rows || !rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
+  const header = columns.map(c => c.label).join(',');
+  const escape = (v) => {
+    v = (v === null || v === undefined) ? '' : String(v);
+    return (v.includes(',') || v.includes('"') || v.includes('\n')) ? '"' + v.replace(/"/g, '""') + '"' : v;
+  };
+  const lines = rows.map(r => columns.map(c => escape(c.get(r))).join(','));
+  const csv = '﻿' + [header, ...lines].join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+const STATUS_LABEL = (d) => {
+  if (d.source === 'archive') return d.검사 === '검사' ? '출고완료' : '출고(미검사)';
+  if (d.검사 === '검사') return '진행중·검사완료';
+  if (d.검사 === '양지') return '진행중·양지(회수)';
+  return '진행중·미검사';
+};
+
+function exportProductSearch() {
+  exportCSV(lastSearchResults, `제품검색_${new Date().toISOString().slice(0,10)}.csv`, [
+    { label:'상태', get: STATUS_LABEL },
+    { label:'공장', get: d => d.공장명 },
+    { label:'건명', get: d => d.건명 },
+    { label:'단품코드', get: d => d.단품코드 },
+    { label:'단품명칭', get: d => d.단품명칭 },
+    { label:'색상', get: d => d.색상 },
+    { label:'수량', get: d => d.수량 },
+    { label:'CBM', get: d => d.CBM ? d.CBM.toFixed(3) : '' },
+    { label:'납기일', get: d => d.납기일 },
+    { label:'포장일', get: d => d.포장일 },
+    { label:'검사일', get: d => d.검사일 },
+  ]);
+}
+
+// ===== 상세스펙 모달 =====
+let specSortKey = null;
+let specSortDir = 'asc';
+let specHistoryRows = [];
+
+// 단품명칭 문구를 기준으로 단품코드 종류를 추정 (스프레드시트 모든 시트의 단품명칭 칼럼 기준)
+function deriveCodeType(name) {
+  if (!name) return '기타';
+  if (name.includes('색상비') || name.includes('색비') || name.includes('단순비')) return '색상비';
+  if (name.includes('단종비') || name.includes('단종')) return '단종비';
+  if (name.includes('기획주문품') || name.includes('기획')) return '기획주문품';
+  if (name.includes('형태비') || name.includes('형태')) return '형태비';
+  if (name.includes('복합비') || name.includes('복합')) return '복합비';
+  return '기타';
+}
+
+// 사용자가 표준품명/단품코드 종류를 직접 입력/수정한 값은 브라우저에 저장해 유지 (시트에는 없는 값이라 로컬 저장)
+function loadSpecOverride(code) {
+  try { return JSON.parse(localStorage.getItem('specOverride_' + code) || 'null'); }
+  catch (e) { return null; }
+}
+function onSpecFieldEdit() {
+  const code = document.getElementById('specCodeInput').value.trim();
+  if (!code) return;
+  localStorage.setItem('specOverride_' + code, JSON.stringify({
+    standardName: document.getElementById('specStandardName').value,
+    codeType: document.getElementById('specCodeType').value,
+  }));
+}
+
+function openSpecModal(code) {
+  document.getElementById('specModal').classList.remove('hidden');
+  const input = document.getElementById('specCodeInput');
+  if (code) input.value = code;
+  runSpecLookup();
+  if (!code) input.focus();
+}
+function closeSpecModal() {
+  document.getElementById('specModal').classList.add('hidden');
+}
+
+function runSpecLookup() {
+  const code = document.getElementById('specCodeInput').value.trim();
+  const empty = document.getElementById('specEmpty');
+  const content = document.getElementById('specContent');
+
+  if (!code) { empty.classList.remove('hidden'); content.classList.add('hidden'); specHistoryRows = []; return; }
+
+  const pool = [...allData, ...archiveRows];
+  const matches = pool.filter(d => d.단품코드 === code);
+  specHistoryRows = matches;
+
+  if (!matches.length) {
+    empty.classList.remove('hidden');
+    empty.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[25px] mb-2 block text-slate-300"></i>"${code}" 코드로 등록된 이력이 없어요.`;
+    content.classList.add('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+
+  const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0];
+  const override = loadSpecOverride(code);
+  document.getElementById('specStandardName').value = override?.standardName ?? withDims.단품명칭 ?? '';
+  document.getElementById('specCodeType').value = override?.codeType ?? deriveCodeType(withDims.단품명칭);
+  document.getElementById('specW').textContent = withDims.가로 ? withDims.가로 + 'mm' : '—';
+  document.getElementById('specD').textContent = withDims.세로 ? withDims.세로 + 'mm' : '—';
+  document.getElementById('specH').textContent = withDims.높이 ? withDims.높이 + 'mm' : '—';
+  document.getElementById('specWeight').textContent = withDims.중량 ? withDims.중량 + 'kg' : '—';
+  document.getElementById('specCbm').textContent = withDims.CBM ? withDims.CBM.toFixed(3) + 'm³' : '—';
+  document.getElementById('specHistCount').textContent = `(${matches.length.toLocaleString()}건)`;
+
+  renderSpecHistory();
+}
+
+function renderSpecHistory() {
+  const rows = sortByKey(specHistoryRows, specSortKey, specSortDir);
+  document.getElementById('specHistBody').innerHTML = rows.map(d => `<tr class="tbl-row">
+    <td class="py-2 pl-3 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
+    <td class="py-2 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
+    <td class="py-2 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
+    <td class="py-2 pr-3 text-center font-mono">${d.수량 || 0}</td>
+    <td class="py-2 pr-3 text-center"><span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':'pill-undone'}">${d.검사}</span></td>
+    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.납기일 || '—'}</td>
+    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.포장일 || '—'}</td>
+    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.검사일 || '—'}</td>
+  </tr>`).join('');
+}
+
+function setSpecSort(key) {
+  if (specSortKey === key) specSortDir = specSortDir === 'asc' ? 'desc' : 'asc';
+  else { specSortKey = key; specSortDir = 'asc'; }
+  updateSortIcons('specSortIcon', key, specSortDir);
+  renderSpecHistory();
+}
+
+function exportSpecHistory() {
+  const code = document.getElementById('specCodeInput').value.trim();
+  exportCSV(sortByKey(specHistoryRows, specSortKey, specSortDir), `상세스펙_${code}_${new Date().toISOString().slice(0,10)}.csv`, [
+    { label:'건명', get: d => d.건명 },
+    { label:'단품코드', get: d => d.단품코드 },
+    { label:'색상', get: d => d.색상 },
+    { label:'수량', get: d => d.수량 },
+    { label:'진행', get: d => d.검사 },
+    { label:'납기일', get: d => d.납기일 },
+    { label:'포장일', get: d => d.포장일 },
+    { label:'검사일', get: d => d.검사일 },
+  ]);
+}
+
+// ===== MOBILE =====
+let mCurrentTab = 'home';
+let mFactory = 'all';
+let mStatus = '';
+let mGranularity = 'day';
+const mCharts = {};
+
+function isMobile() {
+  return window.innerWidth < 768 || window.matchMedia('(display-mode: standalone)').matches;
+}
+
+function initMobile() {
+  const mob = isMobile();
+  document.getElementById('mobileApp').style.display = mob ? 'flex' : 'none';
+  document.body.classList.toggle('m-lock', mob);
+}
+window.addEventListener('resize', initMobile);
+
+function onMTabScroll(el) {
+  const btn = document.getElementById('mToTopBtn');
+  if (btn) btn.classList.toggle('show', el.scrollTop > 200);
+}
+function mScrollTop() {
+  const active = ['mTab_home','mTab_chart'].find(id => {
+    const el = document.getElementById(id);
+    return el && el.style.display !== 'none';
+  });
+  const listScroll = document.querySelector('#mTab_list .flex-1.overflow-y-auto');
+  const target = (active ? document.getElementById(active) : null) || listScroll;
+  if (target) target.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setMTab(tab) {
+  mCurrentTab = tab;
+  ['home', 'chart', 'list'].forEach((t, i) => {
+    const el = document.getElementById('mTab_' + t);
+    if (el) el.style.display = t === tab ? '' : 'none';
+    const btn = document.getElementById('mNav' + i);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  document.getElementById('mNav3')?.classList.remove('active');
+  // hide top button on tab switch
+  document.getElementById('mToTopBtn')?.classList.remove('show');
+  if (tab === 'chart') setTimeout(renderMobileCharts, 60);
+}
+
+function setMGranularity(g) {
+  mGranularity = g;
+  [['Day','day'], ['Week','week'], ['Month','month']].forEach(([k, v]) => {
+    document.getElementById('mGran' + k)?.classList.toggle('active', v === g);
+  });
+  renderMobileCharts();
+}
+
+function setMFactory(f) {
+  mFactory = f;
+  [['All','all'], ['Cj1','cj1'], ['Cj2','cj2']].forEach(([s, v]) => {
+    document.getElementById('mF' + s)?.classList.toggle('active', v === f);
+  });
+  renderMobileList();
+}
+
+function setMStatus(s) {
+  mStatus = s;
+  document.getElementById('mSAll')?.classList.toggle('active', s === '');
+  document.getElementById('mSDone')?.classList.toggle('active', s === '검사');
+  document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사');
+  document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
+  renderMobileList();
+}
+
+function setMTxt(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function renderMobileAll() {
+  if (!isMobile()) return;
+  renderMobileKPIs();
+  renderMobileFactoryPanels();
+  renderMobileList();
+  if (mCurrentTab === 'chart') renderMobileCharts();
+}
+
+function renderMobileKPIs() {
+  const cj1 = allData.filter(d => d.공장 === 'cj1');
+  const cj2 = allData.filter(d => d.공장 === 'cj2');
+  const s1 = computeStats(cj1), s2 = computeStats(cj2);
+  const arc1 = archiveTotals.cj1 ? archiveTotals.cj1.cord : 0;
+  const arc2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
+  setMTxt('mKpiPkd1', s1.packedToday);
+  setMTxt('mKpiPkd2', s2.packedToday);
+  setMTxt('mKpiWt1', s1.undone);
+  setMTxt('mKpiWt2', s2.undone);
+  setMTxt('mKpiDn1', (s1.done + arc1).toLocaleString());
+  setMTxt('mKpiDn2', (s2.done + arc2).toLocaleString());
+  setMTxt('mKpiArc', (arc1 + arc2).toLocaleString());
+  setMTxt('mKpiArcBk', `충주1 ${arc1.toLocaleString()}건 · 충주2 ${arc2.toLocaleString()}건`);
+}
+
+function renderMobileFactoryPanels() {
+  ['cj1', 'cj2'].forEach((key, i) => {
+    const sfx = i + 1;
+    const items = allData.filter(d => d.공장 === key);
+    const undone = items.filter(d => d.검사 === '미검사');
+    const yangji = items.filter(d => d.검사 === '양지').length;
+    const badge = document.getElementById('mBadge' + sfx);
+    if (badge) {
+      badge.textContent = undone.length + '건 미검사' + (yangji > 0 ? ` · ${yangji}건 양지` : '');
+      badge.className = 'pill ' + (undone.length === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
+    }
+    const panel = document.getElementById('mPanel' + sfx);
+    if (!panel) return;
+    if (!items.length) { panel.innerHTML = '<div class="text-center text-slate-400 py-4 text-[13px]">데이터 없음</div>'; return; }
+    if (!undone.length) { panel.innerHTML = '<div class="flex items-center justify-center gap-2 text-emerald-600 py-4 font-semibold text-[13.5px]"><i class="fa-solid fa-circle-check"></i> 모든 항목 검사 완료</div>'; return; }
+    const sorted = [...undone].sort((a, b) => {
+      const da = ddayInfo(a.납기일), db = ddayInfo(b.납기일);
+      if (da === null) return 1; if (db === null) return -1; return da - db;
+    }).slice(0, 5);
+    panel.innerHTML = sorted.map(d => {
+      const dd = ddayInfo(d.납기일);
+      let ddB = '<span class="text-[10.5px] text-slate-300">납기 미정</span>';
+      let barColor = '#CBD5E1';
+      if (dd !== null) {
+        if (dd < 0) { ddB = `<span class="pill pill-dday-over" style="font-size:10px;padding:2px 8px;">지연 ${Math.abs(dd)}일</span>`; barColor = '#F87171'; }
+        else if (dd <= 7) { ddB = `<span class="pill pill-dday-soon" style="font-size:10px;padding:2px 8px;">D-${dd}</span>`; barColor = '#FB923C'; }
+        else ddB = `<span class="text-[11px] font-semibold text-slate-400">D-${dd}</span>`;
+      }
+      return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0">
+        <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[14px] font-bold text-slate-800 truncate">${d.건명}</div>
+          <div class="text-[11.5px] text-slate-400 mt-0.5">${d.단품코드 || '—'} <span class="text-slate-300">·</span> ${d.색상 || '—'} <span class="text-slate-300">·</span> ${d.수량 || 0}개</div>
+        </div>
+        <div class="shrink-0">${ddB}</div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderMobileCharts() {
+  if (!isMobile()) return;
+  ['cj1', 'cj2'].forEach(key => {
+    const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
+    const archive = archiveRows.filter(d => d.공장 === key);
+    const series = computeCumulativeSeries([...activeDone, ...archive], mGranularity, 'all');
+    const cumVal = series.data.length ? series.data[series.data.length - 1] : 0;
+    setMTxt('mCum' + (key === 'cj1' ? 'Cj1' : 'Cj2'), cumVal.toLocaleString());
+    const color = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
+    const cvs = document.getElementById(key === 'cj1' ? 'mQCCj1' : 'mQCCj2');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const ck = 'mqc' + key;
+    if (mCharts[ck]) mCharts[ck].destroy();
+    const showPts = series.labels.length <= 20;
+    const pMax = series.periodData.length ? Math.max(...series.periodData) : 1;
+    mCharts[ck] = new Chart(ctx, {
+      data: {
+        labels: series.labels,
+        datasets: [
+          { type:'bar', data:series.periodData, backgroundColor:color+'44', borderRadius:3, yAxisID:'yB', order:2 },
+          { type:'line', data:series.data, borderColor:color, backgroundColor:'transparent', borderWidth:2, tension:0.35, pointRadius:showPts?3:0, pointBackgroundColor:color, yAxisID:'yC', order:1 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        interaction:{mode:'index',intersect:false},
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', titleColor:'#334155', bodyColor:'#475569', borderColor:'#E2E8F0', borderWidth:1, padding:8, callbacks:{ label: item => item.datasetIndex===0 ? `기간: ${item.raw}건` : `누적: ${item.raw}건` } } },
+        scales:{
+          x:{ grid:{display:false}, ticks:{color:'#94A3B8',font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+          yB:{ position:'left', grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:9.5}}, suggestedMax:pMax*3 },
+          yC:{ position:'right', grid:{display:false}, ticks:{color:color+'BB',font:{size:9.5}} }
+        }
+      }
+    });
+  });
+  // Top undone
+  const undone = allData.filter(d => d.검사 !== '검사');
+  const cnts = {};
+  undone.forEach(d => { const k = d.건명+'||'+d.공장; cnts[k] = (cnts[k]||0)+1; });
+  const top = Object.entries(cnts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const tLabels = top.map(([k]) => { const [n] = k.split('||'); return n.length>14?n.slice(0,14)+'…':n; });
+  const tColors = top.map(([k]) => k.split('||')[1]==='cj1'?'rgba(59,130,246,.75)':'rgba(139,92,246,.75)');
+  const tCtx = document.getElementById('mTopChart')?.getContext('2d');
+  if (tCtx) { if (mCharts.top) mCharts.top.destroy(); mCharts.top = new Chart(tCtx, { type:'bar', data:{labels:tLabels,datasets:[{data:top.map(([,v])=>v),backgroundColor:tColors,borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:lightTooltip()},scales:{x:{grid:{color:'#F1F5F9'},ticks:{color:'#94A3B8',font:{size:10},stepSize:1}},y:{grid:{display:false},ticks:{color:'#475569',font:{size:10.5}}}}}}); }
+  // Dday
+  const bkt = {cj1:[0,0,0,0], cj2:[0,0,0,0]};
+  undone.forEach(d => { const dd=ddayInfo(d.납기일); const idx=dd===null?3:dd<0?0:dd<=7?1:2; bkt[d.공장][idx]++; });
+  const dCtx = document.getElementById('mDdChart')?.getContext('2d');
+  if (dCtx) { if (mCharts.dd) mCharts.dd.destroy(); mCharts.dd = new Chart(dCtx, { type:'bar', data:{ labels:['지연','7일 이내','8일 이상','미정'], datasets:[{label:'충주1',data:bkt.cj1,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5},{label:'충주2',data:bkt.cj2,backgroundColor:'rgba(139,92,246,.75)',borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#475569',font:{size:11},boxWidth:8,padding:8}},tooltip:lightTooltip()},scales:{x:{grid:{display:false},ticks:{color:'#475569',font:{size:11}}},y:{grid:{color:'#F1F5F9'},ticks:{color:'#94A3B8',font:{size:10},stepSize:1}}}}}); }
+}
+
+function renderMobileList() {
+  if (!isMobile()) return;
+  const search = (document.getElementById('mSearch')?.value || '').toLowerCase();
+  const allItems = [...allData, ...archiveRows];
+  const items = allItems.filter(d => {
+    if (mFactory !== 'all' && d.공장 !== mFactory) return false;
+    if (mStatus && d.검사 !== mStatus) return false;
+    if (search && !d.건명.toLowerCase().includes(search) && !d.단품코드.toLowerCase().includes(search) && !(d.단품명칭||'').toLowerCase().includes(search)) return false;
+    return true;
+  });
+  setMTxt('mListCnt', items.length + '건');
+  const body = document.getElementById('mListBody');
+  if (!body) return;
+  if (!items.length) { body.innerHTML = '<div class="text-center py-12 text-slate-400 text-[13px]"><i class="fa-solid fa-magnifying-glass text-[24px] block mb-2 text-slate-300"></i>조건에 맞는 항목이 없습니다</div>'; return; }
+  body.innerHTML = items.map(d => {
+    const isDone = d.검사 === '검사';
+    const isYangji = d.검사 === '양지';
+    const isArchive = d.source === 'archive';
+    const fIsCj1 = d.공장 === 'cj1';
+    const fCls = fIsCj1 ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
+    const leftBar = isDone ? '#34D399' : isYangji ? '#F59E0B' : '#F87171';
+    const dd = ddayInfo(d.납기일);
+    let ddB = '';
+    if (dd !== null && !isDone) {
+      if (dd < 0) ddB = `<span class="pill pill-dday-over" style="font-size:10px;padding:2px 8px;">지연 ${Math.abs(dd)}일</span>`;
+      else if (dd <= 7) ddB = `<span class="pill pill-dday-soon" style="font-size:10px;padding:2px 8px;">D-${dd}</span>`;
+    }
+    const dateLabel = ddB
+      ? ddB
+      : `<span style="font-size:11px;color:#94A3B8;font-weight:600;">${d.납기일 || '납기 미정'}</span>`;
+    return `<div class="bg-white rounded-2xl mb-2.5 overflow-hidden" style="display:flex;box-shadow:0 2px 12px rgba(0,0,0,.06);">
+      <div class="shrink-0" style="width:4px;background:${leftBar};"></div>
+      <div style="flex:1;padding:14px 14px 13px;min-width:0;">
+        <div class="flex items-start justify-between mb-2.5">
+          <div style="flex:1;min-width:0;margin-right:10px;">
+            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;">${d.건명}</div>
+            <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;">${d.단품명칭 || '—'}</div>
+          </div>
+          <span class="pill ${isDone?'pill-done':isYangji?'pill-yangji':'pill-undone'} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${isDone?'fa-check':isYangji?'fa-rotate-left':'fa-xmark'}" style="font-size:9px;"></i> ${d.검사}</span>
+        </div>
+        <div class="flex items-center flex-wrap" style="gap:6px;">
+          <span class="rounded-lg font-bold ${fCls}" style="font-size:10px;padding:2px 8px;">${fIsCj1?'충주1':'충주2'}</span>
+          <span class="code-tag" style="font-size:11px;">${d.단품코드 || '—'}</span>
+          <span style="font-size:11.5px;color:#64748B;">${d.색상 || '—'}</span>
+          <span style="font-size:11.5px;color:#334155;font-weight:700;font-variant-numeric:tabular-nums;">${(d.수량||0).toLocaleString()}개</span>
+          <span style="margin-left:auto;">${dateLabel}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function mScrollTo(idx) {
+  const slider = document.getElementById('mQCSlider');
+  if (slider) slider.scrollTo({ left: idx * slider.offsetWidth, behavior: 'smooth' });
+}
+
+function onMSliderScroll() {
+  const slider = document.getElementById('mQCSlider');
+  if (!slider) return;
+  const idx = Math.round(slider.scrollLeft / slider.offsetWidth);
+  [0, 1].forEach(i => {
+    const dot = document.getElementById('mDot' + i);
+    if (!dot) return;
+    dot.style.width = i === idx ? '16px' : '6px';
+    dot.style.borderRadius = i === idx ? '3px' : '50%';
+    dot.style.background = i === idx ? '#6D5CE8' : '#E2E8F0';
+  });
+}
+
+// ===== INIT =====
+loadData();
+
+initMobile();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
+</script>
+
+<!-- ===== MOBILE APP OVERLAY ===== -->
+<div id="mobileApp" style="display:none;background:#F4F6F9;" class="fixed inset-0 z-20 flex flex-col">
+
+  <!-- Header -->
+  <div class="bg-white shrink-0 flex items-center justify-between px-5" style="height:60px;box-shadow:0 1px 0 #EAECF0;">
+    <div class="flex items-center gap-3">
+      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
+        <i class="fa-solid fa-magnifying-glass text-[14px]"></i>
+      </span>
+      <span class="text-[18px] font-extrabold text-slate-900" style="letter-spacing:-0.5px;">검사리스트</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div id="mConnBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10.5px] font-bold" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;">
+        <span class="w-1.5 h-1.5 rounded-full pulse-dot" style="background:#FB923C;"></span>
+        <span id="mConnText">대기</span>
+      </div>
+      <button onclick="loadData()" class="w-9 h-9 rounded-xl flex items-center justify-center" style="background:#F4F6F9;-webkit-tap-highlight-color:transparent;">
+        <i class="fa-solid fa-arrows-rotate text-slate-500 text-[14px]" id="mSyncIco"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="flex-1 overflow-hidden relative">
+
+    <!-- ── 현황 탭 ── -->
+    <div id="mTab_home" class="absolute inset-0 overflow-y-auto" style="padding:20px 16px 28px;" onscroll="onMTabScroll(this)">
+
+      <!-- 페이지 타이틀 -->
+      <div class="mb-5">
+        <div class="text-[24px] font-extrabold text-slate-900" style="letter-spacing:-0.6px;">검사 현황</div>
+        <div class="text-[13px] text-slate-400 font-medium mt-0.5">수출 품질검사 실시간 모니터링</div>
+      </div>
+
+      <!-- KPI 2×2 -->
+      <div class="grid grid-cols-2 gap-3 mb-6">
+
+        <!-- 금일 포장 -->
+        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#E0F2FE;">
+              <i class="fa-solid fa-box text-sky-500 text-[13px]"></i>
+            </span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">금일 포장</span>
+          </div>
+          <div class="flex items-end justify-around">
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-slate-900 leading-none" id="mKpiPkd1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+            </div>
+            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-slate-900 leading-none" id="mKpiPkd2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 검사 대기 -->
+        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#FEE2E2;">
+              <i class="fa-solid fa-hourglass-half text-rose-500 text-[13px]"></i>
+            </span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">검사 대기</span>
+          </div>
+          <div class="flex items-end justify-around">
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-rose-500 leading-none" id="mKpiWt1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+            </div>
+            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-rose-500 leading-none" id="mKpiWt2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 검사 완료 -->
+        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#DCFCE7;">
+              <i class="fa-solid fa-circle-check text-emerald-500 text-[13px]"></i>
+            </span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">검사 완료</span>
+          </div>
+          <div class="flex items-end justify-around">
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-emerald-500 leading-none" id="mKpiDn1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+            </div>
+            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="text-center">
+              <div class="text-[34px] font-extrabold text-emerald-500 leading-none" id="mKpiDn2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 누적 완료 -->
+        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#EDE9FE;">
+              <i class="fa-solid fa-box-archive text-violet-500 text-[13px]"></i>
+            </span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">누적 완료</span>
+          </div>
+          <div class="text-[34px] font-extrabold text-violet-500 leading-none" id="mKpiArc">—</div>
+          <div class="text-[10.5px] text-slate-400 font-bold mt-2" id="mKpiArcBk">충주1 — · 충주2 —</div>
+        </div>
+
+      </div>
+
+      <!-- Factory panels 섹션 타이틀 -->
+      <div class="flex items-center justify-between mb-3">
+        <div class="text-[15px] font-extrabold text-slate-800">납기 임박 미검사</div>
+      </div>
+
+      <div class="space-y-3">
+
+        <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center justify-between px-4 py-3.5" style="border-bottom:1px solid #F1F5F9;">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#EFF6FF;">
+                <i class="fa-solid fa-industry text-blue-500 text-[14px]"></i>
+              </span>
+              <div>
+                <div class="text-[14.5px] font-extrabold text-slate-800">충주1공장</div>
+              </div>
+            </div>
+            <span id="mBadge1" class="pill pill-undone" style="font-size:10.5px;">— 미검사</span>
+          </div>
+          <div id="mPanel1" class="text-[13px] text-slate-400 text-center" style="padding:12px 16px;">로딩중...</div>
+        </div>
+
+        <div class="bg-white rounded-2xl overflow-hidden" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+          <div class="flex items-center justify-between px-4 py-3.5" style="border-bottom:1px solid #F1F5F9;">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#F5F3FF;">
+                <i class="fa-solid fa-industry text-violet-500 text-[14px]"></i>
+              </span>
+              <div>
+                <div class="text-[14.5px] font-extrabold text-slate-800">충주2공장</div>
+              </div>
+            </div>
+            <span id="mBadge2" class="pill pill-undone" style="font-size:10.5px;">— 미검사</span>
+          </div>
+          <div id="mPanel2" class="text-[13px] text-slate-400 text-center" style="padding:12px 16px;">로딩중...</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── 차트 탭 ── -->
+    <div id="mTab_chart" class="absolute inset-0 overflow-y-auto" style="padding:20px 16px 28px;display:none;" onscroll="onMTabScroll(this)">
+
+      <div class="text-[24px] font-extrabold text-slate-900 mb-5" style="letter-spacing:-0.6px;">차트 분석</div>
+
+      <!-- Quality chart swipeable -->
+      <div class="bg-white rounded-2xl overflow-hidden mb-3" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+        <div class="flex items-center justify-between px-4 pt-4 pb-2">
+          <div class="text-[15px] font-extrabold text-slate-800">누적 품질검사</div>
+          <div class="flex gap-0.5" style="background:#F4F6F9;border-radius:10px;padding:3px;">
+            <button onclick="setMGranularity('day')" id="mGranDay" class="tab-btn active" style="font-size:11px;padding:3px 10px;border-radius:7px;">일별</button>
+            <button onclick="setMGranularity('week')" id="mGranWeek" class="tab-btn" style="font-size:11px;padding:3px 10px;border-radius:7px;">주간</button>
+            <button onclick="setMGranularity('month')" id="mGranMonth" class="tab-btn" style="font-size:11px;padding:3px 10px;border-radius:7px;">월별</button>
+          </div>
+        </div>
+        <div id="mQCSlider" class="m-snap" onscroll="onMSliderScroll()">
+          <div style="padding:4px 16px 16px;">
+            <div class="text-[12px] font-bold text-blue-500 mb-2">충주1공장 · 누적 <span id="mCumCj1">—</span>건</div>
+            <div style="height:170px"><canvas id="mQCCj1"></canvas></div>
+          </div>
+          <div style="padding:4px 16px 16px;">
+            <div class="text-[12px] font-bold text-violet-500 mb-2">충주2공장 · 누적 <span id="mCumCj2">—</span>건</div>
+            <div style="height:170px"><canvas id="mQCCj2"></canvas></div>
+          </div>
+        </div>
+        <div class="flex justify-center gap-2 pb-3">
+          <div id="mDot0" class="m-dot on" onclick="mScrollTo(0)"></div>
+          <div id="mDot1" class="m-dot" onclick="mScrollTo(1)"></div>
+        </div>
+      </div>
+
+      <!-- Top undone -->
+      <div class="bg-white rounded-2xl p-4 mb-3" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+        <div class="flex items-center gap-2.5 mb-3">
+          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#EDE9FE;">
+            <i class="fa-solid fa-chart-bar text-violet-500 text-[12px]"></i>
+          </span>
+          <span class="text-[15px] font-extrabold text-slate-800">건명별 미검사 TOP 8</span>
+        </div>
+        <div style="height:200px"><canvas id="mTopChart"></canvas></div>
+      </div>
+
+      <!-- Dday -->
+      <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+        <div class="flex items-center gap-2.5 mb-3">
+          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#FEF3C7;">
+            <i class="fa-solid fa-calendar-days text-amber-500 text-[12px]"></i>
+          </span>
+          <span class="text-[15px] font-extrabold text-slate-800">납기 임박 현황</span>
+        </div>
+        <div style="height:170px"><canvas id="mDdChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── 목록 탭 ── -->
+    <div id="mTab_list" class="absolute inset-0 flex flex-col" style="display:none;">
+      <!-- Filters -->
+      <div class="bg-white shrink-0" style="padding:12px 16px 14px;box-shadow:0 1px 0 #EAECF0;z-index:5;">
+        <div class="text-[20px] font-extrabold text-slate-900 mb-3" style="letter-spacing:-0.5px;">검사 목록</div>
+        <!-- 공장 필터 -->
+        <div class="flex gap-1 mb-2.5" style="background:#F4F6F9;border-radius:12px;padding:3px;">
+          <button onclick="setMFactory('all')" id="mFAll" class="tab-btn active flex-1" style="font-size:12.5px;border-radius:9px;">전체</button>
+          <button onclick="setMFactory('cj1')" id="mFCj1" class="tab-btn flex-1" style="font-size:12.5px;border-radius:9px;">충주1</button>
+          <button onclick="setMFactory('cj2')" id="mFCj2" class="tab-btn flex-1" style="font-size:12.5px;border-radius:9px;">충주2</button>
+        </div>
+        <!-- 상태 필터 -->
+        <div class="flex gap-1 mb-2.5" style="background:#F4F6F9;border-radius:12px;padding:3px;">
+          <button onclick="setMStatus('')" id="mSAll" class="tab-btn active flex-1" style="font-size:11.5px;border-radius:9px;">전체</button>
+          <button onclick="setMStatus('검사')" id="mSDone" class="tab-btn flex-1" style="font-size:11.5px;border-radius:9px;">완료</button>
+          <button onclick="setMStatus('미검사')" id="mSUndone" class="tab-btn flex-1" style="font-size:11.5px;border-radius:9px;">미검사</button>
+          <button onclick="setMStatus('양지')" id="mSYangji" class="tab-btn flex-1" style="font-size:11.5px;border-radius:9px;">양지</button>
+        </div>
+        <!-- 검색 -->
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[12.5px]"></i>
+          <input type="text" id="mSearch" oninput="renderMobileList()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field" style="font-size:13px;padding-left:36px;border-radius:12px;">
+        </div>
+      </div>
+      <!-- List body -->
+      <div class="flex-1 overflow-y-auto" style="padding:12px 16px 20px;background:#F4F6F9;" onscroll="onMTabScroll(this)">
+        <div id="mListCnt" class="text-[11.5px] text-slate-400 mb-2.5 font-bold px-0.5"></div>
+        <div id="mListBody"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Top button -->
+  <button id="mToTopBtn" onclick="mScrollTop()" title="맨 위로">
+    <i class="fa-solid fa-chevron-up text-[13px]"></i>
+  </button>
+
+  <!-- Bottom Nav -->
+  <div class="bg-white shrink-0" style="border-top:1px solid #EAECF0;padding-bottom:env(safe-area-inset-bottom,0px);">
+    <div class="flex" style="height:64px;padding:0 8px;">
+      <button onclick="setMTab('home')" id="mNav0" class="mobile-nav-btn active">
+        <span class="m-nav-icon"><i class="fa-solid fa-grip"></i></span>
+        <span>현황</span>
+      </button>
+      <button onclick="setMTab('chart')" id="mNav1" class="mobile-nav-btn">
+        <span class="m-nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+        <span>차트</span>
+      </button>
+      <button onclick="setMTab('list')" id="mNav2" class="mobile-nav-btn">
+        <span class="m-nav-icon"><i class="fa-solid fa-list"></i></span>
+        <span>목록</span>
+      </button>
+      <button onclick="openProductSearch()" id="mNav3" class="mobile-nav-btn">
+        <span class="m-nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+        <span>검색</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
