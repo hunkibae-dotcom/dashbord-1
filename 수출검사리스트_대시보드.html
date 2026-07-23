@@ -2374,16 +2374,33 @@ if ('serviceWorker' in navigator) {
 
 <script>
 (function(){
-    if(!new URLSearchParams(location.search).get('shell')) return;
-    // 셸 모드: 강제 모바일 뷰, 내부 헤더 숨김
+    var p = new URLSearchParams(location.search);
+    if(!p.get('shell')) return;
+
+    /* 강제 모바일 뷰 */
     window.isMobile = function(){ return true; };
     initMobile();
+
+    /* 내부 헤더 숨김 */
     var mApp = document.getElementById('mobileApp');
     if(mApp){
         var mHdr = mApp.querySelector('div[style*="height:60px"]');
         if(mHdr) mHdr.style.display = 'none';
+
+        /* 뒤로가기 바 삽입 (mobileApp 최상단) */
+        var backBar = document.createElement('div');
+        backBar.style.cssText = [
+            'height:50px','background:#fff','border-bottom:1px solid #EAECF0',
+            'display:flex','align-items:center','padding:0 16px','gap:8px',
+            'cursor:pointer','flex-shrink:0','box-sizing:border-box'
+        ].join(';');
+        backBar.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
+            + '<span style="font-size:15px;font-weight:800;color:#0F172A;letter-spacing:-0.3px;">F.WORK</span>';
+        backBar.onclick = function(){ window.location.href = './index.html'; };
+        mApp.insertBefore(backBar, mApp.firstChild);
     }
-    // 데스크탑 사이드바 숨김
+
+    /* 데스크탑 사이드바 숨김 */
     var aside = document.querySelector('aside');
     if(aside) aside.style.display = 'none';
 })();
