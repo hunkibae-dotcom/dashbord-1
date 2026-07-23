@@ -225,8 +225,9 @@
             transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
             padding-top: var(--safe-top);
             padding-bottom: var(--safe-bot);
+            pointer-events: none;
         }
-        #sub.open { transform: translateX(0); }
+        #sub.open { transform: translateX(0); pointer-events: auto; }
 
         .sub-hdr {
             display: flex; align-items: center;
