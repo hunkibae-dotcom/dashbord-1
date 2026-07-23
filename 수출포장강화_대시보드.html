@@ -5258,21 +5258,17 @@
 
     <!-- 모바일 하단 액션바 -->
     <div id="mobileBottomBar">
-        <button class="mb-item mb-primary" onclick="openFilterDrawer()">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <span>검색</span>
-        </button>
-        <button class="mb-item" onclick="syncWithGoogleSheets()">
-            <i class="fa-solid fa-arrows-rotate"></i>
-            <span>동기화</span>
-        </button>
-        <button class="mb-item" onclick="document.getElementById('tablePanel').scrollIntoView({behavior:'smooth',block:'start'})">
+        <button class="mb-item" id="mbBtnTable" onclick="toggleMobileTable(this)">
             <i class="fa-solid fa-table-list"></i>
-            <span>현황표</span>
+            <span>전체현황</span>
         </button>
-        <button class="mb-item" onclick="exportToCSV()">
-            <i class="fa-solid fa-file-csv"></i>
-            <span>출력</span>
+        <button class="mb-item" id="mbBtnSync" onclick="syncWithGoogleSheets();this.querySelector('i').classList.add('fa-spin');setTimeout(()=>this.querySelector('i').classList.remove('fa-spin'),2000)">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>실시간 갱신</span>
+        </button>
+        <button class="mb-item" id="mbBtnDetail" onclick="openFilterDrawer()">
+            <i class="fa-solid fa-cube"></i>
+            <span>제품상세</span>
         </button>
     </div>
 </body>
