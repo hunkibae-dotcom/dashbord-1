@@ -539,10 +539,16 @@ function _applyThemeLabel(){
     if(el) el.textContent = _theme === 'light' ? '라이트' : '다크';
 }
 
-/* bfcache 복원 시 pageVeil 제거 (브라우저 뒤로가기 버그 방지) */
+/* bfcache 복원 시 전체 상태 초기화 (브라우저 뒤로가기 버그 방지) */
 window.addEventListener('pageshow', function(e){
     if(e.persisted){
-        document.getElementById('pageVeil').classList.remove('show');
+        var veil = document.getElementById('pageVeil');
+        veil.classList.remove('show');
+        veil.style.opacity = '0';
+        veil.style.pointerEvents = 'none';
+        var sub = document.getElementById('sub');
+        sub.classList.remove('open');
+        sub.style.pointerEvents = 'none';
         document.getElementById('home').classList.add('show');
     }
 });
