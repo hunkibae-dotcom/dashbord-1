@@ -291,6 +291,18 @@
             #tablePanel { padding: 12px 8px !important; border-radius: 18px !important; }
             #mainTableHeadRow th { font-size: 12px !important; padding: 8px 6px !important; }
             #tableBody td { font-size: 13px !important; padding: 8px 6px !important; }
+
+            /* 하단 액션바 공간 확보 */
+            #mainGrid { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
+
+            /* 캐러셀 dots 표시 */
+            #topCardDots, #chartRowDots { display:flex !important; }
+
+            /* 섹션 라벨 표시 */
+            .mobile-section-label { display:flex !important; }
+
+            /* 하단 액션바 표시 */
+            #mobileBottomBar { display:flex; }
         }
 
         /* ── 제품 상세 스펙: 모바일 2열 카드 / sm 이상 5열 원래 배치 ── */
