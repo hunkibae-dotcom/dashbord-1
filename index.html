@@ -1,270 +1,573 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="light">
+<html lang="ko" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>F.WORK</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0B0F19">
+    <meta name="theme-color" content="#080c1a">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="FURSYS">
+    <meta name="apple-mobile-web-app-title" content="F.WORK">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --bg:     #0B0F19;
-            --panel:  #111827;
-            --border: #1E293B;
-            --text:   #F1F5F9;
-            --sub:    #94A3B8;
-            --blue:   #00B0FF;
-            --green:  #00E676;
-            --dim:    #475569;
-            --header-h: 54px;
-            --nav-h:  60px;
+            --bg:       #080c1a;
+            --bg2:      #1a0f3d;
+            --panel:    rgba(255,255,255,0.06);
+            --border:   rgba(255,255,255,0.10);
+            --text:     #F1F5F9;
+            --sub:      #94A3B8;
+            --dim:      #475569;
+            --accent:   #00B0FF;
+            --green:    #00E676;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bot: env(safe-area-inset-bottom, 0px);
         }
         :root[data-theme="light"] {
-            --bg:     #EEF2F7;
-            --panel:  #FFFFFF;
-            --border: #CBD5E1;
-            --text:   #0F172A;
-            --sub:    #475569;
-            --dim:    #94A3B8;
+            --bg:    #EEF2F7;
+            --bg2:   #DBEAFE;
+            --panel: rgba(255,255,255,0.80);
+            --border: rgba(0,0,0,0.08);
+            --text:  #0F172A;
+            --sub:   #475569;
+            --dim:   #94A3B8;
         }
 
         html, body {
             width: 100%; height: 100%;
-            background: var(--bg);
             font-family: 'Inter', 'Noto Sans KR', system-ui, sans-serif;
+            background: var(--bg);
             overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
-        /* ── Header ── */
-        #appHeader {
-            position: fixed; top: 0; left: 0; right: 0;
-            height: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-            padding-top: env(safe-area-inset-top, 0px);
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            display: flex; align-items: center;
-            padding-left: 16px; padding-right: 16px;
-            gap: 10px; z-index: 100;
+        /* ── Star canvas ── */
+        #starCanvas {
+            position: fixed; inset: 0; z-index: 0;
+            pointer-events: none;
+            transition: opacity 0.6s;
         }
-        .header-logo {
-            width: 32px; height: 32px; border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue), var(--green));
+        :root[data-theme="light"] #starCanvas { opacity: 0.25; }
+
+        /* ── BG gradient ── */
+        #bgLayer {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background: radial-gradient(ellipse at 35% 25%, var(--bg2) 0%, var(--bg) 65%);
+            transition: background 0.5s;
+        }
+
+        /* ════════════════════════════
+           SPLASH
+        ════════════════════════════ */
+        #splash {
+            position: fixed; inset: 0; z-index: 300;
             display: flex; align-items: center; justify-content: center;
-            font-size: 15px; font-weight: 800; flex-shrink: 0;
-            color: #fff;
-            -webkit-text-stroke: 1.2px #000;
-            text-shadow: 0 0 0 #000;
+            flex-direction: column;
+            transition: opacity 0.65s ease;
         }
-        .header-title {
-            font-size: 16px; font-weight: 700; color: var(--text); flex: 1;
-        }
-        /* Theme toggle */
-        #themeBtn {
-            width: 38px; height: 22px; border-radius: 999px;
-            background: var(--border); border: none; cursor: pointer;
-            position: relative; transition: background .25s; flex-shrink: 0;
-        }
-        #themeBtn::after {
-            content: ''; position: absolute;
-            width: 16px; height: 16px; border-radius: 50%;
-            background: var(--sub); top: 3px; left: 3px;
-            transition: all .25s;
-        }
-        :root[data-theme="light"] #themeBtn { background: var(--blue); }
-        :root[data-theme="light"] #themeBtn::after { left: 19px; background: #fff; }
-        #themeIcon { font-size: 13px; }
+        #splash.hide { opacity: 0; pointer-events: none; }
 
-        /* ── iFrame area ── */
-        #frameWrap {
-            position: fixed;
-            top: calc(var(--header-h) + env(safe-area-inset-top, 0px));
-            bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-            left: 0; right: 0;
-            overflow: hidden;
+        .spl-wrap {
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+            animation: splogoIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
-        .app-frame {
-            width: 100%; height: 100%;
-            border: none;
-            display: none;
-            transition: opacity .2s;
+        @keyframes splogoIn {
+            from { opacity: 0; transform: scale(0.45); }
+            65%  { transform: scale(1.06); }
+            to   { opacity: 1; transform: scale(1); }
         }
-        .app-frame.active { display: block; }
 
-        /* ── Bottom nav ── */
-        #bottomNav {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            background: var(--panel);
-            border-top: 1px solid var(--border);
-            display: flex; z-index: 100;
-        }
-        .nav-tab {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 4px; border: none; background: none;
-            cursor: pointer; padding: 8px 4px;
-            position: relative; transition: color .2s;
-        }
-        .nav-tab::before {
-            content: ''; position: absolute; top: 0; left: 25%; right: 25%;
-            height: 2px; border-radius: 0 0 2px 2px;
-            background: transparent; transition: background .2s;
-        }
-        .nav-tab.active::before { background: var(--blue); }
-        .nav-tab-icon {
-            width: 36px; height: 28px; border-radius: 18px;
+        .spl-box {
+            width: 96px; height: 96px; border-radius: 30px;
+            background: linear-gradient(135deg, #00B0FF 0%, #00E676 100%);
             display: flex; align-items: center; justify-content: center;
-            transition: all .2s; background: transparent;
+            box-shadow: 0 0 80px rgba(0,176,255,0.7), 0 0 40px rgba(0,230,118,0.35);
         }
-        .nav-tab.active .nav-tab-icon { background: rgba(0,176,255,.12); }
-        .nav-tab svg { transition: stroke .2s; }
-        .nav-tab .nav-tab-svg { stroke: var(--dim); }
-        .nav-tab.active .nav-tab-svg { stroke: var(--blue); }
-        .nav-tab-label {
-            font-size: 10px; font-weight: 600; color: var(--dim);
-            transition: color .2s; letter-spacing: .01em;
+        .spl-f {
+            font-size: 48px; font-weight: 900;
+            color: #fff; -webkit-text-stroke: 2px #000;
+            letter-spacing: -3px;
         }
-        .nav-tab.active .nav-tab-label { color: var(--blue); }
+        .spl-name {
+            font-size: 34px; font-weight: 800; color: #fff;
+            letter-spacing: -0.5px; text-align: center;
+        }
+        .spl-tag {
+            font-size: 11.5px; color: rgba(255,255,255,0.35);
+            letter-spacing: 0.22em; text-transform: uppercase; text-align: center;
+            margin-top: -10px;
+        }
 
-        /* Loading indicator */
-        .frame-loading {
-            position: absolute; inset: 0;
+        /* ════════════════════════════
+           HOME
+        ════════════════════════════ */
+        #home {
+            position: fixed; inset: 0; z-index: 10;
             display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 12px;
-            background: var(--bg); pointer-events: none;
-            transition: opacity .3s;
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bot);
+            opacity: 0; transform: translateY(18px);
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        .frame-loading.done { opacity: 0; }
-        .spinner {
-            width: 28px; height: 28px; border-radius: 50%;
-            border: 2.5px solid var(--border);
-            border-top-color: var(--blue);
-            animation: spin .7s linear infinite;
+        #home.show { opacity: 1; transform: none; pointer-events: auto; }
+
+        /* Header */
+        .h-hdr {
+            display: flex; align-items: center;
+            padding: 18px 20px 10px; gap: 10px;
+            position: relative; z-index: 1;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: var(--sub); font-weight: 500; }
+        .h-logo {
+            width: 42px; height: 42px; border-radius: 14px;
+            background: linear-gradient(135deg, #00B0FF, #00E676);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 900; color: #fff;
+            -webkit-text-stroke: 1.3px #000;
+            box-shadow: 0 0 22px rgba(0,176,255,0.5);
+            flex-shrink: 0;
+        }
+        .h-title {
+            font-size: 21px; font-weight: 800; color: var(--text);
+            letter-spacing: -0.4px; flex: 1;
+        }
+
+        /* Theme toggle pill */
+        .theme-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            padding: 5px 12px 5px 8px;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .theme-pill-track {
+            width: 34px; height: 20px; border-radius: 999px;
+            background: var(--dim); position: relative;
+            transition: background 0.25s; flex-shrink: 0;
+        }
+        :root[data-theme="light"] .theme-pill-track { background: var(--accent); }
+        .theme-pill-thumb {
+            position: absolute; top: 2px; left: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: #fff; transition: left 0.25s;
+        }
+        :root[data-theme="light"] .theme-pill-thumb { left: 16px; }
+        .theme-pill-label {
+            font-size: 12px; font-weight: 700; color: var(--sub);
+            white-space: nowrap;
+        }
+
+        /* Body */
+        .h-body {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center;
+            padding: 0 22px 28px;
+            gap: 14px;
+            overflow-y: auto;
+            position: relative; z-index: 1;
+        }
+        .h-eyebrow {
+            font-size: 11px; font-weight: 700; color: var(--dim);
+            letter-spacing: 0.18em; text-transform: uppercase;
+        }
+        .h-heading {
+            font-size: 28px; font-weight: 800; color: var(--text);
+            letter-spacing: -0.6px; line-height: 1.22;
+            margin-top: -2px; margin-bottom: 6px;
+        }
+
+        /* Feature card */
+        .feat {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            padding: 20px 18px;
+            display: flex; align-items: center; gap: 16px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .feat:active { transform: scale(0.968); }
+        .feat.blue { box-shadow: 0 6px 28px rgba(0,176,255,0.18); }
+        .feat.green { box-shadow: 0 6px 28px rgba(0,230,118,0.18); }
+
+        .feat-ico {
+            width: 56px; height: 56px; border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .feat-ico svg { width: 27px; height: 27px; }
+        .fi-blue  { background: linear-gradient(135deg, #0055FF, #00B0FF); }
+        .fi-green { background: linear-gradient(135deg, #00A878, #00E676); }
+
+        .feat-txt { flex: 1; min-width: 0; }
+        .feat-name { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+        .feat-desc { font-size: 12.5px; color: var(--sub); font-weight: 500; line-height: 1.45; }
+        .feat-arr  { font-size: 24px; font-weight: 200; color: var(--dim); flex-shrink: 0; }
+
+        /* ════════════════════════════
+           SUB-MENU
+        ════════════════════════════ */
+        #sub {
+            position: fixed; inset: 0; z-index: 50;
+            display: flex; flex-direction: column;
+            background: radial-gradient(ellipse at 30% 20%, var(--bg2) 0%, var(--bg) 65%);
+            transform: translateX(100%);
+            transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+            padding-top: var(--safe-top);
+            padding-bottom: var(--safe-bot);
+        }
+        #sub.open { transform: translateX(0); }
+
+        .sub-hdr {
+            display: flex; align-items: center;
+            padding: 16px 20px; gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .sub-back {
+            width: 40px; height: 40px; border-radius: 13px;
+            background: var(--panel); border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--sub);
+            transition: background 0.15s;
+        }
+        .sub-back:active { background: var(--border); }
+        .sub-back svg { width: 20px; height: 20px; stroke: var(--sub); }
+
+        .sub-cat {
+            display: flex; align-items: center; gap: 10px; flex: 1;
+        }
+        .sub-cat-ico {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .sub-cat-ico svg { width: 16px; height: 16px; }
+        .sub-title { font-size: 19px; font-weight: 700; color: var(--text); }
+
+        .sub-body {
+            flex: 1; padding: 22px 20px;
+            display: flex; flex-direction: column; gap: 11px;
+            overflow-y: auto;
+        }
+        .sub-section {
+            font-size: 10.5px; font-weight: 700; color: var(--dim);
+            letter-spacing: 0.15em; text-transform: uppercase;
+            padding: 0 2px 2px;
+        }
+
+        /* Menu item */
+        .mitem {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 17px 17px;
+            display: flex; align-items: center; gap: 14px;
+            cursor: pointer;
+            transition: transform 0.15s;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .mitem:active { transform: scale(0.978); }
+
+        .mi-ico {
+            width: 50px; height: 50px; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .mi-ico svg { width: 23px; height: 23px; }
+        .mi-dash  { background: rgba(0,176,255,0.14); }
+        .mi-sheet { background: rgba(52,211,153,0.14); }
+        .mi-scan  { background: rgba(168,85,247,0.14); }
+
+        .mi-txt { flex: 1; }
+        .mi-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+        .mi-desc  { font-size: 12px; color: var(--sub); line-height: 1.45; }
+        .mi-arr   { font-size: 20px; font-weight: 200; color: var(--dim); }
+
+        /* ── Page transition ── */
+        #pageVeil {
+            position: fixed; inset: 0; z-index: 500;
+            background: var(--bg);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #pageVeil.show { opacity: 1; pointer-events: auto; }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
-    <div id="appHeader">
-        <div class="header-logo">F</div>
-        <span class="header-title">F.WORK</span>
-        <span id="themeIcon">🌙</span>
-        <button id="themeBtn" onclick="toggleTheme()" title="라이트/다크 전환"></button>
+<canvas id="starCanvas"></canvas>
+<div id="bgLayer"></div>
+<div id="pageVeil"></div>
+
+<!-- ══════════════ SPLASH ══════════════ -->
+<div id="splash">
+    <div class="spl-wrap">
+        <div class="spl-box"><span class="spl-f">F</span></div>
+        <div>
+            <div class="spl-name">F.WORK</div>
+            <div class="spl-tag">FURSYS Dashboard</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="home">
+    <div class="h-hdr">
+        <div class="h-logo">F</div>
+        <span class="h-title">F.WORK</span>
+        <div class="theme-pill" onclick="toggleTheme()" title="라이트/다크">
+            <div class="theme-pill-track"><div class="theme-pill-thumb"></div></div>
+            <span class="theme-pill-label" id="themeLabel">다크</span>
+        </div>
     </div>
 
-    <!-- iframe 영역 -->
-    <div id="frameWrap">
-        <!-- 로딩 -->
-        <div class="frame-loading" id="loadingOverlay">
-            <div class="spinner"></div>
-            <span class="loading-text">로딩 중...</span>
+    <div class="h-body">
+        <div>
+            <div class="h-eyebrow">FURSYS · WORK</div>
+            <div class="h-heading">무엇을<br>확인할까요?</div>
         </div>
 
         <!-- 포장강화 -->
-        <iframe
-            id="frame-pack"
-            class="app-frame active"
-            src="수출포장강화_대시보드.html?shell=1"
-            onload="onFrameLoad(this)">
-        </iframe>
-
-        <!-- 품질검사 -->
-        <iframe
-            id="frame-quality"
-            class="app-frame"
-            src=""
-            data-src="수출검사리스트_대시보드.html?shell=1"
-            onload="onFrameLoad(this)">
-        </iframe>
-    </div>
-
-    <!-- Bottom nav -->
-    <div id="bottomNav">
-        <button class="nav-tab active" id="tab-pack" onclick="switchTab('pack')">
-            <div class="nav-tab-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-tab-svg">
+        <div class="feat blue" onclick="openSub('pack')" role="button">
+            <div class="feat-ico fi-blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
                 </svg>
             </div>
-            <span class="nav-tab-label">포장강화</span>
-        </button>
-        <button class="nav-tab" id="tab-quality" onclick="switchTab('quality')">
-            <div class="nav-tab-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-tab-svg">
+            <div class="feat-txt">
+                <div class="feat-name">포장강화</div>
+                <div class="feat-desc">수출포장 강화 현황 관리<br>파렛트 · 작업계획 · 출고 현황</div>
+            </div>
+            <div class="feat-arr">›</div>
+        </div>
+
+        <!-- 품질검사 -->
+        <div class="feat green" onclick="openSub('quality')" role="button">
+            <div class="feat-ico fi-green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 11l3 3L22 4"/>
                     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
                 </svg>
             </div>
-            <span class="nav-tab-label">품질검사</span>
+            <div class="feat-txt">
+                <div class="feat-name">품질검사</div>
+                <div class="feat-desc">수출건 품질검사 현황 관리<br>공장별 검사 · 누적 통계</div>
+            </div>
+            <div class="feat-arr">›</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════ SUB-MENU ══════════════ -->
+<div id="sub">
+    <div class="sub-hdr">
+        <button class="sub-back" onclick="closeSub()">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
         </button>
+        <div class="sub-cat">
+            <div class="sub-cat-ico" id="subIco"></div>
+            <span class="sub-title" id="subTitle">포장강화</span>
+        </div>
     </div>
 
-    <script>
-        let currentTab = 'pack';
-        let qualityLoaded = false;
+    <div class="sub-body">
+        <div class="sub-section">바로가기</div>
 
-        function switchTab(tab) {
-            if (currentTab === tab) return;
-            currentTab = tab;
+        <!-- 대시보드 -->
+        <div class="mitem" onclick="goDashboard()">
+            <div class="mi-ico mi-dash">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#00B0FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+            </div>
+            <div class="mi-txt">
+                <div class="mi-title">대시보드</div>
+                <div class="mi-desc">실시간 현황 모니터링</div>
+            </div>
+            <div class="mi-arr">›</div>
+        </div>
 
-            // 탭 상태 업데이트
-            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
+        <!-- 스프레드시트 -->
+        <div class="mitem" onclick="goSheets()">
+            <div class="mi-ico mi-sheet">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                </svg>
+            </div>
+            <div class="mi-txt">
+                <div class="mi-title">스프레드시트</div>
+                <div class="mi-desc">Google Sheets 연동 관리</div>
+            </div>
+            <div class="mi-arr">›</div>
+        </div>
 
-            // iframe 전환
-            document.querySelectorAll('.app-frame').forEach(f => f.classList.remove('active'));
-            const frame = document.getElementById('frame-' + tab);
-            frame.classList.add('active');
+        <!-- 코드 검색 -->
+        <div class="mitem" onclick="goScan()">
+            <div class="mi-ico mi-scan">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9V6a2 2 0 012-2h3M3 15v3a2 2 0 002 2h3M21 9V6a2 2 0 00-2-2h-3M21 15v3a2 2 0 01-2 2h-3"/>
+                    <line x1="7" y1="12" x2="17" y2="12"/>
+                </svg>
+            </div>
+            <div class="mi-txt">
+                <div class="mi-title">코드 검색</div>
+                <div class="mi-desc">스캐너로 제품 정보 조회</div>
+            </div>
+            <div class="mi-arr">›</div>
+        </div>
+    </div>
+</div>
 
-            // 품질검사 처음 열 때 lazy load
-            if (tab === 'quality' && !qualityLoaded) {
-                qualityLoaded = true;
-                document.getElementById('loadingOverlay').classList.remove('done');
-                frame.src = frame.dataset.src;
-            }
-        }
-
-        function onFrameLoad(frame) {
-            document.getElementById('loadingOverlay').classList.add('done');
-            // 테마 동기화 전달
-            try {
-                const theme = document.documentElement.getAttribute('data-theme') || 'dark';
-                frame.contentWindow.postMessage({ type: 'setTheme', theme }, '*');
-            } catch(e) {}
-        }
-
-        function toggleTheme() {
-            const root = document.documentElement;
-            const isLight = root.getAttribute('data-theme') === 'light';
-            const next = isLight ? 'dark' : 'light';
-            root.setAttribute('data-theme', next);
-            document.getElementById('themeIcon').textContent = next === 'light' ? '☀️' : '🌙';
-            // 각 iframe에 테마 전달
-            ['frame-pack', 'frame-quality'].forEach(id => {
-                try {
-                    document.getElementById(id).contentWindow.postMessage({ type: 'setTheme', theme: next }, '*');
-                } catch(e) {}
-            });
-        }
-
-        // iframe에서 테마 메시지 수신 처리 (각 대시보드에서 지원 시)
-        window.addEventListener('message', (e) => {
-            if (e.data && e.data.type === 'themeChange') {
-                document.documentElement.setAttribute('data-theme', e.data.theme);
-            }
+<script>
+/* ── Star canvas ── */
+(function(){
+    var cv = document.getElementById('starCanvas');
+    var cx = cv.getContext('2d');
+    var stars;
+    function resize(){
+        cv.width = innerWidth; cv.height = innerHeight;
+        stars = Array.from({length:150}, function(){
+            return { x: Math.random()*cv.width, y: Math.random()*cv.height,
+                     r: Math.random()*1.3+0.15, a: Math.random()*0.75+0.1 };
         });
-    </script>
+        draw();
+    }
+    function draw(){
+        cx.clearRect(0,0,cv.width,cv.height);
+        stars.forEach(function(s){
+            cx.beginPath(); cx.arc(s.x,s.y,s.r,0,Math.PI*2);
+            cx.fillStyle='rgba(255,255,255,'+s.a+')'; cx.fill();
+        });
+    }
+    resize();
+    window.addEventListener('resize', resize);
+})();
+
+/* ── Theme ── */
+var _theme = localStorage.getItem('fwork_theme') || 'dark';
+document.documentElement.setAttribute('data-theme', _theme);
+_applyThemeLabel();
+
+function toggleTheme(){
+    _theme = _theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', _theme);
+    localStorage.setItem('fwork_theme', _theme);
+    _applyThemeLabel();
+}
+function _applyThemeLabel(){
+    var el = document.getElementById('themeLabel');
+    if(el) el.textContent = _theme === 'light' ? '라이트' : '다크';
+}
+
+/* ── Splash ── */
+(function(){
+    var splash = document.getElementById('splash');
+    var home   = document.getElementById('home');
+    var skip   = sessionStorage.getItem('fwork_splash');
+
+    if(skip){
+        splash.style.display = 'none';
+        home.classList.add('show');
+        _restoreSub();
+        return;
+    }
+    sessionStorage.setItem('fwork_splash','1');
+    setTimeout(function(){
+        splash.classList.add('hide');
+        setTimeout(function(){
+            splash.style.display = 'none';
+            home.classList.add('show');
+            _restoreSub();
+        }, 650);
+    }, 2300);
+})();
+
+/* ── Sub-menu ── */
+var _curMenu = 'pack';
+var MENUS = {
+    pack: {
+        title: '포장강화',
+        dashboard: '수출포장강화_대시보드.html',
+        sheets: '',   /* TODO: 포장강화 Google Sheets URL 입력 */
+        icoBg: 'linear-gradient(135deg,#0055FF,#00B0FF)',
+        icoSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>'
+    },
+    quality: {
+        title: '품질검사',
+        dashboard: '수출검사리스트_대시보드.html',
+        sheets: '',   /* TODO: 품질검사 Google Sheets URL 입력 */
+        icoBg: 'linear-gradient(135deg,#00A878,#00E676)',
+        icoSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>'
+    }
+};
+
+function openSub(type){
+    _curMenu = type;
+    var m = MENUS[type];
+    document.getElementById('subTitle').textContent = m.title;
+    var ico = document.getElementById('subIco');
+    ico.innerHTML = m.icoSvg;
+    ico.style.background = m.icoBg;
+    document.getElementById('sub').classList.add('open');
+}
+
+function closeSub(){
+    document.getElementById('sub').classList.remove('open');
+}
+
+function _restoreSub(){
+    var from = sessionStorage.getItem('fwork_from');
+    if(from && MENUS[from]){
+        sessionStorage.removeItem('fwork_from');
+        setTimeout(function(){ openSub(from); }, 350);
+    }
+}
+
+function _navigate(url){
+    var veil = document.getElementById('pageVeil');
+    sessionStorage.setItem('fwork_from', _curMenu);
+    veil.classList.add('show');
+    setTimeout(function(){ window.location.href = url; }, 280);
+}
+
+function goDashboard(){
+    var m = MENUS[_curMenu];
+    var th = document.documentElement.getAttribute('data-theme') || 'dark';
+    _navigate(m.dashboard + '?shell=1&theme=' + th);
+}
+
+function goSheets(){
+    var m = MENUS[_curMenu];
+    if(!m.sheets){
+        alert('스프레드시트 링크가 설정되지 않았습니다.\n관리자에게 문의하세요.');
+        return;
+    }
+    window.open(m.sheets, '_blank');
+}
+
+function goScan(){
+    alert('바코드 스캐너 기능은 준비 중입니다.');
+}
+</script>
 </body>
 </html>
