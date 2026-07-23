@@ -711,26 +711,18 @@ function openSub(type){
     var ico = document.getElementById('subIco');
     ico.innerHTML = m.icoSvg;
     ico.style.background = m.icoBg;
-    document.getElementById('sub').classList.add('open');
+    var sub = document.getElementById('sub');
+    sub.style.pointerEvents = '';   /* 인라인 스타일 초기화 — CSS 클래스가 제어 */
+    sub.classList.add('open');
 }
 
 function closeSub(){
-    var sub = document.getElementById('sub');
-    sub.classList.remove('open');
-    sub.style.pointerEvents = 'none';
-}
-
-function _restoreSub(){
-    var from = sessionStorage.getItem('fwork_from');
-    if(from && MENUS[from]){
-        sessionStorage.removeItem('fwork_from');
-        setTimeout(function(){ openSub(from); }, 350);
-    }
+    document.getElementById('sub').classList.remove('open');
+    /* pointer-events는 CSS #sub { pointer-events: none } 이 담당 — 인라인 미설정 */
 }
 
 function _navigate(url){
     var veil = document.getElementById('pageVeil');
-    sessionStorage.setItem('fwork_from', _curMenu);
     veil.classList.add('show');
     setTimeout(function(){ window.location.href = url; }, 280);
 }
