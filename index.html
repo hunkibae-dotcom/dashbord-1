@@ -666,7 +666,6 @@ window.addEventListener('pageshow', function(e){
     if(skip){
         splash.style.display = 'none';
         home.classList.add('show');
-        _restoreSub();
         return;
     }
     sessionStorage.setItem('fwork_splash','1');
@@ -675,7 +674,6 @@ window.addEventListener('pageshow', function(e){
         setTimeout(function(){
             splash.style.display = 'none';
             home.classList.add('show');
-            _restoreSub();
         }, 650);
     }, 2300);
 })();
