@@ -2350,7 +2350,7 @@ if ('serviceWorker' in navigator) {
   </button>
 
   <!-- Bottom Nav -->
-  <div class="bg-white shrink-0" style="border-top:1px solid #EAECF0;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <div id="mQualityBottomNav" class="bg-white shrink-0" style="border-top:1px solid #EAECF0;padding-bottom:env(safe-area-inset-bottom,0px);">
     <div class="flex" style="height:64px;padding:0 8px;">
       <button onclick="setMTab('home')" id="mNav0" class="mobile-nav-btn active">
         <span class="m-nav-icon"><i class="fa-solid fa-grip"></i></span>
@@ -2371,6 +2371,23 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 </div>
+
+<script>
+(function(){
+    if(!new URLSearchParams(location.search).get('shell')) return;
+    // 셸 모드: 강제 모바일 뷰, 내부 헤더 숨김
+    window.isMobile = function(){ return true; };
+    initMobile();
+    var mApp = document.getElementById('mobileApp');
+    if(mApp){
+        var mHdr = mApp.querySelector('div[style*="height:60px"]');
+        if(mHdr) mHdr.style.display = 'none';
+    }
+    // 데스크탑 사이드바 숨김
+    var aside = document.querySelector('aside');
+    if(aside) aside.style.display = 'none';
+})();
+</script>
 
 </body>
 </html>

@@ -5284,5 +5284,18 @@
             <span>제품상세</span>
         </button>
     </div>
+<script>
+(function(){
+    if(!new URLSearchParams(location.search).get('shell')) return;
+    var hdr = document.querySelector('header');
+    if(hdr) hdr.style.display = 'none';
+    var bar = document.getElementById('mobileBottomBar');
+    if(bar) bar.style.display = 'none';
+    var grid = document.getElementById('mainGrid');
+    if(grid) grid.style.paddingBottom = '0';
+    // 상단 패딩 제거
+    document.body.style.paddingTop = '0';
+})();
+</script>
 </body>
 </html>
