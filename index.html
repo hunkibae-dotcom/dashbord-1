@@ -609,7 +609,9 @@ function openSub(type){
 }
 
 function closeSub(){
-    document.getElementById('sub').classList.remove('open');
+    var sub = document.getElementById('sub');
+    sub.classList.remove('open');
+    sub.style.pointerEvents = 'none';
 }
 
 function _restoreSub(){
