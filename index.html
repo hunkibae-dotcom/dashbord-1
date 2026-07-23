@@ -650,11 +650,9 @@ window.addEventListener('pageshow', function(e){
     if(e.persisted){
         var veil = document.getElementById('pageVeil');
         veil.classList.remove('show');
-        veil.style.opacity = '0';
-        veil.style.pointerEvents = 'none';
         var sub = document.getElementById('sub');
         sub.classList.remove('open');
-        sub.style.pointerEvents = 'none';
+        sub.style.pointerEvents = '';   /* 인라인 초기화 — CSS가 제어 */
         document.getElementById('home').classList.add('show');
     }
 });
