@@ -561,11 +561,21 @@ function goDashboard(){
 
 function goSheets(){
     var m = MENUS[_curMenu];
-    if(!m.sheets){
-        alert('스프레드시트 링크가 설정되지 않았습니다.\n관리자에게 문의하세요.');
-        return;
+    if(!m.sheets){ alert('링크가 설정되지 않았습니다.'); return; }
+    if(typeof m.sheets === 'string'){
+        window.open(m.sheets, '_blank');
+    } else {
+        /* 품질검사: 공장 선택 모달 */
+        document.getElementById('sheetModal').classList.add('open');
     }
-    window.open(m.sheets, '_blank');
+}
+function closeSheetModal(){
+    document.getElementById('sheetModal').classList.remove('open');
+}
+function openFactory(key){
+    var url = MENUS.quality.sheets[key];
+    closeSheetModal();
+    window.open(url, '_blank');
 }
 
 function goScan(){
