@@ -5212,6 +5212,43 @@
                 enableSwipeToDismiss(card, modalCloseMap[id]);
             });
         })();
+
+        /* ── 모바일 캐러셀 dots 초기화 ── */
+        function _initDots(gridId, dotsId, count) {
+            const dotsEl = document.getElementById(dotsId);
+            if (!dotsEl) return;
+            dotsEl.innerHTML = Array.from({length: count}, (_, i) =>
+                `<span class="m-dot${i===0?' active':''}"></span>`
+            ).join('');
+            const grid = document.getElementById(gridId);
+            if (!grid) return;
+            grid.addEventListener('scroll', () => {
+                const idx = Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), count - 1);
+                dotsEl.querySelectorAll('.m-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            }, {passive: true});
+        }
+        _initDots('topCardGrid', 'topCardDots', 4);
+        _initDots('chartRow', 'chartRowDots', 2);
     </script>
+
+    <!-- 모바일 하단 액션바 -->
+    <div id="mobileBottomBar">
+        <button class="mb-item mb-primary" onclick="openFilterDrawer()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>검색</span>
+        </button>
+        <button class="mb-item" onclick="syncWithGoogleSheets()">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>동기화</span>
+        </button>
+        <button class="mb-item" onclick="document.getElementById('tablePanel').scrollIntoView({behavior:'smooth',block:'start'})">
+            <i class="fa-solid fa-table-list"></i>
+            <span>현황표</span>
+        </button>
+        <button class="mb-item" onclick="exportToCSV()">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>출력</span>
+        </button>
+    </div>
 </body>
 </html>
