@@ -299,11 +299,33 @@
             /* 캐러셀 dots 표시 */
             #topCardDots, #chartRowDots { display:flex !important; }
 
-            /* 섹션 라벨 표시 */
-            .mobile-section-label { display:flex !important; }
-
             /* 하단 액션바 표시 */
             #mobileBottomBar { display:flex; }
+
+            /* 카드/차트 캐러셀 박스 스타일 */
+            .mobile-carousel-box {
+                background: var(--c-panelBg);
+                border: 1px solid var(--c-border);
+                border-radius: 22px;
+                overflow: hidden;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            }
+            /* 박스 내부 카드들의 개별 border/shadow 제거 */
+            .mobile-carousel-box #topCardGrid > *,
+            .mobile-carousel-box #chartRow > * {
+                border: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+            /* 카드 사이 구분선 */
+            .mobile-carousel-box #topCardGrid > * + *,
+            .mobile-carousel-box #chartRow > * + * {
+                border-left: 1px solid var(--c-border) !important;
+            }
+
+            /* 테이블 모바일 기본 숨김 */
+            #tablePanel { display: none; }
+            #tablePanel.mobile-table-open { display: flex !important; }
         }
 
         /* ── 제품 상세 스펙: 모바일 2열 카드 / sm 이상 5열 원래 배치 ── */
