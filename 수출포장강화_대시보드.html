@@ -186,6 +186,87 @@
             }
         }
 
+        /* ── 모바일 앱 UI 최적화 ── */
+        @media (max-width: 767px) {
+            /* Safe area (iPhone 노치/홈바) */
+            body {
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+            }
+            header {
+                padding-top: max(env(safe-area-inset-top, 0px), 10px) !important;
+                padding-bottom: 10px !important;
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+            }
+
+            /* 헤더 타이틀 크기 */
+            header h1 { font-size: 18px !important; }
+
+            /* 사이드바 모바일 전체너비 (앱 드로어처럼) */
+            #sidebarWrapper {
+                width: 100vw !important;
+                max-width: 100vw !important;
+                padding: 16px 14px !important;
+                padding-top: max(env(safe-area-inset-top, 0px), 16px) !important;
+            }
+            #sidebarTop  { padding: 16px !important; border-radius: 14px !important; }
+            #sidebarBottom { padding: 16px !important; border-radius: 14px !important; }
+
+            /* 사이드바 검색 섹션 제목 */
+            #sidebarTop h2, #sidebarBottom h2 { font-size: 15px !important; }
+
+            /* 입력 라벨 */
+            #sidebarTop label { font-size: 13px !important; }
+
+            /* 입력창 폰트 — 16px 이상 유지 (iOS 자동 확대 방지) */
+            #sidebarTop input[type="text"],
+            #sidebarTop input[type="date"] { font-size: 16px !important; padding: 11px 12px 11px 36px !important; }
+            #sidebarTop input[type="date"] { padding-left: 12px !important; }
+
+            /* 검색하기/초기화 버튼 터치영역 */
+            #sidebarTop .grid button {
+                padding-top: 14px !important;
+                padding-bottom: 14px !important;
+                font-size: 16px !important;
+                border-radius: 12px !important;
+            }
+
+            /* 강화포장 데이터시트 버튼 */
+            #sidebarTop a[target="_blank"] {
+                padding-top: 13px !important;
+                padding-bottom: 13px !important;
+                font-size: 15px !important;
+                border-radius: 12px !important;
+            }
+
+            /* KPI 카드 */
+            #topCardGrid > * {
+                border-radius: 20px !important;
+                padding: 18px 16px !important;
+            }
+
+            /* KPI 카드 폰트 */
+            #topCardGrid .text-\[17\.5px\] { font-size: 15px !important; }
+            #topCardGrid .text-\[21\.5px\] { font-size: 24px !important; }
+            #topCardGrid .text-\[21px\]    { font-size: 22px !important; }
+            #topCardGrid .text-\[17px\]    { font-size: 15px !important; }
+            #topCardGrid .text-\[15px\]    { font-size: 13.5px !important; }
+            #topCardGrid .text-\[13\.5px\] { font-size: 13px !important; }
+            #topCardGrid .text-\[12\.5px\] { font-size: 12px !important; }
+            #topCardGrid .text-\[13px\]    { font-size: 12.5px !important; }
+
+            /* 메인 컨텐츠 패딩 */
+            #mainContent { padding: 12px 10px !important; gap: 12px !important; }
+
+            /* 차트 카드 */
+            #chartRow > * { border-radius: 18px !important; }
+
+            /* 테이블 패딩 */
+            #tablePanel { padding: 12px 8px !important; border-radius: 18px !important; }
+            #mainTableHeadRow th { font-size: 12px !important; padding: 8px 6px !important; }
+            #tableBody td { font-size: 13px !important; padding: 8px 6px !important; }
+        }
+
         /* ── 제품 상세 스펙: 모바일 2열 카드 / sm 이상 5열 원래 배치 ── */
         #specGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         #specGrid > .spec-item { display: flex; flex-direction: column; gap: 0.125rem; }
