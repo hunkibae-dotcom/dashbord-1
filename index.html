@@ -423,6 +423,39 @@
 <div id="bgLayer"></div>
 <div id="pageVeil"></div>
 
+<!-- ══ Barcode Scanner ══ -->
+<div id="scanModal" onclick="if(event.target===this)closeScan()">
+    <div class="scan-box">
+        <div class="scan-hdr">
+            <span class="scan-ttl">코드 검색</span>
+            <button class="scan-close" onclick="closeScan()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="scan-view">
+            <video id="scanVideo" autoplay playsinline muted></video>
+            <div class="scan-frame">
+                <span class="sc-corner tl"></span>
+                <span class="sc-corner tr"></span>
+                <span class="sc-corner bl"></span>
+                <span class="sc-corner br"></span>
+                <div class="scan-line"></div>
+            </div>
+        </div>
+        <div class="scan-foot">
+            <p id="scanStatus" class="scan-status">카메라 준비 중...</p>
+            <div id="scanResultArea" class="scan-result-area" style="display:none;">
+                <div class="scan-fmt" id="scanResultFmt"></div>
+                <div class="scan-val" id="scanResultVal"></div>
+                <div class="scan-actions">
+                    <button class="scan-btn" id="scanCopyBtn" onclick="copyResult()">복사</button>
+                    <button class="scan-btn" onclick="rescan()">다시 스캔</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ══ Sheet 공장 선택 모달 ══ -->
 <div id="sheetModal" onclick="if(event.target===this)closeSheetModal()">
     <div class="modal-sheet">
