@@ -748,8 +748,114 @@ function openFactory(key){
     window.open(url, '_blank');
 }
 
+/* ── Barcode Scanner ── */
+var _scanStream = null;
+var _scanTimer  = null;
+var _scanDetect = null;
+
 function goScan(){
-    alert('바코드 스캐너 기능은 준비 중입니다.');
+    var ua = navigator.userAgent || '';
+    if(!/Mobi|Android|iPhone|iPad|iPod/i.test(ua)){
+        alert('모바일 기기에서만 사용 가능합니다.');
+        return;
+    }
+    document.getElementById('scanModal').classList.add('open');
+    _startScan();
+}
+
+function _startScan(){
+    var status = document.getElementById('scanStatus');
+    status.textContent = '카메라 초기화 중...';
+    document.getElementById('scanResultArea').style.display = 'none';
+
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+        status.textContent = '카메라를 지원하지 않는 브라우저입니다.';
+        return;
+    }
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }
+    }).then(function(stream){
+        _scanStream = stream;
+        var v = document.getElementById('scanVideo');
+        v.srcObject = stream;
+        v.play();
+        status.textContent = '바코드를 프레임 안에 비춰주세요';
+
+        if('BarcodeDetector' in window){
+            BarcodeDetector.getSupportedFormats().then(function(fmts){
+                _scanDetect = new BarcodeDetector({formats: fmts.length ? fmts : ['code_128','ean_13','qr_code']});
+                _loopDetect(v);
+            }).catch(function(){
+                _scanDetect = new BarcodeDetector({formats:['code_128','ean_13','ean_8','qr_code','code_39','upc_a']});
+                _loopDetect(v);
+            });
+        } else {
+            status.textContent = '이 브라우저는 자동 인식 미지원 — Chrome 앱을 이용해주세요';
+        }
+    }).catch(function(err){
+        status.textContent = '카메라 권한 필요 (' + (err.name || err) + ')';
+    });
+}
+
+function _loopDetect(video){
+    if(!_scanStream || !_scanDetect) return;
+    _scanDetect.detect(video).then(function(codes){
+        if(codes && codes.length){
+            _onFound(codes[0].rawValue, codes[0].format);
+        } else {
+            _scanTimer = setTimeout(function(){ _loopDetect(video); }, 250);
+        }
+    }).catch(function(){
+        _scanTimer = setTimeout(function(){ _loopDetect(video); }, 400);
+    });
+}
+
+function _onFound(val, fmt){
+    _stopScanStream();
+    document.getElementById('scanResultFmt').textContent = (fmt||'').replace(/_/g,' ');
+    document.getElementById('scanResultVal').textContent = val;
+    var area = document.getElementById('scanResultArea');
+    area.style.display = 'flex';
+    area.style.flexDirection = 'column';
+    document.getElementById('scanStatus').textContent = '스캔 완료 ✓';
+}
+
+function _stopScanStream(){
+    clearTimeout(_scanTimer);
+    if(_scanStream){ _scanStream.getTracks().forEach(function(t){t.stop();}); _scanStream = null; }
+    _scanDetect = null;
+}
+
+function closeScan(){
+    _stopScanStream();
+    var v = document.getElementById('scanVideo');
+    v.srcObject = null;
+    document.getElementById('scanModal').classList.remove('open');
+    document.getElementById('scanStatus').textContent = '카메라 준비 중...';
+    document.getElementById('scanResultArea').style.display = 'none';
+    document.getElementById('scanCopyBtn').textContent = '복사';
+}
+
+function rescan(){
+    document.getElementById('scanResultArea').style.display = 'none';
+    _startScan();
+}
+
+function copyResult(){
+    var val = document.getElementById('scanResultVal').textContent;
+    if(!val) return;
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(val).then(function(){
+            var btn = document.getElementById('scanCopyBtn');
+            btn.textContent = '복사됨 ✓';
+            setTimeout(function(){ btn.textContent = '복사'; }, 1500);
+        });
+    } else {
+        var el = document.createElement('textarea');
+        el.value = val; document.body.appendChild(el);
+        el.select(); document.execCommand('copy');
+        document.body.removeChild(el);
+    }
 }
 </script>
 </body>
