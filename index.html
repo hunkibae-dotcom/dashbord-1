@@ -473,12 +473,16 @@
         </div>
         <div class="scan-foot">
             <p id="scanStatus" class="scan-status">카메라 준비 중...</p>
+            <button id="scanCaptureBtn" class="scan-capture-btn" onclick="captureAndOCR()" style="display:none;">캡처 &amp; 인식</button>
             <div id="scanResultArea" class="scan-result-area" style="display:none;">
-                <div class="scan-fmt" id="scanResultFmt"></div>
-                <div class="scan-val" id="scanResultVal"></div>
-                <div class="scan-actions">
-                    <button class="scan-btn" id="scanCopyBtn" onclick="copyResult()">복사</button>
-                    <button class="scan-btn" onclick="rescan()">다시 스캔</button>
+                <div class="scan-result-label">인식된 코드</div>
+                <div id="scanResultCodes" class="scan-codes-list"></div>
+                <div id="scanSelectedArea" class="scan-selected-area" style="display:none;">
+                    <div id="scanSelectedVal" class="scan-val"></div>
+                    <div class="scan-actions">
+                        <button class="scan-btn" id="scanCopyBtn" onclick="copySelectedCode()">복사</button>
+                        <button class="scan-btn" onclick="rescan()">다시 스캔</button>
+                    </div>
                 </div>
             </div>
         </div>
