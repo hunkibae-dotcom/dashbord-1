@@ -820,20 +820,75 @@ function _loopBarcode(video){
     if(!_scanStream || !_barcodeDetect) return;
     _barcodeDetect.detect(video).then(function(results){
         var codes = [];
+        var bestCorners = null;
         results.forEach(function(r){
             var parsed = _parseBarcode(r.rawValue);
-            if(parsed && parsed.length >= 6 && /[A-Z]/.test(parsed) && codes.indexOf(parsed) < 0){
+            if(parsed && parsed.length >= 4 && /[A-Z]/.test(parsed) && codes.indexOf(parsed) < 0){
                 codes.push(parsed);
+                if(!bestCorners && r.cornerPoints) bestCorners = r.cornerPoints;
             }
         });
         if(codes.length > 0){
-            _onCodesFound(codes);
+            if(bestCorners) _drawBarcodeBox(bestCorners, video);
+            if(navigator.vibrate) navigator.vibrate(60);
+            document.getElementById('scanStatus').textContent = '바코드 인식 완료!';
+            setTimeout(function(){
+                _clearOverlay();
+                _onCodesFound(codes);
+            }, 700);
         } else {
+            _clearOverlay();
             _scanTimer = setTimeout(function(){ _loopBarcode(video); }, 300);
         }
     }).catch(function(){
+        _clearOverlay();
         _scanTimer = setTimeout(function(){ _loopBarcode(video); }, 600);
     });
+}
+
+function _drawBarcodeBox(cornerPoints, video){
+    var canvas = document.getElementById('scanOverlay');
+    if(!canvas || !cornerPoints || cornerPoints.length < 3) return;
+    var ctx = canvas.getContext('2d');
+
+    var rect = canvas.getBoundingClientRect();
+    canvas.width  = rect.width  || canvas.offsetWidth;
+    canvas.height = rect.height || canvas.offsetHeight;
+
+    var vW = video.videoWidth  || 1;
+    var vH = video.videoHeight || 1;
+    var cW = canvas.width;
+    var cH = canvas.height;
+
+    /* object-fit:cover 좌표 변환 */
+    var scale = Math.max(cW / vW, cH / vH);
+    var offX  = (cW - vW * scale) / 2;
+    var offY  = (cH - vH * scale) / 2;
+    function mx(x){ return x * scale + offX; }
+    function my(y){ return y * scale + offY; }
+
+    ctx.clearRect(0, 0, cW, cH);
+    ctx.beginPath();
+    ctx.moveTo(mx(cornerPoints[0].x), my(cornerPoints[0].y));
+    for(var i = 1; i < cornerPoints.length; i++){
+        ctx.lineTo(mx(cornerPoints[i].x), my(cornerPoints[i].y));
+    }
+    ctx.closePath();
+
+    ctx.fillStyle   = 'rgba(0,255,136,0.18)';
+    ctx.fill();
+    ctx.strokeStyle = '#00FF88';
+    ctx.lineWidth   = 4;
+    ctx.shadowColor = '#00FF88';
+    ctx.shadowBlur  = 14;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+}
+
+function _clearOverlay(){
+    var canvas = document.getElementById('scanOverlay');
+    if(!canvas) return;
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 }
 
 function _parseBarcode(raw){
