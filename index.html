@@ -781,18 +781,16 @@ function openFactory(key){
     window.open(url, '_blank');
 }
 
-/* ── Barcode Scanner ── */
-var _scanStream = null;
-var _scanTimer  = null;
-var _scanDetect = null;
+/* ── OCR Text Scanner ── */
+var _scanStream  = null;
+var _scanTimer   = null;
+var _textDetect  = null;
+var _selectedCode = '';
+var _isOcring    = false;
 
 function goScan(){
-    /* 터치 지원 여부로 모바일 판별 (UA 스니핑 대신) */
     var hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    if(!hasTouch){
-        alert('모바일 기기에서만 사용 가능합니다.');
-        return;
-    }
+    if(!hasTouch){ alert('모바일 기기에서만 사용 가능합니다.'); return; }
     document.getElementById('scanModal').classList.add('open');
     _startScan();
 }
@@ -801,63 +799,157 @@ function _startScan(){
     var status = document.getElementById('scanStatus');
     status.textContent = '카메라 초기화 중...';
     document.getElementById('scanResultArea').style.display = 'none';
+    document.getElementById('scanSelectedArea').style.display = 'none';
+    document.getElementById('scanCaptureBtn').style.display = 'none';
+    _isOcring = false;
 
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
         status.textContent = '카메라를 지원하지 않는 브라우저입니다.';
         return;
     }
     navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal:'environment' }, width:{ideal:1280}, height:{ideal:720} }
+        video: { facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} }
     }).then(function(stream){
         _scanStream = stream;
         var v = document.getElementById('scanVideo');
         v.srcObject = stream;
         v.play();
-        status.textContent = '바코드를 프레임 안에 비춰주세요';
-
-        if('BarcodeDetector' in window){
-            BarcodeDetector.getSupportedFormats().then(function(fmts){
-                _scanDetect = new BarcodeDetector({formats: fmts.length ? fmts : ['code_128','ean_13','qr_code']});
-                _loopDetect(v);
-            }).catch(function(){
-                _scanDetect = new BarcodeDetector({formats:['code_128','ean_13','ean_8','qr_code','code_39','upc_a']});
-                _loopDetect(v);
-            });
+        if('TextDetector' in window){
+            _textDetect = new TextDetector();
+            status.textContent = '코드를 프레임 안에 비춰주세요 (자동 인식)';
+            _loopTextDetect(v);
         } else {
-            status.textContent = '이 브라우저는 자동 인식 미지원 — Chrome 앱을 이용해주세요';
+            status.textContent = '코드에 카메라를 맞추고 캡처 버튼을 누르세요';
+            document.getElementById('scanCaptureBtn').style.display = 'block';
         }
     }).catch(function(err){
-        status.textContent = '카메라 권한 필요 (' + (err.name || err) + ')';
+        status.textContent = '카메라 권한이 필요합니다 (' + (err.name || err) + ')';
     });
 }
 
-function _loopDetect(video){
-    if(!_scanStream || !_scanDetect) return;
-    _scanDetect.detect(video).then(function(codes){
-        if(codes && codes.length){
-            _onFound(codes[0].rawValue, codes[0].format);
+function _loopTextDetect(video){
+    if(!_scanStream || !_textDetect) return;
+    _textDetect.detect(video).then(function(results){
+        var codes = [];
+        results.forEach(function(r){
+            var t = r.rawValue.trim().replace(/\s+/g,' ');
+            if(t.length >= 4 && /[A-Z]{2,}[0-9]{2,}|[A-Z0-9]{6,}/.test(t)){
+                codes.push(t);
+            }
+        });
+        if(codes.length > 0){
+            _onCodesFound(codes);
         } else {
-            _scanTimer = setTimeout(function(){ _loopDetect(video); }, 250);
+            _scanTimer = setTimeout(function(){ _loopTextDetect(video); }, 600);
         }
     }).catch(function(){
-        _scanTimer = setTimeout(function(){ _loopDetect(video); }, 400);
+        _scanTimer = setTimeout(function(){ _loopTextDetect(video); }, 1000);
     });
 }
 
-function _onFound(val, fmt){
-    _stopScanStream();
-    document.getElementById('scanResultFmt').textContent = (fmt||'').replace(/_/g,' ');
-    document.getElementById('scanResultVal').textContent = val;
+function captureAndOCR(){
+    if(_isOcring) return;
+    _isOcring = true;
+    var status = document.getElementById('scanStatus');
+    var btn = document.getElementById('scanCaptureBtn');
+    status.textContent = '인식 중... 잠시 기다려주세요';
+    btn.disabled = true;
+
+    var video = document.getElementById('scanVideo');
+    var canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+
+    _loadTesseract(function(){
+        Tesseract.recognize(canvas, 'eng', {
+            tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 -_./'
+        }).then(function(result){
+            _isOcring = false;
+            btn.disabled = false;
+            var lines = result.data.text.split('\n');
+            var codes = [];
+            lines.forEach(function(line){
+                line = line.trim();
+                if(line.length >= 4 && /[A-Z]{2,}[0-9]{2,}|[A-Z0-9]{6,}/.test(line)){
+                    codes.push(line);
+                }
+            });
+            if(codes.length > 0){
+                _onCodesFound(codes);
+            } else {
+                status.textContent = '코드를 찾지 못했습니다. 다시 시도해주세요.';
+            }
+        }).catch(function(){
+            _isOcring = false; btn.disabled = false;
+            status.textContent = '인식 오류가 발생했습니다.';
+        });
+    });
+}
+
+function _loadTesseract(cb){
+    if(window.Tesseract){ cb(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js';
+    s.onload = cb;
+    s.onerror = function(){
+        document.getElementById('scanStatus').textContent = 'OCR 라이브러리 로드 실패. 네트워크를 확인해주세요.';
+        _isOcring = false;
+        document.getElementById('scanCaptureBtn').disabled = false;
+    };
+    document.head.appendChild(s);
+}
+
+function _onCodesFound(codes){
+    clearTimeout(_scanTimer);
+    var unique = [];
+    codes.forEach(function(c){ if(unique.indexOf(c) < 0) unique.push(c); });
+
+    var codesEl = document.getElementById('scanResultCodes');
+    codesEl.innerHTML = unique.map(function(c){
+        var safe = c.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        return '<div class="scan-code-chip" onclick="selectCode(this,\'' + safe + '\')">' + safe + '</div>';
+    }).join('');
+
     var area = document.getElementById('scanResultArea');
     area.style.display = 'flex';
     area.style.flexDirection = 'column';
-    document.getElementById('scanStatus').textContent = '스캔 완료 ✓';
+    document.getElementById('scanSelectedArea').style.display = 'none';
+    document.getElementById('scanStatus').textContent = unique.length + '개 코드 인식됨 ✓  (코드를 탭하면 선택)';
+}
+
+function selectCode(el, code){
+    document.querySelectorAll('.scan-code-chip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    _selectedCode = code;
+    var sel = document.getElementById('scanSelectedArea');
+    sel.style.display = 'flex';
+    sel.style.flexDirection = 'column';
+    document.getElementById('scanSelectedVal').textContent = code;
+    document.getElementById('scanCopyBtn').textContent = '복사';
+}
+
+function copySelectedCode(){
+    if(!_selectedCode) return;
+    var btn = document.getElementById('scanCopyBtn');
+    if(navigator.clipboard){
+        navigator.clipboard.writeText(_selectedCode).then(function(){
+            btn.textContent = '복사됨 ✓';
+            setTimeout(function(){ btn.textContent = '복사'; }, 1500);
+        });
+    } else {
+        var el = document.createElement('textarea');
+        el.value = _selectedCode; document.body.appendChild(el);
+        el.select(); document.execCommand('copy'); document.body.removeChild(el);
+        btn.textContent = '복사됨 ✓';
+        setTimeout(function(){ btn.textContent = '복사'; }, 1500);
+    }
 }
 
 function _stopScanStream(){
     clearTimeout(_scanTimer);
     if(_scanStream){ _scanStream.getTracks().forEach(function(t){t.stop();}); _scanStream = null; }
-    _scanDetect = null;
+    _textDetect = null;
 }
 
 function closeScan(){
@@ -867,28 +959,22 @@ function closeScan(){
     document.getElementById('scanModal').classList.remove('open');
     document.getElementById('scanStatus').textContent = '카메라 준비 중...';
     document.getElementById('scanResultArea').style.display = 'none';
-    document.getElementById('scanCopyBtn').textContent = '복사';
+    document.getElementById('scanSelectedArea').style.display = 'none';
+    document.getElementById('scanCaptureBtn').style.display = 'none';
+    _selectedCode = '';
+    _isOcring = false;
 }
 
 function rescan(){
     document.getElementById('scanResultArea').style.display = 'none';
-    _startScan();
-}
-
-function copyResult(){
-    var val = document.getElementById('scanResultVal').textContent;
-    if(!val) return;
-    if(navigator.clipboard){
-        navigator.clipboard.writeText(val).then(function(){
-            var btn = document.getElementById('scanCopyBtn');
-            btn.textContent = '복사됨 ✓';
-            setTimeout(function(){ btn.textContent = '복사'; }, 1500);
-        });
+    document.getElementById('scanSelectedArea').style.display = 'none';
+    _isOcring = false;
+    if('TextDetector' in window && _scanStream){
+        if(!_textDetect) _textDetect = new TextDetector();
+        document.getElementById('scanStatus').textContent = '코드를 프레임 안에 비춰주세요 (자동 인식)';
+        _loopTextDetect(document.getElementById('scanVideo'));
     } else {
-        var el = document.createElement('textarea');
-        el.value = val; document.body.appendChild(el);
-        el.select(); document.execCommand('copy');
-        document.body.removeChild(el);
+        _startScan();
     }
 }
 </script>
