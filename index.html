@@ -963,7 +963,13 @@ function _onCodesFound(codes){
     area.style.display = 'flex';
     area.style.flexDirection = 'column';
     document.getElementById('scanSelectedArea').style.display = 'none';
-    document.getElementById('scanStatus').textContent = unique.length + '개 코드 인식됨 ✓  (코드를 탭하면 선택)';
+    document.getElementById('scanStatus').textContent = unique.length + '개 코드 인식됨 ✓';
+
+    /* 단일 결과면 자동 선택 */
+    if(unique.length === 1){
+        var chip = codesEl.querySelector('.scan-code-chip');
+        if(chip) selectCode(chip, unique[0]);
+    }
 }
 
 function selectCode(el, code){
