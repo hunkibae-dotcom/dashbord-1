@@ -77,11 +77,11 @@
   .pulse-dot { animation:pulse-dot 2s infinite; }
 
   /* ===== MOBILE APP ===== */
-  .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:6px 0 8px; gap:3px; color:#94A3B8; font-size:10px; font-weight:700; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
+  .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 0 12px; gap:4px; color:#94A3B8; font-size:13px; font-weight:700; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
   .mobile-nav-btn.active { color:#6D5CE8; }
   .mobile-nav-btn.active .m-nav-icon { background:#EDE9FE; }
-  .m-nav-icon { display:flex; align-items:center; justify-content:center; width:40px; height:26px; border-radius:13px; transition:background .15s; }
-  .m-nav-icon i { font-size:17px; }
+  .m-nav-icon { display:flex; align-items:center; justify-content:center; width:52px; height:34px; border-radius:17px; transition:background .15s; }
+  .m-nav-icon i { font-size:22px; }
   .m-snap { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .m-snap::-webkit-scrollbar { display:none; }
   .m-snap > div { min-width:100%; scroll-snap-align:start; box-sizing:border-box; }
@@ -2351,7 +2351,7 @@ if ('serviceWorker' in navigator) {
 
   <!-- Bottom Nav -->
   <div id="mQualityBottomNav" class="bg-white shrink-0" style="border-top:1px solid #EAECF0;padding-bottom:env(safe-area-inset-bottom,0px);">
-    <div class="flex" style="height:64px;padding:0 8px;">
+    <div class="flex" style="height:84px;padding:0 4px;">
       <button onclick="setMTab('home')" id="mNav0" class="mobile-nav-btn active">
         <span class="m-nav-icon"><i class="fa-solid fa-grip"></i></span>
         <span>현황</span>
@@ -2395,7 +2395,7 @@ if ('serviceWorker' in navigator) {
         var _fg  = _dark ? '#F1F5F9' : '#0F172A';
         var backBar = document.createElement('div');
         backBar.style.cssText = [
-            'height:50px','background:'+_bg,'border-bottom:1px solid '+_bdr,
+            'height:62px','background:'+_bg,'border-bottom:1px solid '+_bdr,
             'display:flex','align-items:center','padding:0 16px','gap:10px',
             'cursor:pointer','flex-shrink:0','box-sizing:border-box'
         ].join(';');

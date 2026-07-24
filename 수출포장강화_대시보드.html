@@ -5251,19 +5251,41 @@
             }
         }
 
-        /* ── 모바일 캐러셀 dots 초기화 ── */
+        /* ── 모바일 캐러셀 탭 버튼 초기화 ── */
         function _initDots(gridId, dotsId, count) {
-            const dotsEl = document.getElementById(dotsId);
-            if (!dotsEl) return;
-            dotsEl.innerHTML = Array.from({length: count}, (_, i) =>
-                `<span class="m-dot${i===0?' active':''}"></span>`
-            ).join('');
-            const grid = document.getElementById(gridId);
-            if (!grid) return;
-            grid.addEventListener('scroll', () => {
-                const idx = Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), count - 1);
-                dotsEl.querySelectorAll('.m-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
-            }, {passive: true});
+            if (window.innerWidth >= 768) return;
+            var grid = document.getElementById(gridId);
+            var dotsEl = document.getElementById(dotsId);
+            if (!grid || !dotsEl) return;
+
+            var LABELS = {
+                topCardGrid: ['작업계획', '이전작업', '수출일정', 'INFORM'],
+                chartRow: ['포장현황', '제품비교']
+            };
+            var labels = LABELS[gridId] || Array.from({length: count}, function(_, i){ return '항목'+(i+1); });
+
+            var tabBar = document.createElement('div');
+            tabBar.style.cssText = 'display:flex;border-bottom:1px solid var(--c-border);';
+            var tabs = Array.from({length: count}, function(_, i){
+                var t = document.createElement('button');
+                t.textContent = labels[i] || ('항목'+(i+1));
+                t.style.cssText = 'flex:1;padding:13px 4px;font-size:13px;font-weight:'+(i===0?'700':'600')+';color:'+(i===0?'#00B0FF':'#64748B')+';border-bottom:2px solid '+(i===0?'#00B0FF':'transparent')+';background:transparent;border-top:none;border-left:none;border-right:none;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent;';
+                t.onclick = function(){ grid.scrollTo({left: i * grid.clientWidth, behavior:'smooth'}); };
+                return t;
+            });
+            tabs.forEach(function(t){ tabBar.appendChild(t); });
+            grid.parentElement.insertBefore(tabBar, grid);
+            dotsEl.style.display = 'none';
+
+            grid.addEventListener('scroll', function(){
+                var idx = Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), count - 1);
+                tabs.forEach(function(t, i){
+                    var a = i === idx;
+                    t.style.color = a ? '#00B0FF' : '#64748B';
+                    t.style.borderBottomColor = a ? '#00B0FF' : 'transparent';
+                    t.style.fontWeight = a ? '700' : '600';
+                });
+            }, {passive:true});
         }
         _initDots('topCardGrid', 'topCardDots', 4);
         _initDots('chartRow', 'chartRowDots', 2);
@@ -5310,9 +5332,9 @@
     backBar.style.cssText = [
         'position:fixed','top:0','left:0','right:0',
         'padding-top:'+safeTop,
-        'height:calc(50px + '+safeTop+')',
+        'height:calc(62px + '+safeTop+')',
         'background:'+_bg,'border-bottom:1px solid '+_bdr,
-        'display:flex','align-items:flex-end','padding-bottom:8px',
+        'display:flex','align-items:flex-end','padding-bottom:12px',
         'padding-left:14px','padding-right:14px','gap:10px',
         'z-index:9999','cursor:pointer','box-sizing:border-box'
     ].join(';');
@@ -5353,7 +5375,7 @@
 
     /* 콘텐츠 오프셋 */
     var grid = document.getElementById('mainGrid');
-    if(grid){ grid.style.paddingTop = '58px'; grid.style.paddingBottom = '8px'; }
+    if(grid){ grid.style.paddingTop = '70px'; grid.style.paddingBottom = '8px'; }
 })();
 </script>
 </body>
