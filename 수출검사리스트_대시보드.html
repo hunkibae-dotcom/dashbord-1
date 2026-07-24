@@ -714,6 +714,16 @@ async function loadData() {
     document.getElementById('syncTime').textContent = new Date().toLocaleTimeString('ko-KR');
     renderLoadWarnings();
     setConnStatus(loadErrors.length ? 'partial' : 'ok');
+
+    // 스캐너에서 전달된 코드가 있으면 최초 1회 필터 검색창 자동 열기
+    if (!_scanCodeHandled) {
+      var _sc = new URLSearchParams(location.search).get('scan');
+      if (_sc) {
+        _scanCodeHandled = true;
+        document.getElementById('psCode').value = _sc;
+        setTimeout(function(){ openProductSearch(); }, 400);
+      }
+    }
   } catch (e) {
     console.error(e);
     setConnStatus('error');
@@ -2094,6 +2104,7 @@ function onMSliderScroll() {
 }
 
 // ===== INIT =====
+var _scanCodeHandled = false;
 loadData();
 
 initMobile();

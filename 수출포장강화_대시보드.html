@@ -1502,6 +1502,7 @@
             });
         }
 
+        var _scanCodeHandled = false;
         function combineDatasets() {
             let combined = [];
             const keys = Object.keys(datasetMap);
@@ -1525,6 +1526,15 @@
             state.data.forEach((item, idx) => {
                 item.originalIndex = idx;
             });
+
+            // 스캐너에서 전달된 코드가 있으면 최초 1회 상세스펙 뷰 자동 열기
+            if (!_scanCodeHandled) {
+                var _sc = new URLSearchParams(location.search).get('scan');
+                if (_sc) {
+                    _scanCodeHandled = true;
+                    setTimeout(function(){ switchToProductDetailView(_sc); }, 600);
+                }
+            }
         }
 
         // 복수 시트의 스펙 정보를 1:1 교차 대조 후 원장에 완벽 이식하는 빌더
