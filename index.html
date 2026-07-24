@@ -995,17 +995,23 @@ function closeScan(){
     document.getElementById('scanSelectedArea').style.display = 'none';
     document.getElementById('scanCaptureBtn').style.display = 'none';
     _selectedCode = '';
-    _isOcring = false;
+    _isDecoding = false;
 }
 
 function rescan(){
     document.getElementById('scanResultArea').style.display = 'none';
     document.getElementById('scanSelectedArea').style.display = 'none';
-    _isOcring = false;
-    if('TextDetector' in window && _scanStream){
-        if(!_textDetect) _textDetect = new TextDetector();
-        document.getElementById('scanStatus').textContent = '코드를 프레임 안에 비춰주세요 (자동 인식)';
-        _loopTextDetect(document.getElementById('scanVideo'));
+    _isDecoding = false;
+    if('BarcodeDetector' in window && _scanStream){
+        if(!_barcodeDetect){
+            try { _barcodeDetect = new BarcodeDetector({ formats: ['code_128','code_39','ean_13','ean_8','upc_a','upc_e','itf','codabar','qr_code','data_matrix','aztec','pdf_417'] }); }
+            catch(e) { _barcodeDetect = new BarcodeDetector(); }
+        }
+        document.getElementById('scanStatus').textContent = '바코드를 프레임에 비춰주세요 (자동 인식 중)';
+        _loopBarcode(document.getElementById('scanVideo'));
+    } else if(_scanStream) {
+        document.getElementById('scanStatus').textContent = '바코드에 카메라를 맞추고 캡처 버튼을 누르세요';
+        document.getElementById('scanCaptureBtn').style.display = 'block';
     } else {
         _startScan();
     }
