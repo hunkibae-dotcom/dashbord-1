@@ -1017,6 +1017,7 @@ function _stopScanStream(){
 
 function closeScan(){
     _stopScanStream();
+    _clearOverlay();
     var v = document.getElementById('scanVideo');
     v.srcObject = null;
     document.getElementById('scanModal').classList.remove('open');
@@ -1031,6 +1032,7 @@ function closeScan(){
 function rescan(){
     document.getElementById('scanResultArea').style.display = 'none';
     document.getElementById('scanSelectedArea').style.display = 'none';
+    _clearOverlay();
     _isDecoding = false;
     if('BarcodeDetector' in window && _scanStream){
         if(!_barcodeDetect){
