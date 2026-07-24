@@ -982,7 +982,7 @@ function copySelectedCode(){
 function _stopScanStream(){
     clearTimeout(_scanTimer);
     if(_scanStream){ _scanStream.getTracks().forEach(function(t){t.stop();}); _scanStream = null; }
-    _textDetect = null;
+    _barcodeDetect = null;
 }
 
 function closeScan(){
