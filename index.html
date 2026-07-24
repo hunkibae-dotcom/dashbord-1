@@ -451,14 +451,7 @@
         </div>
         <div class="scan-view">
             <video id="scanVideo" autoplay playsinline muted></video>
-            <div class="scan-frame">
-                <span class="sc-corner tl"></span>
-                <span class="sc-corner tr"></span>
-                <span class="sc-corner bl"></span>
-                <span class="sc-corner br"></span>
-                <div class="scan-line"></div>
-                <div class="scan-frame-hint">바코드를 여기에 맞춰주세요</div>
-            </div>
+            <canvas id="scanOverlay"></canvas>
         </div>
         <div class="scan-foot">
             <p id="scanStatus" class="scan-status">카메라 준비 중...</p>
