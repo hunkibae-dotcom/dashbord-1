@@ -2392,58 +2392,27 @@ if ('serviceWorker' in navigator) {
     window.isMobile = function(){ return true; };
     initMobile();
 
-    /* 내부 헤더 숨김 */
+    /* 기존 모바일 앱 헤더에 ← 버튼만 삽입 (F.WORK 로고·제목 없음) */
     var mApp = document.getElementById('mobileApp');
     if(mApp){
         var mHdr = mApp.querySelector('div[style*="height:60px"]');
-        if(mHdr) mHdr.style.display = 'none';
+        if(mHdr){
+            /* 세로 중앙 정렬 보장 */
+            mHdr.style.alignItems = 'center';
 
-        /* 뒤로가기 바 삽입 (mobileApp 최상단) */
-        var th2 = p.get('theme');
-        var _dark = (th2 === 'dark');
-        var _bg  = _dark ? '#0A0E1A' : '#fff';
-        var _bdr = _dark ? 'rgba(255,255,255,0.1)' : '#EAECF0';
-        var _fg  = _dark ? '#F1F5F9' : '#0F172A';
-        var backBar = document.createElement('div');
-        backBar.style.cssText = [
-            'height:110px','background:'+_bg,'border-bottom:1px solid '+_bdr,
-            'display:flex','align-items:center','padding:0 20px','gap:16px',
-            'flex-shrink:0','box-sizing:border-box'
-        ].join(';');
-        /* 뒤로가기 영역 */
-        var _nav = document.createElement('div');
-        _nav.style.cssText = 'display:flex;align-items:center;gap:14px;flex:1;cursor:pointer;';
-        _nav.innerHTML =
-            '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
-            + '<div style="width:52px;height:52px;border-radius:13px;background:#000;border:2.5px solid #F1F5F9;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#F1F5F9;font-family:system-ui,-apple-system,sans-serif;flex-shrink:0;letter-spacing:-1px;">F</div>'
-            + '<span style="font-size:28px;font-weight:900;color:'+_fg+';letter-spacing:-0.04em;">F<span style="color:#00B0FF;">.</span>WORK</span>';
-        _nav.onclick = function(){ window.location.href = './index.html'; };
-        backBar.appendChild(_nav);
-
-        /* 테마 토글 버튼 */
-        function _mkThIco(d, c){
-            return d
-                ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
-                : '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+            var backBtn = document.createElement('button');
+            backBtn.style.cssText = [
+                'display:flex','align-items:center','justify-content:center',
+                'width:56px','height:56px',
+                'border-radius:14px','border:none',
+                'background:transparent',
+                'cursor:pointer','flex-shrink:0','padding:0',
+                '-webkit-tap-highlight-color:transparent'
+            ].join(';');
+            backBtn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+            backBtn.onclick = function(){ window.location.href = './index.html'; };
+            mHdr.insertBefore(backBtn, mHdr.firstChild);
         }
-        var _thBtn = document.createElement('button');
-        _thBtn.style.cssText = 'width:48px;height:48px;border-radius:13px;background:rgba(128,128,128,0.12);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;color:'+_fg+';';
-        _thBtn.innerHTML = _mkThIco(_dark, _fg);
-        _thBtn.onclick = function(e){
-            e.stopPropagation();
-            var cur = document.documentElement.getAttribute('data-theme') || 'light';
-            var nxt = cur === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', nxt);
-            localStorage.setItem('fwork_theme', nxt);
-            var nd = nxt === 'dark';
-            var nfg = nd ? '#F1F5F9' : '#0F172A';
-            backBar.style.background = nd ? '#0A0E1A' : _bg;
-            backBar.style.borderBottomColor = nd ? 'rgba(255,255,255,0.1)' : _bdr;
-            _thBtn.style.color = nfg;
-            _thBtn.innerHTML = _mkThIco(nd, nfg);
-        };
-        backBar.appendChild(_thBtn);
-        mApp.insertBefore(backBar, mApp.firstChild);
     }
 
     /* 데스크탑 사이드바 숨김 */

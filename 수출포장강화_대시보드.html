@@ -5322,77 +5322,34 @@
     if(!p.get('shell')) return;
 
     /* 테마 적용 */
-    var th = p.get('theme');
-    if(th) document.documentElement.setAttribute('data-theme', th);
+    var th = p.get('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', th);
+    localStorage.setItem('fwork_theme', th);
 
-    /* 내부 헤더·하단바 숨김 */
-    var hdr = document.querySelector('header');
-    if(hdr) hdr.style.display = 'none';
+    /* 모바일 바텀바 숨김 */
     var bar = document.getElementById('mobileBottomBar');
     if(bar) bar.style.display = 'none';
 
-    /* 뒤로가기 바 삽입 */
-    var safeTop = 'env(safe-area-inset-top,0px)';
-    var backBar = document.createElement('div');
-    backBar.id = 'shellBackBar';
-    var _dark = (th === 'dark');
-    var _bg  = _dark ? '#0A0E1A' : '#EEF2F7';
-    var _bdr = _dark ? 'rgba(255,255,255,0.1)' : '#CBD5E1';
-    var _fg  = _dark ? '#F1F5F9' : '#0F172A';
-    backBar.style.cssText = [
-        'position:fixed','top:0','left:0','right:0',
-        'padding-top:'+safeTop,
-        'height:calc(110px + '+safeTop+')',
-        'background:'+_bg,'border-bottom:1px solid '+_bdr,
-        'display:flex','align-items:flex-end','padding-bottom:20px',
-        'padding-left:20px','padding-right:20px','gap:16px',
-        'z-index:9999','box-sizing:border-box'
-    ].join(';');
-    /* 뒤로가기 영역 (클릭 → 홈 이동) */
-    var _nav = document.createElement('div');
-    _nav.style.cssText = 'display:flex;align-items:center;gap:14px;flex:1;cursor:pointer;';
-    _nav.innerHTML =
-        '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>'
-        + '<div style="width:52px;height:52px;border-radius:13px;background:#000;border:2.5px solid #F1F5F9;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#F1F5F9;font-family:system-ui,-apple-system,sans-serif;flex-shrink:0;letter-spacing:-1px;">F</div>'
-        + '<span style="font-size:28px;font-weight:900;color:'+_fg+';letter-spacing:-0.04em;">F<span style="color:#00B0FF;">.</span>WORK</span>';
-    _nav.onclick = function(){ window.location.href = './index.html'; };
-    backBar.appendChild(_nav);
-
-    /* 테마 토글 버튼 (우측) */
-    function _mkThIco(d, c){
-        return d
-            ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
-            : '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
-    }
-    var _thBtn = document.createElement('button');
-    _thBtn.style.cssText = 'width:48px;height:48px;border-radius:13px;background:rgba(128,128,128,0.12);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;color:'+_fg+';';
-    _thBtn.innerHTML = _mkThIco(_dark, _fg);
-    _thBtn.onclick = function(e){
-        e.stopPropagation();
-        var cur = document.documentElement.getAttribute('data-theme') || 'light';
-        var nxt = cur === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', nxt);
-        localStorage.setItem('fwork_theme', nxt);
-        var nd = nxt === 'dark';
-        var nfg = nd ? '#F1F5F9' : '#0F172A';
-        backBar.style.background = nd ? '#0A0E1A' : _bg;
-        backBar.style.borderBottomColor = nd ? 'rgba(255,255,255,0.1)' : _bdr;
-        _thBtn.style.color = nfg;
-        _thBtn.innerHTML = _mkThIco(nd, nfg);
-    };
-    backBar.appendChild(_thBtn);
-    document.body.insertBefore(backBar, document.body.firstChild);
-
-    /* 대시보드 header를 shell bar 아래로 내림 (햄버거·사이드바 접근 가능) */
-    document.body.style.paddingTop = 'calc(110px + '+safeTop+')';
+    /* 기존 <header>에 ← 버튼만 삽입 (F.WORK 로고·제목 없음) */
     var dHeader = document.querySelector('body > header');
     if(dHeader){
-        dHeader.style.top = 'calc(110px + '+safeTop+')';
-        dHeader.style.zIndex = '100';
+        /* 세로 중앙 정렬 보장 */
+        dHeader.style.alignItems = 'center';
+
+        var _fg = (th === 'dark') ? '#F1F5F9' : '#1E293B';
+        var backBtn = document.createElement('button');
+        backBtn.style.cssText = [
+            'display:flex','align-items:center','justify-content:center',
+            'width:56px','height:56px',
+            'border-radius:14px','border:none',
+            'background:transparent',
+            'cursor:pointer','flex-shrink:0','padding:0',
+            '-webkit-tap-highlight-color:transparent'
+        ].join(';');
+        backBtn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+        backBtn.onclick = function(){ window.location.href = './index.html'; };
+        dHeader.insertBefore(backBtn, dHeader.firstChild);
     }
-    /* mainGrid — body paddingTop이 이미 오프셋 처리함 */
-    var grid = document.getElementById('mainGrid');
-    if(grid){ grid.style.paddingTop = ''; grid.style.paddingBottom = '8px'; }
 })();
 </script>
 </body>
