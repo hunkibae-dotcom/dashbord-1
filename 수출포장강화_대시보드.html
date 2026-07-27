@@ -1411,12 +1411,12 @@
             loadSavedSettings();
             initCard1();
 
-            // 0. 모바일 캐러셀 초기화 (화살표+점 UI → initSwipeDots보다 나중에 실행해야 덮어씀)
+            // 0. 모바일 캐러셀 초기화
             if (window.innerWidth < 768) {
                 initSwipeDots('topCardGrid', 'topCardDots');
                 initSwipeDots('chartRow', 'chartRowDots');
-                _initDots('topCardGrid', 'topCardDots', 4);
-                _initDots('chartRow', 'chartRowDots', 2);
+                _initDots('topCardGrid', 'topCardDots');
+                _initDots('chartRow', 'chartRowDots');
             }
 
             // 1. 페이지 로딩 즉시 데모 데이터 세팅
@@ -5269,16 +5269,19 @@
         }
 
         /* ── 모바일 캐러셀: 화살표 + 카드명 + 점 인디케이터 ── */
-        function _initDots(gridId, dotsId, count) {
-            if (window.innerWidth >= 768) return;
+        function _initDots(gridId, dotsId) {
             var grid = document.getElementById(gridId);
             var dotsEl = document.getElementById(dotsId);
             if (!grid || !dotsEl) return;
-            var n = Array.from(grid.children).length;
+            var n = grid.children.length;
             if (n <= 1) return;
 
-            /* initSwipeDots(DOMContentLoaded)가 덮어쓰지 못하도록 플래그 설정 */
-            grid.dataset.dotsInit = '1';
+            /* 기존 dots 요소 완전 숨김 (CSS !important로) */
+            dotsEl.style.setProperty('display', 'none', 'important');
+
+            /* 이미 삽입된 경우 중복 방지 */
+            var navId = gridId + '_cnav';
+            if (document.getElementById(navId)) return;
 
             var LABELS = {
                 topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
@@ -5286,9 +5289,10 @@
             };
             var labels = LABELS[gridId] || [];
 
-            /* dotsEl 초기화 후 화살표+카드명+점 배치 */
-            dotsEl.innerHTML = '';
-            dotsEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;';
+            /* 완전히 새로운 nav 요소 생성 (CSS 클래스 충돌 없음) */
+            var navEl = document.createElement('div');
+            navEl.id = navId;
+            navEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;box-sizing:border-box;';
 
             function makeArrow(pts) {
                 var btn = document.createElement('button');
@@ -5300,21 +5304,17 @@
             var nextBtn = makeArrow('9 18 15 12 9 6');
 
             var centerWrap = document.createElement('div');
-            centerWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:0;';
+            centerWrap.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:7px;';
 
-            /* 현재 카드 이름 */
             var nameEl = document.createElement('span');
-            nameEl.style.cssText = 'font-size:13.5px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;transition:opacity 0.18s;white-space:nowrap;';
+            nameEl.style.cssText = 'font-size:13.5px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;white-space:nowrap;';
             nameEl.textContent = labels[0] || '';
 
-            /* 점 인디케이터 */
             var dotRow = document.createElement('div');
             dotRow.style.cssText = 'display:flex;gap:5px;align-items:center;';
             var dots = Array.from({length: n}, function(_, i) {
                 var d = document.createElement('span');
-                d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);';
-                d.style.background = i === 0 ? '#00B0FF' : 'rgba(148,163,184,0.35)';
-                d.style.width = i === 0 ? '22px' : '6px';
+                d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);background:' + (i===0?'#00B0FF':'rgba(148,163,184,0.35)') + ';width:' + (i===0?'22px':'6px') + ';';
                 d.onclick = function() { goTo(i); };
                 return d;
             });
@@ -5322,37 +5322,37 @@
 
             centerWrap.appendChild(nameEl);
             centerWrap.appendChild(dotRow);
-            dotsEl.appendChild(prevBtn);
-            dotsEl.appendChild(centerWrap);
-            dotsEl.appendChild(nextBtn);
+            navEl.appendChild(prevBtn);
+            navEl.appendChild(centerWrap);
+            navEl.appendChild(nextBtn);
+
+            /* dotsEl 바로 뒤에 삽입 */
+            dotsEl.parentNode.insertBefore(navEl, dotsEl.nextSibling);
 
             function getCur() {
                 return Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), n - 1);
             }
             function goTo(idx) {
-                idx = Math.max(0, Math.min(idx, n - 1));
-                grid.scrollTo({left: idx * grid.clientWidth, behavior: 'smooth'});
+                grid.scrollTo({left: Math.max(0,Math.min(idx,n-1)) * grid.clientWidth, behavior:'smooth'});
             }
             function updateUI(idx) {
                 dots.forEach(function(d, i) {
-                    var a = i === idx;
-                    d.style.background = a ? '#00B0FF' : 'rgba(148,163,184,0.35)';
-                    d.style.width = a ? '22px' : '6px';
+                    d.style.background = i===idx ? '#00B0FF' : 'rgba(148,163,184,0.35)';
+                    d.style.width = i===idx ? '22px' : '6px';
                 });
                 if (labels[idx] !== undefined) nameEl.textContent = labels[idx];
-                prevBtn.style.opacity = idx === 0 ? '0.28' : '1';
-                nextBtn.style.opacity = idx === n - 1 ? '0.28' : '1';
+                prevBtn.style.opacity = idx===0 ? '0.28' : '1';
+                nextBtn.style.opacity = idx===n-1 ? '0.28' : '1';
             }
 
-            prevBtn.onclick = function() { goTo(getCur() - 1); };
-            nextBtn.onclick = function() { goTo(getCur() + 1); };
+            prevBtn.onclick = function() { goTo(getCur()-1); };
+            nextBtn.onclick = function() { goTo(getCur()+1); };
 
             var ticking = false;
             grid.addEventListener('scroll', function() {
-                if (ticking) return;
-                ticking = true;
-                requestAnimationFrame(function() { updateUI(getCur()); ticking = false; });
-            }, {passive: true});
+                if (ticking) return; ticking = true;
+                requestAnimationFrame(function(){ updateUI(getCur()); ticking=false; });
+            }, {passive:true});
 
             updateUI(0);
         }

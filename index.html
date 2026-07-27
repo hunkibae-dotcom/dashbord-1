@@ -742,7 +742,7 @@ function _navigate(url){
 function goDashboard(){
     var m = MENUS[_curMenu];
     var th = document.documentElement.getAttribute('data-theme') || 'dark';
-    _navigate(m.dashboard + '?shell=1&theme=' + th);
+    _navigate(m.dashboard + '?shell=1&theme=' + th + '&v=' + Date.now());
 }
 
 function goSheets(){
