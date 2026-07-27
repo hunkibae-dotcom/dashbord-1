@@ -5334,19 +5334,28 @@
 
     function _thIco(d, c){
         return d
-            ? '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
-            : '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+            ? '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+            : '<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
     }
 
     /* ── 헤더: 높이 증가 · 로고·제목 중앙 · 좌우 버튼 절대배치 ── */
     var dHeader = document.querySelector('body > header');
     var menuBtn = null;
     if(dHeader){
-        dHeader.style.minHeight = '80px';
+        dHeader.style.minHeight = '100px';
         dHeader.style.padding = '0 16px';
         dHeader.style.position = 'relative';
         dHeader.style.justifyContent = 'center';
         dHeader.style.alignItems = 'center';
+
+        /* 로고·제목 텍스트 크기 +4px */
+        var h1El = dHeader.querySelector('h1');
+        if(h1El) h1El.style.fontSize = '25px';
+        var iconBox = dHeader.querySelector('[class*="fa-box"]');
+        if(iconBox){
+            var ib = iconBox.closest('div');
+            if(ib && ib !== dHeader){ ib.style.padding = '10px'; ib.style.fontSize = '20px'; }
+        }
 
         /* 기존 햄버거 헤더에서 숨김 */
         var origHam = document.getElementById('sidebarToggleBtn');
@@ -5354,14 +5363,14 @@
 
         /* ← 뒤로가기 (절대 좌측) */
         var backBtn = document.createElement('button');
-        backBtn.style.cssText = 'position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;border:none;background:transparent;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
-        backBtn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
+        backBtn.style.cssText = 'position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:16px;border:none;background:transparent;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
+        backBtn.innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
         backBtn.onclick = function(){ window.location.href = './index.html'; };
         dHeader.insertBefore(backBtn, dHeader.firstChild);
 
         /* 라이트/다크 토글 (절대 우측) */
         var thBtn = document.createElement('button');
-        thBtn.style.cssText = 'position:absolute;right:12px;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:13px;background:rgba(128,128,128,0.12);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
+        thBtn.style.cssText = 'position:absolute;right:12px;top:50%;transform:translateY(-50%);width:60px;height:60px;border-radius:15px;background:rgba(128,128,128,0.12);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
         thBtn.innerHTML = _thIco(_dark, _fg);
         thBtn.onclick = function(e){
             e.stopPropagation();
@@ -5377,20 +5386,17 @@
             if(menuBtn){
                 var mArr = menuBtn.querySelector('svg');
                 if(mArr) mArr.setAttribute('stroke', nfg);
-                var mTxt = menuBtn.querySelector('span');
-                if(mTxt) mTxt.style.color = nfg;
             }
         };
         dHeader.appendChild(thBtn);
     }
 
-    /* ── 햄버거 버튼: 카드 그리드 상단 좌측으로 이동 ── */
+    /* ── 햄버거 버튼 (아이콘만): 카드 그리드 상단 좌측 ── */
     var mainGrid = document.getElementById('mainGrid');
     if(mainGrid){
         menuBtn = document.createElement('button');
-        menuBtn.style.cssText = 'display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:14px;border:none;background:rgba(100,116,139,0.18);cursor:pointer;-webkit-tap-highlight-color:transparent;';
-        menuBtn.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
-            + '<span style="font-size:15px;font-weight:700;color:'+_fg+';">메뉴</span>';
+        menuBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;border:none;background:rgba(100,116,139,0.18);cursor:pointer;-webkit-tap-highlight-color:transparent;';
+        menuBtn.innerHTML = '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
         menuBtn.onclick = function(){ if(typeof openFilterDrawer==='function') openFilterDrawer(); };
         mainGrid.insertBefore(menuBtn, mainGrid.firstChild);
     }
