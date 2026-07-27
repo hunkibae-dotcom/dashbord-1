@@ -1411,10 +1411,12 @@
             loadSavedSettings();
             initCard1();
 
-            // 0. 모바일 화면에서는 상단 카드/차트 캐러셀에 스와이프 점 표시기 부착
+            // 0. 모바일 캐러셀 초기화 (화살표+점 UI → initSwipeDots보다 나중에 실행해야 덮어씀)
             if (window.innerWidth < 768) {
                 initSwipeDots('topCardGrid', 'topCardDots');
                 initSwipeDots('chartRow', 'chartRowDots');
+                _initDots('topCardGrid', 'topCardDots', 4);
+                _initDots('chartRow', 'chartRowDots', 2);
             }
 
             // 1. 페이지 로딩 즉시 데모 데이터 세팅
@@ -5354,8 +5356,6 @@
 
             updateUI(0);
         }
-        _initDots('topCardGrid', 'topCardDots', 4);
-        _initDots('chartRow', 'chartRowDots', 2);
     </script>
 
     <!-- 모바일 하단 액션바 -->
