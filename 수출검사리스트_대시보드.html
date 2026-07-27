@@ -2388,30 +2388,51 @@ if ('serviceWorker' in navigator) {
     var p = new URLSearchParams(location.search);
     if(!p.get('shell')) return;
 
+    var th = p.get('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', th);
+    localStorage.setItem('fwork_theme', th);
+
     /* 강제 모바일 뷰 */
     window.isMobile = function(){ return true; };
     initMobile();
 
-    /* 기존 모바일 앱 헤더에 ← 버튼만 삽입 (F.WORK 로고·제목 없음) */
+    function _thIco(d, c){
+        return d
+            ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>'
+            : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+    }
+
+    /* ── 모바일 앱 헤더: 높이 증가 · 로고·제목 중앙 · 좌우 버튼 절대배치 ── */
     var mApp = document.getElementById('mobileApp');
     if(mApp){
         var mHdr = mApp.querySelector('div[style*="height:60px"]');
         if(mHdr){
-            /* 세로 중앙 정렬 보장 */
+            mHdr.style.height = '80px';
+            mHdr.style.position = 'relative';
+            mHdr.style.justifyContent = 'center';
             mHdr.style.alignItems = 'center';
+            mHdr.style.padding = '0 8px';
 
+            /* ← 뒤로가기 (절대 좌측) */
             var backBtn = document.createElement('button');
-            backBtn.style.cssText = [
-                'display:flex','align-items:center','justify-content:center',
-                'width:56px','height:56px',
-                'border-radius:14px','border:none',
-                'background:transparent',
-                'cursor:pointer','flex-shrink:0','padding:0',
-                '-webkit-tap-highlight-color:transparent'
-            ].join(';');
+            backBtn.style.cssText = 'position:absolute;left:8px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;border:none;background:transparent;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
             backBtn.innerHTML = '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#1E293B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>';
             backBtn.onclick = function(){ window.location.href = './index.html'; };
             mHdr.insertBefore(backBtn, mHdr.firstChild);
+
+            /* 라이트/다크 토글 (절대 우측) */
+            var thBtn = document.createElement('button');
+            thBtn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:12px;background:rgba(100,116,139,0.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;';
+            thBtn.innerHTML = _thIco((th === 'dark'), '#475569');
+            thBtn.onclick = function(e){
+                e.stopPropagation();
+                var cur = document.documentElement.getAttribute('data-theme') || 'light';
+                var nxt = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', nxt);
+                localStorage.setItem('fwork_theme', nxt);
+                thBtn.innerHTML = _thIco((nxt === 'dark'), '#475569');
+            };
+            mHdr.appendChild(thBtn);
         }
     }
 
