@@ -317,10 +317,15 @@
                 box-shadow: none !important;
                 border-radius: 0 !important;
             }
-            /* 카드 사이 구분선 */
+            /* 카드 사이 구분선: 세로 얇은 선 */
             .mobile-carousel-box #topCardGrid > * + *,
             .mobile-carousel-box #chartRow > * + * {
-                border-left: 1px solid var(--c-border) !important;
+                border-left: 1px solid rgba(100,116,139,0.18) !important;
+            }
+            /* 캐러셀 그리드 부드러운 스크롤 */
+            .mobile-carousel-box #topCardGrid,
+            .mobile-carousel-box #chartRow {
+                scroll-behavior: smooth;
             }
 
             /* 테이블 모바일 기본 숨김 */
@@ -5261,41 +5266,90 @@
             }
         }
 
-        /* ── 모바일 캐러셀 탭 버튼 초기화 ── */
+        /* ── 모바일 캐러셀: 화살표 + 카드명 + 점 인디케이터 ── */
         function _initDots(gridId, dotsId, count) {
             if (window.innerWidth >= 768) return;
             var grid = document.getElementById(gridId);
             var dotsEl = document.getElementById(dotsId);
             if (!grid || !dotsEl) return;
+            var n = Array.from(grid.children).length;
+            if (n <= 1) return;
 
             var LABELS = {
-                topCardGrid: ['작업계획', '이전작업', '수출일정', 'INFORM'],
-                chartRow: ['포장현황', '제품비교']
+                topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
+                chartRow: ['포장 강화 현황', '제품별 실적 비교']
             };
-            var labels = LABELS[gridId] || Array.from({length: count}, function(_, i){ return '항목'+(i+1); });
+            var labels = LABELS[gridId] || [];
 
-            var tabBar = document.createElement('div');
-            tabBar.style.cssText = 'display:flex;border-bottom:1px solid var(--c-border);';
-            var tabs = Array.from({length: count}, function(_, i){
-                var t = document.createElement('button');
-                t.textContent = labels[i] || ('항목'+(i+1));
-                t.style.cssText = 'flex:1;padding:13px 4px;font-size:13px;font-weight:'+(i===0?'700':'600')+';color:'+(i===0?'#00B0FF':'#64748B')+';border-bottom:2px solid '+(i===0?'#00B0FF':'transparent')+';background:transparent;border-top:none;border-left:none;border-right:none;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s;-webkit-tap-highlight-color:transparent;';
-                t.onclick = function(){ grid.scrollTo({left: i * grid.clientWidth, behavior:'smooth'}); };
-                return t;
+            /* dotsEl 초기화 후 화살표+카드명+점 배치 */
+            dotsEl.innerHTML = '';
+            dotsEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;';
+
+            function makeArrow(pts) {
+                var btn = document.createElement('button');
+                btn.style.cssText = 'width:40px;height:40px;flex-shrink:0;border-radius:11px;background:rgba(100,116,139,0.14);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.22s;';
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="'+pts+'"/></svg>';
+                return btn;
+            }
+            var prevBtn = makeArrow('15 18 9 12 15 6');
+            var nextBtn = makeArrow('9 18 15 12 9 6');
+
+            var centerWrap = document.createElement('div');
+            centerWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:7px;flex:1;min-width:0;';
+
+            /* 현재 카드 이름 */
+            var nameEl = document.createElement('span');
+            nameEl.style.cssText = 'font-size:13.5px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;transition:opacity 0.18s;white-space:nowrap;';
+            nameEl.textContent = labels[0] || '';
+
+            /* 점 인디케이터 */
+            var dotRow = document.createElement('div');
+            dotRow.style.cssText = 'display:flex;gap:5px;align-items:center;';
+            var dots = Array.from({length: n}, function(_, i) {
+                var d = document.createElement('span');
+                d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);';
+                d.style.background = i === 0 ? '#00B0FF' : 'rgba(148,163,184,0.35)';
+                d.style.width = i === 0 ? '22px' : '6px';
+                d.onclick = function() { goTo(i); };
+                return d;
             });
-            tabs.forEach(function(t){ tabBar.appendChild(t); });
-            grid.parentElement.insertBefore(tabBar, grid);
-            dotsEl.style.display = 'none';
+            dots.forEach(function(d){ dotRow.appendChild(d); });
 
-            grid.addEventListener('scroll', function(){
-                var idx = Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), count - 1);
-                tabs.forEach(function(t, i){
+            centerWrap.appendChild(nameEl);
+            centerWrap.appendChild(dotRow);
+            dotsEl.appendChild(prevBtn);
+            dotsEl.appendChild(centerWrap);
+            dotsEl.appendChild(nextBtn);
+
+            function getCur() {
+                return Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), n - 1);
+            }
+            function goTo(idx) {
+                idx = Math.max(0, Math.min(idx, n - 1));
+                grid.scrollTo({left: idx * grid.clientWidth, behavior: 'smooth'});
+            }
+            function updateUI(idx) {
+                dots.forEach(function(d, i) {
                     var a = i === idx;
-                    t.style.color = a ? '#00B0FF' : '#64748B';
-                    t.style.borderBottomColor = a ? '#00B0FF' : 'transparent';
-                    t.style.fontWeight = a ? '700' : '600';
+                    d.style.background = a ? '#00B0FF' : 'rgba(148,163,184,0.35)';
+                    d.style.width = a ? '22px' : '6px';
                 });
-            }, {passive:true});
+                if (labels[idx] !== undefined) nameEl.textContent = labels[idx];
+                prevBtn.style.opacity = idx === 0 ? '0.28' : '1';
+                nextBtn.style.opacity = idx === n - 1 ? '0.28' : '1';
+            }
+
+            prevBtn.onclick = function() { goTo(getCur() - 1); };
+            nextBtn.onclick = function() { goTo(getCur() + 1); };
+
+            var ticking = false;
+            grid.addEventListener('scroll', function() {
+                if (ticking) return;
+                ticking = true;
+                requestAnimationFrame(function() { updateUI(getCur()); ticking = false; });
+            }, {passive: true});
+
+            updateUI(0);
         }
         _initDots('topCardGrid', 'topCardDots', 4);
         _initDots('chartRow', 'chartRowDots', 2);
