@@ -345,7 +345,7 @@
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
 
-    <header class="bg-panelBg border-b border-borderSlate px-3 py-4 flex items-center gap-3 sticky top-0 z-50">
+    <header class="bg-darkBg px-3 py-4 flex items-center gap-3 sticky top-0 z-50">
         <button onclick="openFilterDrawer()" id="sidebarToggleBtn" class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="검색·필터 / 데이터 연동">
             <i class="fa-solid fa-bars text-[18px]"></i>
         </button>
@@ -5349,12 +5349,12 @@
         dHeader.style.alignItems = 'center';
 
         /* 로고·제목 텍스트 크기 +4px */
-        var h1El = dHeader.querySelector('h1');
-        if(h1El) h1El.style.fontSize = '25px';
-        var iconBox = dHeader.querySelector('[class*="fa-box"]');
-        if(iconBox){
-            var ib = iconBox.closest('div');
-            if(ib && ib !== dHeader){ ib.style.padding = '10px'; ib.style.fontSize = '20px'; }
+        var titleGrp = document.getElementById('headerTitleGroup');
+        if(titleGrp){
+            var h1El = titleGrp.querySelector('h1');
+            if(h1El) h1El.style.setProperty('font-size', '25px', 'important');
+            var iconWrap = titleGrp.querySelector('div');
+            if(iconWrap){ iconWrap.style.padding = '10px'; iconWrap.style.borderRadius = '12px'; }
         }
 
         /* 기존 햄버거 헤더에서 숨김 */
