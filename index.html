@@ -987,7 +987,7 @@ function viewInDashboard(){
     if(!_selectedCode) return;
     var th = document.documentElement.getAttribute('data-theme') || 'dark';
     var m = MENUS[_curMenu];
-    var url = m.dashboard + '?shell=1&theme=' + th + '&scan=' + encodeURIComponent(_selectedCode);
+    var url = m.dashboard + '?shell=1&theme=' + th + '&scan=' + encodeURIComponent(_selectedCode) + '&v=' + Date.now();
     closeScan();
     _navigate(url);
 }
