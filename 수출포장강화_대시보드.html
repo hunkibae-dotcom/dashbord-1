@@ -4712,19 +4712,26 @@
             saveWorkerLogs(logs);
             renderCard1WorkerDisplay();
 
-            // 구글 시트 전송
+            // 구글 시트 전송 (GET 방식 — Apps Script CORS 호환)
             btn.disabled = true; btn.style.opacity = '0.6';
             _wrmShowStatus('<i class="fa-solid fa-spinner fa-spin"></i> 구글 시트에 전송 중...', '#94A3B8');
 
             const scriptUrl = localStorage.getItem('sheet_pub_url') ||
                 'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
             try {
-                const payload = { action: 'addWorkerLog', date, dept, totalCount: record.count, extraCount: record.extraCount, workers: record.workers, memo };
-                const res = await fetch(scriptUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(payload)
+                const params = new URLSearchParams({
+                    action: 'addWorkerLog',
+                    date,
+                    dept,
+                    totalCount: String(record.count),
+                    extraCount: String(record.extraCount),
+                    workers: JSON.stringify(record.workers),
+                    memo
                 });
+                const res = await fetch(scriptUrl + '?' + params.toString(), { signal: controller.signal });
+                clearTimeout(timeoutId);
                 const text = await res.text();
                 const ok = text.includes('success') || text.includes('OK') || res.ok;
                 if (ok) {
@@ -4732,11 +4739,13 @@
                     btn.disabled = false; btn.style.opacity = '1';
                     setTimeout(() => closeWorkerRegisterModal(), 1800);
                 } else {
-                    _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 응답 이상 - status ' + res.status + ': ' + text.slice(0, 80) + ')', '#F59E0B');
+                    _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 응답 이상: ' + text.slice(0, 80) + ')', '#F59E0B');
                     btn.disabled = false; btn.style.opacity = '1';
                 }
             } catch(e) {
-                _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (네트워크/CORS 오류: ' + (e && e.message ? e.message : e) + ')', '#F59E0B');
+                clearTimeout(timeoutId);
+                const msg = e && e.name === 'AbortError' ? '요청 시간 초과 (15초)' : (e && e.message ? e.message : String(e));
+                _wrmShowStatus('<i class="fa-solid fa-triangle-exclamation"></i> 로컬 저장 완료 (시트 전송 실패: ' + msg + ')', '#F59E0B');
                 btn.disabled = false; btn.style.opacity = '1';
             }
             // 실패 시에는 원인을 확인할 수 있도록 자동으로 닫지 않음 (X 버튼으로 직접 닫기)
