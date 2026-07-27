@@ -9,16 +9,16 @@ function New-FWorkIcon {
     $g.TextRenderingHint  = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
     $g.InterpolationMode  = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
 
-    # 검정 배경
-    $g.Clear([System.Drawing.Color]::Black)
+    # 파란 그라디언트 배경 (#0055FF → #00B0FF, 대각선)
+    $c1 = [System.Drawing.Color]::FromArgb(0, 85, 255)
+    $c2 = [System.Drawing.Color]::FromArgb(0, 176, 255)
+    $pt1 = New-Object System.Drawing.PointF(0, 0)
+    $pt2 = New-Object System.Drawing.PointF($Size, $Size)
+    $gradBrush = New-Object System.Drawing.Drawing2D.LinearGradientBrush($pt1, $pt2, $c1, $c2)
+    $g.FillRectangle($gradBrush, 0, 0, $Size, $Size)
+    $gradBrush.Dispose()
 
-    # 흰 테두리 (2% 두께)
-    $bw = [int]([Math]::Max(2, $Size * 0.025))
-    $pen = New-Object System.Drawing.Pen([System.Drawing.Color]::White, $bw)
-    $half = [int]($bw / 2)
-    $g.DrawRectangle($pen, $half, $half, $Size - $bw, $Size - $bw)
-
-    # "F" 텍스트
+    # "F" 텍스트 (흰색, 중앙 정렬)
     $fontSize = [float]($Size) / 2.0
     if ($fontSize -lt 1) { $fontSize = 1.0 }
     try {
@@ -38,7 +38,7 @@ function New-FWorkIcon {
     $g.DrawString("F", $font, $brush, $rect, $sf)
 
     $bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
-    $g.Dispose(); $font.Dispose(); $brush.Dispose(); $pen.Dispose(); $bmp.Dispose()
+    $g.Dispose(); $font.Dispose(); $brush.Dispose(); $bmp.Dispose()
     Write-Host "생성 완료: $Path  ($Size x $Size)"
 }
 
@@ -47,6 +47,8 @@ if (!(Test-Path $iconsDir)) { New-Item -ItemType Directory -Path $iconsDir | Out
 
 New-FWorkIcon -Size 192  -Path (Join-Path $iconsDir "icon-192.png")
 New-FWorkIcon -Size 512  -Path (Join-Path $iconsDir "icon-512.png")
+New-FWorkIcon -Size 192  -Path (Join-Path $iconsDir "icon-maskable-192.png")
+New-FWorkIcon -Size 512  -Path (Join-Path $iconsDir "icon-maskable-512.png")
 New-FWorkIcon -Size 180  -Path (Join-Path $iconsDir "apple-touch-icon.png")
 New-FWorkIcon -Size 48   -Path (Join-Path $iconsDir "favicon-48.png")
 
