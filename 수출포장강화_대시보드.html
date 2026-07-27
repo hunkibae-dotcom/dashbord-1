@@ -5275,6 +5275,9 @@
             var n = Array.from(grid.children).length;
             if (n <= 1) return;
 
+            /* initSwipeDots(DOMContentLoaded)가 덮어쓰지 못하도록 플래그 설정 */
+            grid.dataset.dotsInit = '1';
+
             var LABELS = {
                 topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
                 chartRow: ['포장 강화 현황', '제품별 실적 비교']
