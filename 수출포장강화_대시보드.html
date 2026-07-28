@@ -5647,88 +5647,90 @@
         updateNav();
     }
 
-    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '48vh', '22px 8px');
-    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '56vh', '16px 8px');
+    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 14px');
+    _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 비교'],              '50vh', '14px 10px');
 
-    /* ── shell 레이아웃: 헤더·카드 여백·제목 가운데정렬 ── */
-    function _shellLayout() {
-        /* 헤더 높이 대폭 증가 */
+    /* ── Shell 레이아웃 ── */
+    (function _shellLayoutOnce() {
+        /* 헤더 */
         var hdr = document.querySelector('header');
         if (hdr) {
-            hdr.style.setProperty('padding-top',    '28px', 'important');
-            hdr.style.setProperty('padding-bottom', '28px', 'important');
+            hdr.style.paddingTop    = '20px';
+            hdr.style.paddingBottom = '20px';
             var iconBox = hdr.querySelector('div[style*="width:40px"]');
-            if (iconBox) {
-                iconBox.style.width  = '56px';
-                iconBox.style.height = '56px';
-                var iconI = iconBox.querySelector('i');
-                if (iconI) iconI.style.setProperty('font-size', '28px', 'important');
+            if (iconBox) { iconBox.style.width = '48px'; iconBox.style.height = '48px'; }
+            var h1 = hdr.querySelector('h1');
+            if (h1) h1.style.setProperty('font-size', '22px', 'important');
+        }
+        /* 카드 1·2: 제목 행 → 컬럼 가운데정렬 + 레이블 스타일 */
+        ['remainingStatusCard', 'shippedStatusCard'].forEach(function(id) {
+            var card = document.getElementById(id);
+            if (!card) return;
+            var row = card.querySelector('.justify-between');
+            if (!row) return;
+            row.style.flexDirection = 'column';
+            row.style.alignItems    = 'center';
+            row.style.textAlign     = 'center';
+            row.style.gap           = '4px';
+            row.style.marginBottom  = '14px';
+            var titleEl = row.querySelector('p') || row.querySelector('span.font-bold');
+            if (titleEl) {
+                titleEl.style.justifyContent = 'center';
+                titleEl.style.textTransform  = 'uppercase';
+                titleEl.style.letterSpacing  = '0.1em';
+                titleEl.style.setProperty('color', '#94A3B8', 'important');
             }
-            var hdrH1 = hdr.querySelector('h1');
-            if (hdrH1) hdrH1.style.setProperty('font-size', '28px', 'important');
-        }
-
-        /* 카드 좌우 여백 줄이기 */
-        var tg = document.getElementById('topCardGrid');
-        if (tg) {
-            tg.querySelectorAll(':scope > div').forEach(function(card) {
-                card.style.setProperty('padding', '18px 8px', 'important');
-            });
-            /* 카드 1·2: 제목 행 가운데정렬 */
-            ['remainingStatusCard', 'shippedStatusCard'].forEach(function(cid) {
-                var card = document.getElementById(cid);
-                if (!card) return;
-                var row = card.querySelector('.justify-between');
-                if (!row) return;
-                row.style.setProperty('flex-direction', 'column', 'important');
-                row.style.setProperty('align-items',    'center',  'important');
-                row.style.setProperty('text-align',     'center',  'important');
-                row.style.setProperty('gap',            '4px',     'important');
-                row.style.setProperty('margin-bottom',  '10px',    'important');
-                /* 제목 p: 아이콘+텍스트 가운데 */
-                var p = row.querySelector('p');
-                if (p) p.style.setProperty('justify-content', 'center', 'important');
-            });
-        }
-
-        /* chartRow: 좌우 여백 줄이고 차트 높이 최대화 */
+        });
+        /* 카드 3(수출일정) 제목 색상 */
+        var c3title = document.querySelector('#strengthenedStatusCard p.font-semibold');
+        if (c3title) c3title.style.setProperty('color', '#94A3B8', 'important');
+        /* 차트 카드 높이 최대화 */
         var cr = document.getElementById('chartRow');
-        if (cr) {
-            cr.querySelectorAll(':scope > div').forEach(function(card) {
-                card.style.setProperty('padding', '12px 8px', 'important');
-                var chartBox = card.querySelector('.h-72');
-                if (chartBox) {
-                    chartBox.style.setProperty('flex',        '1 1 0',   'important');
-                    chartBox.style.setProperty('height',      'auto',    'important');
-                    chartBox.style.setProperty('min-height',  '0',       'important');
-                }
-            });
-        }
-    }
-    _shellLayout();
-    setTimeout(_shellLayout, 600);
+        if (cr) cr.querySelectorAll('.h-72').forEach(function(el) {
+            el.style.setProperty('flex',   '1 1 0', 'important');
+            el.style.setProperty('height', 'auto',  'important');
+        });
+    })();
 
-    /* ── shell 폰트 부스트: 클래스명 직접 매칭 ── */
+    /* ── Shell 폰트: 계층적 타이포그래피 ──────────────────────────────
+       text-[17.5px]  = 카드 제목  →  소형 레이블 12px (uppercase로 처리)
+       text-[21px]    = 수출차수명 →  대형 KPI   36px
+       text-[21.5px]  = 포장대기qty →  초대형 KPI 56px
+       나머지          = 살짝 키움 (가독성 확보)
+    ──────────────────────────────────────────────────────────────── */
     var _topFsMap = {
-        'text-[11px]':'22px','text-[12px]':'24px','text-[13px]':'26px',
-        'text-[13.5px]':'28px','text-[14px]':'29px','text-[14.5px]':'30px',
-        'text-[15px]':'31px','text-[16px]':'32px','text-[17px]':'34px',
-        'text-[17.5px]':'36px','text-[19.5px]':'40px',
-        'text-[21px]':'44px','text-[21.5px]':'46px'
+        'text-[10.5px]':'13px',
+        'text-[11px]':  '14px',
+        'text-[12px]':  '15px',
+        'text-[12.5px]':'15px',
+        'text-[13px]':  '16px',
+        'text-[13.5px]':'16px',
+        'text-[14px]':  '17px',
+        'text-[14.5px]':'17px',
+        'text-[15px]':  '18px',
+        'text-[16px]':  '19px',
+        'text-[17px]':  '20px',
+        'text-[17.5px]':'12px',
+        'text-[19.5px]':'22px',
+        'text-[21px]':  '36px',
+        'text-[21.5px]':'56px'
     };
     var _chrFsMap = {
-        'text-[12px]':'22px','text-[13.5px]':'25px','text-[14.5px]':'27px',
-        'text-[17.5px]':'32px','text-[19.5px]':'36px'
+        'text-[10.5px]':'13px',
+        'text-[12px]':  '14px',
+        'text-[13.5px]':'15px',
+        'text-[14.5px]':'16px',
+        'text-[17.5px]':'16px',
+        'text-[19.5px]':'20px'
     };
-    function _shellFontBoost() {
+    function _shellFontApply() {
         [[document.getElementById('topCardGrid'), _topFsMap],
          [document.getElementById('chartRow'),    _chrFsMap]
         ].forEach(function(pair) {
             var root = pair[0], fsMap = pair[1];
             if (!root) return;
-            /* Tailwind 클래스 기반 */
             root.querySelectorAll('*').forEach(function(el) {
-                if (el.getAttribute('data-bfs')) return;
+                if (el.tagName === 'CANVAS' || el.getAttribute('data-bfs')) return;
                 var cls = (typeof el.className === 'string') ? el.className : (el.className.baseVal || '');
                 for (var k in fsMap) {
                     if (cls.indexOf(k) !== -1) {
@@ -5738,21 +5740,10 @@
                     }
                 }
             });
-            /* inline style="font-size:Npx" 기반 */
-            root.querySelectorAll('[style*="font-size"]').forEach(function(el) {
-                if (el.getAttribute('data-bfs')) return;
-                var m = el.style.fontSize && el.style.fontSize.match(/([\d.]+)px/);
-                if (!m) return;
-                var v = parseFloat(m[1]);
-                if (v >= 8 && v <= 40) {
-                    el.style.setProperty('font-size', (v * (fsMap === _topFsMap ? 2.0 : 1.8)).toFixed(1) + 'px', 'important');
-                    el.setAttribute('data-bfs', '1');
-                }
-            });
         });
     }
-    requestAnimationFrame(function() { requestAnimationFrame(_shellFontBoost); });
-    [800, 2500].forEach(function(ms) { setTimeout(_shellFontBoost, ms); });
+    requestAnimationFrame(function() { requestAnimationFrame(_shellFontApply); });
+    [600, 2000].forEach(function(ms) { setTimeout(_shellFontApply, ms); });
 })();
 </script>
 </body>
