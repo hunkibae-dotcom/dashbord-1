@@ -5650,23 +5650,46 @@
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '44vh', '22px 20px');
     _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '54vh', '20px 20px');
 
-    /* ── shell 폰트 부스트: getComputedStyle 직접 스케일 ── */
+    /* ── shell 폰트 부스트: 클래스명 직접 매칭 ── */
+    var _topFsMap = {
+        'text-[11px]':'22px','text-[12px]':'24px','text-[13px]':'26px',
+        'text-[13.5px]':'28px','text-[14px]':'29px','text-[14.5px]':'30px',
+        'text-[15px]':'31px','text-[16px]':'32px','text-[17px]':'34px',
+        'text-[17.5px]':'36px','text-[19.5px]':'40px',
+        'text-[21px]':'44px','text-[21.5px]':'46px'
+    };
+    var _chrFsMap = {
+        'text-[12px]':'22px','text-[13.5px]':'25px','text-[14.5px]':'27px',
+        'text-[17.5px]':'32px','text-[19.5px]':'36px'
+    };
     function _shellFontBoost() {
-        var pairs = [['topCardGrid', 1.45], ['chartRow', 1.33]];
-        pairs.forEach(function(pair) {
-            var root = document.getElementById(pair[0]);
-            var sc   = pair[1];
+        [[document.getElementById('topCardGrid'), _topFsMap],
+         [document.getElementById('chartRow'),    _chrFsMap]
+        ].forEach(function(pair) {
+            var root = pair[0], fsMap = pair[1];
             if (!root) return;
-            var todo = [];
+            /* Tailwind 클래스 기반 */
             root.querySelectorAll('*').forEach(function(el) {
-                if (el.tagName === 'CANVAS' || el.tagName === 'SVG') return;
                 if (el.getAttribute('data-bfs')) return;
-                var v = parseFloat(window.getComputedStyle(el).fontSize);
-                if (!isNaN(v) && v >= 8 && v <= 40) todo.push([el, v]);
+                var cls = (typeof el.className === 'string') ? el.className : (el.className.baseVal || '');
+                for (var k in fsMap) {
+                    if (cls.indexOf(k) !== -1) {
+                        el.style.setProperty('font-size', fsMap[k], 'important');
+                        el.setAttribute('data-bfs', '1');
+                        break;
+                    }
+                }
             });
-            todo.forEach(function(p) {
-                p[0].setAttribute('data-bfs', '1');
-                p[0].style.setProperty('font-size', (p[1] * sc).toFixed(1) + 'px', 'important');
+            /* inline style="font-size:Npx" 기반 */
+            root.querySelectorAll('[style*="font-size"]').forEach(function(el) {
+                if (el.getAttribute('data-bfs')) return;
+                var m = el.style.fontSize && el.style.fontSize.match(/([\d.]+)px/);
+                if (!m) return;
+                var v = parseFloat(m[1]);
+                if (v >= 8 && v <= 40) {
+                    el.style.setProperty('font-size', (v * (fsMap === _topFsMap ? 2.0 : 1.8)).toFixed(1) + 'px', 'important');
+                    el.setAttribute('data-bfs', '1');
+                }
             });
         });
     }
