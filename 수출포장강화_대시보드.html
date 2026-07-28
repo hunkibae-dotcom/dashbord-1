@@ -5488,6 +5488,13 @@
     var p = new URLSearchParams(location.search);
     if(!p.get('shell')) return;
 
+    /* ?shell=1 → shell.html 로 즉시 이동 */
+    window.location.replace('shell.html');
+})();
+(function(){
+    var p = new URLSearchParams(location.search);
+    if(!p.get('shell')) return;
+
     var th = p.get('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', th);
     localStorage.setItem('fwork_theme', th);
