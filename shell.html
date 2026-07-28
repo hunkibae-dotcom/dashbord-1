@@ -151,7 +151,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
 
             <!-- 포장 대기 -->
-            <div class="card" style="position:relative;overflow:hidden;">
+            <div class="card" onclick="openPendingModal()" style="position:relative;overflow:hidden;cursor:pointer;">
                 <span class="card-icon" style="color:#FF9100;"><i class="fa-solid fa-boxes-stacked"></i></span>
                 <div class="label">포장 대기</div>
                 <div style="margin-top:12px;">
@@ -164,7 +164,10 @@
                     </div>
                 </div>
                 <div class="divider"></div>
-                <div id="kpiTodayDate" style="font-size:10px;color:var(--label);font-family:monospace;">—</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <div id="kpiTodayDate" style="font-size:10px;color:var(--label);font-family:monospace;">—</div>
+                    <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--label);"></i>
+                </div>
             </div>
 
             <!-- 금일 작업 인원 -->
@@ -179,9 +182,14 @@
                     <div style="margin-top:4px;font-size:11px;color:var(--text-sub);">작업 인원</div>
                 </div>
                 <div class="divider"></div>
-                <button onclick="openWorkerInput()" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;">
-                    <i class="fa-solid fa-plus" style="font-size:9px;"></i> 인원 등록
-                </button>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <button onclick="clearWorkers()" style="font-size:10px;font-weight:700;color:var(--text-sub);background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                        <i class="fa-solid fa-rotate-left" style="font-size:9px;"></i> 초기화
+                    </button>
+                    <button onclick="openWorkerInput()" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;">
+                        <i class="fa-solid fa-plus" style="font-size:9px;"></i> 인원 등록
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -294,11 +302,14 @@
 
         <!-- Row 4: 수출 포장 관리 현황 -->
         <div class="card" style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div onclick="openMgmtModal()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
                 <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
                     <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
                 </div>
-                <span id="mgmtTotal" style="font-size:10px;color:var(--text-sub);font-family:monospace;background:var(--icon-bg);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">—</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span id="mgmtTotal" style="font-size:10px;color:var(--text-sub);font-family:monospace;background:var(--icon-bg);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">—</span>
+                    <i class="fa-solid fa-chevron-right" style="font-size:10px;color:var(--label);"></i>
+                </div>
             </div>
             <div id="mgmtStatus" style="display:flex;flex-direction:column;gap:10px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:12px 0;">로딩 중...</div>
@@ -325,7 +336,7 @@
 
     <!-- ── 하단 네비게이션 ────────────────────────────────── -->
     <nav style="position:fixed;bottom:0;left:0;right:0;padding:8px 0 14px;display:flex;justify-content:space-around;align-items:center;z-index:46;backdrop-filter:blur(12px);">
-        <button id="navHome" onclick="navSelect('navHome');scrollTo({top:0,behavior:'smooth'})"
+        <button id="navHome" onclick="goHome()"
             style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#00B0FF;background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-house" style="font-size:18px;"></i>
             <span style="font-size:10px;font-weight:700;">홈</span>
@@ -476,6 +487,54 @@
             <button onclick="saveConnUrl()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
                 저장 및 재연동
             </button>
+        </div>
+    </div>
+
+    <!-- ── 포장 대기 상세 모달 ─────────────────────────── -->
+    <div id="pendingModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-boxes-stacked" style="color:#FF9100;"></i> 포장 대기 현황
+                    </span>
+                    <span id="pendingCount" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
+                </div>
+                <button onclick="closePendingModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="pendingList" class="no-scrollbar" style="overflow-y:auto;flex:1;max-height:68vh;">
+                <div style="text-align:center;padding:32px 0;font-size:13px;color:var(--text-sub);">로딩 중...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 수출 포장 관리 현황 상세 모달 ─────────────── -->
+    <div id="mgmtModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
+                    </span>
+                    <span id="mgmtModalCount" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
+                </div>
+                <button onclick="closeMgmtModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- 탭 필터 -->
+            <div class="no-scrollbar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex-shrink:0;">
+                <button id="mgmtTab_전체"   onclick="setMgmtTab('전체')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">전체</button>
+                <button id="mgmtTab_포장대기" onclick="setMgmtTab('포장대기')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장대기</button>
+                <button id="mgmtTab_포장완료" onclick="setMgmtTab('포장완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장완료</button>
+                <button id="mgmtTab_출고완료" onclick="setMgmtTab('출고완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">출고완료</button>
+                <button id="mgmtTab_미입고"  onclick="setMgmtTab('미입고')"  style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미입고/기타</button>
+            </div>
+            <div id="mgmtList" class="no-scrollbar" style="overflow-y:auto;flex:1;max-height:68vh;">
+                <div style="text-align:center;padding:32px 0;font-size:13px;color:var(--text-sub);">로딩 중...</div>
+            </div>
         </div>
     </div>
 
@@ -1226,6 +1285,136 @@
         } else {
             bar.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="color:#FF9100;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">오프라인 모드</span>${btn}`;
         }
+    }
+
+    // ── 홈 버튼 ───────────────────────────────────────────
+    function goHome() {
+        if (_chartViewActive) toggleChartView();
+        navSelect('navHome');
+        scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── 작업 인원 초기화 ──────────────────────────────────
+    function clearWorkers() {
+        localStorage.removeItem('todayWorkers_' + todayStr());
+        localStorage.removeItem('todayWorkers');
+        document.getElementById('kpiWorkers').textContent = '0';
+    }
+
+    // ── 포장 대기 상세 모달 ───────────────────────────────
+    function openPendingModal() {
+        renderPendingModal();
+        document.getElementById('pendingModal').style.display = 'flex';
+    }
+    function closePendingModal() {
+        document.getElementById('pendingModal').style.display = 'none';
+    }
+    function renderPendingModal() {
+        const pending = stockData.filter(d => {
+            const s = d.status.replace(/\s+/g,'').toLowerCase();
+            return s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고');
+        }).sort((a, b) => {
+            if (a.date && b.date && a.date !== '-' && b.date !== '-') return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+            if (a.date && a.date !== '-') return -1;
+            return 1;
+        });
+        const el    = document.getElementById('pendingList');
+        const cntEl = document.getElementById('pendingCount');
+        if (!el) return;
+        const totalQty = pending.reduce((s, d) => s + d.qty, 0);
+        if (cntEl) cntEl.textContent = pending.length + '건 · ' + totalQty.toLocaleString() + ' BOX 대기 중';
+        if (!pending.length) {
+            el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">포장 대기 항목 없음</div>';
+            return;
+        }
+        el.innerHTML = pending.map((d, i, arr) => {
+            const isLast  = i === arr.length - 1;
+            const today   = new Date(); today.setHours(0,0,0,0);
+            const dt      = d.date && d.date !== '-' ? new Date(d.date) : null;
+            const diff    = dt ? Math.ceil((dt - today) / 86400000) : null;
+            const ddayTxt = diff === null ? '' : diff <= 0 ? '<span style="color:#FF4444;font-weight:800;font-size:10px;margin-left:4px;">D-Day</span>' : '<span style="color:#FF9100;font-weight:800;font-size:10px;margin-left:4px;">D-'+diff+'</span>';
+            return `<div style="padding:13px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
+                    <span style="font-size:11px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:2px 9px;border-radius:20px;flex-shrink:0;">${d.status}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:4px;">
+                    <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${d.round}</span>
+                    <span style="font-size:10px;color:var(--label);">|</span>
+                    <span style="color:var(--text-sub);">${d.country}</span>
+                    <span style="margin-left:auto;font-weight:800;color:var(--text);font-family:monospace;flex-shrink:0;">${d.qty.toLocaleString()} BOX</span>
+                </div>
+                <div style="display:flex;align-items:center;font-size:10px;font-family:monospace;color:var(--label);">
+                    <span>상차 ${fmtKr(d.date)}${ddayTxt}</span>
+                    <span style="margin-left:auto;">납기 ${fmtKr(d.dueDate)}</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ── 수출 포장 관리 현황 상세 모달 ────────────────────
+    let _mgmtTab = '전체';
+    function openMgmtModal() {
+        _mgmtTab = '전체';
+        renderMgmtModal();
+        document.getElementById('mgmtModal').style.display = 'flex';
+    }
+    function closeMgmtModal() {
+        document.getElementById('mgmtModal').style.display = 'none';
+    }
+    function setMgmtTab(tab) {
+        _mgmtTab = tab;
+        renderMgmtModal();
+    }
+    function renderMgmtModal() {
+        const tabs = ['전체', '포장대기', '포장완료', '출고완료', '미입고'];
+        tabs.forEach(t => {
+            const btn = document.getElementById('mgmtTab_' + t);
+            if (!btn) return;
+            btn.style.background = t === _mgmtTab ? '#00B0FF' : 'var(--icon-bg)';
+            btn.style.color      = t === _mgmtTab ? '#0B0F19'  : 'var(--text-sub)';
+        });
+        const filtered = allData.filter(d => {
+            if (_mgmtTab === '전체') return true;
+            const s = d.status.replace(/\s+/g,'').toLowerCase();
+            if (_mgmtTab === '포장대기') return s.includes('포장대기');
+            if (_mgmtTab === '포장완료') return s.includes('포장완료') && !d.isDone;
+            if (_mgmtTab === '출고완료') return d.isDone;
+            if (_mgmtTab === '미입고')   return !s.includes('포장대기') && !s.includes('포장완료') && !d.isDone;
+            return true;
+        });
+        const el = document.getElementById('mgmtList');
+        if (!el) return;
+        const totalQty = filtered.reduce((s, d) => s + d.qty, 0);
+        const cntEl = document.getElementById('mgmtModalCount');
+        if (cntEl) cntEl.textContent = filtered.length + '건 · ' + totalQty.toLocaleString() + ' BOX';
+        if (!filtered.length) {
+            el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">항목 없음</div>';
+            return;
+        }
+        el.innerHTML = filtered.map((d, i, arr) => {
+            const s         = d.status.replace(/\s+/g,'').toLowerCase();
+            const isWaiting = s.includes('포장대기');
+            const isPacked  = s.includes('포장완료') && !d.isDone;
+            const color     = isPacked ? '#00B0FF' : (d.isDone ? '#00E676' : (isWaiting ? '#FF9100' : '#64748B'));
+            const isLast    = i === arr.length - 1;
+            const today     = new Date(); today.setHours(0,0,0,0);
+            const dt        = d.date && d.date !== '-' ? new Date(d.date) : null;
+            const diff      = dt ? Math.ceil((dt - today) / 86400000) : null;
+            const ddayTxt   = (diff !== null && !d.isDone) ? (diff <= 0 ? ' <span style="color:#FF4444;font-weight:800;">D-Day</span>' : ' <span style="color:#FF9100;font-weight:700;">D-'+diff+'</span>') : '';
+            return `<div style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
+                    <span style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;">${d.status}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:3px;">
+                    <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${d.round}</span>
+                    <span style="color:var(--label);font-size:10px;">${d.country}</span>
+                    <span style="margin-left:auto;font-weight:800;color:var(--text);font-family:monospace;flex-shrink:0;">${d.qty.toLocaleString()} BOX</span>
+                </div>
+                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)}${ddayTxt} · 납기 ${fmtKr(d.dueDate)}</div>
+            </div>`;
+        }).join('');
     }
 
     // ── 초기 실행 ─────────────────────────────────────────
