@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" class="dark">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,54 +12,125 @@
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        darkBg:    '#0B0F19',
-                        panelBg:   '#111827',
-                        accentGreen:  '#00E676',
-                        accentBlue:   '#00B0FF',
-                        accentOrange: '#FF9100',
-                        accentRed:    '#FF1744',
-                        borderSlate:  '#1E293B'
-                    },
                     fontFamily: { sans: ['Inter', 'Noto Sans KR', 'sans-serif'] }
                 }
             }
         }
     </script>
     <style>
+        /* ── CSS 변수: 라이트/다크 테마 ── */
+        :root {
+            --bg:        #F8FAFC;
+            --panel:     #FFFFFF;
+            --border:    #E2E8F0;
+            --text:      #1E293B;
+            --text-sub:  #64748B;
+            --label:     #94A3B8;
+            --shadow:    0 2px 12px rgba(0,0,0,.08);
+            --divider:   #E2E8F0;
+            --input-bg:  #F1F5F9;
+            --nav-bg:    rgba(255,255,255,.96);
+            --icon-bg:   #F1F5F9;
+            --log-border:#F1F5F9;
+        }
+        html.dark {
+            --bg:        #0B0F19;
+            --panel:     #111827;
+            --border:    #1E293B;
+            --text:      #F1F5F9;
+            --text-sub:  #64748B;
+            --label:     #475569;
+            --shadow:    0 4px 24px rgba(0,0,0,.4);
+            --divider:   #1E293B;
+            --input-bg:  #0B0F19;
+            --nav-bg:    rgba(17,24,39,.97);
+            --icon-bg:   #1E293B;
+            --log-border:#1E293B;
+        }
+
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); transition: background .25s, color .25s; }
+
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .card { background: #111827; border: 1px solid #1E293B; border-radius: 16px; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,.35); }
-        .label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #64748B; }
-        .kpi-num { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
-        .kpi-unit { font-size: 15px; font-weight: 600; color: #475569; }
-        .divider { height: 1px; background: #1E293B; margin: 10px 0; }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            transition: background .25s, border-color .25s;
+        }
+        .label {
+            font-size: 10px; font-weight: 700; letter-spacing: .1em;
+            text-transform: uppercase; color: var(--label);
+        }
+        .kpi-num  { font-size: 48px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+        .kpi-unit { font-size: 15px; font-weight: 600; color: var(--text-sub); }
+        .divider  { height: 1px; background: var(--divider); margin: 10px 0; }
+
+        header { background: var(--panel); border-bottom: 1px solid var(--border); transition: background .25s, border-color .25s; }
+        nav    { background: var(--nav-bg); border-top: 1px solid var(--border); transition: background .25s, border-color .25s; }
+
+        /* 토글 스위치 */
+        .theme-toggle { position: relative; width: 44px; height: 24px; }
+        .theme-toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; inset: 0; border-radius: 999px; cursor: pointer;
+            background: #CBD5E1; transition: background .25s;
+        }
+        html.dark .toggle-slider { background: #334155; }
+        .toggle-slider::before {
+            content: ''; position: absolute;
+            width: 18px; height: 18px; border-radius: 50%;
+            left: 3px; top: 3px;
+            background: #fff; transition: transform .25s;
+        }
+        html.dark .toggle-slider::before { transform: translateX(20px); }
+
+        /* 아이콘 투명 배경 */
+        .card-icon {
+            position: absolute; right: 12px; top: 12px;
+            font-size: 40px; opacity: .07; pointer-events: none;
+        }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin .8s linear infinite; }
+
+        /* 버튼 탭 피드백 */
+        button:active { opacity: .7; transform: scale(.97); }
     </style>
 </head>
-<body class="font-sans antialiased min-h-screen flex flex-col bg-darkBg text-slate-100" style="padding-bottom:80px">
+<body class="font-sans antialiased min-h-screen flex flex-col" style="padding-bottom:80px">
 
     <!-- ── 헤더 ─────────────────────────────────────────── -->
-    <header style="background:#111827;border-bottom:1px solid #1E293B;padding:12px 16px;position:sticky;top:0;z-index:40;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+    <header style="padding:12px 16px;position:sticky;top:0;z-index:40;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+        <!-- 뒤로가기 -->
         <div>
-            <button onclick="history.back()" style="width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:#94A3B8;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">
+            <button onclick="history.back()"
+                style="width:36px;height:36px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:background .2s;">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
         </div>
+        <!-- 로고 + 타이틀 -->
         <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#00E676,#00B0FF);display:flex;align-items:center;justify-content:center;color:#0B0F19;font-size:17px;box-shadow:0 0 16px rgba(0,176,255,.25);">
+            <div style="width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#00E676,#00B0FF);display:flex;align-items:center;justify-content:center;color:#0B0F19;font-size:17px;flex-shrink:0;box-shadow:0 0 14px rgba(0,176,255,.2);">
                 <i class="fa-solid fa-box"></i>
             </div>
-            <span style="font-size:16px;font-weight:800;color:#F1F5F9;letter-spacing:-.01em;white-space:nowrap;">포장강화 대시보드</span>
+            <span style="font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;">포장강화 대시보드</span>
         </div>
-        <div style="display:flex;justify-content:flex-end;gap:6px;">
-            <button id="syncBtn" onclick="loadData()" style="width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:#64748B;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">
-                <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i>
-            </button>
+        <!-- 라이트/다크 토글 -->
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;">
+            <i class="fa-solid fa-sun" style="font-size:12px;color:#F59E0B;"></i>
+            <label class="theme-toggle">
+                <input type="checkbox" id="themeCheck" onchange="toggleTheme()">
+                <span class="toggle-slider"></span>
+            </label>
+            <i class="fa-solid fa-moon" style="font-size:12px;color:#94A3B8;"></i>
         </div>
     </header>
 
@@ -67,45 +138,44 @@
     <main style="flex:1;padding:16px;max-width:520px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:14px;">
 
         <!-- 상태 바 -->
-        <div id="statusBar" style="display:flex;align-items:center;gap:8px;font-size:11px;color:#475569;font-family:monospace;">
-            <i id="statusIcon" class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:11px;"></i>
-            <span id="statusText">데이터 로딩 중...</span>
+        <div id="statusBar" style="display:flex;align-items:center;gap:8px;font-size:11px;font-family:monospace;">
+            <i id="statusIcon" class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:10px;"></i>
+            <span id="statusText" style="color:var(--text-sub);">데이터 로딩 중...</span>
+            <button onclick="loadData()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;">
+                <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i>
+            </button>
         </div>
 
-        <!-- Row 1: 핵심 KPI 2개 나란히 -->
+        <!-- Row 1: KPI 2열 -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
 
             <!-- 포장 대기 -->
             <div class="card" style="position:relative;overflow:hidden;">
-                <div style="position:absolute;right:12px;top:12px;font-size:40px;color:#FF9100;opacity:.07;pointer-events:none;">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
+                <span class="card-icon" style="color:#FF9100;"><i class="fa-solid fa-boxes-stacked"></i></span>
                 <div class="label">포장 대기</div>
                 <div style="margin-top:12px;">
                     <div style="display:flex;align-items:baseline;gap:6px;">
                         <span id="kpiPendingQty" class="kpi-num" style="color:#FF9100;">—</span>
                         <span class="kpi-unit">BOX</span>
                     </div>
-                    <div style="margin-top:4px;font-size:11px;color:#475569;">
+                    <div style="margin-top:4px;font-size:11px;color:var(--text-sub);">
                         <span id="kpiPendingItems">—</span>건
                     </div>
                 </div>
                 <div class="divider"></div>
-                <div style="font-size:10px;color:#475569;font-family:monospace;" id="kpiTodayDate">—</div>
+                <div id="kpiTodayDate" style="font-size:10px;color:var(--label);font-family:monospace;">—</div>
             </div>
 
             <!-- 금일 작업 인원 -->
             <div class="card" style="position:relative;overflow:hidden;">
-                <div style="position:absolute;right:12px;top:12px;font-size:40px;color:#00B0FF;opacity:.07;pointer-events:none;">
-                    <i class="fa-solid fa-users"></i>
-                </div>
+                <span class="card-icon" style="color:#00B0FF;"><i class="fa-solid fa-users"></i></span>
                 <div class="label">금일 작업</div>
                 <div style="margin-top:12px;">
                     <div style="display:flex;align-items:baseline;gap:6px;">
                         <span id="kpiWorkers" class="kpi-num" style="color:#00B0FF;">—</span>
                         <span class="kpi-unit">명</span>
                     </div>
-                    <div style="margin-top:4px;font-size:11px;color:#475569;">작업 인원</div>
+                    <div style="margin-top:4px;font-size:11px;color:var(--text-sub);">작업 인원</div>
                 </div>
                 <div class="divider"></div>
                 <button onclick="openWorkerInput()" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;gap:5px;">
@@ -116,18 +186,16 @@
 
         <!-- Row 2: 수출 일정 -->
         <div class="card" style="position:relative;overflow:hidden;">
-            <div style="position:absolute;right:14px;top:14px;font-size:48px;color:#00E676;opacity:.06;pointer-events:none;">
-                <i class="fa-solid fa-ship"></i>
-            </div>
+            <span class="card-icon" style="color:#00E676;font-size:48px;"><i class="fa-solid fa-ship"></i></span>
             <div class="label">수출 일정</div>
             <div style="margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;">
                 <div>
                     <span id="nearestDDay" style="font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;color:#00E676;">—</span>
-                    <div id="nearestRound" style="margin-top:8px;font-size:15px;font-weight:700;color:#F1F5F9;">—</div>
+                    <div id="nearestRound" style="margin-top:8px;font-size:15px;font-weight:700;color:var(--text);">—</div>
                 </div>
                 <div style="text-align:right;">
-                    <div id="nearestLoadDate" style="font-size:11px;font-family:monospace;color:#475569;">—</div>
-                    <div style="font-size:11px;color:#334155;margin-top:3px;">수량 <span id="nearestQtyVal" style="color:#94A3B8;font-weight:700;font-family:monospace;">—</span> BOX</div>
+                    <div id="nearestLoadDate" style="font-size:11px;font-family:monospace;color:var(--text-sub);">—</div>
+                    <div style="font-size:11px;color:var(--label);margin-top:3px;">수량 <span id="nearestQtyVal" style="font-weight:700;font-family:monospace;">—</span> BOX</div>
                 </div>
             </div>
         </div>
@@ -136,16 +204,16 @@
         <div class="card" style="display:flex;flex-direction:column;gap:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div class="label">이전 작업 내용 Log</div>
-                <span style="font-size:9px;background:#1E293B;color:#64748B;padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid #334155;">최근 완료</span>
+                <span style="font-size:9px;background:var(--icon-bg);color:var(--text-sub);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid var(--border);">최근 완료</span>
             </div>
-            <div id="workLogList" class="no-scrollbar" style="max-height:190px;overflow-y:auto;display:flex;flex-direction:column;gap:0;">
-                <div style="font-size:12px;color:#475569;text-align:center;padding:16px 0;">로딩 중...</div>
+            <div id="workLogList" class="no-scrollbar" style="max-height:190px;overflow-y:auto;display:flex;flex-direction:column;">
+                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">로딩 중...</div>
             </div>
         </div>
 
         <!-- Row 4: 포장 강화 현황 차트 -->
         <div class="card" style="display:flex;flex-direction:column;gap:12px;" id="chartSection">
-            <div style="font-size:13px;font-weight:700;color:#F1F5F9;display:flex;align-items:center;gap:7px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
                 <i class="fa-solid fa-chart-column" style="color:#00B0FF;"></i> 포장 강화 현황
             </div>
             <div style="position:relative;height:200px;">
@@ -156,38 +224,38 @@
     </main>
 
     <!-- ── 하단 네비게이션 ────────────────────────────────── -->
-    <nav style="position:fixed;bottom:0;left:0;right:0;background:rgba(17,24,39,.97);border-top:1px solid #1E293B;padding:8px 0 12px;display:flex;justify-content:space-around;align-items:center;z-index:40;backdrop-filter:blur(12px);">
+    <nav style="position:fixed;bottom:0;left:0;right:0;padding:8px 0 14px;display:flex;justify-content:space-around;align-items:center;z-index:40;backdrop-filter:blur(12px);">
         <button onclick="scrollTo({top:0,behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#00B0FF;background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-house" style="font-size:18px;"></i>
             <span style="font-size:10px;font-weight:700;">홈</span>
         </button>
-        <button onclick="document.getElementById('chartSection').scrollIntoView({behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#475569;background:none;border:none;cursor:pointer;">
+        <button onclick="document.getElementById('chartSection').scrollIntoView({behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-chart-simple" style="font-size:18px;"></i>
             <span style="font-size:10px;">차트</span>
         </button>
-        <button onclick="window.location.href='수출포장강화_대시보드.html'" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#475569;background:none;border:none;cursor:pointer;">
+        <button onclick="window.location.href='수출포장강화_대시보드.html'" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-table-list" style="font-size:18px;"></i>
             <span style="font-size:10px;">전체</span>
         </button>
-        <button onclick="openWorkerInput()" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#475569;background:none;border:none;cursor:pointer;">
+        <button onclick="openWorkerInput()" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-users" style="font-size:18px;"></i>
             <span style="font-size:10px;">인원</span>
         </button>
     </nav>
 
     <!-- ── 작업 인원 모달 ────────────────────────────────── -->
-    <div id="workerModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);">
-        <div style="background:#111827;border:1px solid #1E293B;border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:520px;space-y:16px;">
+    <div id="workerModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:520px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <span style="font-size:16px;font-weight:800;color:#F1F5F9;">금일 작업 인원 등록</span>
-                <button onclick="closeWorkerInput()" style="width:36px;height:36px;border-radius:10px;border:none;background:#1E293B;color:#94A3B8;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);">금일 작업 인원 등록</span>
+                <button onclick="closeWorkerInput()" style="width:36px;height:36px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <input id="workerInput" type="number" inputmode="numeric" placeholder="인원 수 입력"
-                   style="width:100%;background:#0B0F19;color:#F1F5F9;padding:14px 16px;border-radius:12px;border:1px solid #1E293B;font-size:20px;font-weight:700;outline:none;box-sizing:border-box;margin-bottom:12px;"
-                   onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='#1E293B'">
-            <button onclick="saveWorkers()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:.01em;">
+                   style="width:100%;background:var(--input-bg);color:var(--text);padding:14px 16px;border-radius:12px;border:1px solid var(--border);font-size:20px;font-weight:700;outline:none;margin-bottom:12px;transition:border-color .2s;"
+                   onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <button onclick="saveWorkers()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;">
                 저장
             </button>
         </div>
@@ -197,11 +265,20 @@
     const GAS_URL = localStorage.getItem('sheet_pub_url') ||
         'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
 
-    let allData = [];
-    let stockData = [];
-    let chartInst = null;
+    let allData = [], stockData = [], chartInst = null;
 
-    // ── 날짜 유틸 ────────────────────────────────────────
+    // ── 테마 ─────────────────────────────────────────────
+    function applyTheme(dark) {
+        document.documentElement.classList.toggle('dark', dark);
+        document.getElementById('themeCheck').checked = dark;
+        localStorage.setItem('shell_theme', dark ? 'dark' : 'light');
+        if (chartInst) renderChart();
+    }
+    function toggleTheme() {
+        applyTheme(document.getElementById('themeCheck').checked);
+    }
+
+    // ── 날짜 유틸 ─────────────────────────────────────────
     function todayStr() {
         const d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
@@ -213,7 +290,7 @@
         return (d.getMonth()+1) + '.' + d.getDate() + ' (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')';
     }
 
-    // ── 데이터 로드 ──────────────────────────────────────
+    // ── 데이터 로드 ───────────────────────────────────────
     async function loadData() {
         setStatus('loading');
         const icon = document.getElementById('syncIcon');
@@ -221,17 +298,16 @@
         try {
             const res  = await fetch(GAS_URL, { signal: AbortSignal.timeout(15000) });
             const json = JSON.parse(await res.text());
-
             allData = []; stockData = [];
             for (const sheet in json) {
                 const rows = json[sheet];
                 if (sheet.includes('충주공장 재고')) {
-                    stockData = mapRows(rows, 'stock');
-                    allData = allData.concat(stockData);
+                    stockData = mapRows(rows);
+                    allData   = allData.concat(stockData);
                 } else if (sheet.includes('수출 표준품 현황')) {
-                    allData = allData.concat(mapRows(rows, 'main'));
+                    allData = allData.concat(mapRows(rows));
                 } else if (sheet.includes('출고 완료')) {
-                    allData = allData.concat(mapRows(rows, 'shipped'));
+                    allData = allData.concat(mapRows(rows));
                 }
             }
             renderAll();
@@ -243,76 +319,64 @@
         }
     }
 
-    function mapRows(rows, type) {
+    function mapRows(rows) {
         if (!rows || rows.length < 2) return [];
         const hdr = rows[0].map(h => (h||'').toString().trim().replace(/\s+/g,'').toLowerCase());
-        const fi = (...aliases) => {
+        const fi  = (...aliases) => {
             for (const a of aliases) {
                 const i = hdr.findIndex(h => h === a.toLowerCase() || h.includes(a.toLowerCase()));
                 if (i !== -1) return i;
             }
             return -1;
         };
-        const iDate    = fi('상차일','date');
-        const iReg     = fi('포장일','등록일자','regdate');
-        const iRound   = fi('수주건명','건명','차수','round');
-        const iQty     = fi('수량','qty');
-        const iDue     = fi('전산상납기','전산납기','납기','duedate');
-        const iStatus  = fi('진행','진행상태','상태','status');
-        const iCode    = fi('품목코드','제품코드','code');
-        const iCtry    = fi('제품구분','제품 구분','country');
+        const iDate   = fi('상차일','date');
+        const iReg    = fi('포장일','등록일자','regdate');
+        const iRound  = fi('수주건명','건명','차수','round');
+        const iQty    = fi('수량','qty');
+        const iDue    = fi('전산상납기','전산납기','납기','duedate');
+        const iStatus = fi('진행','진행상태','상태','status');
+        const iCode   = fi('품목코드','제품코드','code');
+        const iCtry   = fi('제품구분','제품 구분','country');
 
         const result = [];
         for (let i = 1; i < rows.length; i++) {
             const r = rows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
-            const code    = r[iCode]   ? r[iCode].toString().trim()   : '';
-            const qtyRaw  = r[iQty]    ? r[iQty].toString().replace(/[^0-9]/g,'') : '0';
-            const qty     = parseInt(qtyRaw) || 0;
+            const code   = r[iCode]   ? r[iCode].toString().trim()   : '';
+            const qty    = parseInt((r[iQty]||'').toString().replace(/[^0-9]/g,'')) || 0;
             if (!code && qty === 0) continue;
-            const status  = r[iStatus] ? r[iStatus].toString().trim() : '미입고';
-            const date    = r[iDate]   ? r[iDate].toString().trim()   : '-';
-            const regDate = r[iReg]    ? r[iReg].toString().trim()    : date;
-            const round   = r[iRound]  ? r[iRound].toString().trim()  : '-';
-            const dueDate = r[iDue]    ? r[iDue].toString().trim()    : '-';
-            const country = r[iCtry]   ? r[iCtry].toString().trim()   : 'FAM';
-            const sn      = status.replace(/\s+/g,'').toLowerCase();
-            const isDone  = sn.includes('출고') || sn.includes('포장완료') || sn.includes('피킹');
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, isDone, type });
+            const status = r[iStatus] ? r[iStatus].toString().trim() : '미입고';
+            const date   = r[iDate]   ? r[iDate].toString().trim()   : '-';
+            const regDate= r[iReg]    ? r[iReg].toString().trim()    : date;
+            const round  = r[iRound]  ? r[iRound].toString().trim()  : '-';
+            const dueDate= r[iDue]    ? r[iDue].toString().trim()    : '-';
+            const country= r[iCtry]   ? r[iCtry].toString().trim()   : 'FAM';
+            const sn     = status.replace(/\s+/g,'').toLowerCase();
+            const isDone = sn.includes('출고') || sn.includes('포장완료') || sn.includes('피킹');
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, isDone });
         }
         return result;
     }
 
     // ── 렌더링 ────────────────────────────────────────────
-    function renderAll() {
-        renderKPIs();
-        renderSchedule();
-        renderWorkLog();
-        renderChart();
-    }
+    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderChart(); }
 
     function renderKPIs() {
-        // 포장 대기: 충주공장 재고에서 '포장대기' 또는 '미확인' 상태
         const pending = stockData.filter(d => {
             const s = d.status.replace(/\s+/g,'').toLowerCase();
             return s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고');
         });
-        const pendingQty   = pending.reduce((s,d) => s + d.qty, 0);
-        const pendingItems = pending.length;
-
-        document.getElementById('kpiPendingQty').textContent   = pendingQty > 0 ? pendingQty.toLocaleString() : '0';
-        document.getElementById('kpiPendingItems').textContent = pendingItems;
+        document.getElementById('kpiPendingQty').textContent   = pending.reduce((s,d)=>s+d.qty,0).toLocaleString() || '0';
+        document.getElementById('kpiPendingItems').textContent = pending.length;
         document.getElementById('kpiTodayDate').textContent    = fmtKr(todayStr());
-
-        // 작업 인원
-        const w = localStorage.getItem('todayWorkers_' + todayStr()) || localStorage.getItem('todayWorkers') || '0';
+        const w = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '0';
         document.getElementById('kpiWorkers').textContent = w;
     }
 
     function renderSchedule() {
         const today = new Date(); today.setHours(0,0,0,0);
         const candidates = allData.filter(d => d.date && d.date !== '-' && !d.isDone);
-        let nearest = null; let minDiff = Infinity;
+        let nearest = null, minDiff = Infinity;
         candidates.forEach(d => {
             const dt = new Date(d.date);
             if (isNaN(dt)) return;
@@ -321,10 +385,10 @@
         });
         if (nearest) {
             const days = Math.ceil(minDiff / 86400000);
-            document.getElementById('nearestDDay').textContent      = days === 0 ? 'D-Day' : 'D-' + days;
-            document.getElementById('nearestRound').textContent     = nearest.round;
-            document.getElementById('nearestLoadDate').textContent  = fmtKr(nearest.date);
-            document.getElementById('nearestQtyVal').textContent    = nearest.qty.toLocaleString();
+            document.getElementById('nearestDDay').textContent     = days === 0 ? 'D-Day' : 'D-' + days;
+            document.getElementById('nearestRound').textContent    = nearest.round;
+            document.getElementById('nearestLoadDate').textContent = fmtKr(nearest.date);
+            document.getElementById('nearestQtyVal').textContent   = nearest.qty.toLocaleString();
         } else {
             document.getElementById('nearestDDay').textContent     = '—';
             document.getElementById('nearestRound').textContent    = '예정 일정 없음';
@@ -335,20 +399,20 @@
 
     function renderWorkLog() {
         const list = document.getElementById('workLogList');
-        const done = allData.filter(d => d.isDone).sort((a,b) => (b.regDate > a.regDate ? 1 : -1));
+        const done = allData.filter(d => d.isDone).sort((a,b) => b.regDate > a.regDate ? 1 : -1);
         if (!done.length) {
-            list.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:16px 0;">완료된 작업이 없습니다</div>';
+            list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">완료된 작업이 없습니다</div>';
             return;
         }
-        list.innerHTML = done.slice(0,12).map((d,i) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${i < done.length-1 && i < 11 ? 'border-bottom:1px solid #1E293B;' : ''}">
+        list.innerHTML = done.slice(0,12).map((d,i,arr) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${i<arr.length-1?'border-bottom:1px solid var(--log-border);':''}">
                 <div style="min-width:0;flex:1;">
-                    <div style="font-size:12px;font-weight:700;color:#F1F5F9;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.code}</div>
-                    <div style="font-size:10px;color:#475569;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
+                    <div style="font-size:12px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.code}</div>
+                    <div style="font-size:10px;color:var(--text-sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
                 </div>
                 <div style="text-align:right;flex-shrink:0;margin-left:12px;">
                     <div style="font-size:12px;font-weight:700;color:#00B0FF;font-family:monospace;">${d.qty.toLocaleString()} ea</div>
-                    <div style="font-size:10px;color:#475569;font-family:monospace;margin-top:2px;">${d.regDate}</div>
+                    <div style="font-size:10px;color:var(--text-sub);font-family:monospace;margin-top:2px;">${d.regDate}</div>
                 </div>
             </div>
         `).join('');
@@ -356,6 +420,9 @@
 
     function renderChart() {
         if (typeof Chart === 'undefined') return;
+        const isDark  = document.documentElement.classList.contains('dark');
+        const textClr = isDark ? '#64748B' : '#94A3B8';
+        const gridClr = isDark ? '#1E293B' : '#E2E8F0';
         const cMap = {};
         allData.forEach(d => {
             if (!d.country || d.country === '-') return;
@@ -371,16 +438,16 @@
             data: {
                 labels,
                 datasets: [
-                    { label: '포장대기', data: labels.map(c => cMap[c].pending), backgroundColor: 'rgba(255,145,0,.75)', borderRadius: 5 },
-                    { label: '완료',     data: labels.map(c => cMap[c].done),    backgroundColor: 'rgba(0,176,255,.6)',  borderRadius: 5 }
+                    { label: '포장대기', data: labels.map(c=>cMap[c].pending), backgroundColor:'rgba(255,145,0,.75)', borderRadius:5 },
+                    { label: '완료',     data: labels.map(c=>cMap[c].done),    backgroundColor:'rgba(0,176,255,.6)',  borderRadius:5 }
                 ]
             },
             options: {
                 responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#64748B', font: { size: 11 } } } },
+                plugins: { legend: { labels: { color: textClr, font:{size:11} } } },
                 scales: {
-                    y: { ticks: { color: '#475569' }, grid: { color: '#1E293B' } },
-                    x: { ticks: { color: '#475569' }, grid: { display: false } }
+                    y: { ticks:{color:textClr}, grid:{color:gridClr} },
+                    x: { ticks:{color:textClr}, grid:{display:false} }
                 }
             }
         });
@@ -388,18 +455,16 @@
 
     // ── 작업 인원 모달 ────────────────────────────────────
     function openWorkerInput() {
-        const cur = localStorage.getItem('todayWorkers_' + todayStr()) || localStorage.getItem('todayWorkers') || '';
+        const cur = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '';
         document.getElementById('workerInput').value = cur;
         const m = document.getElementById('workerModal');
         m.style.display = 'flex';
         setTimeout(() => document.getElementById('workerInput').focus(), 150);
     }
-    function closeWorkerInput() {
-        document.getElementById('workerModal').style.display = 'none';
-    }
+    function closeWorkerInput() { document.getElementById('workerModal').style.display = 'none'; }
     function saveWorkers() {
         const v = parseInt(document.getElementById('workerInput').value) || 0;
-        localStorage.setItem('todayWorkers_' + todayStr(), v);
+        localStorage.setItem('todayWorkers_'+todayStr(), v);
         localStorage.setItem('todayWorkers', v);
         document.getElementById('kpiWorkers').textContent = v;
         closeWorkerInput();
@@ -408,20 +473,25 @@
     // ── 상태 표시 ─────────────────────────────────────────
     function setStatus(s) {
         const bar = document.getElementById('statusBar');
-        if (s === 'loading') {
-            bar.innerHTML = '<i class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:11px;"></i><span style="color:#475569;font-size:11px;font-family:monospace;">데이터 로딩 중...</span>';
-        } else if (s === 'ok') {
+        const btn = `<button onclick="loadData()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i id="syncIcon" class="fa-solid fa-arrows-rotate"></i></button>`;
+        if (s==='loading') {
+            bar.innerHTML = `<i class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">데이터 로딩 중...</span>${btn}`;
+        } else if (s==='ok') {
             const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-            bar.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#00E676;font-size:11px;"></i><span style="color:#475569;font-size:11px;font-family:monospace;">업데이트 완료 · ' + t + '</span>';
+            bar.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#00E676;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">업데이트 완료 · ${t}</span>${btn}`;
         } else {
-            bar.innerHTML = '<i class="fa-solid fa-circle-exclamation" style="color:#FF9100;font-size:11px;"></i><span style="color:#475569;font-size:11px;font-family:monospace;">오프라인 모드 · 이전 데이터</span>';
+            bar.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="color:#FF9100;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">오프라인 모드</span>${btn}`;
         }
     }
 
     // ── 초기 실행 ─────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
+        // 테마: 저장값 없으면 라이트 모드
+        const saved = localStorage.getItem('shell_theme') || 'light';
+        applyTheme(saved === 'dark');
+
         document.getElementById('kpiTodayDate').textContent = fmtKr(todayStr());
-        const w = localStorage.getItem('todayWorkers_' + todayStr()) || localStorage.getItem('todayWorkers') || '0';
+        const w = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '0';
         document.getElementById('kpiWorkers').textContent = w;
         loadData();
     });
