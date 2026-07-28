@@ -185,30 +185,68 @@
             </div>
         </div>
 
-        <!-- Row 2: 수출 일정 -->
-        <div class="card" style="position:relative;overflow:hidden;">
-            <span class="card-icon" style="color:#00E676;font-size:48px;"><i class="fa-solid fa-ship"></i></span>
-            <div class="label">수출 일정</div>
-            <div style="margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;">
-                <div>
-                    <span id="nearestDDay" style="font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;color:#00E676;">—</span>
-                    <div id="nearestRound" style="margin-top:8px;font-size:15px;font-weight:700;color:var(--text);">—</div>
+        <!-- Row 2: 슬라이드 카드 (수출일정 / 이전 작업 LOG / INFORM) -->
+        <div class="card" style="position:relative;overflow:hidden;padding:0;">
+            <div id="slideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
+                 ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
+
+                <!-- Slide 0: 수출 일정 -->
+                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;position:relative;overflow:hidden;">
+                    <span style="position:absolute;right:12px;top:10px;font-size:40px;opacity:.07;pointer-events:none;color:#00E676;"><i class="fa-solid fa-ship"></i></span>
+                    <div class="label">수출 일정</div>
+                    <div style="margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;">
+                        <div>
+                            <span id="nearestDDay" style="font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;color:#00E676;">—</span>
+                            <div id="nearestRound" style="margin-top:8px;font-size:15px;font-weight:700;color:var(--text);">—</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div id="nearestLoadDate" style="font-size:11px;font-family:monospace;color:var(--text-sub);">—</div>
+                            <div style="font-size:11px;color:var(--label);margin-top:3px;">수량 <span id="nearestQtyVal" style="font-weight:700;font-family:monospace;">—</span> BOX</div>
+                        </div>
+                    </div>
                 </div>
-                <div style="text-align:right;">
-                    <div id="nearestLoadDate" style="font-size:11px;font-family:monospace;color:var(--text-sub);">—</div>
-                    <div style="font-size:11px;color:var(--label);margin-top:3px;">수량 <span id="nearestQtyVal" style="font-weight:700;font-family:monospace;">—</span> BOX</div>
+
+                <!-- Slide 1: 이전 작업 LOG -->
+                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <div class="label">이전 작업 내용 Log</div>
+                        <span style="font-size:9px;background:var(--icon-bg);color:var(--text-sub);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid var(--border);">최근 완료</span>
+                    </div>
+                    <div id="workLogList" class="no-scrollbar" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;">
+                        <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">로딩 중...</div>
+                    </div>
                 </div>
+
+                <!-- Slide 2: INFORM -->
+                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+                        <i class="fa-solid fa-bell" style="color:#FF9100;font-size:10px;"></i>
+                        <div class="label">공지 / INFORM</div>
+                    </div>
+                    <div id="informList" style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">등록된 공지가 없습니다</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 슬라이드 인디케이터 -->
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;z-index:2;">
+                <div id="slideDot0" onclick="goSlide(0)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:#00B0FF;width:20px;"></div>
+                <div id="slideDot1" onclick="goSlide(1)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:var(--border);width:6px;"></div>
+                <div id="slideDot2" onclick="goSlide(2)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:var(--border);width:6px;"></div>
             </div>
         </div>
 
-        <!-- Row 3: 이전 작업 내용 Log -->
+        <!-- Row 3: 수출 포장 관리 현황 -->
         <div class="card" style="display:flex;flex-direction:column;gap:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div class="label">이전 작업 내용 Log</div>
-                <span style="font-size:9px;background:var(--icon-bg);color:var(--text-sub);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid var(--border);">최근 완료</span>
+                <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
+                    <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
+                </div>
+                <span id="mgmtTotal" style="font-size:10px;color:var(--text-sub);font-family:monospace;background:var(--icon-bg);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">—</span>
             </div>
-            <div id="workLogList" class="no-scrollbar" style="max-height:190px;overflow-y:auto;display:flex;flex-direction:column;">
-                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">로딩 중...</div>
+            <div id="mgmtStatus" style="display:flex;flex-direction:column;gap:10px;">
+                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:12px 0;">로딩 중...</div>
             </div>
         </div>
 
@@ -502,7 +540,7 @@
     }
 
     // ── 렌더링 ────────────────────────────────────────────
-    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderChart(); }
+    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderManagementStatus(); renderChart(); }
 
     function renderKPIs() {
         const pending = stockData.filter(d => {
@@ -842,6 +880,81 @@
         closeWorkerInput();
     }
 
+    // ── 슬라이드 카드 ─────────────────────────────────────
+    let _slideIdx = 0, _slideTimer = null, _slideTouchX = 0;
+    function goSlide(idx) {
+        _slideIdx = Math.max(0, Math.min(idx, 2));
+        const track = document.getElementById('slideTrack');
+        if (track) track.style.transform = 'translateX(-'+(_slideIdx*100)+'%)';
+        for (let i = 0; i < 3; i++) {
+            const d = document.getElementById('slideDot'+i);
+            if (!d) continue;
+            if (i === _slideIdx) { d.style.background='#00B0FF'; d.style.width='20px'; }
+            else                 { d.style.background='var(--border)'; d.style.width='6px'; }
+        }
+    }
+    function slideTouch(type, e) {
+        if (type === 's') { _slideTouchX = e.touches[0].clientX; }
+        else {
+            const dx = e.changedTouches[0].clientX - _slideTouchX;
+            if (Math.abs(dx) < 40) return;
+            goSlide(dx < 0 ? _slideIdx+1 : _slideIdx-1);
+        }
+    }
+    function _startSlideTimer() {
+        if (_slideTimer) clearInterval(_slideTimer);
+        _slideTimer = setInterval(() => goSlide((_slideIdx+1)%3), 5000);
+    }
+
+    // ── 수출 포장 관리 현황 ────────────────────────────────
+    function renderManagementStatus() {
+        const STATUS_DEFS = [
+            { key:'포장대기',  label:'포장 대기',     color:'#FF9100', icon:'fa-box-open'      },
+            { key:'포장완료',  label:'포장 완료',     color:'#00B0FF', icon:'fa-boxes-stacked' },
+            { key:'출고완료',  label:'출고 완료',     color:'#00E676', icon:'fa-truck-fast'    },
+            { key:'미입고',    label:'미입고 / 기타', color:'#64748B', icon:'fa-clock'         },
+        ];
+        const groups = {};
+        STATUS_DEFS.forEach(s => { groups[s.key] = { cnt:0, qty:0 }; });
+
+        allData.forEach(d => {
+            const s = d.status.replace(/\s+/g,'').toLowerCase();
+            if (s.includes('포장대기'))      { groups['포장대기'].cnt++; groups['포장대기'].qty+=d.qty; }
+            else if (s.includes('포장완료')) { groups['포장완료'].cnt++; groups['포장완료'].qty+=d.qty; }
+            else if (d.isDone)              { groups['출고완료'].cnt++; groups['출고완료'].qty+=d.qty; }
+            else                            { groups['미입고'].cnt++;   groups['미입고'].qty+=d.qty;   }
+        });
+
+        const totalCnt = allData.length;
+        const totalQty = allData.reduce((s,d)=>s+d.qty,0);
+        const mgmtTotalEl = document.getElementById('mgmtTotal');
+        if (mgmtTotalEl) mgmtTotalEl.textContent = totalCnt+'건 · '+totalQty.toLocaleString()+' BOX';
+
+        const maxQty = Math.max(...STATUS_DEFS.map(sd=>groups[sd.key].qty), 1);
+        const mgmtEl = document.getElementById('mgmtStatus');
+        if (!mgmtEl) return;
+        mgmtEl.innerHTML = STATUS_DEFS.map(sd => {
+            const g   = groups[sd.key];
+            const pct = Math.round(g.qty/maxQty*100);
+            return `<div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                    <div style="display:flex;align-items:center;gap:7px;">
+                        <i class="fa-solid ${sd.icon}" style="color:${sd.color};font-size:11px;width:14px;text-align:center;"></i>
+                        <span style="font-size:12px;font-weight:700;color:var(--text);">${sd.label}</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;gap:5px;">
+                        <span style="font-size:11px;color:var(--text-sub);">${g.cnt}건</span>
+                        <span style="font-size:13px;font-weight:800;color:${sd.color};font-family:monospace;">${g.qty.toLocaleString()}</span>
+                        <span style="font-size:10px;color:var(--label);">BOX</span>
+                    </div>
+                </div>
+                <div style="background:var(--icon-bg);border-radius:4px;height:6px;overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;background:${sd.color};border-radius:4px;opacity:.9;transition:width .6s ease;"></div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
     // ── 상태 표시 ─────────────────────────────────────────
     function setStatus(s) {
         const bar = document.getElementById('statusBar');
@@ -866,6 +979,7 @@
         const w = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '0';
         document.getElementById('kpiWorkers').textContent = w;
         loadData();
+        _startSlideTimer();
     });
     </script>
 </body>
