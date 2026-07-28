@@ -1409,10 +1409,8 @@
 
             // 0. 모바일 캐러셀 초기화 — window.load 이후로 지연 (레이아웃 확정 후 실행)
             window.addEventListener('load', function() {
-                if (window.innerWidth < 768) {
-                    _initDots('topCardGrid', 'topCardDots');
-                    _initDots('chartRow', 'chartRowDots');
-                }
+                _initDots('topCardGrid', 'topCardDots');
+                _initDots('chartRow', 'chartRowDots');
             });
 
             // 1. 페이지 로딩 즉시 데모 데이터 세팅
@@ -5275,7 +5273,11 @@
 
         /* ── 모바일 캐러셀: JS로 직접 강제 주입 (CSS 클래스 충돌 완전 우회) ── */
         function _initDots(gridId, dotsId) {
-            var isMobile = window.matchMedia('(max-width:767px)').matches;
+            // 중복 방지 (shell 스크립트가 먼저 실행한 경우 포함)
+            var navId = gridId + '_cnav';
+            if (document.getElementById(navId)) return;
+
+            var isMobile = window.matchMedia('(max-width:1023px)').matches;
             if (!isMobile) return;
 
             var grid = document.getElementById(gridId);
@@ -5313,11 +5315,7 @@
             /* ── 3. 기존 dotsEl 숨김 ── */
             dotsEl.style.setProperty('display', 'none', P);
 
-            /* ── 4. 중복 방지 ── */
-            var navId = gridId + '_cnav';
-            if (document.getElementById(navId)) return;
-
-            /* ── 5. 화살표+카드명+점 nav 생성 ── */
+            /* ── 4. 화살표+카드명+점 nav 생성 ── */
             var LABELS = {
                 topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
                 chartRow: ['포장 강화 현황', '제품별 실적 비교']
@@ -5492,6 +5490,83 @@
         menuBtn.onclick = function(){ if(typeof openFilterDrawer==='function') openFilterDrawer(); };
         mainGrid.insertBefore(menuBtn, mainGrid.firstChild);
     }
+
+    /* ── 카드 캐러셀 (display 토글 방식 — CSS/뷰포트 무관) ── */
+    function _shellCarousel(gridId, labels) {
+        var grid = document.getElementById(gridId);
+        if (!grid) return;
+        var cards = Array.from(grid.children);
+        var n = cards.length;
+        if (n <= 1) return;
+        var navId = gridId + '_cnav';
+        if (document.getElementById(navId)) return;
+        var cur = 0;
+
+        cards.forEach(function(c, i) {
+            c.style.setProperty('display', i === 0 ? '' : 'none', 'important');
+        });
+
+        var navEl = document.createElement('div');
+        navEl.id = navId;
+        navEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;box-sizing:border-box;width:100%;';
+
+        function makeBtn(pts) {
+            var btn = document.createElement('button');
+            btn.style.cssText = 'width:40px;height:40px;flex-shrink:0;border-radius:11px;background:rgba(100,116,139,0.14);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.2s;';
+            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="'+pts+'"/></svg>';
+            return btn;
+        }
+        var prevBtn = makeBtn('15 18 9 12 15 6');
+        var nextBtn = makeBtn('9 18 15 12 9 6');
+
+        var center = document.createElement('div');
+        center.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;';
+
+        var nameEl = document.createElement('span');
+        nameEl.style.cssText = 'font-size:13.5px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;white-space:nowrap;';
+        nameEl.textContent = labels[0] || '';
+
+        var dotRow = document.createElement('div');
+        dotRow.style.cssText = 'display:flex;gap:5px;align-items:center;';
+        var dotEls = Array.from({length: n}, function(_, i) {
+            var d = document.createElement('span');
+            d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s;background:'+(i===0?'#00B0FF':'rgba(148,163,184,0.35)')+';width:'+(i===0?'22px':'6px')+';';
+            d.onclick = function() { goTo(i); };
+            return d;
+        });
+        dotEls.forEach(function(d){ dotRow.appendChild(d); });
+
+        center.appendChild(nameEl);
+        center.appendChild(dotRow);
+        navEl.appendChild(prevBtn);
+        navEl.appendChild(center);
+        navEl.appendChild(nextBtn);
+
+        grid.parentNode.insertBefore(navEl, grid.nextSibling);
+
+        function goTo(idx) {
+            idx = Math.max(0, Math.min(idx, n - 1));
+            cards.forEach(function(c, i) {
+                c.style.setProperty('display', i === idx ? '' : 'none', 'important');
+            });
+            cur = idx;
+            nameEl.textContent = labels[cur] || '';
+            dotEls.forEach(function(d, i) {
+                d.style.background = i === cur ? '#00B0FF' : 'rgba(148,163,184,0.35)';
+                d.style.width = i === cur ? '22px' : '6px';
+            });
+            prevBtn.style.opacity = cur === 0 ? '0.28' : '1';
+            nextBtn.style.opacity = cur === n - 1 ? '0.28' : '1';
+        }
+
+        prevBtn.onclick = function() { goTo(cur - 1); };
+        nextBtn.onclick = function() { goTo(cur + 1); };
+
+        goTo(0);
+    }
+
+    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM']);
+    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교']);
 })();
 </script>
 </body>
