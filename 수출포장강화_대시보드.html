@@ -5273,31 +5273,60 @@
             }
         }
 
-        /* ── 모바일 캐러셀: 화살표 + 카드명 + 점 인디케이터 ── */
+        /* ── 모바일 캐러셀: JS로 직접 강제 주입 (CSS 클래스 충돌 완전 우회) ── */
         function _initDots(gridId, dotsId) {
+            var isMobile = window.matchMedia('(max-width:767px)').matches;
+            if (!isMobile) return;
+
             var grid = document.getElementById(gridId);
             var dotsEl = document.getElementById(dotsId);
             if (!grid || !dotsEl) return;
-            var n = grid.children.length;
+
+            /* ── 1. grid를 carousel로 강제 변환 (inline !important → 모든 CSS 무효화) ── */
+            var P = 'important';
+            grid.style.setProperty('display', 'flex', P);
+            grid.style.setProperty('flex-wrap', 'nowrap', P);
+            grid.style.setProperty('overflow-x', 'auto', P);
+            grid.style.setProperty('overflow-y', 'visible', P);
+            grid.style.setProperty('scroll-snap-type', 'x mandatory', P);
+            grid.style.setProperty('-webkit-overflow-scrolling', 'touch', P);
+            grid.style.setProperty('scrollbar-width', 'none', P);
+            grid.style.setProperty('gap', '0', P);
+
+            /* ── 2. 각 카드를 슬라이드로 강제 변환 ── */
+            var cards = Array.from(grid.children);
+            var n = cards.length;
             if (n <= 1) return;
 
-            /* 기존 dots 요소 완전 숨김 (CSS !important로) */
-            dotsEl.style.setProperty('display', 'none', 'important');
+            cards.forEach(function(card) {
+                card.style.setProperty('flex', '0 0 100%', P);
+                card.style.setProperty('width', '100%', P);
+                card.style.setProperty('min-width', '0', P);
+                card.style.setProperty('max-width', '100%', P);
+                card.style.setProperty('scroll-snap-align', 'start', P);
+                card.style.setProperty('box-sizing', 'border-box', P);
+                card.style.setProperty('border', 'none', P);
+                card.style.setProperty('box-shadow', 'none', P);
+                card.style.setProperty('border-radius', '0', P);
+            });
 
-            /* 이미 삽입된 경우 중복 방지 */
+            /* ── 3. 기존 dotsEl 숨김 ── */
+            dotsEl.style.setProperty('display', 'none', P);
+
+            /* ── 4. 중복 방지 ── */
             var navId = gridId + '_cnav';
             if (document.getElementById(navId)) return;
 
+            /* ── 5. 화살표+카드명+점 nav 생성 ── */
             var LABELS = {
                 topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
                 chartRow: ['포장 강화 현황', '제품별 실적 비교']
             };
             var labels = LABELS[gridId] || [];
 
-            /* 완전히 새로운 nav 요소 생성 (CSS 클래스 충돌 없음) */
             var navEl = document.createElement('div');
             navEl.id = navId;
-            navEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;box-sizing:border-box;';
+            navEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;box-sizing:border-box;width:100%;';
 
             function makeArrow(pts) {
                 var btn = document.createElement('button');
@@ -5317,13 +5346,13 @@
 
             var dotRow = document.createElement('div');
             dotRow.style.cssText = 'display:flex;gap:5px;align-items:center;';
-            var dots = Array.from({length: n}, function(_, i) {
+            var dotEls = Array.from({length: n}, function(_, i) {
                 var d = document.createElement('span');
                 d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);background:' + (i===0?'#00B0FF':'rgba(148,163,184,0.35)') + ';width:' + (i===0?'22px':'6px') + ';';
                 d.onclick = function() { goTo(i); };
                 return d;
             });
-            dots.forEach(function(d){ dotRow.appendChild(d); });
+            dotEls.forEach(function(d){ dotRow.appendChild(d); });
 
             centerWrap.appendChild(nameEl);
             centerWrap.appendChild(dotRow);
@@ -5331,17 +5360,18 @@
             navEl.appendChild(centerWrap);
             navEl.appendChild(nextBtn);
 
-            /* dotsEl 바로 뒤에 삽입 */
             dotsEl.parentNode.insertBefore(navEl, dotsEl.nextSibling);
 
             function getCur() {
-                return Math.min(Math.round(grid.scrollLeft / Math.max(grid.clientWidth, 1)), n - 1);
+                var w = grid.clientWidth || 1;
+                return Math.min(Math.round(grid.scrollLeft / w), n - 1);
             }
             function goTo(idx) {
-                grid.scrollTo({left: Math.max(0,Math.min(idx,n-1)) * grid.clientWidth, behavior:'smooth'});
+                idx = Math.max(0, Math.min(idx, n - 1));
+                grid.scrollTo({ left: idx * grid.clientWidth, behavior: 'smooth' });
             }
             function updateUI(idx) {
-                dots.forEach(function(d, i) {
+                dotEls.forEach(function(d, i) {
                     d.style.background = i===idx ? '#00B0FF' : 'rgba(148,163,184,0.35)';
                     d.style.width = i===idx ? '22px' : '6px';
                 });
@@ -5356,7 +5386,7 @@
             var ticking = false;
             grid.addEventListener('scroll', function() {
                 if (ticking) return; ticking = true;
-                requestAnimationFrame(function(){ updateUI(getCur()); ticking=false; });
+                requestAnimationFrame(function(){ updateUI(getCur()); ticking = false; });
             }, {passive:true});
 
             updateUI(0);
