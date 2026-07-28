@@ -5485,13 +5485,13 @@
     var mainGrid = document.getElementById('mainGrid');
     if(mainGrid){
         menuBtn = document.createElement('button');
-        menuBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;border:none;background:rgba(100,116,139,0.18);cursor:pointer;-webkit-tap-highlight-color:transparent;';
+        menuBtn.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;border:none;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;';
         menuBtn.innerHTML = '<svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="'+_fg+'" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
         menuBtn.onclick = function(){ if(typeof openFilterDrawer==='function') openFilterDrawer(); };
         mainGrid.insertBefore(menuBtn, mainGrid.firstChild);
     }
 
-    /* ── 카드 캐러셀 (display 토글 방식 — CSS/뷰포트 무관, 터치 스와이프 지원) ── */
+    /* ── 카드 캐러셀 (슬라이드 애니메이션 + 터치 드래그) ── */
     function _shellCarousel(gridId, labels, minH, cardPad) {
         var grid = document.getElementById(gridId);
         if (!grid) return;
@@ -5500,24 +5500,34 @@
         if (n <= 1) return;
         var navId = gridId + '_cnav';
         if (document.getElementById(navId)) return;
-        var cur = 0;
+        var cur = 0, _anim = false;
 
-        /* ── 그리드 컬럼 레이아웃 해제 → 단일 블록으로 강제 ── */
+        /* ── 그리드 → overflow:hidden 슬라이더 컨테이너 ── */
         grid.style.setProperty('display', 'block', 'important');
         grid.style.setProperty('width', '100%', 'important');
         grid.style.setProperty('max-width', '100%', 'important');
+        grid.style.setProperty('overflow', 'hidden', 'important');
+        grid.style.setProperty('position', 'relative', 'important');
 
-        /* ── 모든 카드: 전체 너비 + 글자 크기 확대 + 최소 높이 + 내부 여백 ── */
-        cards.forEach(function(c, i) {
-            c.style.setProperty('display', i === 0 ? 'flex' : 'none', 'important');
-            c.style.setProperty('flex-direction', 'column', 'important');
+        /* ── 슬라이드 래퍼: 카드를 수평으로 나열 ── */
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'display:flex;flex-wrap:nowrap;width:100%;will-change:transform;';
+
+        /* ── 카드를 래퍼로 이동 ── */
+        cards.forEach(function(c) {
+            wrap.appendChild(c);
+            c.style.setProperty('flex', '0 0 100%', 'important');
             c.style.setProperty('width', '100%', 'important');
             c.style.setProperty('max-width', '100%', 'important');
             c.style.setProperty('box-sizing', 'border-box', 'important');
-            c.style.setProperty('font-size', '115%', 'important');
+            c.style.setProperty('display', 'flex', 'important');
+            c.style.setProperty('flex-direction', 'column', 'important');
             if (minH)    c.style.setProperty('min-height', minH, 'important');
             if (cardPad) c.style.setProperty('padding', cardPad, 'important');
         });
+        grid.appendChild(wrap);
+
+        wrap.addEventListener('transitionend', function() { _anim = false; });
 
         /* ── 네비게이션 바 ── */
         var navEl = document.createElement('div');
@@ -5549,21 +5559,14 @@
             return d;
         });
         dotEls.forEach(function(d){ dotRow.appendChild(d); });
-
         center.appendChild(nameEl);
         center.appendChild(dotRow);
         navEl.appendChild(prevBtn);
         navEl.appendChild(center);
         navEl.appendChild(nextBtn);
-
         grid.parentNode.insertBefore(navEl, grid.nextSibling);
 
-        function goTo(idx) {
-            idx = Math.max(0, Math.min(idx, n - 1));
-            cards.forEach(function(c, i) {
-                c.style.setProperty('display', i === idx ? 'flex' : 'none', 'important');
-            });
-            cur = idx;
+        function updateNav() {
             nameEl.textContent = labels[cur] || '';
             dotEls.forEach(function(d, i) {
                 d.style.background = i === cur ? '#00B0FF' : 'rgba(148,163,184,0.35)';
@@ -5573,24 +5576,78 @@
             nextBtn.style.opacity = cur === n - 1 ? '0.28' : '1';
         }
 
+        function goTo(idx) {
+            if (_anim) return;
+            idx = Math.max(0, Math.min(idx, n - 1));
+            if (idx === cur) return;
+            cur = idx;
+            _anim = true;
+            wrap.style.transition = 'transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+            wrap.style.transform = 'translateX(-' + (cur * 100) + '%)';
+            updateNav();
+        }
+
         prevBtn.onclick = function() { goTo(cur - 1); };
         nextBtn.onclick = function() { goTo(cur + 1); };
 
-        /* ── 터치 스와이프 지원 ── */
-        var _tx = 0;
+        /* ── 터치 드래그 + 스와이프 (방향 감지) ── */
+        var _tx = 0, _ty = 0, _dir = null;
         grid.addEventListener('touchstart', function(e) {
+            if (_anim) return;
             _tx = e.changedTouches[0].clientX;
+            _ty = e.changedTouches[0].clientY;
+            _dir = null;
+            wrap.style.transition = 'none';
+        }, {passive: true});
+        grid.addEventListener('touchmove', function(e) {
+            if (_anim) return;
+            var dx = e.changedTouches[0].clientX - _tx;
+            var dy = e.changedTouches[0].clientY - _ty;
+            if (!_dir) {
+                if (Math.abs(dx) > Math.abs(dy) + 5) _dir = 'h';
+                else if (Math.abs(dy) > Math.abs(dx) + 5) _dir = 'v';
+                else return;
+            }
+            if (_dir !== 'h') return;
+            var base = -(cur * 100);
+            var extra = (dx / (grid.offsetWidth || 1)) * 100;
+            if ((cur === 0 && dx > 0) || (cur === n - 1 && dx < 0)) extra *= 0.2;
+            wrap.style.transform = 'translateX(' + (base + extra) + '%)';
         }, {passive: true});
         grid.addEventListener('touchend', function(e) {
+            if (_anim) return;
+            if (_dir !== 'h') {
+                wrap.style.transition = 'transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+                wrap.style.transform = 'translateX(-' + (cur * 100) + '%)';
+                return;
+            }
             var dx = e.changedTouches[0].clientX - _tx;
-            if (Math.abs(dx) > 50) { dx < 0 ? goTo(cur + 1) : goTo(cur - 1); }
+            wrap.style.transition = 'transform 0.32s cubic-bezier(0.4,0,0.2,1)';
+            if (Math.abs(dx) > (grid.offsetWidth || 300) * 0.25) {
+                goTo(dx < 0 ? cur + 1 : cur - 1);
+            } else {
+                _anim = true;
+                wrap.style.transform = 'translateX(-' + (cur * 100) + '%)';
+            }
         }, {passive: true});
 
-        goTo(0);
+        updateNav();
     }
 
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '44vh', '22px 20px');
     _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '54vh', '20px 20px');
+
+    /* ── 글자 크기 확대: zoom 1.15 ── */
+    ['topCardGrid', 'chartRow'].forEach(function(gid) {
+        var g = document.getElementById(gid);
+        if (!g || !g.parentNode) return;
+        var box = g.parentNode;
+        box.style.zoom = '1.15';
+        box.style.width = 'calc(100% / 1.15)';
+        box.style.maxWidth = 'calc(100% / 1.15)';
+        box.style.marginLeft = 'auto';
+        box.style.marginRight = 'auto';
+    });
 })();
 </script>
 </body>

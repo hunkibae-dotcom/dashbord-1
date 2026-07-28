@@ -1,4 +1,4 @@
-const CACHE_NAME = 'export-packing-dashboard-v4';
+const CACHE_NAME = 'export-packing-dashboard-v5';
 const APP_SHELL = [
   './index.html',
   './수출포장강화_대시보드.html',
