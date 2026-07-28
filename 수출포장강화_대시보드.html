@@ -344,6 +344,74 @@
             }
             #specGrid > .spec-item { display: contents; }
         }
+
+        /* ═══════════════════════════════════════════════════
+           SHELL MODE — body.shell-mode 가 붙으면 적용
+           IIFE 에서 document.body.classList.add('shell-mode')
+        ═══════════════════════════════════════════════════ */
+
+        /* 헤더 */
+        body.shell-mode header { padding-top: 22px !important; padding-bottom: 22px !important; }
+        body.shell-mode header h1 { font-size: 22px !important; }
+
+        /* ── 카드 공통 ── */
+        body.shell-mode #topCardGrid > div { padding: 20px 12px !important; }
+
+        /* ── 카드 타이틀 행: 세로 가운데정렬 ── */
+        body.shell-mode #remainingStatusCard > div:first-child > div,
+        body.shell-mode #shippedStatusCard   > div:first-child {
+            flex-direction: column !important;
+            align-items:    center  !important;
+            text-align:     center  !important;
+            gap:            4px     !important;
+            margin-bottom:  14px    !important;
+        }
+
+        /* ── 카드 타이틀 텍스트: 소형 레이블 ── */
+        body.shell-mode #remainingStatusCard > div:first-child > div > p,
+        body.shell-mode #shippedStatusCard   > div:first-child > p {
+            font-size:       12px    !important;
+            text-transform:  uppercase;
+            letter-spacing:  0.1em;
+            color:           #94A3B8 !important;
+            justify-content: center  !important;
+        }
+
+        /* ── 날짜 라벨 ── */
+        body.shell-mode #card1TodayDateLabel { font-size: 17px !important; }
+        body.shell-mode #prevDayLabel        { font-size: 17px !important; }
+
+        /* ── 포장대기 수량: 초대형 KPI ── */
+        body.shell-mode #card1PendingQty { font-size: 58px !important; line-height: 1 !important; }
+
+        /* ── 포장대기 박스 단위 텍스트 ── */
+        body.shell-mode #card1PendingBox { font-size: 17px !important; }
+
+        /* ── 작업 인원 ── */
+        body.shell-mode #card1WorkerDisplay { font-size: 18px !important; }
+        body.shell-mode #prevDayWorkers     { font-size: 18px !important; }
+
+        /* ── 카드 본문 텍스트 ── */
+        body.shell-mode #remainingStatusCard .text-\[13\.5px\],
+        body.shell-mode #shippedStatusCard   .text-\[13\.5px\] { font-size: 16px !important; }
+        body.shell-mode #remainingStatusCard .text-\[13px\],
+        body.shell-mode #shippedStatusCard   .text-\[13px\]    { font-size: 15px !important; }
+        body.shell-mode #remainingStatusCard .text-\[12px\],
+        body.shell-mode #shippedStatusCard   .text-\[12px\]    { font-size: 14px !important; }
+        body.shell-mode #remainingStatusCard button,
+        body.shell-mode #shippedStatusCard   button { font-size: 14px !important; padding: 6px 14px !important; }
+
+        /* ── 카드3 수출일정 ── */
+        body.shell-mode #strengthenedStatusCard p.font-semibold { font-size: 12px !important; color: #94A3B8 !important; }
+        body.shell-mode #card4RoundName { font-size: 36px !important; line-height: 1.2 !important; }
+        body.shell-mode #card4DDay      { font-size: 16px !important; }
+        body.shell-mode #strengthenedStatusCard .text-\[17px\]  { font-size: 20px !important; }
+        body.shell-mode #strengthenedStatusCard .text-\[12\.5px\] { font-size: 15px !important; }
+
+        /* ── 차트 카드 ── */
+        body.shell-mode #chartRow > div   { padding: 14px 10px !important; }
+        body.shell-mode #chartRow h3      { font-size: 16px !important; }
+        body.shell-mode #chartRow .h-72   { flex: 1 1 0 !important; height: auto !important; min-height: 0 !important; }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
@@ -5162,10 +5230,17 @@
             if (card && !card.contains(e.target)) hideCard4Tooltip();
         });
 
-        // PWA: 서비스 워커 등록 (network-first라 수정 후 배포하면 앱에도 바로 반영됨)
+        // PWA: 서비스 워커 등록 + 업데이트 시 자동 새로고침
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('service-worker.js').catch(err => console.warn('SW 등록 실패:', err));
+            });
+            // SW가 새 버전으로 교체되면 페이지 자동 새로고침 → 코드 반영
+            var _swReloading = false;
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                if (_swReloading) return;
+                _swReloading = true;
+                window.location.reload();
             });
         }
 
@@ -5647,114 +5722,11 @@
         updateNav();
     }
 
-    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 14px');
+    /* CSS 스타일시트로 shell-mode 클래스 활성화 — JS 타이밍 문제 없음 */
+    document.body.classList.add('shell-mode');
+
+    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 12px');
     _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 비교'],              '50vh', '14px 10px');
-
-    /* 버전 배지 — HTML 최신 여부 확인용 */
-    (function() {
-        var h1 = document.querySelector('header h1');
-        if (h1) {
-            var b = document.createElement('span');
-            b.textContent = ' v12';
-            b.style.cssText = 'font-size:11px;color:rgba(0,176,255,0.6);font-weight:400;';
-            h1.appendChild(b);
-        }
-    })();
-
-    /* ── Shell 레이아웃 ── */
-    (function _shellLayoutOnce() {
-        /* 헤더 */
-        var hdr = document.querySelector('header');
-        if (hdr) {
-            hdr.style.paddingTop    = '20px';
-            hdr.style.paddingBottom = '20px';
-            var iconBox = hdr.querySelector('div[style*="width:40px"]');
-            if (iconBox) { iconBox.style.width = '48px'; iconBox.style.height = '48px'; }
-            var h1 = hdr.querySelector('h1');
-            if (h1) h1.style.setProperty('font-size', '22px', 'important');
-        }
-        /* 카드 1·2: 제목 행 → 컬럼 가운데정렬 + 레이블 스타일 */
-        ['remainingStatusCard', 'shippedStatusCard'].forEach(function(id) {
-            var card = document.getElementById(id);
-            if (!card) return;
-            var row = card.querySelector('.justify-between');
-            if (!row) return;
-            row.style.flexDirection = 'column';
-            row.style.alignItems    = 'center';
-            row.style.textAlign     = 'center';
-            row.style.gap           = '4px';
-            row.style.marginBottom  = '14px';
-            var titleEl = row.querySelector('p') || row.querySelector('span.font-bold');
-            if (titleEl) {
-                titleEl.style.justifyContent = 'center';
-                titleEl.style.textTransform  = 'uppercase';
-                titleEl.style.letterSpacing  = '0.1em';
-                titleEl.style.setProperty('color', '#94A3B8', 'important');
-            }
-        });
-        /* 카드 3(수출일정) 제목 색상 */
-        var c3title = document.querySelector('#strengthenedStatusCard p.font-semibold');
-        if (c3title) c3title.style.setProperty('color', '#94A3B8', 'important');
-        /* 차트 카드 높이 최대화 */
-        var cr = document.getElementById('chartRow');
-        if (cr) cr.querySelectorAll('.h-72').forEach(function(el) {
-            el.style.setProperty('flex',   '1 1 0', 'important');
-            el.style.setProperty('height', 'auto',  'important');
-        });
-    })();
-
-    /* ── Shell 폰트: 계층적 타이포그래피 ──────────────────────────────
-       text-[17.5px]  = 카드 제목  →  소형 레이블 12px (uppercase로 처리)
-       text-[21px]    = 수출차수명 →  대형 KPI   36px
-       text-[21.5px]  = 포장대기qty →  초대형 KPI 56px
-       나머지          = 살짝 키움 (가독성 확보)
-    ──────────────────────────────────────────────────────────────── */
-    var _topFsMap = {
-        'text-[10.5px]':'13px',
-        'text-[11px]':  '14px',
-        'text-[12px]':  '15px',
-        'text-[12.5px]':'15px',
-        'text-[13px]':  '16px',
-        'text-[13.5px]':'16px',
-        'text-[14px]':  '17px',
-        'text-[14.5px]':'17px',
-        'text-[15px]':  '18px',
-        'text-[16px]':  '19px',
-        'text-[17px]':  '20px',
-        'text-[17.5px]':'12px',
-        'text-[19.5px]':'22px',
-        'text-[21px]':  '36px',
-        'text-[21.5px]':'56px'
-    };
-    var _chrFsMap = {
-        'text-[10.5px]':'13px',
-        'text-[12px]':  '14px',
-        'text-[13.5px]':'15px',
-        'text-[14.5px]':'16px',
-        'text-[17.5px]':'16px',
-        'text-[19.5px]':'20px'
-    };
-    function _shellFontApply() {
-        [[document.getElementById('topCardGrid'), _topFsMap],
-         [document.getElementById('chartRow'),    _chrFsMap]
-        ].forEach(function(pair) {
-            var root = pair[0], fsMap = pair[1];
-            if (!root) return;
-            root.querySelectorAll('*').forEach(function(el) {
-                if (el.tagName === 'CANVAS' || el.getAttribute('data-bfs')) return;
-                var cls = (typeof el.className === 'string') ? el.className : (el.className.baseVal || '');
-                for (var k in fsMap) {
-                    if (cls.indexOf(k) !== -1) {
-                        el.style.setProperty('font-size', fsMap[k], 'important');
-                        el.setAttribute('data-bfs', '1');
-                        break;
-                    }
-                }
-            });
-        });
-    }
-    requestAnimationFrame(function() { requestAnimationFrame(_shellFontApply); });
-    [600, 2000].forEach(function(ms) { setTimeout(_shellFontApply, ms); });
 })();
 </script>
 </body>

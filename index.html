@@ -1054,6 +1054,19 @@ function rescan(){
         _startScan();
     }
 }
+
+// SW 등록 + 업데이트 시 자동 새로고침
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('service-worker.js').catch(function(){});
+    });
+    var _swReloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (_swReloading) return;
+        _swReloading = true;
+        window.location.reload();
+    });
+}
 </script>
 </body>
 </html>
