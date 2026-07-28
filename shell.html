@@ -250,13 +250,36 @@
             </div>
         </div>
 
-        <!-- Row 4: 포장 강화 현황 차트 -->
-        <div class="card" style="display:flex;flex-direction:column;gap:12px;" id="chartSection">
-            <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
-                <i class="fa-solid fa-chart-column" style="color:#00B0FF;"></i> 포장 강화 현황
+        <!-- Row 4: 차트 슬라이드 -->
+        <div class="card" id="chartSection" style="position:relative;overflow:hidden;padding:0;">
+            <div id="chartSlideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
+                 ontouchstart="chartTouch('s',event)" ontouchend="chartTouch('e',event)">
+
+                <!-- Chart Slide 0: 포장 강화 현황 -->
+                <div style="min-width:100%;padding:14px 14px 32px;box-sizing:border-box;">
+                    <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+                        <i class="fa-solid fa-chart-column" style="color:#00B0FF;"></i> 포장 강화 현황
+                    </div>
+                    <div style="position:relative;height:200px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart Slide 1: 제품별 실적 비교 -->
+                <div style="min-width:100%;padding:14px 14px 32px;box-sizing:border-box;">
+                    <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+                        <i class="fa-solid fa-chart-bar" style="color:#00E676;"></i> 제품별 실적 비교
+                    </div>
+                    <div style="position:relative;height:200px;">
+                        <canvas id="productChart"></canvas>
+                    </div>
+                </div>
             </div>
-            <div style="position:relative;height:200px;">
-                <canvas id="mainChart"></canvas>
+
+            <!-- 차트 슬라이드 인디케이터 -->
+            <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;z-index:2;">
+                <div id="chartDot0" onclick="goChartSlide(0)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:#00B0FF;width:20px;"></div>
+                <div id="chartDot1" onclick="goChartSlide(1)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:var(--border);width:6px;"></div>
             </div>
         </div>
 
@@ -387,6 +410,14 @@
                 </button>
             </div>
             <div style="display:flex;flex-direction:column;gap:10px;">
+                <!-- 강화포장 데이터 시트 (맨 위) -->
+                <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
+                   target="_blank"
+                   style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
+                    <i class="fa-solid fa-file-excel" style="color:#22C55E;font-size:18px;width:22px;"></i>
+                    강화포장 데이터 시트
+                    <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
+                </a>
                 <!-- CSV 업로드 -->
                 <label style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);">
                     <i class="fa-solid fa-file-csv" style="color:#00B0FF;font-size:18px;width:22px;"></i>
@@ -403,14 +434,6 @@
                     <i class="fa-solid fa-power-off" style="font-size:18px;width:22px;"></i>
                     연동 초기화
                 </button>
-                <!-- 강화포장 데이터시트 -->
-                <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
-                   target="_blank"
-                   style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
-                    <i class="fa-solid fa-file-excel" style="color:#22C55E;font-size:18px;width:22px;"></i>
-                    강화포장 데이터시트 바로가기
-                    <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
-                </a>
             </div>
         </div>
     </div>
@@ -599,6 +622,30 @@
         `).join('');
     }
 
+    let productChartInst = null;
+
+    // ── 차트 슬라이드 ─────────────────────────────────────
+    let _chartSlideIdx = 0, _chartTouchX = 0;
+    function goChartSlide(idx) {
+        _chartSlideIdx = Math.max(0, Math.min(idx, 1));
+        const t = document.getElementById('chartSlideTrack');
+        if (t) t.style.transform = 'translateX(-'+(_chartSlideIdx*100)+'%)';
+        [0,1].forEach(i => {
+            const d = document.getElementById('chartDot'+i);
+            if (!d) return;
+            if (i === _chartSlideIdx) { d.style.background='#00B0FF'; d.style.width='20px'; }
+            else                     { d.style.background='var(--border)'; d.style.width='6px'; }
+        });
+    }
+    function chartTouch(type, e) {
+        if (type === 's') { _chartTouchX = e.touches[0].clientX; }
+        else {
+            const dx = e.changedTouches[0].clientX - _chartTouchX;
+            if (Math.abs(dx) < 40) return;
+            goChartSlide(dx < 0 ? _chartSlideIdx+1 : _chartSlideIdx-1);
+        }
+    }
+
     function renderChart() {
         if (typeof Chart === 'undefined') return;
         const isDark  = document.documentElement.classList.contains('dark');
@@ -629,6 +676,50 @@
                 scales: {
                     y: { ticks:{color:textClr}, grid:{color:gridClr} },
                     x: { ticks:{color:textClr}, grid:{display:false} }
+                }
+            }
+        });
+        renderProductChart(textClr, gridClr);
+    }
+
+    function renderProductChart(textClr, gridClr) {
+        if (typeof Chart === 'undefined') return;
+        const isDark = document.documentElement.classList.contains('dark');
+        const tc = textClr || (isDark ? '#64748B' : '#94A3B8');
+        const gc = gridClr || (isDark ? '#1E293B' : '#E2E8F0');
+
+        // 국가별 강화완료(포장완료+출고) vs 출고완료
+        const cMap = {};
+        allData.forEach(d => {
+            const c = (d.country||'').replace(/\s+/g,'');
+            if (!c || c === '-') return;
+            if (!cMap[c]) cMap[c] = { strengthened:0, shipped:0 };
+            const s = d.status.replace(/\s+/g,'').toLowerCase();
+            if (d.isDone) {
+                cMap[c].strengthened += d.qty;
+                cMap[c].shipped      += d.qty;
+            } else if (s.includes('포장완료')) {
+                cMap[c].strengthened += d.qty;
+            }
+        });
+        const labels = Object.keys(cMap).filter(Boolean).sort();
+        if (!labels.length) return;
+        if (productChartInst) { productChartInst.destroy(); productChartInst = null; }
+        productChartInst = new Chart(document.getElementById('productChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    { label: '강화완료', data: labels.map(c=>cMap[c].strengthened||null), backgroundColor:'rgba(248,113,113,.7)', borderRadius:5 },
+                    { label: '출고완료', data: labels.map(c=>cMap[c].shipped||null),      backgroundColor:'rgba(56,189,248,.65)', borderRadius:5 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { labels: { color: tc, font:{size:11} } } },
+                scales: {
+                    y: { ticks:{color:tc}, grid:{color:gc} },
+                    x: { ticks:{color:tc}, grid:{display:false} }
                 }
             }
         });
