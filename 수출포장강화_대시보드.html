@@ -5649,6 +5649,55 @@
 
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '44vh', '22px 20px');
     _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '54vh', '20px 20px');
+
+    /* ── shell 폰트 부스트: 모바일 가독성 ── */
+    document.body.setAttribute('data-bshell','1');
+    (function(){
+        /* Tailwind arbitrary-value 클래스 오버라이드 (CSS 주입) */
+        var ss = document.createElement('style');
+        ss.textContent = [
+            /* topCardGrid: ~1.45× scale */
+            'body[data-bshell="1"] #topCardGrid .text-\\[11px\\]     {font-size:16px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[12px\\]     {font-size:17.5px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[13px\\]     {font-size:18.5px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[13\\.5px\\] {font-size:20px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[14px\\]     {font-size:21px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[14\\.5px\\] {font-size:21.5px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[15px\\]     {font-size:22px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[16px\\]     {font-size:23px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[17px\\]     {font-size:24px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[17\\.5px\\] {font-size:25px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[19\\.5px\\] {font-size:27px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[21px\\]     {font-size:30px!important}',
+            'body[data-bshell="1"] #topCardGrid .text-\\[21\\.5px\\] {font-size:32px!important}',
+            /* chartRow: ~1.33× scale (차트 영역 여백 고려) */
+            'body[data-bshell="1"] #chartRow .text-\\[12px\\]     {font-size:16px!important}',
+            'body[data-bshell="1"] #chartRow .text-\\[13\\.5px\\] {font-size:18px!important}',
+            'body[data-bshell="1"] #chartRow .text-\\[14\\.5px\\] {font-size:19.5px!important}',
+            'body[data-bshell="1"] #chartRow .text-\\[17\\.5px\\] {font-size:23px!important}',
+            'body[data-bshell="1"] #chartRow .text-\\[19\\.5px\\] {font-size:25px!important}',
+        ].join('\n');
+        document.head.appendChild(ss);
+
+        /* 인라인 style="font-size:Npx" 요소 (JS 렌더링 콘텐츠 포함) */
+        function _bi(rootId, sc) {
+            var r = document.getElementById(rootId);
+            if (!r) return;
+            r.querySelectorAll('[style*="font-size"]').forEach(function(el) {
+                if (el.getAttribute('data-bfs')) return;
+                var m = el.style.fontSize && el.style.fontSize.match(/([\d.]+)px/);
+                if (!m) return;
+                var v = parseFloat(m[1]);
+                if (v >= 8 && v <= 42) {
+                    el.setAttribute('data-bfs', '1');
+                    el.style.setProperty('font-size', (v * sc).toFixed(1) + 'px', 'important');
+                }
+            });
+        }
+        function _run() { _bi('topCardGrid', 1.45); _bi('chartRow', 1.33); }
+        requestAnimationFrame(function() { requestAnimationFrame(_run); });
+        [1200, 3500].forEach(function(ms) { setTimeout(_run, ms); });
+    })();
 })();
 </script>
 </body>
