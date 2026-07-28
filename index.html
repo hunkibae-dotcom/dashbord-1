@@ -84,12 +84,17 @@
         }
 
         .spl-box {
-            width: 96px; height: 96px; border-radius: 22px;
-            background: linear-gradient(135deg, #00B0FF, #00E676);
+            width: 96px; height: 96px; border-radius: 18px;
+            background: #000;
+            border: 3.5px solid #F1F5F9;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 60px rgba(0,176,255,0.45), 0 0 120px rgba(0,230,118,0.18);
+            box-shadow: 0 0 60px rgba(255,255,255,0.25), 0 0 120px rgba(255,255,255,0.08);
         }
-        .spl-f { display:none; }
+        .spl-f {
+            font-size: 50px; font-weight: 900;
+            color: #fff;
+            letter-spacing: -3px;
+        }
         .spl-name {
             font-size: 34px; font-weight: 900; color: #fff;
             letter-spacing: -0.04em; text-align: center;
@@ -122,9 +127,11 @@
             position: relative; z-index: 1;
         }
         .h-logo {
-            width: 52px; height: 52px; border-radius: 12px;
-            background: linear-gradient(135deg, #00B0FF, #00E676);
+            width: 52px; height: 52px; border-radius: 10px;
+            background: #000;
+            border: 2px solid #F1F5F9;
             display: flex; align-items: center; justify-content: center;
+            font-size: 26px; font-weight: 900; color: #F1F5F9;
             flex-shrink: 0;
         }
         .h-title {
@@ -486,7 +493,7 @@
 <!-- ══════════════ SPLASH ══════════════ -->
 <div id="splash">
     <div class="spl-wrap">
-        <div class="spl-box"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#0B0F19" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+        <div class="spl-box"><span class="spl-f">F</span></div>
         <div>
             <div class="spl-name">F<em class="spl-name-dot">.</em>WORK</div>
             <div class="spl-tag">FURSYS Dashboard</div>
@@ -497,7 +504,7 @@
 <!-- ══════════════ HOME ══════════════ -->
 <div id="home">
     <div class="h-hdr">
-        <div class="h-logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0B0F19" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+        <div class="h-logo">F</div>
         <span class="h-title">F<em class="h-title-dot">.</em>WORK</span>
         <div class="theme-pill" onclick="toggleTheme()" title="라이트/다크">
             <div class="theme-pill-track"><div class="theme-pill-thumb"></div></div>
