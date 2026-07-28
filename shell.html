@@ -237,20 +237,7 @@
             </div>
         </div>
 
-        <!-- Row 3: 수출 포장 관리 현황 -->
-        <div class="card" style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
-                    <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
-                </div>
-                <span id="mgmtTotal" style="font-size:10px;color:var(--text-sub);font-family:monospace;background:var(--icon-bg);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">—</span>
-            </div>
-            <div id="mgmtStatus" style="display:flex;flex-direction:column;gap:10px;">
-                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:12px 0;">로딩 중...</div>
-            </div>
-        </div>
-
-        <!-- Row 4: 차트 슬라이드 (기본 숨김) -->
+        <!-- Row 3: 차트 슬라이드 (기본 숨김 — scheduleCard와 같은 위치) -->
         <div class="card" id="chartSection" style="position:relative;overflow:hidden;padding:0;display:none;">
             <div id="chartSlideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="chartTouch('s',event)" ontouchend="chartTouch('e',event)">
@@ -280,6 +267,19 @@
             <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;z-index:2;">
                 <div id="chartDot0" onclick="goChartSlide(0)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:#00B0FF;width:20px;"></div>
                 <div id="chartDot1" onclick="goChartSlide(1)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:var(--border);width:6px;"></div>
+            </div>
+        </div>
+
+        <!-- Row 4: 수출 포장 관리 현황 -->
+        <div class="card" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
+                    <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
+                </div>
+                <span id="mgmtTotal" style="font-size:10px;color:var(--text-sub);font-family:monospace;background:var(--icon-bg);padding:2px 8px;border-radius:6px;border:1px solid var(--border);">—</span>
+            </div>
+            <div id="mgmtStatus" style="display:flex;flex-direction:column;gap:10px;">
+                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:12px 0;">로딩 중...</div>
             </div>
         </div>
 
@@ -636,7 +636,7 @@
         if (_chartViewActive) {
             if (sched) sched.style.display = 'none';
             if (chart) chart.style.display = 'block';
-            if (icon) icon.className = 'fa-solid fa-chevron-left';
+            if (icon) icon.className = 'fa-solid fa-calendar-days';
             if (lbl)  lbl.textContent = '일정';
             if (btn)  btn.style.color = '#00B0FF';
             chart.scrollIntoView({behavior:'smooth'});
