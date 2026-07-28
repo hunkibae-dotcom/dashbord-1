@@ -1,12 +1,17 @@
-const CACHE_NAME = 'export-packing-dashboard-v6';
+const CACHE_NAME = 'export-packing-dashboard-v7';
 const APP_SHELL = [
   './index.html',
   './수출포장강화_대시보드.html',
   './manifest.json',
+  './manifest-packing.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-192.png',
-  './icons/icon-maskable-512.png'
+  './icons/icon-maskable-512.png',
+  './icons/packing-icon-192.png',
+  './icons/packing-icon-512.png',
+  './icons/packing-icon-maskable-192.png',
+  './icons/packing-icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {
