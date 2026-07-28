@@ -223,8 +223,30 @@
                         <i class="fa-solid fa-bell" style="color:#FF9100;font-size:10px;"></i>
                         <div class="label">공지 / INFORM</div>
                     </div>
-                    <div id="informList" style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">등록된 공지가 없습니다</div>
+                    <!-- 납기일·상차일 변경 내역 -->
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px;">
+                                <i class="fa-solid fa-calendar-xmark" style="color:#7C3AED;font-size:10px;"></i> 납기일·상차일 변경
+                            </div>
+                            <span id="informChangeBadge" style="display:none;font-size:9px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:1px 6px;border-radius:10px;"></span>
+                        </div>
+                        <div id="informChanges" class="no-scrollbar" style="max-height:110px;overflow-y:auto;">
+                            <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">로딩 중...</div>
+                        </div>
+                    </div>
+                    <div style="height:1px;background:var(--divider);margin:0 0 12px;"></div>
+                    <!-- 파렛트 현황 -->
+                    <div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <div style="font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px;">
+                                <i class="fa-solid fa-pallet" style="color:#38BDF8;font-size:10px;"></i> 충주공장 파렛트 현황
+                            </div>
+                            <span id="informPalletBadge" style="display:none;font-size:9px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.12);padding:1px 6px;border-radius:10px;"></span>
+                        </div>
+                        <div id="informPallets" class="no-scrollbar" style="max-height:200px;overflow-y:auto;">
+                            <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">로딩 중...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -461,7 +483,7 @@
     const GAS_URL = localStorage.getItem('sheet_pub_url') ||
         'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
 
-    let allData = [], stockData = [], chartInst = null;
+    let allData = [], stockData = [], rawStockRows = [], chartInst = null;
 
     // ── 테마 ─────────────────────────────────────────────
     function applyTheme(dark) {
@@ -494,10 +516,11 @@
         try {
             const res  = await fetch(GAS_URL, { signal: AbortSignal.timeout(15000) });
             const json = JSON.parse(await res.text());
-            allData = []; stockData = [];
+            allData = []; stockData = []; rawStockRows = [];
             for (const sheet in json) {
                 const rows = json[sheet];
                 if (sheet.includes('충주공장 재고')) {
+                    rawStockRows = rows;
                     stockData = mapRows(rows);
                     allData   = allData.concat(stockData);
                 } else if (sheet.includes('수출 표준품 현황')) {
@@ -563,7 +586,7 @@
     }
 
     // ── 렌더링 ────────────────────────────────────────────
-    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderManagementStatus(); renderChart(); }
+    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderInform(); renderManagementStatus(); renderChart(); }
 
     function renderKPIs() {
         const pending = stockData.filter(d => {
@@ -995,6 +1018,125 @@
         localStorage.setItem('todayWorkers', v);
         document.getElementById('kpiWorkers').textContent = v;
         closeWorkerInput();
+    }
+
+    // ── INFORM 렌더링 ─────────────────────────────────────
+    function renderInform() {
+        // 납기일·상차일 변경 내역 (메인 대시보드와 같은 localStorage 키)
+        let log = [];
+        try { log = JSON.parse(localStorage.getItem('dashDateChangeLog_v1') || '[]'); } catch(e) {}
+        const chEl    = document.getElementById('informChanges');
+        const chBadge = document.getElementById('informChangeBadge');
+        if (chEl) {
+            if (!log.length) {
+                chEl.innerHTML = '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">변경 내역 없음<br><span style="font-size:10px;color:var(--label);">동기화 시 자동 감지됩니다</span></div>';
+                if (chBadge) chBadge.style.display = 'none';
+            } else {
+                if (chBadge) { chBadge.textContent = log.length; chBadge.style.display = 'inline-flex'; }
+                chEl.innerHTML = log.map(c => {
+                    const warn    = c.isEarlier ? '<i class="fa-solid fa-triangle-exclamation" style="color:#F59E0B;font-size:9px;flex-shrink:0;"></i>' : '';
+                    const fieldBg = c.field === 'dueDate' ? 'color:#7C3AED;background:rgba(139,92,246,.12);' : 'color:#0369A1;background:rgba(14,165,233,.12);';
+                    return `<div style="display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:8px;background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.2);margin-bottom:3px;">
+                        ${warn}
+                        <span style="font-weight:700;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${c.round}</span>
+                        <span style="padding:1px 5px;border-radius:4px;font-size:9px;font-weight:600;flex-shrink:0;${fieldBg}">${c.label}</span>
+                        <span style="color:var(--text-sub);font-size:10px;flex-shrink:0;">${c.from}</span>
+                        <i class="fa-solid fa-arrow-right" style="color:#94A3B8;font-size:8px;flex-shrink:0;"></i>
+                        <span style="color:${c.isEarlier?'#F59E0B':'var(--text)'};font-weight:700;font-size:10px;flex-shrink:0;">${c.to}</span>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        // 충주공장 파렛트 현황
+        const ptEl    = document.getElementById('informPallets');
+        const ptBadge = document.getElementById('informPalletBadge');
+        if (!ptEl) return;
+        if (!rawStockRows || rawStockRows.length <= 1) {
+            ptEl.innerHTML = '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">파렛트 데이터 없음</div>';
+            if (ptBadge) ptBadge.style.display = 'none';
+            return;
+        }
+        const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
+        let iCode=-1, iQty=-1, iRound=-1, iStatus=-1, iPallet=-1;
+        hdr.forEach((h, i) => {
+            const hn = h.replace(/\s/g,'').toUpperCase();
+            if (iCode   < 0 && (hn==='제품코드'||hn==='품목코드')) iCode   = i;
+            if (iQty    < 0 && (hn==='수량'||hn==='EA'))           iQty    = i;
+            if (iRound  < 0 && (hn==='건명'||hn==='수주건명'))      iRound  = i;
+            if (iStatus < 0 && (hn==='진행'||hn==='상태'))         iStatus = i;
+            if (iPallet < 0 && (hn.includes('파렛트')||hn.includes('PALET')||hn.includes('적재'))) iPallet = i;
+        });
+        if (iPallet < 0) {
+            ptEl.innerHTML = '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">파렛트 컬럼 없음</div>';
+            if (ptBadge) ptBadge.style.display = 'none';
+            return;
+        }
+        if (iCode   < 0) iCode   = 1;
+        if (iQty    < 0) iQty    = 3;
+        if (iRound  < 0) iRound  = 4;
+        if (iStatus < 0) iStatus = 9;
+
+        const palletMap = {};
+        for (let i = 1; i < rawStockRows.length; i++) {
+            const sr = rawStockRows[i];
+            if (!sr || sr.every(c => !c || c.toString().trim() === '')) continue;
+            const pRaw = (sr[iPallet]||'').toString().trim();
+            if (!pRaw) continue;
+            const pNum = parseInt(pRaw.replace(/[^0-9]/g,'')) || 0;
+            if (!palletMap[pRaw]) palletMap[pRaw] = { num:pNum, label:pRaw, items:[] };
+            palletMap[pRaw].items.push({
+                code:   (sr[iCode]  ||'').toString().trim(),
+                qty:    parseInt((sr[iQty]||'0').toString().replace(/[^0-9]/g,'')) || 0,
+                round:  (sr[iRound] ||'').toString().trim(),
+                status: (sr[iStatus]||'').toString().trim()
+            });
+        }
+        const pallets = Object.values(palletMap).sort((a,b)=>a.num-b.num);
+        if (!pallets.length) {
+            ptEl.innerHTML = '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">파렛트 배정 데이터 없음</div>';
+            if (ptBadge) ptBadge.style.display = 'none';
+            return;
+        }
+        if (ptBadge) { ptBadge.textContent = pallets.length + ' PALET'; ptBadge.style.display = 'inline-flex'; }
+
+        const MAX_PALLET = 30;
+        const pct = Math.min(Math.round((pallets.length/MAX_PALLET)*100), 100);
+        const barClr = pct<=33?'#22C55E':pct<=50?'#84CC16':pct<=75?'#F59E0B':pct<=90?'#B45309':'#DC2626';
+
+        ptEl.innerHTML = `
+            <div style="margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                    <span style="font-size:10px;color:var(--text-sub);">현장 공간률 ${pallets.length}/${MAX_PALLET}</span>
+                    <span style="font-size:10px;font-weight:700;color:${barClr};">${pct}%</span>
+                </div>
+                <div style="background:var(--icon-bg);border-radius:4px;height:5px;overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;background:${barClr};border-radius:4px;transition:width .5s;"></div>
+                </div>
+            </div>
+            ${pallets.map(p => {
+                const total   = p.items.reduce((s,x)=>s+x.qty,0);
+                const done    = p.items.filter(x=>x.status.replace(/\s/g,'').includes('포장완료')).length;
+                const allDone = done === p.items.length;
+                const hBg     = allDone ? 'rgba(56,189,248,.1)' : 'var(--icon-bg)';
+                const hColor  = allDone ? '#38BDF8' : 'var(--text)';
+                const rows    = p.items.map(item => {
+                    const ok = item.status.replace(/\s/g,'').includes('포장완료');
+                    return `<div style="display:grid;grid-template-columns:8px 1fr 1fr auto;align-items:center;column-gap:5px;padding:2px 0;font-size:10.5px;">
+                        <span style="width:5px;height:5px;border-radius:50%;background:${ok?'#38BDF8':'#F59E0B'};display:inline-block;"></span>
+                        <span style="color:var(--text);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.round}</span>
+                        <span style="color:var(--text-sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.code}</span>
+                        <span style="color:#2563EB;font-weight:700;white-space:nowrap;">${item.qty.toLocaleString()} BOX</span>
+                    </div>`;
+                }).join('');
+                return `<div style="border-radius:8px;overflow:hidden;border:1px solid var(--border);margin-bottom:4px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:${hBg};">
+                        <span style="font-size:12px;font-weight:800;color:${hColor};">${p.label}</span>
+                        <span style="font-size:10px;color:var(--text-sub);">${done}/${p.items.length}건 · <span style="color:#2563EB;font-weight:700;">${total.toLocaleString()} BOX</span></span>
+                    </div>
+                    <div style="padding:4px 8px 5px;">${rows}</div>
+                </div>`;
+            }).join('')}`;
     }
 
     // ── 슬라이드 카드 ─────────────────────────────────────
