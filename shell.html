@@ -186,7 +186,7 @@
         </div>
 
         <!-- Row 2: 슬라이드 카드 (수출일정 / 이전 작업 LOG / INFORM) -->
-        <div class="card" style="position:relative;overflow:hidden;padding:0;">
+        <div id="scheduleCard" class="card" style="position:relative;overflow:hidden;padding:0;">
             <div id="slideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
@@ -250,8 +250,8 @@
             </div>
         </div>
 
-        <!-- Row 4: 차트 슬라이드 -->
-        <div class="card" id="chartSection" style="position:relative;overflow:hidden;padding:0;">
+        <!-- Row 4: 차트 슬라이드 (기본 숨김) -->
+        <div class="card" id="chartSection" style="position:relative;overflow:hidden;padding:0;display:none;">
             <div id="chartSlideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="chartTouch('s',event)" ontouchend="chartTouch('e',event)">
 
@@ -308,7 +308,7 @@
             <i class="fa-solid fa-house" style="font-size:18px;"></i>
             <span style="font-size:10px;font-weight:700;">홈</span>
         </button>
-        <button id="navChart" onclick="navSelect('navChart');document.getElementById('chartSection').scrollIntoView({behavior:'smooth'})"
+        <button id="navChart" onclick="toggleChartView()"
             style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-chart-simple" style="font-size:18px;"></i>
             <span style="font-size:10px;">차트</span>
@@ -623,6 +623,32 @@
     }
 
     let productChartInst = null;
+
+    // ── 차트/일정 토글 ───────────────────────────────────
+    let _chartViewActive = false;
+    function toggleChartView() {
+        _chartViewActive = !_chartViewActive;
+        const sched = document.getElementById('scheduleCard');
+        const chart = document.getElementById('chartSection');
+        const btn   = document.getElementById('navChart');
+        const icon  = btn ? btn.querySelector('i') : null;
+        const lbl   = btn ? btn.querySelector('span') : null;
+        if (_chartViewActive) {
+            if (sched) sched.style.display = 'none';
+            if (chart) chart.style.display = 'block';
+            if (icon) icon.className = 'fa-solid fa-chevron-left';
+            if (lbl)  lbl.textContent = '일정';
+            if (btn)  btn.style.color = '#00B0FF';
+            chart.scrollIntoView({behavior:'smooth'});
+            setTimeout(renderChart, 60);
+        } else {
+            if (chart) chart.style.display = 'none';
+            if (sched) sched.style.display = 'block';
+            if (icon) icon.className = 'fa-solid fa-chart-simple';
+            if (lbl)  lbl.textContent = '차트';
+            if (btn)  btn.style.color = 'var(--text-sub)';
+        }
+    }
 
     // ── 차트 슬라이드 ─────────────────────────────────────
     let _chartSlideIdx = 0, _chartTouchX = 0;
