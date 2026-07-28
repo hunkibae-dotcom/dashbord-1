@@ -224,23 +224,43 @@
 
     </main>
 
+    <!-- ── 제품검색 서브메뉴 (네비 위에 팝업) ────────────── -->
+    <div id="searchSubMenu" style="position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
+        <button onclick="closeSearchSub();openModal('searchModal')"
+            style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+            <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
+            수출 / 제품 상세검색
+        </button>
+        <button onclick="closeSearchSub();openModal('specModal')"
+            style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+            <i class="fa-solid fa-ruler-combined" style="color:#00E676;font-size:16px;width:20px;"></i>
+            제품 상세 스펙 조회
+        </button>
+    </div>
+    <!-- 서브메뉴 백드롭 -->
+    <div id="searchSubBd" onclick="closeSearchSub()" style="position:fixed;inset:0;z-index:44;display:none;"></div>
+
     <!-- ── 하단 네비게이션 ────────────────────────────────── -->
-    <nav style="position:fixed;bottom:0;left:0;right:0;padding:8px 0 14px;display:flex;justify-content:space-around;align-items:center;z-index:40;backdrop-filter:blur(12px);">
-        <button onclick="scrollTo({top:0,behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#00B0FF;background:none;border:none;cursor:pointer;">
+    <nav style="position:fixed;bottom:0;left:0;right:0;padding:8px 0 14px;display:flex;justify-content:space-around;align-items:center;z-index:46;backdrop-filter:blur(12px);">
+        <button id="navHome" onclick="navSelect('navHome');scrollTo({top:0,behavior:'smooth'})"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;color:#00B0FF;background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-house" style="font-size:18px;"></i>
             <span style="font-size:10px;font-weight:700;">홈</span>
         </button>
-        <button onclick="document.getElementById('chartSection').scrollIntoView({behavior:'smooth'})" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
+        <button id="navChart" onclick="navSelect('navChart');document.getElementById('chartSection').scrollIntoView({behavior:'smooth'})"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
             <i class="fa-solid fa-chart-simple" style="font-size:18px;"></i>
             <span style="font-size:10px;">차트</span>
         </button>
-        <button onclick="window.location.href='수출포장강화_대시보드.html'" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
-            <i class="fa-solid fa-table-list" style="font-size:18px;"></i>
-            <span style="font-size:10px;">전체</span>
+        <button id="navSearch" onclick="toggleSearchSub()"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
+            <i class="fa-solid fa-magnifying-glass" style="font-size:18px;"></i>
+            <span style="font-size:10px;">제품검색</span>
         </button>
-        <button onclick="openWorkerInput()" style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
-            <i class="fa-solid fa-users" style="font-size:18px;"></i>
-            <span style="font-size:10px;">인원</span>
+        <button id="navSettings" onclick="navSelect('navSettings');openModal('settingsModal')"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
+            <i class="fa-solid fa-gear" style="font-size:18px;"></i>
+            <span style="font-size:10px;">설정</span>
         </button>
     </nav>
 
@@ -258,6 +278,120 @@
                    onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
             <button onclick="saveWorkers()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;">
                 저장
+            </button>
+        </div>
+    </div>
+
+    <!-- ── 수출/제품 상세검색 모달 ──────────────────────── -->
+    <div id="searchModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;"></i> 수출 / 제품 상세검색
+                </span>
+                <button onclick="closeModal('searchModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- 검색 입력 -->
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <input id="sf_round" type="text" placeholder="건명 / 차수 (예: FAM-110)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                <input id="sf_code" type="text" placeholder="제품코드 (예: CAC2083SN)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <!-- 결과 수 -->
+            <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;">
+                <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
+                <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;">초기화</button>
+            </div>
+            <!-- 결과 리스트 -->
+            <div id="srList" class="no-scrollbar" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;max-height:340px;">
+                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 제품 상세스펙 모달 ─────────────────────────────── -->
+    <div id="specModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-ruler-combined" style="color:#00E676;"></i> 제품 상세 스펙 조회
+                </span>
+                <button onclick="closeModal('specModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <input id="spec_code" type="text" placeholder="제품코드 입력 (예: CAC2083SN)"
+                style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                oninput="runSpecSearch()" onfocus="this.style.borderColor='#00E676'" onblur="this.style.borderColor='var(--border)'">
+            <div id="specList" class="no-scrollbar" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;max-height:400px;">
+                <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">제품코드를 입력하세요</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 설정 모달 ──────────────────────────────────────── -->
+    <div id="settingsModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-gear" style="color:#00B0FF;"></i> 설정
+                </span>
+                <button onclick="closeModal('settingsModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <!-- CSV 업로드 -->
+                <label style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);">
+                    <i class="fa-solid fa-file-csv" style="color:#00B0FF;font-size:18px;width:22px;"></i>
+                    CSV 파일 업로드
+                    <input type="file" id="csvFileInput" accept=".csv" multiple style="display:none;" onchange="handleCsvUpload(event)">
+                </label>
+                <!-- 연동 설정 -->
+                <button onclick="openConnModal()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);width:100%;text-align:left;">
+                    <i class="fa-solid fa-link" style="color:#00E676;font-size:18px;width:22px;"></i>
+                    연동 설정
+                </button>
+                <!-- 연동 초기화 -->
+                <button onclick="resetConn()" style="background:rgba(255,23,68,.06);border:1px solid rgba(255,23,68,.2);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:#FF1744;width:100%;text-align:left;">
+                    <i class="fa-solid fa-power-off" style="font-size:18px;width:22px;"></i>
+                    연동 초기화
+                </button>
+                <!-- 강화포장 데이터시트 -->
+                <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
+                   target="_blank"
+                   style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
+                    <i class="fa-solid fa-file-excel" style="color:#22C55E;font-size:18px;width:22px;"></i>
+                    강화포장 데이터시트 바로가기
+                    <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 연동 설정 서브모달 -->
+    <div id="connModal" style="position:fixed;inset:0;z-index:55;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:15px;font-weight:800;color:var(--text);">연동 설정</span>
+                <button onclick="closeModal('connModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="font-size:12px;color:var(--text-sub);">Apps Script 배포 URL 또는 Google Sheets CSV URL</div>
+            <input id="connUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec"
+                style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px;outline:none;width:100%;"
+                onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <button onclick="saveConnUrl()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
+                저장 및 재연동
             </button>
         </div>
     </div>
@@ -338,6 +472,10 @@
         const iStatus = fi('진행','진행상태','상태','status');
         const iCode   = fi('품목코드','제품코드','code');
         const iCtry   = fi('제품구분','제품 구분','country');
+        const iSpecW  = fi('가로','W','폭','WIDTH','specw');
+        const iSpecD  = fi('세로','D','깊이','DEPTH','specd');
+        const iSpecH  = fi('높이','H','HEIGHT','spech');
+        const iSpecG  = fi('무게','중량','G','KG','specg');
 
         const result = [];
         for (let i = 1; i < rows.length; i++) {
@@ -354,7 +492,11 @@
             const country= r[iCtry]   ? r[iCtry].toString().trim()   : 'FAM';
             const sn     = status.replace(/\s+/g,'').toLowerCase();
             const isDone = sn.includes('출고') || sn.includes('포장완료') || sn.includes('피킹');
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, isDone });
+            const specW  = iSpecW >= 0 && r[iSpecW] ? r[iSpecW].toString().trim() : '';
+            const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
+            const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
+            const specG  = iSpecG >= 0 && r[iSpecG] ? r[iSpecG].toString().trim() : '';
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, isDone, specW, specD, specH, specG });
         }
         return result;
     }
@@ -452,6 +594,167 @@
                 }
             }
         });
+    }
+
+    // ── 모달 헬퍼 ─────────────────────────────────────────
+    function openModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'flex';
+    }
+    function closeModal(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    }
+
+    // ── 제품검색 서브메뉴 ──────────────────────────────────
+    function toggleSearchSub() {
+        const menu = document.getElementById('searchSubMenu');
+        const bd   = document.getElementById('searchSubBd');
+        if (menu.style.display !== 'none') {
+            closeSearchSub();
+        } else {
+            menu.style.display = 'flex';
+            bd.style.display   = 'block';
+            requestAnimationFrame(() => {
+                menu.style.opacity   = '1';
+                menu.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            navSelect('navSearch');
+        }
+    }
+    function closeSearchSub() {
+        const menu = document.getElementById('searchSubMenu');
+        const bd   = document.getElementById('searchSubBd');
+        menu.style.opacity   = '0';
+        menu.style.transform = 'translateX(-50%) translateY(12px)';
+        setTimeout(() => { menu.style.display = 'none'; bd.style.display = 'none'; }, 200);
+    }
+
+    // ── 하단 탭 선택 ──────────────────────────────────────
+    function navSelect(activeId) {
+        ['navHome','navChart','navSearch','navSettings'].forEach(id => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.style.color = id === activeId ? '#00B0FF' : 'var(--text-sub)';
+        });
+    }
+
+    // ── 수출/제품 상세검색 ─────────────────────────────────
+    function runSearch() {
+        const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
+        const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
+        const country = (document.getElementById('sf_country').value || '').trim().toLowerCase();
+        if (!round && !code && !country) {
+            document.getElementById('srCount').textContent = '0';
+            document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
+            return;
+        }
+        const filtered = allData.filter(d => {
+            if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
+            if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
+            if (country && !(d.country ||'').toLowerCase().includes(country)) return false;
+            return true;
+        });
+        document.getElementById('srCount').textContent = filtered.length;
+        if (!filtered.length) {
+            document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
+            return;
+        }
+        document.getElementById('srList').innerHTML = filtered.slice(0,50).map(d => {
+            const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : '#64748B');
+            return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}</span>
+                    <span style="font-size:11px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:20px;">${d.status}</span>
+                </div>
+                <div style="font-size:11px;color:var(--text-sub);display:flex;gap:12px;align-items:center;">
+                    <span>${d.country}</span><span>${d.round}</span>
+                    <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
+                </div>
+                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${d.date} · 납기 ${d.dueDate}</div>
+            </div>`;
+        }).join('');
+    }
+    function clearSearch() {
+        ['sf_round','sf_code','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
+        runSearch();
+    }
+
+    // ── 제품 상세스펙 조회 ─────────────────────────────────
+    function runSpecSearch() {
+        const code = (document.getElementById('spec_code').value || '').trim().toLowerCase();
+        const list  = document.getElementById('specList');
+        if (!code) {
+            list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">제품코드를 입력하세요</div>';
+            return;
+        }
+        const matches = allData.filter(d =>
+            (d.code||'').toLowerCase().includes(code) && (d.specW || d.specD || d.specH || d.specG)
+        );
+        if (!matches.length) {
+            list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">스펙 정보 없음</div>';
+            return;
+        }
+        const seen = new Set();
+        const unique = matches.filter(d => {
+            const k = d.code+'|'+d.specW+'|'+d.specD+'|'+d.specH+'|'+d.specG;
+            if (seen.has(k)) return false;
+            seen.add(k); return true;
+        });
+        list.innerHTML = unique.slice(0,10).map(d => `
+            <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
+                <div style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);margin-bottom:10px;">${d.code}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    ${specCell('가로 (W)',d.specW,'mm')}${specCell('세로 (D)',d.specD,'mm')}
+                    ${specCell('높이 (H)',d.specH,'mm')}${specCell('무게 (G)',d.specG,'kg')}
+                </div>
+            </div>`
+        ).join('');
+    }
+    function specCell(label, val, unit) {
+        return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">${label}</div>
+            <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-family:monospace;">${val||'—'}<span style="font-size:10px;font-weight:400;color:var(--text-sub);margin-left:3px;">${val?unit:''}</span></div>
+        </div>`;
+    }
+
+    // ── 연동 설정 ─────────────────────────────────────────
+    function openConnModal() {
+        document.getElementById('connUrlInput').value = localStorage.getItem('sheet_pub_url') || GAS_URL;
+        openModal('connModal');
+    }
+    function saveConnUrl() {
+        const url = document.getElementById('connUrlInput').value.trim();
+        if (!url) return;
+        localStorage.setItem('sheet_pub_url', url);
+        closeModal('connModal');
+        closeModal('settingsModal');
+        loadData();
+    }
+    function resetConn() {
+        if (!confirm('연동 설정을 초기화하고 기본 URL로 되돌릴까요?')) return;
+        localStorage.removeItem('sheet_pub_url');
+        closeModal('settingsModal');
+        location.reload();
+    }
+
+    // ── CSV 업로드 ────────────────────────────────────────
+    function handleCsvUpload(event) {
+        const files = Array.from(event.target.files || []);
+        if (!files.length) return;
+        let done = 0;
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const rows = e.target.result.split(/\r?\n/).map(r => r.split(',').map(c => c.trim().replace(/^"|"$/g,'')));
+                    allData = allData.concat(mapRows(rows));
+                } catch(err) { console.error(err); }
+                if (++done === files.length) { renderAll(); alert(files.length + '개 파일 로드 완료'); }
+            };
+            reader.readAsText(file, 'UTF-8');
+        });
+        event.target.value = '';
     }
 
     // ── 작업 인원 모달 ────────────────────────────────────
