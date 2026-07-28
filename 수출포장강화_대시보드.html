@@ -5647,8 +5647,66 @@
         updateNav();
     }
 
-    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '44vh', '22px 20px');
-    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '54vh', '20px 20px');
+    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '48vh', '22px 8px');
+    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '56vh', '16px 8px');
+
+    /* ── shell 레이아웃: 헤더·카드 여백·제목 가운데정렬 ── */
+    function _shellLayout() {
+        /* 헤더 높이 대폭 증가 */
+        var hdr = document.querySelector('header');
+        if (hdr) {
+            hdr.style.setProperty('padding-top',    '28px', 'important');
+            hdr.style.setProperty('padding-bottom', '28px', 'important');
+            var iconBox = hdr.querySelector('div[style*="width:40px"]');
+            if (iconBox) {
+                iconBox.style.width  = '56px';
+                iconBox.style.height = '56px';
+                var iconI = iconBox.querySelector('i');
+                if (iconI) iconI.style.setProperty('font-size', '28px', 'important');
+            }
+            var hdrH1 = hdr.querySelector('h1');
+            if (hdrH1) hdrH1.style.setProperty('font-size', '28px', 'important');
+        }
+
+        /* 카드 좌우 여백 줄이기 */
+        var tg = document.getElementById('topCardGrid');
+        if (tg) {
+            tg.querySelectorAll(':scope > div').forEach(function(card) {
+                card.style.setProperty('padding', '18px 8px', 'important');
+            });
+            /* 카드 1·2: 제목 행 가운데정렬 */
+            ['remainingStatusCard', 'shippedStatusCard'].forEach(function(cid) {
+                var card = document.getElementById(cid);
+                if (!card) return;
+                var row = card.querySelector('.justify-between');
+                if (!row) return;
+                row.style.setProperty('flex-direction', 'column', 'important');
+                row.style.setProperty('align-items',    'center',  'important');
+                row.style.setProperty('text-align',     'center',  'important');
+                row.style.setProperty('gap',            '4px',     'important');
+                row.style.setProperty('margin-bottom',  '10px',    'important');
+                /* 제목 p: 아이콘+텍스트 가운데 */
+                var p = row.querySelector('p');
+                if (p) p.style.setProperty('justify-content', 'center', 'important');
+            });
+        }
+
+        /* chartRow: 좌우 여백 줄이고 차트 높이 최대화 */
+        var cr = document.getElementById('chartRow');
+        if (cr) {
+            cr.querySelectorAll(':scope > div').forEach(function(card) {
+                card.style.setProperty('padding', '12px 8px', 'important');
+                var chartBox = card.querySelector('.h-72');
+                if (chartBox) {
+                    chartBox.style.setProperty('flex',        '1 1 0',   'important');
+                    chartBox.style.setProperty('height',      'auto',    'important');
+                    chartBox.style.setProperty('min-height',  '0',       'important');
+                }
+            });
+        }
+    }
+    _shellLayout();
+    setTimeout(_shellLayout, 600);
 
     /* ── shell 폰트 부스트: 클래스명 직접 매칭 ── */
     var _topFsMap = {

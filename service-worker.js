@@ -1,4 +1,4 @@
-const CACHE_NAME = 'export-packing-dashboard-v10';
+const CACHE_NAME = 'export-packing-dashboard-v11';
 const APP_SHELL = [
   // HTML은 캐시하지 않음 — 항상 네트워크에서 최신본 수신
   './manifest.json',
