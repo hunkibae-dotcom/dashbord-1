@@ -613,17 +613,12 @@
                                 <span class="text-[13.5px] font-semibold text-slate-400 flex items-center gap-1">
                                     <i class="fa-solid fa-users text-[12px] text-slate-500"></i> 금일 작업 인원
                                 </span>
-                                <div class="flex items-center gap-2">
-                                    <button onclick="resetTodayWorkers()" class="text-[11px] text-slate-500 hover:text-red-400 transition-colors flex items-center gap-0.5" title="오늘 등록 인원 초기화">
-                                        <i class="fa-solid fa-rotate-left text-[9px]"></i> 초기화
-                                    </button>
-                                    <button onclick="openWorkerRegisterModal()" class="text-[12px] text-accentBlue hover:text-sky-300 transition-colors flex items-center gap-0.5 font-semibold">
-                                        <i class="fa-solid fa-plus text-[10px]"></i> 등록
-                                    </button>
-                                </div>
+                                <span class="text-[10px] text-slate-600 flex items-center gap-1">
+                                    <i class="fa-solid fa-link text-[8px]"></i> 작업일지 시트 연동
+                                </span>
                             </div>
                             <div id="card1WorkerDisplay" class="min-h-[28px]">
-                                <div class="text-[12px] text-slate-600 text-center py-1">등록된 작업 인원이 없습니다</div>
+                                <div class="text-[12px] text-slate-600 text-center py-1">데이터 로딩 중...</div>
                             </div>
                         </div>
                     </div>
@@ -1750,7 +1745,14 @@
 
                             for (let sheetName in jsonObj) {
                                 if (jsonObj.hasOwnProperty(sheetName)) {
-                                    if (ALLOWED_SHEETS.some(name => sheetName.includes(name))) {
+                                    const ALLOWED_SHEETS_NOMAP = ['작업일지'];
+                                    if (ALLOWED_SHEETS_NOMAP.some(name => sheetName.includes(name))) {
+                                        if (sheetName.includes('작업일지')) {
+                                            state.workLogRows = jsonObj[sheetName];
+                                            renderCard1WorkerDisplay();
+                                            updatePrevDayCard();
+                                        }
+                                    } else if (ALLOWED_SHEETS.some(name => sheetName.includes(name))) {
                                         const sheetRows = jsonObj[sheetName];
                                         const parsedSheetData = mapCSVData(sheetRows);
                                         datasetMap['sheet_' + sheetName] = parsedSheetData;
@@ -4084,24 +4086,40 @@
             const lblEl = document.getElementById('prevDayLabel');
             if (lblEl) lblEl.textContent = lbl;
 
-            // 전날 작업 인원 (localStorage — 카드1 작업 인원 등록 연동)
-            const logs = getWorkerLogs().filter(r => r.date === ymd);
+            // 전날 작업 인원 (작업일지 시트 우선, 없으면 localStorage)
             const workerEl = document.getElementById('prevDayWorkers');
             if (workerEl) {
-                if (!logs.length) {
-                    workerEl.innerHTML = '<span style="color:#475569;">등록된 인원 없음</span>';
-                } else {
-                    const allWorkers = [], seenWorkers = new Set();
-                    let extraTotal = 0;
-                    logs.forEach(log => {
-                        (log.workers || []).forEach(w => { if (w && !seenWorkers.has(w)) { seenWorkers.add(w); allWorkers.push(w); } });
-                        extraTotal += parseInt(log.extraCount) || 0;
-                    });
-                    const total = allWorkers.length + extraTotal;
-                    let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${total}명</span>`];
-                    if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
-                    if (extraTotal > 0) parts.push(`<span style="color:#CBD5E1;">용역 ${extraTotal}명</span>`);
-                    workerEl.innerHTML = parts.join(' · ');
+                let rendered = false;
+                if (state.workLogRows && state.workLogRows.length > 1) {
+                    const wRows = _parseWorkLogForDate(state.workLogRows, ymd);
+                    if (wRows.length > 0) {
+                        const totalSum = wRows.reduce((s, r) => s + r.total, 0);
+                        const workers  = wRows.map(r => r.worker).filter(Boolean);
+                        const memos    = wRows.map(r => r.memo).filter(Boolean);
+                        let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${totalSum}명</span>`];
+                        if (workers.length) parts.push(workers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
+                        if (memos.filter(m=>m).length) parts.push(`<span style="color:#94A3B8;">${memos.filter(m=>m).join(' · ')}</span>`);
+                        workerEl.innerHTML = parts.join(' · ');
+                        rendered = true;
+                    }
+                }
+                if (!rendered) {
+                    const logs = getWorkerLogs().filter(r => r.date === ymd);
+                    if (!logs.length) {
+                        workerEl.innerHTML = '<span style="color:#475569;">등록된 인원 없음</span>';
+                    } else {
+                        const allWorkers = [], seenWorkers = new Set();
+                        let extraTotal = 0;
+                        logs.forEach(log => {
+                            (log.workers || []).forEach(w => { if (w && !seenWorkers.has(w)) { seenWorkers.add(w); allWorkers.push(w); } });
+                            extraTotal += parseInt(log.extraCount) || 0;
+                        });
+                        const total = allWorkers.length + extraTotal;
+                        let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${total}명</span>`];
+                        if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
+                        if (extraTotal > 0) parts.push(`<span style="color:#CBD5E1;">용역 ${extraTotal}명</span>`);
+                        workerEl.innerHTML = parts.join(' · ');
+                    }
                 }
             }
 
@@ -4635,13 +4653,76 @@
             renderCard1WorkerDisplay();
         }
 
+        // 작업일지 시트 파싱 헬퍼
+        function _parseWorkLogForDate(rows, targetDate) {
+            if (!rows || rows.length < 2) return [];
+            const hdr = rows[0].map(h => (h||'').toString().trim());
+            let iDate=-1, iDept=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g,'');
+                if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
+                if (iDept   < 0 && hn==='부서')                    iDept   = i;
+                if (iWorker < 0 && hn==='작업자')                  iWorker = i;
+                if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
+                if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+            });
+            if (iDate < 0) { iDate=0; iDept=1; iWorker=2; iMemo=3; iTotal=4; }
+            const result = [];
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                const d = normalizeDate((r[iDate]||'').toString().trim());
+                if (d !== targetDate) continue;
+                result.push({
+                    dept:   (r[iDept]  ||'').toString().trim() || '품질보증팀',
+                    worker: (r[iWorker]||'').toString().trim(),
+                    memo:   (r[iMemo]  ||'').toString().trim(),
+                    total:  parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0
+                });
+            }
+            return result;
+        }
+
         // 오늘 작업 인원 카드 표시
         function renderCard1WorkerDisplay() {
             const display = document.getElementById('card1WorkerDisplay');
             if (!display) return;
-            const todayLogs = getWorkerLogs().filter(r => r.date === _todayStr());
+            const today = _todayStr();
+
+            // 시트 데이터 우선
+            if (state.workLogRows && state.workLogRows.length > 1) {
+                const rows = _parseWorkLogForDate(state.workLogRows, today);
+                if (rows.length > 0) {
+                    const totalSum = rows.reduce((s, r) => s + r.total, 0);
+                    const workers  = rows.map(r => r.worker).filter(Boolean);
+                    const memos    = rows.map(r => r.memo).filter(Boolean);
+                    const dept     = rows[0].dept;
+                    let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                        <span style="font-size:13.5px;font-weight:700;color:#0369A1;">총 ${totalSum}명</span>
+                        <span style="font-size:12.5px;color:#334155;">작업 참여</span>
+                    </div>`;
+                    if (workers.length) {
+                        html += `<div style="margin-bottom:3px;">
+                            <span style="font-size:12.5px;color:#334155;font-weight:600;">${dept}</span>
+                            <span style="font-size:12.5px;color:#94A3B8;margin:0 4px;">·</span>
+                            <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${workers.join(' · ')}</span>
+                        </div>`;
+                    }
+                    if (memos.filter(m=>m).length) {
+                        html += `<div style="font-size:11.5px;color:#64748B;">${memos.filter(m=>m).join(' · ')}</div>`;
+                    }
+                    display.innerHTML = html;
+                    return;
+                }
+                // 시트는 있으나 오늘 데이터 없음
+                display.innerHTML = '<div style="font-size:12.5px;color:#64748B;text-align:center;padding:6px 0;">금일 등록된 작업 인원 없음</div>';
+                return;
+            }
+
+            // 시트 미수신 → localStorage 폴백
+            const todayLogs = getWorkerLogs().filter(r => r.date === today);
             if (!todayLogs.length) {
-                display.innerHTML = '<div style="font-size:12.5px;color:#64748B;text-align:center;padding:6px 0;">등록된 작업 인원이 없습니다</div>';
+                display.innerHTML = '<div style="font-size:12.5px;color:#475569;text-align:center;padding:6px 0;">작업일지 시트 연동 대기 중</div>';
                 return;
             }
             const deptMap = {};
@@ -4657,7 +4738,6 @@
                 totalCount += cnt;
                 r.workers.forEach(w => { if (!deptMap[dept].workers.includes(w)) deptMap[dept].workers.push(w); });
             });
-
             let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                 <span style="font-size:13.5px;font-weight:700;color:#0369A1;">총 ${totalCount}명</span>
                 <span style="font-size:12.5px;color:#334155;">작업 참여</span>

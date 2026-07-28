@@ -182,8 +182,9 @@
                     <div style="margin-top:4px;font-size:11px;color:var(--text-sub);">작업 인원</div>
                 </div>
                 <div class="divider"></div>
-                <div style="font-size:10px;color:var(--label);display:flex;align-items:center;gap:5px;">
-                    <i class="fa-solid fa-link" style="font-size:9px;"></i> 대시보드 연동
+                <div style="font-size:10px;color:var(--label);display:flex;align-items:center;gap:4px;overflow:hidden;">
+                    <i class="fa-solid fa-link" style="font-size:8px;flex-shrink:0;"></i>
+                    <span id="kpiWorkerNames" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">작업일지 연동</span>
                 </div>
             </div>
         </div>
@@ -584,6 +585,8 @@
                     allData = allData.concat(mapRows(rows));
                 } else if (sheet.includes('출고 완료')) {
                     allData = allData.concat(mapRows(rows));
+                } else if (sheet.includes('작업일지')) {
+                    processTodayWorkers(rows);
                 }
             }
             renderAll();
@@ -1288,6 +1291,49 @@
         } else {
             bar.innerHTML = `<i class="fa-solid fa-circle-exclamation" style="color:#FF9100;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">오프라인 모드</span>${btn}`;
         }
+    }
+
+    // ── 작업일지 → 금일 작업 인원 ────────────────────────
+    function processTodayWorkers(rows) {
+        if (!rows || rows.length < 2) return;
+        const hdr = rows[0].map(h => (h||'').toString().trim());
+        let iDate=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+        hdr.forEach((h, i) => {
+            const hn = h.replace(/\s/g,'');
+            if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
+            if (iWorker < 0 && hn==='작업자')                  iWorker = i;
+            if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
+            if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+        });
+        if (iDate < 0) { iDate=0; iWorker=2; iMemo=3; iTotal=4; }
+        const today = todayStr();
+        let total = 0;
+        const workers = [], memos = [];
+        for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            if (!r || r.every(c => !c || !c.toString().trim())) continue;
+            let d = (r[iDate]||'').toString().trim();
+            // Date 객체 직렬화 처리
+            if (d.includes('T')) d = d.substring(0, 10);
+            if (d !== today) continue;
+            total += parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0;
+            const w = (r[iWorker]||'').toString().trim();
+            const m = (r[iMemo]  ||'').toString().trim();
+            if (w) workers.push(w);
+            if (m) memos.push(m);
+        }
+        // 오늘 데이터 없으면 가장 최근 행 날짜로 재시도(weekend 등)
+        if (total === 0 && workers.length === 0) {
+            // localStorage 폴백값 유지
+            return;
+        }
+        document.getElementById('kpiWorkers').textContent = total || workers.length || '0';
+        const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
+        const nm = document.getElementById('kpiWorkerNames');
+        if (nm) nm.textContent = parts.length ? parts.join(' · ') : '작업일지 연동';
+        // localStorage에도 저장 (renderKPIs 덮어쓰기 방지)
+        localStorage.setItem('todayWorkers_' + today, total || workers.length);
+        localStorage.setItem('todayWorkers', total || workers.length);
     }
 
     // ── 홈 버튼 ───────────────────────────────────────────
