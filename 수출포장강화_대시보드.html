@@ -5722,11 +5722,97 @@
         updateNav();
     }
 
-    /* CSS 스타일시트로 shell-mode 클래스 활성화 — JS 타이밍 문제 없음 */
     document.body.classList.add('shell-mode');
 
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 12px');
     _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 비교'],              '50vh', '14px 10px');
+
+    /* ── 인라인 !important 직접 적용 (Tailwind CDN / 캐스케이드 완전 우회) ── */
+    requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+            function sp(el, p, v){ if(el) el.style.setProperty(p, v, 'important'); }
+            function qi(id){ return document.getElementById(id); }
+            function qs(sel){ return document.querySelector(sel); }
+
+            /* 헤더 */
+            sp(qs('header'), 'padding-top', '22px');
+            sp(qs('header'), 'padding-bottom', '22px');
+            sp(qs('header h1'), 'font-size', '22px');
+
+            /* 카드 패딩 */
+            document.querySelectorAll('#topCardGrid > div').forEach(function(c){
+                sp(c, 'padding', '20px 12px');
+            });
+
+            /* 카드1 타이틀 행 → 세로 중앙정렬 */
+            var c1t = qs('#remainingStatusCard > div:first-child > div');
+            if(c1t){
+                sp(c1t, 'flex-direction','column'); sp(c1t,'align-items','center');
+                sp(c1t,'text-align','center'); sp(c1t,'gap','4px'); sp(c1t,'margin-bottom','14px');
+            }
+            var c1p = qs('#remainingStatusCard > div:first-child > div > p');
+            if(c1p){
+                sp(c1p,'font-size','12px'); sp(c1p,'text-transform','uppercase');
+                sp(c1p,'letter-spacing','0.1em'); sp(c1p,'color','#94A3B8');
+                sp(c1p,'justify-content','center');
+            }
+
+            /* 카드2 타이틀 행 → 세로 중앙정렬 */
+            var c2t = qs('#shippedStatusCard > div:first-child');
+            if(c2t){
+                sp(c2t,'flex-direction','column'); sp(c2t,'align-items','center');
+                sp(c2t,'text-align','center'); sp(c2t,'gap','4px'); sp(c2t,'margin-bottom','14px');
+            }
+            var c2p = qs('#shippedStatusCard > div:first-child > p');
+            if(c2p){
+                sp(c2p,'font-size','12px'); sp(c2p,'text-transform','uppercase');
+                sp(c2p,'letter-spacing','0.1em'); sp(c2p,'color','#94A3B8');
+                sp(c2p,'justify-content','center');
+            }
+
+            /* 포장대기 박스: 세로 중앙 레이아웃 */
+            var pbox = qi('card1PendingBox');
+            if(pbox){
+                sp(pbox,'flex-direction','column'); sp(pbox,'align-items','center');
+                sp(pbox,'justify-content','center'); sp(pbox,'gap','6px');
+                sp(pbox,'padding','20px 16px');
+                /* 라벨/구분자/화살표 숨김 */
+                var ch = pbox.children;
+                if(ch[0]) sp(ch[0],'display','none'); /* 포장대기 */
+                if(ch[1]) sp(ch[1],'display','none'); /* — */
+                if(ch[4]) sp(ch[4],'display','none'); /* · */
+                if(ch[6]) sp(ch[6],'display','none'); /* chevron */
+            }
+
+            /* 핵심 KPI 수치: 초대형 */
+            sp(qi('card1PendingQty'), 'font-size', '64px');
+            sp(qi('card1PendingQty'), 'line-height', '1');
+            /* BOX 단위 */
+            var pboxChildren = pbox && pbox.children;
+            if(pboxChildren && pboxChildren[3]) sp(pboxChildren[3],'font-size','20px');
+            /* 건 수 */
+            if(pboxChildren && pboxChildren[5]) sp(pboxChildren[5],'font-size','16px');
+
+            /* 날짜 / 인원 */
+            sp(qi('card1TodayDateLabel'), 'font-size', '17px');
+            sp(qi('prevDayLabel'),        'font-size', '17px');
+            sp(qi('card1WorkerDisplay'),  'font-size', '18px');
+            sp(qi('prevDayWorkers'),      'font-size', '18px');
+
+            /* 카드3: 수출일정 */
+            sp(qi('card4RoundName'), 'font-size', '38px');
+            sp(qi('card4RoundName'), 'line-height', '1.2');
+            sp(qi('card4DDay'),      'font-size', '16px');
+
+            /* 차트 카드 */
+            document.querySelectorAll('#chartRow > div').forEach(function(c){
+                sp(c,'padding','14px 10px');
+            });
+            document.querySelectorAll('#chartRow h3').forEach(function(h){
+                sp(h,'font-size','16px');
+            });
+        });
+    });
 })();
 </script>
 </body>
