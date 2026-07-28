@@ -322,6 +322,11 @@
 
     <!-- ── 제품검색 서브메뉴 (네비 위에 팝업) ────────────── -->
     <div id="searchSubMenu" style="position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
+        <button onclick="closeSearchSub();openScanView()"
+            style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+            <i class="fa-solid fa-barcode" style="color:#FF9100;font-size:16px;width:20px;"></i>
+            바코드 스캔 검색
+        </button>
         <button onclick="closeSearchSub();openView('viewSearch')"
             style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
             <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
@@ -384,9 +389,12 @@
             <button onclick="closeView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+            <span style="font-size:15px;font-weight:800;color:var(--text);flex:1;display:flex;align-items:center;gap:8px;">
                 <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:14px;"></i> 수출 / 제품 상세검색
             </span>
+            <button onclick="openScanView()" style="-webkit-appearance:none;appearance:none;border:none;background:var(--icon-bg);color:#FF9100;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;padding:8px;border-radius:10px;line-height:1;">
+                <i class="fa-solid fa-barcode"></i>
+            </button>
         </div>
         <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:88px;">
             <div style="display:flex;flex-direction:column;gap:10px;">
@@ -396,6 +404,9 @@
                 <input id="sf_code" type="text" placeholder="제품코드 (예: CAC2083SN)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                <input id="sf_color" type="text" placeholder="색상 (예: WW, BK, SN)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                    oninput="runSearch()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
@@ -509,6 +520,56 @@
         </div>
     </div>
 
+    <!-- ── 뷰: 바코드 스캔 ──────────────────────────────── -->
+    <div id="viewScan" style="position:fixed;inset:0;z-index:43;background:#000;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
+        <!-- 헤더 -->
+        <div style="position:absolute;top:0;left:0;right:0;z-index:2;padding:10px 16px;display:flex;align-items:center;gap:8px;background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
+            <button onclick="closeScanView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:#fff;display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size:15px;font-weight:800;color:#fff;flex:1;">바코드 스캔</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.6);">CODE128 · CODE39</span>
+        </div>
+        <!-- 카메라 영역 -->
+        <video id="scanVideo" autoplay playsinline muted style="flex:1;width:100%;object-fit:cover;"></video>
+        <!-- 스캔 오버레이 -->
+        <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+            <!-- 스캔 프레임 -->
+            <div style="position:relative;width:82%;max-width:360px;height:110px;">
+                <!-- 외부 어두운 오버레이는 box-shadow로 구현 -->
+                <div style="position:absolute;inset:0;border:2px solid #00B0FF;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
+                    <!-- 코너 마크 -->
+                    <span style="position:absolute;top:-2px;left:-2px;width:20px;height:20px;border-top:3px solid #00B0FF;border-left:3px solid #00B0FF;border-radius:4px 0 0 0;"></span>
+                    <span style="position:absolute;top:-2px;right:-2px;width:20px;height:20px;border-top:3px solid #00B0FF;border-right:3px solid #00B0FF;border-radius:0 4px 0 0;"></span>
+                    <span style="position:absolute;bottom:-2px;left:-2px;width:20px;height:20px;border-bottom:3px solid #00B0FF;border-left:3px solid #00B0FF;border-radius:0 0 0 4px;"></span>
+                    <span style="position:absolute;bottom:-2px;right:-2px;width:20px;height:20px;border-bottom:3px solid #00B0FF;border-right:3px solid #00B0FF;border-radius:0 0 4px 0;"></span>
+                    <!-- 레이저 라인 -->
+                    <div id="scanLaser" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(to right,transparent,#FF4444,transparent);border-radius:2px;top:50%;animation:scanLaser 1.8s ease-in-out infinite;"></div>
+                </div>
+            </div>
+            <!-- 상태 텍스트 -->
+            <div id="scanStatus" style="margin-top:20px;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;letter-spacing:.02em;">카메라 초기화 중...</div>
+        </div>
+        <!-- 결과 바 -->
+        <div id="scanResultBar" style="position:absolute;bottom:88px;left:0;right:0;z-index:2;display:none;padding:12px 16px;background:rgba(0,0,0,.8);border-top:1px solid rgba(255,255,255,.1);">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:10px;color:rgba(255,255,255,.5);margin-bottom:2px;">스캔 결과</div>
+                    <div id="scanResultText" style="font-size:14px;font-weight:800;color:#00B0FF;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+                </div>
+                <button onclick="confirmScanResult()" style="flex-shrink:0;background:#00B0FF;color:#0B0F19;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;">검색</button>
+                <button onclick="resumeScan()" style="flex-shrink:0;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;">재스캔</button>
+            </div>
+        </div>
+    </div>
+    <style>
+    @keyframes scanLaser {
+        0%   { top: 10%; }
+        50%  { top: 85%; }
+        100% { top: 10%; }
+    }
+    </style>
+
     <!-- ── 뷰: 수출 포장 관리 현황 상세 ─────────────── -->
     <div id="viewMgmt" style="position:fixed;inset:0;z-index:42;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
         <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -614,6 +675,7 @@
         const iStatus = fi('진행','진행상태','상태','status');
         const iCode   = fi('품목코드','제품코드','code');
         const iCtry   = fi('제품구분','제품 구분','country');
+        const iColor  = fi('색상','컬러','color');
         const iSpecW  = fi('가로','W','폭','WIDTH','specw');
         const iSpecD  = fi('세로','D','깊이','DEPTH','specd');
         const iSpecH  = fi('높이','H','HEIGHT','spech');
@@ -632,13 +694,14 @@
             const round  = r[iRound]  ? r[iRound].toString().trim()  : '-';
             const dueDate= r[iDue]    ? r[iDue].toString().trim()    : '-';
             const country= r[iCtry]   ? r[iCtry].toString().trim()   : 'FAM';
+            const color  = iColor >= 0 && r[iColor] ? r[iColor].toString().trim() : '';
             const sn     = status.replace(/\s+/g,'').toLowerCase();
             const isDone = sn.includes('출고') || sn.includes('포장완료') || sn.includes('피킹');
             const specW  = iSpecW >= 0 && r[iSpecW] ? r[iSpecW].toString().trim() : '';
             const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
             const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
             const specG  = iSpecG >= 0 && r[iSpecG] ? r[iSpecG].toString().trim() : '';
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, isDone, specW, specD, specH, specG });
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, color, isDone, specW, specD, specH, specG });
         }
         return result;
     }
@@ -949,8 +1012,9 @@
     function runSearch() {
         const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
         const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
+        const color   = (document.getElementById('sf_color').value   || '').trim().toLowerCase();
         const country = (document.getElementById('sf_country').value || '').trim().toLowerCase();
-        if (!round && !code && !country) {
+        if (!round && !code && !color && !country) {
             document.getElementById('srCount').textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
@@ -958,6 +1022,7 @@
         const filtered = allData.filter(d => {
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
+            if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
             if (country && !(d.country ||'').toLowerCase().includes(country)) return false;
             return true;
         });
@@ -970,7 +1035,7 @@
             const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : '#64748B');
             return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}</span>
+                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}${d.color?' <span style="font-weight:500;color:#FF9100;">'+d.color+'</span>':''}</span>
                     <span style="font-size:11px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:20px;">${d.status}</span>
                 </div>
                 <div style="font-size:11px;color:var(--text-sub);display:flex;gap:12px;align-items:center;">
@@ -982,7 +1047,7 @@
         }).join('');
     }
     function clearSearch() {
-        ['sf_round','sf_code','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
+        ['sf_round','sf_code','sf_color','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
         runSearch();
     }
 
@@ -1495,6 +1560,7 @@
     // ── 풀스크린 뷰 (슬라이드 전환) ──────────────────────
     let _currentView = null;
     function openView(id) {
+        if (_currentView === 'viewScan') _stopScan();
         if (_currentView && _currentView !== id) {
             const prev = document.getElementById(_currentView);
             if (prev) prev.style.transform = 'translateX(100%)';
@@ -1505,10 +1571,96 @@
         requestAnimationFrame(() => { el.style.transform = 'translateX(0)'; });
     }
     function closeView() {
+        if (_currentView === 'viewScan') _stopScan();
         if (!_currentView) return;
         const el = document.getElementById(_currentView);
         if (el) el.style.transform = 'translateX(100%)';
         _currentView = null;
+    }
+
+    // ── 바코드 스캔 ───────────────────────────────────────
+    let _scanStream = null, _scanRaf = null, _scanDetector = null;
+
+    async function openScanView() {
+        openView('viewScan');
+        document.getElementById('scanResultBar').style.display = 'none';
+        document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+        await _startScan();
+    }
+    function closeScanView() { _stopScan(); closeView(); }
+
+    async function _startScan() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+            }).catch(() => navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+            }));
+            _scanStream = stream;
+            const vid = document.getElementById('scanVideo');
+            vid.srcObject = stream;
+            await vid.play();
+
+            if (!('BarcodeDetector' in window)) {
+                document.getElementById('scanStatus').textContent = '이 기기는 자동 스캔을 지원하지 않습니다';
+                return;
+            }
+            const fmts = await BarcodeDetector.getSupportedFormats().catch(() => ['code_128','code_39','ean_13','qr_code','code_93','data_matrix']);
+            _scanDetector = new BarcodeDetector({ formats: fmts });
+            document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+            _scanRaf = requestAnimationFrame(_scanTick);
+        } catch(e) {
+            document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
+        }
+    }
+
+    async function _scanTick() {
+        if (!_scanStream || !_scanDetector) return;
+        const vid = document.getElementById('scanVideo');
+        try {
+            const codes = await _scanDetector.detect(vid);
+            if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
+        } catch(e) {}
+        if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+    }
+
+    function _stopScan() {
+        if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+        if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+        const vid = document.getElementById('scanVideo');
+        if (vid) vid.srcObject = null;
+    }
+
+    function _parseBarcodeRaw(raw) {
+        // "CODE - COLOR" or "CODE-COLOR" 형식 파싱
+        const m = raw.match(/^(.+?)\s*-\s*([A-Za-z0-9]+)\s*$/);
+        if (m && m[2].length <= 6) return { code: m[1].trim(), color: m[2].trim() };
+        return { code: raw.trim(), color: '' };
+    }
+
+    function _onScanDetect(raw) {
+        if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+        const bar = document.getElementById('scanResultBar');
+        document.getElementById('scanResultText').textContent = raw;
+        bar.style.display = 'block';
+        document.getElementById('scanStatus').textContent = '인식 완료 — 검색 또는 재스캔';
+    }
+
+    function confirmScanResult() {
+        const raw = document.getElementById('scanResultText').textContent;
+        const { code, color } = _parseBarcodeRaw(raw);
+        _stopScan();
+        openView('viewSearch');
+        document.getElementById('sf_code').value  = code;
+        document.getElementById('sf_color').value = color;
+        ['sf_round','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
+        runSearch();
+    }
+
+    function resumeScan() {
+        document.getElementById('scanResultBar').style.display = 'none';
+        document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+        if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
