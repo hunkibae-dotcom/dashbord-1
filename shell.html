@@ -322,12 +322,12 @@
 
     <!-- ── 제품검색 서브메뉴 (네비 위에 팝업) ────────────── -->
     <div id="searchSubMenu" style="position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
-        <button onclick="closeSearchSub();openModal('searchModal')"
+        <button onclick="closeSearchSub();openView('viewSearch')"
             style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
             <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
             수출 / 제품 상세검색
         </button>
-        <button onclick="closeSearchSub();openModal('specModal')"
+        <button onclick="closeSearchSub();openView('viewSpec')"
             style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
             <i class="fa-solid fa-ruler-combined" style="color:#00E676;font-size:16px;width:20px;"></i>
             제품 상세 스펙 조회
@@ -378,18 +378,17 @@
         </div>
     </div>
 
-    <!-- ── 수출/제품 상세검색 모달 ──────────────────────── -->
-    <div id="searchModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
-                    <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;"></i> 수출 / 제품 상세검색
-                </span>
-                <button onclick="closeModal('searchModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <!-- 검색 입력 -->
+    <!-- ── 뷰: 수출/제품 상세검색 ──────────────────────── -->
+    <div id="viewSearch" style="position:fixed;inset:0;z-index:42;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
+        <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button onclick="closeView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:14px;"></i> 수출 / 제품 상세검색
+            </span>
+        </div>
+        <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:88px;">
             <div style="display:flex;flex-direction:column;gap:10px;">
                 <input id="sf_round" type="text" placeholder="건명 / 차수 (예: FAM-110)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
@@ -401,33 +400,31 @@
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
             </div>
-            <!-- 결과 수 -->
             <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;">
                 <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
                 <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;">초기화</button>
             </div>
-            <!-- 결과 리스트 -->
-            <div id="srList" class="no-scrollbar" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;max-height:340px;">
+            <div id="srList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
             </div>
         </div>
     </div>
 
-    <!-- ── 제품 상세스펙 모달 ─────────────────────────────── -->
-    <div id="specModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
-                    <i class="fa-solid fa-ruler-combined" style="color:#00E676;"></i> 제품 상세 스펙 조회
-                </span>
-                <button onclick="closeModal('specModal')" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+    <!-- ── 뷰: 제품 상세 스펙 조회 ───────────────────────── -->
+    <div id="viewSpec" style="position:fixed;inset:0;z-index:42;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
+        <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button onclick="closeView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                <i class="fa-solid fa-ruler-combined" style="color:#00E676;font-size:14px;"></i> 제품 상세 스펙 조회
+            </span>
+        </div>
+        <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:88px;">
             <input id="spec_code" type="text" placeholder="제품코드 입력 (예: CAC2083SN)"
                 style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                 oninput="runSpecSearch()" onfocus="this.style.borderColor='#00E676'" onblur="this.style.borderColor='var(--border)'">
-            <div id="specList" class="no-scrollbar" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;max-height:400px;">
+            <div id="specList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">제품코드를 입력하세요</div>
             </div>
         </div>
@@ -512,31 +509,29 @@
         </div>
     </div>
 
-    <!-- ── 수출 포장 관리 현황 상세 모달 ─────────────── -->
-    <div id="mgmtModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:92vh;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                    <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
-                        <i class="fa-solid fa-clipboard-list" style="color:#00E676;"></i> 수출 포장 관리 현황
-                    </span>
-                    <span id="mgmtModalCount" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
-                </div>
-                <button onclick="closeMgmtModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- ── 뷰: 수출 포장 관리 현황 상세 ─────────────── -->
+    <div id="viewMgmt" style="position:fixed;inset:0;z-index:42;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
+        <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <button onclick="closeView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div style="flex:1;min-width:0;">
+                <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-clipboard-list" style="color:#00E676;font-size:14px;"></i> 수출 포장 관리 현황
+                </span>
+                <span id="mgmtModalCount" style="font-size:11px;color:var(--text-sub);display:block;"></span>
             </div>
-            <!-- 탭 필터 -->
-            <div class="no-scrollbar" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;flex-shrink:0;">
-                <button id="mgmtTab_전체"   onclick="setMgmtTab('전체')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">전체</button>
-                <button id="mgmtTab_포장대기" onclick="setMgmtTab('포장대기')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장대기</button>
-                <button id="mgmtTab_포장완료" onclick="setMgmtTab('포장완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장완료</button>
-                <button id="mgmtTab_출고완료" onclick="setMgmtTab('출고완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">출고완료</button>
-                <button id="mgmtTab_미입고"  onclick="setMgmtTab('미입고')"  style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미입고/기타</button>
-            </div>
-            <div id="mgmtList" class="no-scrollbar" style="overflow-y:auto;flex:1;max-height:68vh;">
-                <div style="text-align:center;padding:32px 0;font-size:13px;color:var(--text-sub);">로딩 중...</div>
-            </div>
+        </div>
+        <!-- 탭 필터 -->
+        <div class="no-scrollbar" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
+            <button id="mgmtTab_전체"   onclick="setMgmtTab('전체')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">전체</button>
+            <button id="mgmtTab_포장대기" onclick="setMgmtTab('포장대기')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장대기</button>
+            <button id="mgmtTab_포장완료" onclick="setMgmtTab('포장완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장완료</button>
+            <button id="mgmtTab_출고완료" onclick="setMgmtTab('출고완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">출고완료</button>
+            <button id="mgmtTab_미입고"  onclick="setMgmtTab('미입고')"  style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미입고/기타</button>
+        </div>
+        <div id="mgmtList" class="no-scrollbar" style="flex:1;overflow-y:auto;padding:12px 16px;padding-bottom:88px;">
+            <div style="text-align:center;padding:32px 0;font-size:13px;color:var(--text-sub);">로딩 중...</div>
         </div>
     </div>
 
@@ -544,7 +539,7 @@
     const GAS_URL = localStorage.getItem('sheet_pub_url') ||
         'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
 
-    let allData = [], stockData = [], rawStockRows = [], chartInst = null;
+    let allData = [], stockData = [], rawStockRows = [], rawWorkLogRows = [], chartInst = null;
 
     // ── 테마 ─────────────────────────────────────────────
     function applyTheme(dark) {
@@ -687,8 +682,77 @@
         }
     }
 
+    function _lastWorkDate() {
+        if (!rawWorkLogRows || rawWorkLogRows.length < 2) return null;
+        const hdr = rawWorkLogRows[0].map(h => (h||'').toString().trim());
+        let iDate = 0;
+        hdr.forEach((h, i) => { const hn = h.replace(/\s/g,''); if (hn==='등록일자'||hn==='날짜') iDate = i; });
+        const today = todayStr();
+        const dates = new Set();
+        for (let i = 1; i < rawWorkLogRows.length; i++) {
+            const r = rawWorkLogRows[i];
+            if (!r || r.every(c => !c || !c.toString().trim())) continue;
+            let d = (r[iDate]||'').toString().trim();
+            if (d.includes('T')) d = d.substring(0, 10);
+            if (d && d < today) dates.add(d);
+        }
+        return dates.size ? [...dates].sort().pop() : null;
+    }
+
     function renderWorkLog() {
         const list = document.getElementById('workLogList');
+        const lastDate = _lastWorkDate();
+
+        if (lastDate && rawWorkLogRows && rawWorkLogRows.length > 1) {
+            const hdr = rawWorkLogRows[0].map(h => (h||'').toString().trim());
+            let iDate=0, iWorker=2, iMemo=3, iTotal=4;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g,'');
+                if (hn==='등록일자'||hn==='날짜') iDate = i;
+                if (hn==='작업자') iWorker = i;
+                if (hn==='비고') iMemo = i;
+                if (hn==='총인원'||hn.includes('인원')) iTotal = i;
+            });
+            let total = 0;
+            const workers = [], memos = [];
+            for (let i = 1; i < rawWorkLogRows.length; i++) {
+                const r = rawWorkLogRows[i];
+                if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                let d = (r[iDate]||'').toString().trim();
+                if (d.includes('T')) d = d.substring(0, 10);
+                if (d !== lastDate) continue;
+                total += parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0;
+                const w = (r[iWorker]||'').toString().trim();
+                const m = (r[iMemo]||'').toString().trim();
+                if (w) workers.push(w);
+                if (m) memos.push(m);
+            }
+            const DAY = ['일','월','화','수','목','금','토'];
+            const dt = new Date(lastDate);
+            const dateLabel = lastDate.replace(/-/g,'.') + ' (' + DAY[dt.getDay()] + ')';
+            const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
+            // 해당 날짜의 출고 완료 항목
+            const doneItems = allData.filter(d => d.isDone && d.regDate === lastDate);
+            list.innerHTML =
+                `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px;border-bottom:1px solid var(--log-border);">
+                    <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${dateLabel}</span>
+                    <span style="font-size:12px;font-weight:700;color:#00B0FF;">작업인원 ${total || workers.length}명</span>
+                </div>` +
+                (parts.length ? `<div style="font-size:11px;color:var(--text-sub);padding:6px 0 8px;border-bottom:1px solid var(--log-border);">${parts.join(' · ')}</div>` : '') +
+                (doneItems.length
+                    ? doneItems.slice(0,8).map((d,i,arr) => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;${i<arr.length-1?'border-bottom:1px solid var(--log-border);':''}">
+                            <div style="min-width:0;flex:1;">
+                                <div style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.code}</div>
+                                <div style="font-size:10px;color:var(--text-sub);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
+                            </div>
+                            <span style="font-size:11px;font-weight:700;color:#00E676;font-family:monospace;flex-shrink:0;margin-left:10px;">${d.qty.toLocaleString()} BOX</span>
+                        </div>`).join('')
+                    : '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:10px 0;">출고 완료 내역 없음</div>');
+            return;
+        }
+
+        // 폴백: 작업일지 없으면 출고 완료 전체 최신순
         const done = allData.filter(d => d.isDone).sort((a,b) => b.regDate > a.regDate ? 1 : -1);
         if (!done.length) {
             list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">완료된 작업이 없습니다</div>';
@@ -1312,6 +1376,7 @@
     // ── 작업일지 → 금일 작업 인원 ────────────────────────
     function processTodayWorkers(rows) {
         if (!rows || rows.length < 2) return;
+        rawWorkLogRows = rows;
         const hdr = rows[0].map(h => (h||'').toString().trim());
         let iDate=-1, iWorker=-1, iMemo=-1, iTotal=-1;
         hdr.forEach((h, i) => {
@@ -1354,6 +1419,7 @@
 
     // ── 홈 버튼 ───────────────────────────────────────────
     function goHome() {
+        closeView();
         if (_chartViewActive) toggleChartView();
         // 수출 일정 슬라이드(0번)로 복귀
         goSlide(0);
@@ -1426,15 +1492,34 @@
         }).join('');
     }
 
+    // ── 풀스크린 뷰 (슬라이드 전환) ──────────────────────
+    let _currentView = null;
+    function openView(id) {
+        if (_currentView && _currentView !== id) {
+            const prev = document.getElementById(_currentView);
+            if (prev) prev.style.transform = 'translateX(100%)';
+        }
+        _currentView = id;
+        const el = document.getElementById(id);
+        if (!el) return;
+        requestAnimationFrame(() => { el.style.transform = 'translateX(0)'; });
+    }
+    function closeView() {
+        if (!_currentView) return;
+        const el = document.getElementById(_currentView);
+        if (el) el.style.transform = 'translateX(100%)';
+        _currentView = null;
+    }
+
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
     let _mgmtTab = '전체';
     function openMgmtModal() {
         _mgmtTab = '전체';
         renderMgmtModal();
-        document.getElementById('mgmtModal').style.display = 'flex';
+        openView('viewMgmt');
     }
     function closeMgmtModal() {
-        document.getElementById('mgmtModal').style.display = 'none';
+        closeView();
     }
     function setMgmtTab(tab) {
         _mgmtTab = tab;
