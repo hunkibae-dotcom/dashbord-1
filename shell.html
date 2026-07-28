@@ -745,19 +745,36 @@
         }
     }
 
+    function _nd(raw) {
+        if (!raw) return '';
+        let s = raw.toString().trim();
+        if (!s || s === '-') return '';
+        if (s.includes('T') || s.includes('GMT')) return s.substring(0, 10);
+        s = s.replace(/[\./]/g, '-').replace(/\s+/g, '');
+        if (s.endsWith('-')) s = s.slice(0, -1);
+        const p = s.split('-');
+        if (p.length === 3 && p[0].length >= 4) return p[0] + '-' + p[1].padStart(2,'0') + '-' + p[2].padStart(2,'0');
+        return '';
+    }
     function _lastWorkDate() {
-        if (!rawWorkLogRows || rawWorkLogRows.length < 2) return null;
-        const hdr = rawWorkLogRows[0].map(h => (h||'').toString().trim());
-        let iDate = 0;
-        hdr.forEach((h, i) => { const hn = h.replace(/\s/g,''); if (hn==='등록일자'||hn==='날짜') iDate = i; });
         const today = todayStr();
         const dates = new Set();
-        for (let i = 1; i < rawWorkLogRows.length; i++) {
-            const r = rawWorkLogRows[i];
-            if (!r || r.every(c => !c || !c.toString().trim())) continue;
-            let d = (r[iDate]||'').toString().trim();
-            if (d.includes('T')) d = d.substring(0, 10);
-            if (d && d < today) dates.add(d);
+        if (rawWorkLogRows && rawWorkLogRows.length >= 2) {
+            const hdr = rawWorkLogRows[0].map(h => (h||'').toString().trim());
+            let iDate = 0;
+            hdr.forEach((h, i) => { const hn = h.replace(/\s/g,''); if (hn==='등록일자'||hn==='날짜') iDate = i; });
+            for (let i = 1; i < rawWorkLogRows.length; i++) {
+                const r = rawWorkLogRows[i];
+                if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                const d = _nd((r[iDate]||'').toString().trim());
+                if (d && d < today) dates.add(d);
+            }
+        }
+        if (allData && allData.length) {
+            allData.filter(d => d.isDone).forEach(d => {
+                const rd = _nd(d.regDate || '');
+                if (rd && rd < today) dates.add(rd);
+            });
         }
         return dates.size ? [...dates].sort().pop() : null;
     }
@@ -781,8 +798,7 @@
             for (let i = 1; i < rawWorkLogRows.length; i++) {
                 const r = rawWorkLogRows[i];
                 if (!r || r.every(c => !c || !c.toString().trim())) continue;
-                let d = (r[iDate]||'').toString().trim();
-                if (d.includes('T')) d = d.substring(0, 10);
+                const d = _nd((r[iDate]||'').toString().trim());
                 if (d !== lastDate) continue;
                 total += parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0;
                 const w = (r[iWorker]||'').toString().trim();
@@ -795,7 +811,7 @@
             const dateLabel = lastDate.replace(/-/g,'.') + ' (' + DAY[dt.getDay()] + ')';
             const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
             // 해당 날짜의 출고 완료 항목
-            const doneItems = allData.filter(d => d.isDone && d.regDate === lastDate);
+            const doneItems = allData.filter(d => d.isDone && _nd(d.regDate) === lastDate);
             list.innerHTML =
                 `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px;border-bottom:1px solid var(--log-border);">
                     <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${dateLabel}</span>

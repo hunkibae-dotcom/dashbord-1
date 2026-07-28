@@ -4079,22 +4079,43 @@
         }
 
         function _lastWorkDate() {
+            const today = _todayStr();
+            const dates = new Set();
+
+            // 작업일지 시트 날짜 수집
             if (state.workLogRows && state.workLogRows.length > 1) {
                 const hdr = state.workLogRows[0].map(h => (h||'').toString().trim());
                 let iDate = 0;
                 hdr.forEach((h, i) => { const hn = h.replace(/\s/g,''); if (hn==='등록일자'||hn==='날짜') iDate = i; });
-                const today = _todayStr();
-                const dates = new Set();
                 for (let i = 1; i < state.workLogRows.length; i++) {
                     const r = state.workLogRows[i];
                     if (!r || r.every(c => !c || !c.toString().trim())) continue;
-                    let d = (r[iDate]||'').toString().trim();
-                    if (d.includes('T')) d = d.substring(0, 10);
-                    if (d && d < today) dates.add(d);
+                    const d = normalizeDate((r[iDate]||'').toString().trim());
+                    if (d && d !== '-' && d < today) dates.add(d);
                 }
-                if (dates.size > 0) return [...dates].sort().pop();
             }
-            return _yesterdayStr();
+
+            // 충주공장 재고 H열(포장완료일) 수집
+            if (state.rawStockRows && state.rawStockRows.length > 1) {
+                for (let i = 1; i < state.rawStockRows.length; i++) {
+                    const r = state.rawStockRows[i];
+                    if (!r) continue;
+                    const d = normalizeDate((r[7]||'').toString().trim());
+                    if (d && d !== '-' && d < today) dates.add(d);
+                }
+            }
+
+            // 출고 완료 H열(출고일) 수집
+            if (state.rawShippedRows && state.rawShippedRows.length > 1) {
+                for (let i = 1; i < state.rawShippedRows.length; i++) {
+                    const r = state.rawShippedRows[i];
+                    if (!r) continue;
+                    const d = normalizeDate((r[7]||'').toString().trim());
+                    if (d && d !== '-' && d < today) dates.add(d);
+                }
+            }
+
+            return dates.size > 0 ? [...dates].sort().pop() : _yesterdayStr();
         }
 
         function updatePrevDayCard() {
