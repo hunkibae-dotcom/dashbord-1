@@ -600,7 +600,7 @@
     const GAS_URL = localStorage.getItem('sheet_pub_url') ||
         'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
 
-    let allData = [], stockData = [], rawStockRows = [], rawWorkLogRows = [], chartInst = null;
+    let allData = [], stockData = [], rawStockRows = [], rawShippedRows = [], rawWorkLogRows = [], chartInst = null;
 
     // ── 테마 ─────────────────────────────────────────────
     function applyTheme(dark) {
@@ -633,7 +633,7 @@
         try {
             const res  = await fetch(GAS_URL, { signal: AbortSignal.timeout(15000) });
             const json = JSON.parse(await res.text());
-            allData = []; stockData = []; rawStockRows = [];
+            allData = []; stockData = []; rawStockRows = []; rawShippedRows = [];
             for (const sheet in json) {
                 const rows = json[sheet];
                 if (sheet.includes('충주공장 재고')) {
@@ -643,6 +643,7 @@
                 } else if (sheet.includes('수출 표준품 현황')) {
                     allData = allData.concat(mapRows(rows));
                 } else if (sheet.includes('출고 완료')) {
+                    rawShippedRows = rows;
                     allData = allData.concat(mapRows(rows));
                 } else if (sheet.includes('작업일지')) {
                     processTodayWorkers(rows);
@@ -810,16 +811,44 @@
             const dt = new Date(lastDate);
             const dateLabel = lastDate.replace(/-/g,'.') + ' (' + DAY[dt.getDay()] + ')';
             const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
-            // 해당 날짜의 출고 완료 항목
-            const doneItems = allData.filter(d => d.isDone && _nd(d.regDate) === lastDate);
+            // 포장완료 내역: rawShippedRows(출고일) + rawStockRows(포장완료일) H열 직접 스캔
+            function _pqty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g,''))||0) : 0; }
+            function _hdrIdx(hdr, aliases, def) { const i = hdr.findIndex(h => aliases.some(a => h===a||h.includes(a))); return i>=0?i:def; }
+            const items = []; const seenK = new Set();
+            function _addItem(code, round, qty) {
+                if (!code) return;
+                const key = code + '|' + round;
+                if (!seenK.has(key)) { seenK.add(key); items.push({ code, round, qty }); }
+                else { const f = items.find(x => x.code===code&&x.round===round); if(f) f.qty += qty; }
+            }
+            if (rawShippedRows && rawShippedRows.length > 1) {
+                const h = rawShippedRows[0].map(c => (c||'').toString().trim());
+                const siR = _hdrIdx(h,['수주건명','건명'],4), siC = _hdrIdx(h,['품목코드','제품코드'],1), siQ = _hdrIdx(h,['수량'],3);
+                for (let i = 1; i < rawShippedRows.length; i++) {
+                    const r = rawShippedRows[i];
+                    if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                    if (_nd((r[7]||'').toString()) !== lastDate) continue;
+                    _addItem((r[siC]||'').toString().trim(), (r[siR]||'').toString().trim()||'-', _pqty(r[siQ]));
+                }
+            }
+            if (rawStockRows && rawStockRows.length > 1) {
+                const h = rawStockRows[0].map(c => (c||'').toString().trim());
+                const siR = _hdrIdx(h,['수주건명','건명'],4), siC = _hdrIdx(h,['품목코드','제품코드'],1), siQ = _hdrIdx(h,['수량'],3);
+                for (let i = 1; i < rawStockRows.length; i++) {
+                    const r = rawStockRows[i];
+                    if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                    if (_nd((r[7]||'').toString()) !== lastDate) continue;
+                    _addItem((r[siC]||'').toString().trim(), (r[siR]||'').toString().trim()||'-', _pqty(r[siQ]));
+                }
+            }
             list.innerHTML =
                 `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px;border-bottom:1px solid var(--log-border);">
                     <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${dateLabel}</span>
                     <span style="font-size:12px;font-weight:700;color:#00B0FF;">작업인원 ${total || workers.length}명</span>
                 </div>` +
                 (parts.length ? `<div style="font-size:11px;color:var(--text-sub);padding:6px 0 8px;border-bottom:1px solid var(--log-border);">${parts.join(' · ')}</div>` : '') +
-                (doneItems.length
-                    ? doneItems.slice(0,8).map((d,i,arr) => `
+                (items.length
+                    ? items.slice(0,8).map((d,i,arr) => `
                         <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;${i<arr.length-1?'border-bottom:1px solid var(--log-border);':''}">
                             <div style="min-width:0;flex:1;">
                                 <div style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.code}</div>
@@ -827,7 +856,7 @@
                             </div>
                             <span style="font-size:11px;font-weight:700;color:#00E676;font-family:monospace;flex-shrink:0;margin-left:10px;">${d.qty.toLocaleString()} BOX</span>
                         </div>`).join('')
-                    : '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:10px 0;">출고 완료 내역 없음</div>');
+                    : '<div style="font-size:11px;color:var(--text-sub);text-align:center;padding:10px 0;">포장완료 내역 없음</div>');
             return;
         }
 
