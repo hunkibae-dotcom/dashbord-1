@@ -5650,6 +5650,17 @@
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 14px');
     _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 비교'],              '50vh', '14px 10px');
 
+    /* 버전 배지 — HTML 최신 여부 확인용 */
+    (function() {
+        var h1 = document.querySelector('header h1');
+        if (h1) {
+            var b = document.createElement('span');
+            b.textContent = ' v12';
+            b.style.cssText = 'font-size:11px;color:rgba(0,176,255,0.6);font-weight:400;';
+            h1.appendChild(b);
+        }
+    })();
+
     /* ── Shell 레이아웃 ── */
     (function _shellLayoutOnce() {
         /* 헤더 */
