@@ -5492,7 +5492,7 @@
     }
 
     /* ── 카드 캐러셀 (display 토글 방식 — CSS/뷰포트 무관, 터치 스와이프 지원) ── */
-    function _shellCarousel(gridId, labels) {
+    function _shellCarousel(gridId, labels, minH, cardPad) {
         var grid = document.getElementById(gridId);
         if (!grid) return;
         var cards = Array.from(grid.children);
@@ -5507,13 +5507,16 @@
         grid.style.setProperty('width', '100%', 'important');
         grid.style.setProperty('max-width', '100%', 'important');
 
-        /* ── 모든 카드: 전체 너비 + 글자 크기 15% 확대 ── */
+        /* ── 모든 카드: 전체 너비 + 글자 크기 확대 + 최소 높이 + 내부 여백 ── */
         cards.forEach(function(c, i) {
-            c.style.setProperty('display', i === 0 ? 'block' : 'none', 'important');
+            c.style.setProperty('display', i === 0 ? 'flex' : 'none', 'important');
+            c.style.setProperty('flex-direction', 'column', 'important');
             c.style.setProperty('width', '100%', 'important');
             c.style.setProperty('max-width', '100%', 'important');
             c.style.setProperty('box-sizing', 'border-box', 'important');
             c.style.setProperty('font-size', '115%', 'important');
+            if (minH)    c.style.setProperty('min-height', minH, 'important');
+            if (cardPad) c.style.setProperty('padding', cardPad, 'important');
         });
 
         /* ── 네비게이션 바 ── */
@@ -5558,7 +5561,7 @@
         function goTo(idx) {
             idx = Math.max(0, Math.min(idx, n - 1));
             cards.forEach(function(c, i) {
-                c.style.setProperty('display', i === idx ? 'block' : 'none', 'important');
+                c.style.setProperty('display', i === idx ? 'flex' : 'none', 'important');
             });
             cur = idx;
             nameEl.textContent = labels[cur] || '';
@@ -5586,8 +5589,8 @@
         goTo(0);
     }
 
-    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM']);
-    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교']);
+    _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '44vh', '22px 20px');
+    _shellCarousel('chartRow', ['포장 강화 현황', '제품별 실적 비교'], '54vh', '20px 20px');
 })();
 </script>
 </body>
