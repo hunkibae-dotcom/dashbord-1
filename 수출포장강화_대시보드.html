@@ -5491,7 +5491,7 @@
         mainGrid.insertBefore(menuBtn, mainGrid.firstChild);
     }
 
-    /* ── 카드 캐러셀 (display 토글 방식 — CSS/뷰포트 무관) ── */
+    /* ── 카드 캐러셀 (display 토글 방식 — CSS/뷰포트 무관, 터치 스와이프 지원) ── */
     function _shellCarousel(gridId, labels) {
         var grid = document.getElementById(gridId);
         if (!grid) return;
@@ -5502,35 +5502,46 @@
         if (document.getElementById(navId)) return;
         var cur = 0;
 
+        /* ── 그리드 컬럼 레이아웃 해제 → 단일 블록으로 강제 ── */
+        grid.style.setProperty('display', 'block', 'important');
+        grid.style.setProperty('width', '100%', 'important');
+        grid.style.setProperty('max-width', '100%', 'important');
+
+        /* ── 모든 카드: 전체 너비 + 글자 크기 15% 확대 ── */
         cards.forEach(function(c, i) {
-            c.style.setProperty('display', i === 0 ? '' : 'none', 'important');
+            c.style.setProperty('display', i === 0 ? 'block' : 'none', 'important');
+            c.style.setProperty('width', '100%', 'important');
+            c.style.setProperty('max-width', '100%', 'important');
+            c.style.setProperty('box-sizing', 'border-box', 'important');
+            c.style.setProperty('font-size', '115%', 'important');
         });
 
+        /* ── 네비게이션 바 ── */
         var navEl = document.createElement('div');
         navEl.id = navId;
-        navEl.style.cssText = 'display:flex;align-items:center;padding:10px 14px 14px;gap:8px;box-sizing:border-box;width:100%;';
+        navEl.style.cssText = 'display:flex;align-items:center;padding:12px 16px 16px;gap:10px;box-sizing:border-box;width:100%;';
 
         function makeBtn(pts) {
             var btn = document.createElement('button');
-            btn.style.cssText = 'width:40px;height:40px;flex-shrink:0;border-radius:11px;background:rgba(100,116,139,0.14);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.2s;';
-            btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="'+pts+'"/></svg>';
+            btn.style.cssText = 'width:48px;height:48px;flex-shrink:0;border-radius:13px;background:rgba(100,116,139,0.16);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity 0.2s;';
+            btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="'+pts+'"/></svg>';
             return btn;
         }
         var prevBtn = makeBtn('15 18 9 12 15 6');
         var nextBtn = makeBtn('9 18 15 12 9 6');
 
         var center = document.createElement('div');
-        center.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;';
+        center.style.cssText = 'flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px;';
 
         var nameEl = document.createElement('span');
-        nameEl.style.cssText = 'font-size:13.5px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;white-space:nowrap;';
+        nameEl.style.cssText = 'font-size:15px;font-weight:700;color:#00B0FF;letter-spacing:-0.01em;white-space:nowrap;';
         nameEl.textContent = labels[0] || '';
 
         var dotRow = document.createElement('div');
-        dotRow.style.cssText = 'display:flex;gap:5px;align-items:center;';
+        dotRow.style.cssText = 'display:flex;gap:6px;align-items:center;';
         var dotEls = Array.from({length: n}, function(_, i) {
             var d = document.createElement('span');
-            d.style.cssText = 'display:block;height:6px;border-radius:9999px;cursor:pointer;transition:all 0.3s;background:'+(i===0?'#00B0FF':'rgba(148,163,184,0.35)')+';width:'+(i===0?'22px':'6px')+';';
+            d.style.cssText = 'display:block;height:7px;border-radius:9999px;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);background:'+(i===0?'#00B0FF':'rgba(148,163,184,0.35)')+';width:'+(i===0?'26px':'7px')+';';
             d.onclick = function() { goTo(i); };
             return d;
         });
@@ -5547,13 +5558,13 @@
         function goTo(idx) {
             idx = Math.max(0, Math.min(idx, n - 1));
             cards.forEach(function(c, i) {
-                c.style.setProperty('display', i === idx ? '' : 'none', 'important');
+                c.style.setProperty('display', i === idx ? 'block' : 'none', 'important');
             });
             cur = idx;
             nameEl.textContent = labels[cur] || '';
             dotEls.forEach(function(d, i) {
                 d.style.background = i === cur ? '#00B0FF' : 'rgba(148,163,184,0.35)';
-                d.style.width = i === cur ? '22px' : '6px';
+                d.style.width = i === cur ? '26px' : '7px';
             });
             prevBtn.style.opacity = cur === 0 ? '0.28' : '1';
             nextBtn.style.opacity = cur === n - 1 ? '0.28' : '1';
@@ -5561,6 +5572,16 @@
 
         prevBtn.onclick = function() { goTo(cur - 1); };
         nextBtn.onclick = function() { goTo(cur + 1); };
+
+        /* ── 터치 스와이프 지원 ── */
+        var _tx = 0;
+        grid.addEventListener('touchstart', function(e) {
+            _tx = e.changedTouches[0].clientX;
+        }, {passive: true});
+        grid.addEventListener('touchend', function(e) {
+            var dx = e.changedTouches[0].clientX - _tx;
+            if (Math.abs(dx) > 50) { dx < 0 ? goTo(cur + 1) : goTo(cur - 1); }
+        }, {passive: true});
 
         goTo(0);
     }
