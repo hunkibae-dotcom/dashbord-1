@@ -1690,7 +1690,7 @@
                 icon.classList.add('animate-spin');
             }
 
-            const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
+            const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
             const pubUrl = localStorage.getItem('sheet_pub_url') || DEFAULT_URL;
 
             let csvUrl = pubUrl;
@@ -4888,7 +4888,7 @@
             _wrmShowStatus('<i class="fa-solid fa-spinner fa-spin"></i> 구글 시트에 전송 중...', '#94A3B8');
 
             const scriptUrl = localStorage.getItem('sheet_pub_url') ||
-                'https://script.google.com/macros/s/AKfycbzsmA9Cu7xJ5D3DeouBsWKt_ii0YM4U6GPnbWX_NhZughWWh93dTLE4_VNMuBElXqA/exec';
+                'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             try {
