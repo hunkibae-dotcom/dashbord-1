@@ -34,18 +34,18 @@
             --log-border:#F1F5F9;
         }
         html.dark {
-            --bg:        #0D1117;
-            --panel:     #161D2E;
-            --border:    #243048;
+            --bg:        #141E2E;
+            --panel:     #1C2840;
+            --border:    #2D3F5A;
             --text:      #F1F5F9;
-            --text-sub:  #94A3B8;
-            --label:     #64748B;
-            --shadow:    0 4px 24px rgba(0,0,0,.4);
-            --divider:   #243048;
-            --input-bg:  #0D1117;
-            --nav-bg:    rgba(22,29,46,.97);
-            --icon-bg:   #243048;
-            --log-border:#243048;
+            --text-sub:  #A0B4CC;
+            --label:     #6B8BAA;
+            --shadow:    0 4px 24px rgba(0,0,0,.35);
+            --divider:   #2D3F5A;
+            --input-bg:  #141E2E;
+            --nav-bg:    rgba(28,40,64,.97);
+            --icon-bg:   #253550;
+            --log-border:#2D3F5A;
         }
 
         * { box-sizing: border-box; }
@@ -190,12 +190,12 @@
         </div>
 
         <!-- Row 2: 슬라이드 카드 (수출일정 / 이전 작업 LOG / INFORM) -->
-        <div id="scheduleCard" class="card" style="position:relative;overflow:hidden;padding:0;">
-            <div id="slideTrack" style="display:flex;transition:transform .45s cubic-bezier(.4,0,.2,1);"
+        <div id="scheduleCard" class="card" style="position:relative;overflow:hidden;padding:0;height:240px;">
+            <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
                 <!-- Slide 0: 수출 일정 -->
-                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;position:relative;overflow:hidden;">
+                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;position:relative;overflow:hidden;">
                     <span style="position:absolute;right:12px;top:10px;font-size:40px;opacity:.07;pointer-events:none;color:#00E676;"><i class="fa-solid fa-ship"></i></span>
                     <div class="label">수출 일정</div>
                     <div style="margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;">
@@ -211,18 +211,18 @@
                 </div>
 
                 <!-- Slide 1: 이전 작업 LOG -->
-                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;">
+                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;overflow:hidden;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                         <div class="label">이전 작업 내용 Log</div>
                         <span style="font-size:9px;background:var(--icon-bg);color:var(--text-sub);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid var(--border);">최근 완료</span>
                     </div>
-                    <div id="workLogList" class="no-scrollbar" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;">
+                    <div id="workLogList" class="no-scrollbar" style="max-height:152px;overflow-y:auto;display:flex;flex-direction:column;">
                         <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">로딩 중...</div>
                     </div>
                 </div>
 
                 <!-- Slide 2: INFORM -->
-                <div style="min-width:100%;padding:16px 16px 32px;box-sizing:border-box;">
+                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;overflow-y:auto;">
                     <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
                         <i class="fa-solid fa-bell" style="color:#FF9100;font-size:10px;"></i>
                         <div class="label">공지 / INFORM</div>
@@ -248,7 +248,7 @@
                             </div>
                             <span id="informPalletBadge" style="display:none;font-size:9px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.12);padding:1px 6px;border-radius:10px;"></span>
                         </div>
-                        <div id="informPallets" class="no-scrollbar" style="max-height:200px;overflow-y:auto;">
+                        <div id="informPallets" class="no-scrollbar" style="max-height:120px;overflow-y:auto;">
                             <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">로딩 중...</div>
                         </div>
                     </div>
