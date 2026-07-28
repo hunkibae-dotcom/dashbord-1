@@ -296,6 +296,9 @@
             <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);display:flex;gap:4px;align-items:center;z-index:2;">
                 <div id="chartDot0" onclick="goChartSlide(0)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:#00B0FF;width:20px;"></div>
                 <div id="chartDot1" onclick="goChartSlide(1)" style="height:4px;border-radius:2px;cursor:pointer;transition:all .3s;background:var(--border);width:6px;"></div>
+                <button id="chartPlayBtn" onclick="toggleChartPlay()" style="-webkit-appearance:none;appearance:none;background:none;border:none;cursor:pointer;color:var(--label);font-size:9px;padding:0;margin-left:5px;line-height:1;display:flex;align-items:center;opacity:.8;">
+                    <i class="fa-solid fa-pause"></i>
+                </button>
             </div>
         </div>
 
@@ -724,6 +727,7 @@
             if (btn)  btn.style.color = '#00B0FF';
             chart.scrollIntoView({behavior:'smooth'});
             setTimeout(renderChart, 60);
+            _startChartTimer();
         } else {
             if (chart) chart.style.display = 'none';
             if (sched) sched.style.display = 'block';
@@ -1230,6 +1234,18 @@
         if (btn) btn.querySelector('i').className = _slideAutoPlay ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     }
 
+    // ── 차트 슬라이드 자동재생 ───────────────────────────
+    let _chartAutoPlay = true, _chartSlideTimer = null;
+    function _startChartTimer() {
+        if (_chartSlideTimer) clearInterval(_chartSlideTimer);
+        _chartSlideTimer = setInterval(() => { if (_chartAutoPlay) goChartSlide((_chartSlideIdx+1)%2); }, 5000);
+    }
+    function toggleChartPlay() {
+        _chartAutoPlay = !_chartAutoPlay;
+        const btn = document.getElementById('chartPlayBtn');
+        if (btn) btn.querySelector('i').className = _chartAutoPlay ? 'fa-solid fa-pause' : 'fa-solid fa-play';
+    }
+
     // ── 수출 포장 관리 현황 ────────────────────────────────
     function renderManagementStatus() {
         const STATUS_DEFS = [
@@ -1339,6 +1355,15 @@
     // ── 홈 버튼 ───────────────────────────────────────────
     function goHome() {
         if (_chartViewActive) toggleChartView();
+        // 수출 일정 슬라이드(0번)로 복귀
+        goSlide(0);
+        // 자동재생 켜기
+        if (!_slideAutoPlay) {
+            _slideAutoPlay = true;
+            const btn = document.getElementById('slidePlayBtn');
+            if (btn) btn.querySelector('i').className = 'fa-solid fa-pause';
+        }
+        _startSlideTimer();
         navSelect('navHome');
         scrollTo({ top: 0, behavior: 'smooth' });
     }
