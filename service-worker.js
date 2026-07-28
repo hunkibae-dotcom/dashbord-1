@@ -1,7 +1,6 @@
-const CACHE_NAME = 'export-packing-dashboard-v8';
+const CACHE_NAME = 'export-packing-dashboard-v9';
 const APP_SHELL = [
-  './index.html',
-  './수출포장강화_대시보드.html',
+  // HTML은 캐시하지 않음 — 항상 네트워크에서 최신본 수신
   './manifest.json',
   './manifest-packing.json',
   './icons/icon-192.png',
@@ -29,19 +28,28 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// network-first: 항상 최신 파일을 먼저 시도하고, 오프라인일 때만 캐시로 대체
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || !req.url.startsWith(self.location.origin)) return;
 
+  // HTML 파일: 타임스탬프 파라미터로 CDN 캐시를 매 요청마다 강제 우회, SW 캐시 미사용
+  if (req.destination === 'document' || req.url.includes('.html')) {
+    const sep = req.url.includes('?') ? '&' : '?';
+    const bustUrl = req.url + sep + '_sw=' + Date.now();
+    event.respondWith(
+      fetch(bustUrl, { cache: 'no-store' })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // 아이콘·manifest 등 정적 자산: network-first, SW 캐시 저장
   event.respondWith(
-    // cache:'no-store'로 브라우저/CDN HTTP 캐시를 건너뛰고 항상 서버에서 새로 받아옴
     fetch(req, { cache: 'no-store' })
       .then((res) => {
-        const resClone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, res.clone()));
         return res;
       })
-      .catch(() => caches.match(req).then((cached) => cached || caches.match('./수출포장강화_대시보드.html')))
+      .catch(() => caches.match(req))
   );
 });
