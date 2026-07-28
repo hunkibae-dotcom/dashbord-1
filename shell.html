@@ -681,6 +681,23 @@
     }
 
     // ── 제품 상세스펙 조회 ─────────────────────────────────
+    const _stripUnit = val => (!val || val==='-') ? '' : val.toString().trim().replace(/[a-zA-Z가-힣]+$/g,'').trim();
+    const _fmt       = n   => n % 1 === 0 ? n.toFixed(0) : n.toFixed(1);
+
+    function _specStats(items, field) {
+        const vals = items.map(i => parseFloat(_stripUnit(i[field]))).filter(v => !isNaN(v) && v > 0);
+        if (!vals.length) return { avg:'—', tol:null, count:0 };
+        const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+        const tol = (Math.max(...vals) - Math.min(...vals)) / 2;
+        return { avg:_fmt(avg), tol:_fmt(tol), count:vals.length };
+    }
+    function _renderTol(tol, count) {
+        if (tol === null) return '';
+        if (count <= 1) return '<span style="color:#F59E0B;font-size:10px;">데이터 부족</span>';
+        if (parseFloat(tol) === 0) return '<span style="color:#64748B;font-size:10px;">±0 균일</span>';
+        return '<span style="color:#94A3B8;font-size:10px;">±'+tol+'</span>';
+    }
+
     function runSpecSearch() {
         const code = (document.getElementById('spec_code').value || '').trim().toLowerCase();
         const list  = document.getElementById('specList');
@@ -688,33 +705,84 @@
             list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">제품코드를 입력하세요</div>';
             return;
         }
-        const matches = allData.filter(d =>
-            (d.code||'').toLowerCase().includes(code) && (d.specW || d.specD || d.specH || d.specG)
-        );
+        const matches = allData.filter(d => (d.code||'').toLowerCase().includes(code));
         if (!matches.length) {
-            list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">스펙 정보 없음</div>';
+            list.innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
             return;
         }
-        const seen = new Set();
-        const unique = matches.filter(d => {
-            const k = d.code+'|'+d.specW+'|'+d.specD+'|'+d.specH+'|'+d.specG;
-            if (seen.has(k)) return false;
-            seen.add(k); return true;
+
+        // 코드별 그룹핑
+        const groups = {};
+        matches.forEach(d => {
+            const k = d.code; if (!groups[k]) groups[k] = []; groups[k].push(d);
         });
-        list.innerHTML = unique.slice(0,10).map(d => `
-            <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;">
-                <div style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);margin-bottom:10px;">${d.code}</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                    ${specCell('가로 (W)',d.specW,'mm')}${specCell('세로 (D)',d.specD,'mm')}
-                    ${specCell('높이 (H)',d.specH,'mm')}${specCell('무게 (G)',d.specG,'kg')}
+
+        list.innerHTML = Object.entries(groups).slice(0,5).map(([, items]) => {
+            const dc  = items[0].code;
+            const wS  = _specStats(items,'specW');
+            const dS  = _specStats(items,'specD');
+            const hS  = _specStats(items,'specH');
+            const gS  = _specStats(items,'specG');
+
+            // CBM
+            const cbmVals = items.map(i => {
+                const w=parseFloat(_stripUnit(i.specW)), d=parseFloat(_stripUnit(i.specD)), h=parseFloat(_stripUnit(i.specH));
+                return (isNaN(w)||isNaN(d)||isNaN(h)||w<=0||d<=0||h<=0) ? NaN : (w*d*h)/1e9;
+            }).filter(v=>!isNaN(v));
+            let cbmAvg='—', cbmTol=null, cbmCnt=0;
+            if (cbmVals.length) {
+                const avg=cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length;
+                cbmAvg=avg.toFixed(4); cbmTol=((Math.max(...cbmVals)-Math.min(...cbmVals))/2).toFixed(4); cbmCnt=cbmVals.length;
+            }
+
+            const sampleN = Math.max(wS.count,dS.count,hS.count,gS.count,cbmCnt);
+
+            // 이력
+            const history = [...items].sort((a,b)=>b.regDate>a.regDate?1:-1).slice(0,10).map(d => {
+                const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기')?'#FF9100':'#64748B');
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--log-border);">
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
+                        <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">${d.regDate}</div>
+                    </div>
+                    <div style="flex-shrink:0;margin-left:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
+                        <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:1px 7px;border-radius:20px;">${d.status}</span>
+                        <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${d.qty.toLocaleString()} BOX</span>
+                    </div>
+                </div>`;
+            }).join('');
+
+            return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${dc}</span>
+                    ${sampleN>0?'<span style="font-size:10px;color:var(--label);font-family:monospace;">n='+sampleN+'</span>':''}
                 </div>
-            </div>`
-        ).join('');
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    ${specCell('가로 (W)',wS.avg,'mm',_renderTol(wS.tol,wS.count))}
+                    ${specCell('세로 (D)',dS.avg,'mm',_renderTol(dS.tol,dS.count))}
+                    ${specCell('높이 (H)',hS.avg,'mm',_renderTol(hS.tol,hS.count))}
+                    ${specCell('무게 (G)',gS.avg,'kg',_renderTol(gS.tol,gS.count))}
+                    <div style="grid-column:span 2;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+                        <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">CBM (m³)</div>
+                        <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px;">
+                            <span style="font-size:18px;font-weight:800;color:#00B0FF;font-family:monospace;">${cbmAvg}</span>
+                            ${cbmAvg!=='—'?'<span style="font-size:10px;color:var(--text-sub);">m³</span>':''}
+                            <span style="margin-left:4px;">${_renderTol(cbmTol,cbmCnt)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;margin-bottom:6px;">수출 진행 이력</div>
+                    ${history || '<div style="font-size:11px;color:var(--text-sub);padding:8px 0;">이력 없음</div>'}
+                </div>
+            </div>`;
+        }).join('');
     }
-    function specCell(label, val, unit) {
+    function specCell(label, val, unit, tolHtml) {
         return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
             <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">${label}</div>
-            <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-family:monospace;">${val||'—'}<span style="font-size:10px;font-weight:400;color:var(--text-sub);margin-left:3px;">${val?unit:''}</span></div>
+            <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-family:monospace;">${val}<span style="font-size:10px;font-weight:400;color:var(--text-sub);margin-left:3px;">${val!=='—'?unit:''}</span></div>
+            <div style="margin-top:3px;min-height:14px;">${tolHtml||''}</div>
         </div>`;
     }
 
