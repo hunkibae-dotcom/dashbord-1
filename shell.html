@@ -1156,13 +1156,15 @@
             const history = [...items].sort((a,b)=>b.regDate>a.regDate?1:-1).slice(0,10).map(d => {
                 const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기')?'#FF9100':'#64748B');
                 const _isS = d.isDone && (d.status.includes('출고')||d.status.includes('피킹'));
-                const _hp  = _isS ? (d.status.includes('피킹')?'피킹':'출고') : (_spm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || null);
+                const _rawHp = _spm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || null;
+                const _hp  = _isS ? (d.status.includes('피킹')?'피킹':'출고') : _rawHp;
                 const _hpc = _isS ? (d.status.includes('피킹')?'#A78BFA':'#00E676') : '#00B0FF';
-                const _hpHtml = _hp
-                    ? (_isS
-                        ? `<span style="font-size:10px;font-weight:700;color:${_hpc};">적재:${_hp}</span>`
-                        : `<button onclick="openPalletEditMobile('${(d.code||'').replace(/'/g,"&#39;")}','${(d.round||'').replace(/'/g,"&#39;")}','${_hp.replace(/'/g,"&#39;")}')" style="font-size:10px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">적재:${_hp}</button>`)
-                    : `<span style="font-size:10px;color:var(--text-sub);">적재 —</span>`;
+                const _isInStock = !_isS && _ssk.has((d.code||'').toUpperCase()+'|'+(d.round||''));
+                const _hpHtml = _isS
+                    ? `<span style="font-size:10px;font-weight:700;color:${_hpc};">${_hp}</span>`
+                    : (_isInStock
+                        ? `<button onclick="openPalletEditMobile('${(d.code||'').replace(/'/g,"&#39;")}','${(d.round||'').replace(/'/g,"&#39;")}','${(_rawHp||'').replace(/'/g,"&#39;")}')" style="font-size:10px;font-weight:700;color:${_rawHp?'#00B0FF':'var(--text-sub)'};background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_rawHp || '—'}</button>`
+                        : `<span style="font-size:10px;color:var(--text-sub);">—</span>`);
                 const _hsc = (d.code||'').replace(/'/g,"&#39;");
                 const _hsr = (d.round||'').replace(/'/g,"&#39;");
                 const _hss = (d.status||'').replace(/'/g,"&#39;");
