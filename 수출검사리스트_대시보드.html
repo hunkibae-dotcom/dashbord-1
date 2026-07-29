@@ -2554,7 +2554,13 @@ if ('serviceWorker' in navigator) {
           <span class="w-1.5 h-1.5 rounded-full pulse-dot" style="background:#FB923C;"></span>
           <span id="mConnText">대기</span>
         </div>
-        <button onclick="loadData()" style="margin-left:auto;width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        <!-- 공장 필터: 홈 화면 KPI·리스트를 전체/충주1/충주2로 필터 -->
+        <div style="margin-left:auto;display:flex;gap:1px;background:#F4F6F9;border-radius:10px;padding:2px;">
+          <button onclick="setMFactory('all')" id="mHomeFAll" class="tab-btn active" style="font-size:11px;padding:4px 9px;border-radius:8px;">전체</button>
+          <button onclick="setMFactory('cj1')" id="mHomeFCj1" class="tab-btn" style="font-size:11px;padding:4px 9px;border-radius:8px;">충주1</button>
+          <button onclick="setMFactory('cj2')" id="mHomeFCj2" class="tab-btn" style="font-size:11px;padding:4px 9px;border-radius:8px;">충주2</button>
+        </div>
+        <button onclick="loadData()" style="width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;">
           <i class="fa-solid fa-arrows-rotate text-[13px]" id="mSyncIco"></i>
         </button>
       </div>
