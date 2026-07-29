@@ -778,8 +778,8 @@ var _selectedCode  = '';
 var _isDecoding    = false;
 
 function goScan(){
-    if(_curMenu === 'pack'){
-        /* 포장강화: 대시보드(shell.html) 내 개선된 스캐너를 바로 열기 */
+    if(_curMenu === 'pack' || _curMenu === 'quality'){
+        /* 포장강화/품질검사: 각 대시보드 내 개선된 스캐너를 바로 열기 */
         var m = MENUS[_curMenu];
         var th = document.documentElement.getAttribute('data-theme') || 'dark';
         _navigate(m.dashboard + '?shell=1&theme=' + th + '&openScan=1&v=' + Date.now());
