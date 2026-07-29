@@ -2251,10 +2251,16 @@
                     return (numA - numB) * multiDir;
                 }
 
-                if (key === '_cbm' || key === '_wgt') {
+                if (key === '_cbm') {
                     const numA = valA != null ? parseFloat(valA) : -Infinity;
                     const numB = valB != null ? parseFloat(valB) : -Infinity;
                     return (numA - numB) * multiDir;
+                }
+
+                if (key === 'pallet') {
+                    const numA = parseFloat(valA);
+                    const numB = parseFloat(valB);
+                    if (!isNaN(numA) && !isNaN(numB)) return (numA - numB) * multiDir;
                 }
                 
                 const strA = valA.toString();
