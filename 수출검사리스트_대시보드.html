@@ -2292,7 +2292,8 @@ function renderMobileFactoryPanels() {
       const da = ddayInfo(a.납기일), db = ddayInfo(b.납기일);
       if (da === null) return 1; if (db === null) return -1; return da - db;
     }).slice(0, 5);
-    panel.innerHTML = sorted.map(d => {
+    if (!window._mItemMap) window._mItemMap = {};
+    panel.innerHTML = sorted.map((d, idx) => {
       const dd = ddayInfo(d.납기일);
       let ddB = '<span class="text-[10.5px] text-slate-300">납기 미정</span>';
       let barColor = '#CBD5E1';
@@ -2301,7 +2302,9 @@ function renderMobileFactoryPanels() {
         else if (dd <= 7) { ddB = `<span class="pill pill-dday-soon" style="font-size:10px;padding:2px 8px;">D-${dd}</span>`; barColor = '#FB923C'; }
         else ddB = `<span class="text-[11px] font-semibold text-slate-400">D-${dd}</span>`;
       }
-      return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0">
+      const mik = 'mfp_' + key + '_' + idx;
+      window._mItemMap[mik] = d;
+      return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 cursor-pointer" onclick="openMItemDetail('${mik}')" style="-webkit-tap-highlight-color:transparent;">
         <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
         <div class="flex-1 min-w-0">
           <div class="text-[14px] font-bold text-slate-800 truncate">${d.건명}</div>
