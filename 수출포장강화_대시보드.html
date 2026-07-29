@@ -2340,6 +2340,21 @@
                 const countryQuery = document.getElementById('countryFilter').value.toLowerCase().trim();
                 const startDate = document.getElementById('startDateFilter').value;
                 const endDate = document.getElementById('endDateFilter').value;
+                const palletQuery = (document.getElementById('palletFilter')?.value || '').toLowerCase().trim();
+
+                const _pfMap = {};
+                if (palletQuery && state.rawStockRows && state.rawStockRows.length > 1) {
+                    const _ph = state.rawStockRows[0].map(h => (h||'').toString().trim());
+                    const _piC = _ph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                    const _piR = _ph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                    for (let _pi = 1; _pi < state.rawStockRows.length; _pi++) {
+                        const _pr = state.rawStockRows[_pi]; if (!_pr) continue;
+                        const _pc = (_pr[_piC >= 0 ? _piC : 1] || '').toString().trim().toUpperCase();
+                        const _prnd = (_pr[_piR >= 0 ? _piR : 4] || '').toString().trim();
+                        const _pv = (_pr[10] || '').toString().trim();
+                        if (_pc && _pv) _pfMap[_pc + '|' + _prnd] = _pv;
+                    }
+                }
 
                 state.filteredData = state.data.filter(item => {
                     let itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
@@ -2355,8 +2370,14 @@
                     const roundCountry = item.round ? item.round.split('-')[0].trim().toLowerCase() : '';
                     const matchesCountry = countryQuery === '' || roundCountry.includes(countryQuery);
                     const matchesStatus = activeStatusFilter === '전체' || item.status === activeStatusFilter;
+                    let matchesPallet = true;
+                    if (palletQuery) {
+                        const _isS = item.status === '출고' || item.status === '피킹';
+                        const _pv = _isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '');
+                        matchesPallet = _pv.toLowerCase().includes(palletQuery);
+                    }
 
-                    return matchesDate && matchesRound && matchesCode && matchesCountry && matchesStatus;
+                    return matchesDate && matchesRound && matchesCode && matchesCountry && matchesStatus && matchesPallet;
                 });
 
                 sortData();
