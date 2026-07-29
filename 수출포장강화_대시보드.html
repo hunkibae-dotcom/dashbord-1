@@ -4137,6 +4137,7 @@
             document.getElementById('countryFilter').value = '';
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
+            const _pf = document.getElementById('palletFilter'); if (_pf) _pf.value = '';
             sortConfig.key = 'regDate';
             sortConfig.direction = 'desc';
             updateSortHeaders();
