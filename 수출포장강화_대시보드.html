@@ -2603,8 +2603,7 @@
                 if (_dtIsS) {
                     _dtPCH = `<span style="color:${item.status==='피킹'?'#A78BFA':'#34D399'};font-weight:700;">${_dtPv}</span>`;
                 } else if (_dtPv !== '-') {
-                    window._palletEditMap[_dtPk] = { code: item.code, round: item.round, currentPallet: _dtPv };
-                    _dtPCH = `<button onclick="openPalletEdit('${_dtPk}')" style="color:#00B0FF;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:17.5px;font-weight:700;">${_dtPv}</button>`;
+                    _dtPCH = `<span style="color:#00B0FF;font-size:17.5px;font-weight:700;">${_dtPv}</span>`;
                 } else {
                     _dtPCH = `<span style="color:#475569;">—</span>`;
                 }
@@ -2615,7 +2614,7 @@
                     <td class="py-3 px-4 font-medium text-center whitespace-nowrap" style="color:#334155;">${item.code}</td>
                     <td class="py-3 px-4 font-semibold text-slate-400 text-center whitespace-nowrap">${item.color || 'WW'}</td>
                     <td class="py-3 px-4 text-center font-bold text-slate-300 whitespace-nowrap">${item.qty} BOX</td>
-                    <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge} cursor-pointer select-none" onclick="openStatusEdit('${_stDC}','${_stDR}','${_stDL}')">${item.statusLabel || item.status}</span></td>
+                    <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge} select-none">${item.statusLabel || item.status}</span></td>
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">${_dtPCH}</td>
