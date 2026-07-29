@@ -2382,7 +2382,8 @@ function renderMobileList() {
   const body = document.getElementById('mListBody');
   if (!body) return;
   if (!items.length) { body.innerHTML = '<div class="text-center py-12 text-slate-400 text-[13px]"><i class="fa-solid fa-magnifying-glass text-[24px] block mb-2 text-slate-300"></i>조건에 맞는 항목이 없습니다</div>'; return; }
-  body.innerHTML = items.map(d => {
+  if (!window._mItemMap) window._mItemMap = {};
+  body.innerHTML = items.map((d, idx) => {
     const isDone = d.검사 === '검사';
     const isYangji = d.검사 === '양지';
     const isArchive = d.source === 'archive';
