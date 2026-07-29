@@ -819,6 +819,7 @@ async function loadData() {
   ).then(archives => {
     archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
     archiveRows = archives.filter(Boolean).flatMap(t => t.items);
+    applyMiOverrides(archiveRows);
     _saveArchiveCache(archiveTotals, archiveRows);
     renderArchiveKPI();
     renderQualityCharts();
