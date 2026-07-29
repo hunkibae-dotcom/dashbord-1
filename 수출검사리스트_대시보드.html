@@ -1000,6 +1000,7 @@ function debounce(fn, wait) {
 }
 const applyFiltersDebounced = debounce(applyFilters, 300);
 const runProductSearchDebounced = debounce(() => runProductSearch(), 300);
+const renderMobileListDebounced = debounce(() => renderMobileList(), 300);
 
 function applyFilters() {
   const search = document.getElementById('fSearch').value.toLowerCase();
