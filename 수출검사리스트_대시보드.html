@@ -808,6 +808,7 @@ async function loadData() {
     FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
   ).then(results => {
     allData = results.flat();
+    applyMiOverrides(allData);
     populateFilterOptions();
     applyFilters();
     renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
