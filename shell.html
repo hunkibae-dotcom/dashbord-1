@@ -1996,7 +1996,7 @@
         openView('viewSearch');
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
-        ['sf_round','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
+        ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
         runSearch();
     }
 
