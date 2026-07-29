@@ -1205,8 +1205,8 @@
         }).join('');
     }
     function clearSearch() {
-        ['sf_round','sf_code','sf_color','sf_country'].forEach(id => { document.getElementById(id).value = ''; });
-        runSearch();
+        ['sf_round','sf_code','sf_color','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
+        setSfDateField('date');
     }
 
     // ── 제품 상세스펙 조회 ─────────────────────────────────
