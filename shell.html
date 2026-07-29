@@ -1860,7 +1860,7 @@
             return `<div style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                     <button onclick="openSpecDetail('${_sc}')" style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;background:none;border:none;cursor:pointer;padding:0;text-align:left;">${d.code || '—'}</button>
-                    <span style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;">${d.status}</span>
+                    <button onclick="openStatusEditMobile('${_sc}','${_sr}','${(d.status||'').replace(/'/g,'&#39;')}')" style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;border:none;cursor:pointer;">${d.status}</button>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:3px;">
                     <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${d.round}</span>
