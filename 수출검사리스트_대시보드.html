@@ -663,6 +663,42 @@
   </div>
 </div>
 
+<!-- ===== 바코드 스캐너 뷰 ===== -->
+<div id="viewScan" class="hidden fixed inset-0 z-[110] bg-black flex flex-col overflow-hidden">
+  <div class="absolute top-0 left-0 right-0 z-10 p-3 flex items-center gap-2" style="background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
+    <button onclick="closeScanView()" class="text-white text-xl p-1.5"><i class="fa-solid fa-chevron-left"></i></button>
+    <span class="text-white font-extrabold text-[15px] flex-1">바코드 스캔</span>
+    <span class="text-white/60 text-[10px]">CODE128 · CODE39</span>
+  </div>
+  <video id="scanVideo" autoplay playsinline muted class="flex-1 w-full object-cover"></video>
+  <div class="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none">
+    <div id="scanFrame" class="relative" style="width:82%;max-width:360px;height:110px;">
+      <div class="absolute inset-0 rounded-xl" style="border:2px solid #6366F1;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
+        <span class="absolute w-5 h-5" style="top:-2px;left:-2px;border-top:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:4px 0 0 0;"></span>
+        <span class="absolute w-5 h-5" style="top:-2px;right:-2px;border-top:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 4px 0 0;"></span>
+        <span class="absolute w-5 h-5" style="bottom:-2px;left:-2px;border-bottom:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:0 0 0 4px;"></span>
+        <span class="absolute w-5 h-5" style="bottom:-2px;right:-2px;border-bottom:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 0 4px 0;"></span>
+        <div id="scanLaser" class="absolute" style="left:4px;right:4px;height:2px;top:50%;background:linear-gradient(to right,transparent,#F43F5E,transparent);border-radius:2px;animation:scanLaser 1.8s ease-in-out infinite;"></div>
+      </div>
+    </div>
+    <div id="scanStatus" class="mt-5 text-white text-[13px] font-bold bg-black/50 px-4 py-1.5 rounded-full">카메라 초기화 중...</div>
+  </div>
+  <canvas id="scanCanvas" class="hidden"></canvas>
+  <div id="scanResultBar" class="hidden absolute bottom-6 left-0 right-0 z-10 p-3 bg-black/80 border-t border-white/10">
+    <div class="flex items-center gap-2.5">
+      <div class="flex-1 min-w-0">
+        <div class="text-[10px] text-white/50 mb-0.5">스캔 결과</div>
+        <div id="scanResultText" class="text-[14px] font-extrabold text-indigo-400 font-mono truncate"></div>
+      </div>
+      <button onclick="confirmScanResult()" class="shrink-0 bg-indigo-500 text-white rounded-xl px-4 py-2.5 text-[13px] font-extrabold">검색</button>
+      <button onclick="resumeScan()" class="shrink-0 bg-white/15 text-white rounded-xl px-3.5 py-2.5 text-[13px] font-bold">재스캔</button>
+    </div>
+  </div>
+</div>
+<style>
+@keyframes scanLaser { 0%{top:10%} 50%{top:85%} 100%{top:10%} }
+</style>
+
 <script>
 // ===== CONFIG =====
 const FACTORIES = [
