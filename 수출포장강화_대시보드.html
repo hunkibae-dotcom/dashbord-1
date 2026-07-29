@@ -2518,6 +2518,26 @@
                 return;
             }
 
+            // 파렛트 맵 (상세 이력)
+            if (!window._palletEditMap) window._palletEditMap = {};
+            const _dtPM = {};
+            if (state.rawStockRows && state.rawStockRows.length > 1) {
+                const _dph = state.rawStockRows[0].map(h => (h||'').toString().trim());
+                const _dpiC = _dph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                const _dpiR = _dph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                for (let _dpi = 1; _dpi < state.rawStockRows.length; _dpi++) {
+                    const _dpr = state.rawStockRows[_dpi]; if (!_dpr) continue;
+                    const _c = (_dpr[_dpiC >= 0 ? _dpiC : 1] || '').toString().trim().toUpperCase();
+                    const _r = (_dpr[_dpiR >= 0 ? _dpiR : 4] || '').toString().trim();
+                    const _v = (_dpr[10] || '').toString().trim();
+                    if (_c && _v) _dtPM[_c + '|' + _r] = _v;
+                }
+            }
+            matchedList.forEach(it => {
+                const _isS = it.status === '출고' || it.status === '피킹';
+                it.pallet = _isS ? (it.status === '피킹' ? '피킹' : '출고') : (_dtPM[(it.code||'').toUpperCase() + '|' + (it.round||'')] || '-');
+            });
+
             // 상세 뷰 3단계 정렬 수행
             if (detailSortConfig.key && detailSortConfig.direction !== 'none') {
                 const k = detailSortConfig.key;
