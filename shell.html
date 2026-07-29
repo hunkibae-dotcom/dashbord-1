@@ -430,6 +430,19 @@
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+
+                <!-- 날짜 필터: 기준 필드 선택 + 기간 -->
+                <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;">
+                    <button id="sfDateFieldDate" onclick="setSfDateField('date')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">상차일</button>
+                    <button id="sfDateFieldDue" onclick="setSfDateField('dueDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">납기일</button>
+                    <button id="sfDateFieldReg" onclick="setSfDateField('regDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">포장완료일</button>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <input id="sf_dateFrom" type="date" onchange="runSearch()"
+                        style="flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;">
+                    <input id="sf_dateTo" type="date" onchange="runSearch()"
+                        style="flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;">
+                </div>
             </div>
             <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;">
                 <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
