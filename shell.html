@@ -1298,10 +1298,11 @@
 
     // ── PC 대시보드 웹으로 열기 ───────────────────────────────
     function openPCDashboard() {
-        const url = 'https://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html';
+        // forceDesktop=1 → 대상 페이지에서 뷰포트를 데스크톱 폭으로 고정해서 폰 화면에서도 실제 PC 화면과 동일하게 표시
+        const url = 'https://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1';
         if (/Android/i.test(navigator.userAgent)) {
             // Android TWA/PWA scope 내부 URL → intent:// 로 Chrome 외부 브라우저 강제 실행
-            window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
+            window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html%3FforceDesktop%3D1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
         } else {
             window.open(url, '_blank', 'noopener,noreferrer');
         }
