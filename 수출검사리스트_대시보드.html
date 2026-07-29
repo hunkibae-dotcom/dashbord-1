@@ -2634,24 +2634,64 @@ if ('serviceWorker' in navigator) {
     <i class="fa-solid fa-chevron-up text-[13px]"></i>
   </button>
 
-  <!-- Bottom Nav -->
-  <div id="mQualityBottomNav" class="bg-white shrink-0" style="border-top:1px solid #EAECF0;padding-bottom:env(safe-area-inset-bottom,0px);">
+  <!-- Bottom Nav (포장강화 shell.html과 동일하게 4항목: 홈·차트·제품검색·설정) -->
+  <div id="mQualityBottomNav" class="shrink-0" style="background:var(--panel);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px);">
     <div class="flex" style="height:84px;padding:0 4px;">
       <button onclick="setMTab('home')" id="mNav0" class="mobile-nav-btn active">
-        <span class="m-nav-icon"><i class="fa-solid fa-grip"></i></span>
-        <span>현황</span>
+        <span class="m-nav-icon"><i class="fa-solid fa-house"></i></span>
+        <span>홈</span>
       </button>
       <button onclick="setMTab('chart')" id="mNav1" class="mobile-nav-btn">
-        <span class="m-nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+        <span class="m-nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
         <span>차트</span>
       </button>
-      <button onclick="setMTab('list')" id="mNav2" class="mobile-nav-btn">
-        <span class="m-nav-icon"><i class="fa-solid fa-list"></i></span>
-        <span>목록</span>
-      </button>
-      <button onclick="openProductSearch()" id="mNav3" class="mobile-nav-btn">
+      <button onclick="openProductSearch()" id="mNav2" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
-        <span>검색</span>
+        <span>제품검색</span>
+      </button>
+      <button onclick="openMSettings()" id="mNav3" class="mobile-nav-btn">
+        <span class="m-nav-icon"><i class="fa-solid fa-gear"></i></span>
+        <span>설정</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 설정 (모바일, 포장강화 shell.html 설정모달과 동일 구성) ===== -->
+<div id="mSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-gear" style="color:#6D5CE8;"></i> 설정
+      </span>
+      <button onclick="closeMSettings()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <a href="https://docs.google.com/spreadsheets/d/1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U/edit?gid=1420932673" target="_blank"
+         style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
+        <i class="fa-solid fa-file-excel" style="color:#22C55E;font-size:18px;width:22px;"></i>
+        충주1공장 데이터 시트
+        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
+      </a>
+      <a href="#" id="mSheetLinkCj2" target="_blank"
+         style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
+        <i class="fa-solid fa-file-excel" style="color:#22C55E;font-size:18px;width:22px;"></i>
+        충주2공장 데이터 시트
+        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
+      </a>
+      <button onclick="openMPCDashboard()"
+         style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);width:100%;text-align:left;">
+        <i class="fa-solid fa-desktop" style="color:#FF9800;font-size:18px;width:22px;"></i>
+        웹으로 열기 (PC 대시보드)
+        <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
+      </button>
+      <button onclick="loadData()"
+         style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);width:100%;text-align:left;">
+        <i class="fa-solid fa-arrows-rotate" style="color:#00B0FF;font-size:18px;width:22px;"></i>
+        지금 새로고침
+        <span id="mSettingsSyncTime" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></span>
       </button>
     </div>
   </div>
