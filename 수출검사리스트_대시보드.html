@@ -1927,6 +1927,18 @@ function initMobile() {
 }
 window.addEventListener('resize', initMobile);
 
+// ── 테마 (포장강화 shell.html과 동일 시스템/저장키 — 두 대시보드가 설정을 공유) ──
+function applyMTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  const chk = document.getElementById('mThemeCheck');
+  if (chk) chk.checked = dark;
+  localStorage.setItem('shell_theme', dark ? 'dark' : 'light');
+}
+function toggleMTheme() {
+  applyMTheme(document.getElementById('mThemeCheck').checked);
+}
+applyMTheme((localStorage.getItem('shell_theme') || 'light') === 'dark');
+
 function onMTabScroll(el) {
   const btn = document.getElementById('mToTopBtn');
   if (btn) btn.classList.toggle('show', el.scrollTop > 200);
