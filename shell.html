@@ -1833,6 +1833,13 @@
         document.getElementById('kpiTodayDate').textContent = fmtKr(todayStr());
         loadData();
         _startSlideTimer();
+
+        // F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈
+        const p = new URLSearchParams(location.search);
+        if (p.get('openScan') === '1') {
+            openScanView();
+            history.replaceState(null, '', location.pathname);
+        }
     });
     </script>
 </body>
