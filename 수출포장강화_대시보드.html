@@ -4986,13 +4986,13 @@
         // ============================================================
 
         function exportToCSV() {
-            const headers = ['등록일자(포장일)','건명','제품코드','수량','납기일','상차일','강화(BOX)','출고(BOX)','CBM','중량(KG)','상태'];
+            const headers = ['등록일자(포장일)','건명','제품코드','수량','납기일','상차일','강화(BOX)','출고(BOX)','CBM','적재','상태'];
             const rows = state.filteredData.map(item => [
                 normalizeDate(item.regDate), item.round, item.code, item.qty,
                 normalizeDate(item.dueDate), normalizeDate(item.date),
                 item.strengthenedQty, item.shippedQty,
                 item._cbm != null ? item._cbm.toFixed(4) : '-',
-                item._wgt != null ? item._wgt.toFixed(1) : '-',
+                item.pallet || '-',
                 item.status
             ]);
             const csvContent = [headers, ...rows].map(r => r.map(v => '"' + v + '"').join(',')).join('\n');
