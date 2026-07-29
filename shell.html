@@ -195,17 +195,54 @@
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
                 <!-- Slide 0: 수출 일정 -->
-                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;position:relative;overflow:hidden;">
+                <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;position:relative;overflow:hidden;">
                     <span style="position:absolute;right:12px;top:10px;font-size:40px;opacity:.07;pointer-events:none;color:#00E676;"><i class="fa-solid fa-ship"></i></span>
-                    <div class="label">수출 일정</div>
-                    <div style="margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;">
-                        <div>
-                            <span id="nearestDDay" style="font-size:36px;font-weight:800;line-height:1;letter-spacing:-.02em;color:#00E676;">—</span>
-                            <div id="nearestRound" style="margin-top:8px;font-size:15px;font-weight:700;color:var(--text);">—</div>
+                    <div class="label" style="margin-bottom:9px;">수출 일정</div>
+                    <!-- 일정 있을 때 -->
+                    <div id="schBody" onclick="goToScheduleSearch()" style="display:none;flex-direction:column;gap:0;cursor:pointer;">
+                        <!-- 건명 + D-day -->
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px;">
+                            <span id="nearestRound" style="font-size:13.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;">—</span>
+                            <span id="nearestDDay" style="font-size:11.5px;font-weight:800;color:#00E676;background:rgba(0,230,118,.15);padding:2px 9px;border-radius:14px;flex-shrink:0;">—</span>
                         </div>
-                        <div style="text-align:right;">
-                            <div id="nearestLoadDate" style="font-size:11px;font-family:monospace;color:var(--text-sub);">—</div>
-                            <div style="font-size:11px;color:var(--label);margin-top:3px;">수량 <span id="nearestQtyVal" style="font-weight:700;font-family:monospace;">—</span> BOX</div>
+                        <!-- 납기일 / 상차일 -->
+                        <div style="border-top:1px solid var(--divider);padding-top:6px;margin-bottom:6px;display:flex;flex-direction:column;gap:3px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;">
+                                <span style="color:var(--label);font-weight:600;">납기일</span>
+                                <span id="nearestDueDate" style="color:var(--text);font-weight:700;font-family:monospace;">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;">
+                                <span style="color:var(--label);font-weight:600;">상차일</span>
+                                <span id="nearestLoadDate" style="color:var(--text);font-weight:700;font-family:monospace;">—</span>
+                            </div>
+                        </div>
+                        <!-- 수량 -->
+                        <div style="border-top:1px solid var(--divider);padding-top:6px;display:flex;flex-direction:column;gap:3px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;">
+                                <span style="color:var(--text-sub);font-weight:600;">총 수량</span>
+                                <span id="nearestQtyVal" style="color:var(--text);font-weight:800;font-family:monospace;">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;">
+                                <span style="color:var(--text-sub);font-weight:600;">강화 완료</span>
+                                <span id="nearestDoneQty" style="color:#00E676;font-weight:800;font-family:monospace;">—</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;">
+                                <span style="color:var(--text-sub);font-weight:600;">남은 수량</span>
+                                <span id="nearestRemainQty" style="color:#F87171;font-weight:800;font-family:monospace;">—</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-top:4px;">
+                                <div style="flex:1;height:4px;border-radius:9999px;overflow:hidden;background:var(--icon-bg);">
+                                    <div id="nearestProgressBar" style="height:4px;width:0%;background:linear-gradient(90deg,#00E676,#38BDF8);border-radius:9999px;transition:width .4s ease;"></div>
+                                </div>
+                                <span id="nearestProgressPct" style="font-size:10px;color:var(--label);font-family:monospace;flex-shrink:0;width:28px;text-align:right;">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 일정 없을 때 -->
+                    <div id="schEmpty" style="display:flex;align-items:center;justify-content:center;height:140px;">
+                        <div style="text-align:center;">
+                            <i class="fa-solid fa-ship" style="font-size:22px;color:var(--label);opacity:.4;margin-bottom:8px;display:block;"></i>
+                            <div style="font-size:12px;color:var(--text-sub);">예정된 수출 일정 없음</div>
                         </div>
                     </div>
                 </div>
