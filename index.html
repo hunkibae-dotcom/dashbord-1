@@ -778,6 +778,13 @@ var _selectedCode  = '';
 var _isDecoding    = false;
 
 function goScan(){
+    if(_curMenu === 'pack'){
+        /* 포장강화: 대시보드(shell.html) 내 개선된 스캐너를 바로 열기 */
+        var m = MENUS[_curMenu];
+        var th = document.documentElement.getAttribute('data-theme') || 'dark';
+        _navigate(m.dashboard + '?shell=1&theme=' + th + '&openScan=1&v=' + Date.now());
+        return;
+    }
     var hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     if(!hasTouch){ alert('모바일 기기에서만 사용 가능합니다.'); return; }
     document.getElementById('scanModal').classList.add('open');
