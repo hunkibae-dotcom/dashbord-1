@@ -2387,6 +2387,17 @@ if ('serviceWorker' in navigator) {
     <!-- ── 현황 탭 ── -->
     <div id="mTab_home" class="absolute inset-0 overflow-y-auto" style="padding:20px 16px 28px;" onscroll="onMTabScroll(this)">
 
+      <!-- 상태 바 (포장강화 shell.html과 동일 위치: 헤더가 아니라 홈 화면 상단) -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <div id="mConnBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10.5px] font-bold" style="background:#FFF7ED;color:#C2410C;border:1px solid #FED7AA;">
+          <span class="w-1.5 h-1.5 rounded-full pulse-dot" style="background:#FB923C;"></span>
+          <span id="mConnText">대기</span>
+        </div>
+        <button onclick="loadData()" style="margin-left:auto;width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+          <i class="fa-solid fa-arrows-rotate text-[13px]" id="mSyncIco"></i>
+        </button>
+      </div>
+
       <!-- 페이지 타이틀 -->
       <div class="mb-5">
         <div class="text-[24px] font-extrabold text-slate-900" style="letter-spacing:-0.6px;">검사 현황</div>
