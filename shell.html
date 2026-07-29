@@ -663,15 +663,15 @@
             allData = []; stockData = []; rawStockRows = []; rawShippedRows = []; rawWorkLogRows = [];
             for (const sheet in json) {
                 const rows = json[sheet];
-                if (sheet.includes('충주공장 재고')) {
+                if (sheet.includes('충주공장 재고') || sheet.includes('충주1') || sheet.includes('충주2')) {
                     rawStockRows = rows;
-                    stockData = mapRows(rows);
+                    stockData = mapRows(rows, sheet);
                     allData   = allData.concat(stockData);
                 } else if (sheet.includes('수출 표준품 현황')) {
-                    allData = allData.concat(mapRows(rows));
+                    allData = allData.concat(mapRows(rows, sheet));
                 } else if (sheet.includes('출고 완료')) {
                     rawShippedRows = rows;
-                    allData = allData.concat(mapRows(rows));
+                    allData = allData.concat(mapRows(rows, sheet));
                 } else if (sheet.includes('작업일지')) {
                     processTodayWorkers(rows);
                 }
