@@ -799,6 +799,7 @@ async function loadData() {
   if (cached) {
     archiveTotals = cached.totals;
     archiveRows = cached.rows;
+    applyMiOverrides(archiveRows);
     renderArchiveKPI();
     renderQualityCharts();
   }
