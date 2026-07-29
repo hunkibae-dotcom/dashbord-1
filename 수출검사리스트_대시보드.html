@@ -33,6 +33,35 @@
   }
 </script>
 <style>
+  /* ===== F.WORK 공통 테마 변수 (포장강화 shell.html과 동일 시스템) ===== */
+  :root {
+    --bg:        #F8FAFC;
+    --panel:     #FFFFFF;
+    --border:    #E2E8F0;
+    --text:      #1E293B;
+    --text-sub:  #64748B;
+    --label:     #94A3B8;
+    --shadow:    0 2px 12px rgba(0,0,0,.08);
+    --input-bg:  #F1F5F9;
+    --icon-bg:   #F1F5F9;
+  }
+  html.dark {
+    --bg:        #141E2E;
+    --panel:     #1C2840;
+    --border:    #2D3F5A;
+    --text:      #F1F5F9;
+    --text-sub:  #A0B4CC;
+    --label:     #6B8BAA;
+    --shadow:    0 4px 24px rgba(0,0,0,.35);
+    --input-bg:  #141E2E;
+    --icon-bg:   #253550;
+  }
+  .theme-toggle { position:relative; width:44px; height:24px; display:inline-block; }
+  .theme-toggle input { opacity:0; width:0; height:0; position:absolute; }
+  .toggle-slider { position:absolute; inset:0; border-radius:999px; cursor:pointer; background:transparent; border:2px solid var(--text-sub); transition:border-color .25s; }
+  .toggle-slider::before { content:''; position:absolute; width:16px; height:16px; border-radius:50%; left:2px; top:2px; background:var(--text-sub); border:2px solid var(--text-sub); transition:transform .25s, background .25s, border-color .25s; }
+  html.dark .toggle-slider::before { transform:translateX(20px); }
+
   body { background:#F8FAFC; color:#1E293B; }
   ::-webkit-scrollbar { width:6px; height:6px; }
   ::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
