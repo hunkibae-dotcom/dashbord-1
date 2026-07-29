@@ -1905,10 +1905,14 @@
                 </div>
                 <div style="font-size:10px;color:var(--text-sub);text-align:center;">${matches.length}개 데이터 기준 평균값</div>`;
         }
-        document.getElementById('specDetailSheet').style.display = 'flex';
+        const sh = document.getElementById('specDetailSheet');
+        sh.dataset.code = code;
+        sh.style.display = 'flex';
     }
     function closeSpecDetail() {
-        document.getElementById('specDetailSheet').style.display = 'none';
+        const sh = document.getElementById('specDetailSheet');
+        sh.style.display = 'none';
+        sh.dataset.code = '';
     }
 
     // ── 적재번호 편집 바텀시트 (모바일) ──────────────────────
