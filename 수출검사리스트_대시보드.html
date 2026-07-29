@@ -1955,12 +1955,14 @@ function mScrollTop() {
 
 function setMTab(tab) {
   mCurrentTab = tab;
-  ['home', 'chart', 'list'].forEach((t, i) => {
+  // 'list'는 하단 네비 항목이 아니라 홈 카드에서 진입하는 서브뷰라 활성표시 대상이 아님
+  ['home', 'chart', 'list'].forEach(t => {
     const el = document.getElementById('mTab_' + t);
     if (el) el.style.display = t === tab ? '' : 'none';
-    const btn = document.getElementById('mNav' + i);
-    if (btn) btn.classList.toggle('active', t === tab);
   });
+  document.getElementById('mNav0')?.classList.toggle('active', tab === 'home');
+  document.getElementById('mNav1')?.classList.toggle('active', tab === 'chart');
+  document.getElementById('mNav2')?.classList.remove('active');
   document.getElementById('mNav3')?.classList.remove('active');
   // hide top button on tab switch
   document.getElementById('mToTopBtn')?.classList.remove('show');
