@@ -445,13 +445,12 @@
                     <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
                 </a>
                 <!-- 웹으로 열기 -->
-                <a href="https://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html"
-                   target="_blank"
-                   style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);text-decoration:none;">
+                <button onclick="window.open('https://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%ED%8F%AC%EC%9E%A5%EA%B0%95%ED%99%94_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html','_blank','noopener,noreferrer')"
+                   style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);width:100%;text-align:left;">
                     <i class="fa-solid fa-desktop" style="color:#FF9800;font-size:18px;width:22px;"></i>
                     웹으로 열기 (PC 대시보드)
                     <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
-                </a>
+                </button>
                 <!-- CSV 업로드 -->
                 <label style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);">
                     <i class="fa-solid fa-file-csv" style="color:#00B0FF;font-size:18px;width:22px;"></i>
@@ -526,7 +525,7 @@
         <!-- 스캔 오버레이 -->
         <div style="position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
             <!-- 스캔 프레임 -->
-            <div style="position:relative;width:82%;max-width:360px;height:110px;">
+            <div id="scanFrame" style="position:relative;width:82%;max-width:360px;height:110px;">
                 <!-- 외부 어두운 오버레이는 box-shadow로 구현 -->
                 <div style="position:absolute;inset:0;border:2px solid #00B0FF;border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
                     <!-- 코너 마크 -->
@@ -541,6 +540,8 @@
             <!-- 상태 텍스트 -->
             <div id="scanStatus" style="margin-top:20px;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;letter-spacing:.02em;">카메라 초기화 중...</div>
         </div>
+        <!-- 크롭 분석용 캔버스 (화면에 표시 안 함) -->
+        <canvas id="scanCanvas" style="display:none;"></canvas>
         <!-- 결과 바 -->
         <div id="scanResultBar" style="position:absolute;bottom:88px;left:0;right:0;z-index:2;display:none;padding:12px 16px;background:rgba(0,0,0,.8);border-top:1px solid rgba(255,255,255,.1);">
             <div style="display:flex;align-items:center;gap:10px;">
@@ -1623,10 +1624,47 @@
         if (!_scanStream || !_scanDetector) return;
         const vid = document.getElementById('scanVideo');
         try {
-            const codes = await _scanDetector.detect(vid);
+            const target = _cropToScanFrame(vid) || vid;
+            const codes = await _scanDetector.detect(target);
             if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
         } catch(e) {}
         if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+    }
+
+    // 화면에 보이는 스캔 가이드 프레임 영역만 잘라 분석용 캔버스로 반환
+    // (배경을 잘라내 디코더가 바코드 영역에 집중하도록 함 — object-fit:cover 좌표 보정 포함)
+    function _cropToScanFrame(video) {
+        const frame = document.getElementById('scanFrame');
+        const canvas = document.getElementById('scanCanvas');
+        const vw = video.videoWidth, vh = video.videoHeight;
+        if (!frame || !canvas || !vw || !vh) return null;
+
+        const vRect = video.getBoundingClientRect();
+        const fRect = frame.getBoundingClientRect();
+        const dispW = vRect.width, dispH = vRect.height;
+        if (!dispW || !dispH) return null;
+
+        const scale = Math.max(dispW / vw, dispH / vh);
+        const srcOffsetX = (vw - dispW / scale) / 2;
+        const srcOffsetY = (vh - dispH / scale) / 2;
+
+        // 가이드 박스보다 여유를 둬서 살짝 벗어나도 잡히게 함
+        const padX = fRect.width * 0.15, padY = fRect.height * 0.5;
+        const dispX = (fRect.left - vRect.left) - padX;
+        const dispY = (fRect.top - vRect.top) - padY;
+        const dispCropW = fRect.width + padX * 2;
+        const dispCropH = fRect.height + padY * 2;
+
+        const sx = Math.max(0, srcOffsetX + dispX / scale);
+        const sy = Math.max(0, srcOffsetY + dispY / scale);
+        const sw = Math.min(vw - sx, dispCropW / scale);
+        const sh = Math.min(vh - sy, dispCropH / scale);
+        if (sw <= 0 || sh <= 0) return null;
+
+        canvas.width = sw;
+        canvas.height = sh;
+        canvas.getContext('2d').drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+        return canvas;
     }
 
     function _stopScan() {
