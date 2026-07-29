@@ -1961,6 +1961,7 @@
                 <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:3px;">
                     <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${d.round}</span>
                     <span style="color:var(--label);font-size:10px;">${d.country}</span>
+                    ${d.color ? `<span style="font-size:10px;font-weight:700;color:var(--text-sub);font-family:monospace;">${d.color}</span>` : ''}
                     <span style="margin-left:auto;font-weight:800;color:var(--text);font-family:monospace;flex-shrink:0;">${d.qty.toLocaleString()} BOX</span>
                 </div>
                 <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)}${ddayTxt} · 납기 ${fmtKr(d.dueDate)}</div>
