@@ -1694,6 +1694,7 @@
                     <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${d.round}</span>
                     <span style="font-size:10px;color:var(--label);">|</span>
                     <span style="color:var(--text-sub);">${d.country}</span>
+                    ${d.color ? `<span style="font-size:10px;font-weight:700;color:var(--text-sub);font-family:monospace;">${d.color}</span>` : ''}
                     <span style="margin-left:auto;font-weight:800;color:var(--text);font-family:monospace;flex-shrink:0;">${d.qty.toLocaleString()} BOX</span>
                 </div>
                 <div style="display:flex;align-items:center;font-size:10px;font-family:monospace;color:var(--label);">
