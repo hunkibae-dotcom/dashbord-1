@@ -2142,6 +2142,169 @@ function onMSliderScroll() {
   });
 }
 
+// ===== 바코드 스캐너 (실시간 카메라 + 크롭 + ZXing TRY_HARDER 폴백) =====
+let _scanStream = null, _scanRaf = null, _scanDetector = null;
+let _zxingReader = null, _zxingLoading = false, _zxingLastTry = 0;
+
+async function openScanView() {
+  document.getElementById('viewScan').classList.remove('hidden');
+  document.getElementById('scanResultBar').classList.add('hidden');
+  document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+  _zxingLastTry = 0;
+  _loadZXing(function(){});
+  await _startScan();
+}
+function closeScanView() {
+  _stopScan();
+  document.getElementById('viewScan').classList.add('hidden');
+}
+
+async function _startScan() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+    }).catch(() => navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    }));
+    _scanStream = stream;
+    const vid = document.getElementById('scanVideo');
+    vid.srcObject = stream;
+    await vid.play();
+
+    if (!('BarcodeDetector' in window)) {
+      document.getElementById('scanStatus').textContent = '이 기기는 자동 스캔을 지원하지 않습니다';
+      return;
+    }
+    const fmts = await BarcodeDetector.getSupportedFormats().catch(() => ['code_128','code_39','ean_13','qr_code','code_93','data_matrix']);
+    _scanDetector = new BarcodeDetector({ formats: fmts });
+    document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+    _scanRaf = requestAnimationFrame(_scanTick);
+  } catch (e) {
+    document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
+  }
+}
+
+async function _scanTick() {
+  if (!_scanStream || !_scanDetector) return;
+  const vid = document.getElementById('scanVideo');
+  const target = _cropToScanFrame(vid) || vid;
+  try {
+    const codes = await _scanDetector.detect(target);
+    if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
+  } catch (e) {}
+
+  // 네이티브 인식이 계속 실패할 때 ZXing(TRY_HARDER)으로 주기적 재시도
+  if (target instanceof HTMLCanvasElement) {
+    const now = Date.now();
+    if (now - _zxingLastTry > 700) {
+      _zxingLastTry = now;
+      const reader = _getZXingReader();
+      if (reader) {
+        try {
+          const result = reader.decodeFromCanvas(target);
+          if (result) { _onScanDetect(result.getText()); return; }
+        } catch (e) { /* NotFoundException 등 — 계속 진행 */ }
+      }
+    }
+  }
+
+  if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+}
+
+function _loadZXing(cb) {
+  if (window.ZXing) { cb(); return; }
+  if (_zxingLoading) { setTimeout(function(){ _loadZXing(cb); }, 200); return; }
+  _zxingLoading = true;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+  s.onload = function(){ _zxingLoading = false; cb(); };
+  s.onerror = function(){ _zxingLoading = false; };
+  document.head.appendChild(s);
+}
+
+function _getZXingReader() {
+  if (!window.ZXing) return null;
+  if (_zxingReader) return _zxingReader;
+  const hints = new Map();
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+    ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+    ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_93,
+    ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX
+  ]);
+  _zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+  return _zxingReader;
+}
+
+// 화면에 보이는 스캔 가이드 프레임 영역만 잘라 분석용 캔버스로 반환
+// (object-fit:cover 좌표 보정 포함 — 배경을 잘라내 디코더가 바코드 영역에 집중하도록 함)
+function _cropToScanFrame(video) {
+  const frame = document.getElementById('scanFrame');
+  const canvas = document.getElementById('scanCanvas');
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!frame || !canvas || !vw || !vh) return null;
+
+  const vRect = video.getBoundingClientRect();
+  const fRect = frame.getBoundingClientRect();
+  const dispW = vRect.width, dispH = vRect.height;
+  if (!dispW || !dispH) return null;
+
+  const scale = Math.max(dispW / vw, dispH / vh);
+  const srcOffsetX = (vw - dispW / scale) / 2;
+  const srcOffsetY = (vh - dispH / scale) / 2;
+
+  const padX = fRect.width * 0.15, padY = fRect.height * 0.5;
+  const dispX = (fRect.left - vRect.left) - padX;
+  const dispY = (fRect.top - vRect.top) - padY;
+  const dispCropW = fRect.width + padX * 2;
+  const dispCropH = fRect.height + padY * 2;
+
+  const sx = Math.max(0, srcOffsetX + dispX / scale);
+  const sy = Math.max(0, srcOffsetY + dispY / scale);
+  const sw = Math.min(vw - sx, dispCropW / scale);
+  const sh = Math.min(vh - sy, dispCropH / scale);
+  if (sw <= 0 || sh <= 0) return null;
+
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.getContext('2d').drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+  return canvas;
+}
+
+function _stopScan() {
+  if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+  if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+  const vid = document.getElementById('scanVideo');
+  if (vid) vid.srcObject = null;
+}
+
+// 라벨 형식: "FAD0018NO(C26724)" 처럼 코드 뒤 로트번호가 괄호로 붙는 경우가 많아 괄호를 제거
+function _parseBarcodeRaw(raw) {
+  return (raw || '').trim().replace(/\s*\([^)]*\)\s*$/, '').trim();
+}
+
+function _onScanDetect(raw) {
+  if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+  const bar = document.getElementById('scanResultBar');
+  document.getElementById('scanResultText').textContent = raw;
+  bar.classList.remove('hidden');
+  document.getElementById('scanStatus').textContent = '인식 완료 — 검색 또는 재스캔';
+}
+
+function confirmScanResult() {
+  const raw = document.getElementById('scanResultText').textContent;
+  const code = _parseBarcodeRaw(raw);
+  closeScanView();
+  document.getElementById('psCode').value = code;
+  openProductSearch();
+}
+
+function resumeScan() {
+  document.getElementById('scanResultBar').classList.add('hidden');
+  document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+  if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
+}
+
 // ===== INIT =====
 var _scanCodeHandled = false;
 loadData();
@@ -2151,6 +2314,17 @@ initMobile();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js');
 }
+
+// F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈
+(function(){
+  const p = new URLSearchParams(location.search);
+  if (p.get('openScan') === '1') {
+    setTimeout(function(){
+      openScanView();
+      history.replaceState(null, '', location.pathname);
+    }, 300);
+  }
+})();
 </script>
 
 <!-- ===== MOBILE APP OVERLAY ===== -->
