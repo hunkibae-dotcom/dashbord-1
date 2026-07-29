@@ -1591,7 +1591,7 @@
             return `<div style="padding:13px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
                     <button onclick="openSpecDetail('${_sc}')" style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;background:none;border:none;cursor:pointer;padding:0;text-align:left;">${d.code || '—'}</button>
-                    <span style="font-size:11px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:2px 9px;border-radius:20px;flex-shrink:0;">${d.status}</span>
+                    <button onclick="openStatusEditMobile('${_sc}','${_sr}','${(d.status||'').replace(/'/g,'&#39;')}')" style="font-size:11px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:2px 9px;border-radius:20px;flex-shrink:0;border:none;cursor:pointer;">${d.status}</button>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:4px;">
                     <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;">${d.round}</span>
