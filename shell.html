@@ -2079,5 +2079,17 @@
         <div id="palletEditMobileSaveStatus" style="font-size:12px;text-align:center;min-height:16px;"></div>
     </div>
 </div>
+<!-- 진행상태 수정 바텀시트 (모바일) -->
+<div id="statusEditMobileSheet" onclick="if(event.target===this)closeStatusEditMobile()" style="position:fixed;inset:0;z-index:61;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-tags" style="color:#F59E0B;font-size:14px;"></i> 진행상태 변경</span>
+            <button onclick="closeStatusEditMobile()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+        <div id="statusEditMobileInfo" style="font-size:12px;font-weight:700;color:var(--text-sub);font-family:monospace;"></div>
+        <div id="statusEditMobileOptions" style="display:flex;flex-direction:column;gap:8px;"></div>
+        <div id="statusEditMobileStatus" style="font-size:12px;text-align:center;min-height:16px;font-weight:600;"></div>
+    </div>
+</div>
 </body>
 </html>
