@@ -2864,6 +2864,13 @@ if ('serviceWorker' in navigator) {
     /* 데스크탑 사이드바 숨김 */
     var aside = document.querySelector('aside');
     if(aside) aside.style.display = 'none';
+
+    /* 코드검색 바로가기: ?openScan=1 → 바코드 스캐너 자동 오픈 */
+    if (p.get('openScan') === '1') {
+        history.replaceState(null, '', location.pathname + '?shell=1&theme=' + (p.get('theme') || 'dark'));
+        // 데이터 로드 후 스캐너 열기 (loadData는 DOMContentLoaded 이후 실행되므로 약간 지연)
+        setTimeout(function(){ if(typeof openScanView === 'function') openScanView(); }, 400);
+    }
 })();
 </script>
 
