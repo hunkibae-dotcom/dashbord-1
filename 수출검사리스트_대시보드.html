@@ -487,7 +487,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
           <div class="relative sm:col-span-2">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[14.5px]"></i>
-            <input type="text" id="fSearch" oninput="applyFilters()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field">
+            <input type="text" id="fSearch" oninput="applyFiltersDebounced()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field">
           </div>
           <button onclick="resetFilters()" class="sel-field font-semibold text-slate-500 flex items-center justify-center gap-1.5 hover:bg-slate-100"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
           <button onclick="exportTableData()" class="sel-field font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
@@ -562,11 +562,11 @@
     <div class="p-5 border-b border-slate-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 shrink-0">
       <div class="relative">
         <i class="fa-solid fa-file-lines absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
-        <input type="text" id="psName" oninput="runProductSearch()" placeholder="건명 검색" class="in-field">
+        <input type="text" id="psName" oninput="runProductSearchDebounced()" placeholder="건명 검색" class="in-field">
       </div>
       <div class="relative">
         <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
-        <input type="text" id="psCode" oninput="runProductSearch()" placeholder="단품코드 검색" class="in-field">
+        <input type="text" id="psCode" oninput="runProductSearchDebounced()" placeholder="단품코드 검색" class="in-field">
       </div>
       <input type="date" id="psFrom" onchange="runProductSearch()" class="sel-field" title="시작일 (납기·포장·검사일 기준)">
       <input type="date" id="psTo" onchange="runProductSearch()" class="sel-field" title="종료일">
