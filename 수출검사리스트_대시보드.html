@@ -2496,9 +2496,10 @@ if ('serviceWorker' in navigator) {
 
       </div>
 
-      <!-- Factory panels 섹션 타이틀 -->
-      <div class="flex items-center justify-between mb-3">
+      <!-- Factory panels 섹션 타이틀 (탭하면 전체 목록으로) -->
+      <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="setMTab('list')" style="-webkit-tap-highlight-color:transparent;">
         <div class="text-[15px] font-extrabold text-slate-800">납기 임박 미검사</div>
+        <i class="fa-solid fa-chevron-right text-[11px] text-slate-300"></i>
       </div>
 
       <div class="space-y-3">
