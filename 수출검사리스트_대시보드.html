@@ -757,6 +757,25 @@ let factoryTab = 'all';
 let currentView = 'all';
 let charts = {};
 
+// ===== 누적이력 캐시 =====
+// 검사완료 누적이력 시트는 매년 계속 커지기만 하는데(현재 2,000행 이상, ~900KB),
+// 이미 끝난 이력이라 내용이 거의 안 바뀜에도 페이지를 열 때마다 전체를 새로 받아왔던 게
+// 대시보드 진입이 느렸던 핵심 원인이었다. 캐시로 즉시 화면을 그리고, 최신 데이터는
+// 백그라운드에서 이어서 받아와 갱신한다 (검색 가능한 이력 범위는 그대로 전체 유지).
+const ARCHIVE_CACHE_KEY = 'qc_archive_cache_v1';
+function _loadArchiveCache() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(ARCHIVE_CACHE_KEY));
+    if (!parsed || !parsed.rows || !parsed.totals) return null;
+    return parsed;
+  } catch (e) { return null; }
+}
+function _saveArchiveCache(totals, rows) {
+  try {
+    localStorage.setItem(ARCHIVE_CACHE_KEY, JSON.stringify({ ts: Date.now(), totals, rows }));
+  } catch (e) { /* 용량 초과 등은 무시 — 캐시는 있으면 좋고 없어도 그만이라 fallback은 그냥 매번 새로 받아오는 기존 동작 */ }
+}
+
 // ===== FETCH =====
 async function loadData() {
   setConnStatus('loading');
@@ -766,19 +785,38 @@ async function loadData() {
   icon.classList.add('fa-spin');
 
   loadErrors = [];
-  try {
-    // 진행중 리스트와 누적 이력(완료 탭)은 서로 독립적으로 요청 — 한쪽이 실패해도 나머지는 정상 표시
-    const [results, archives] = await Promise.all([
-      Promise.all(FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))),
-      Promise.all(ARCHIVES.map(f => fetchArchiveData(f).catch(e => { loadErrors.push(`${f.label} 검사완료 리스트(누적 이력): ${e.message}`); return null; }))),
-    ]);
-    allData = results.flat();
-    archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
-    archiveRows = archives.filter(Boolean).flatMap(t => t.items);
+
+  // 캐시가 있으면 먼저 그걸로 즉시 렌더 (네트워크 기다리지 않음)
+  const cached = _loadArchiveCache();
+  if (cached) {
+    archiveTotals = cached.totals;
+    archiveRows = cached.rows;
     renderArchiveKPI();
     renderQualityCharts();
+  }
+
+  // 진행중 리스트(작고 빠름)와 누적 이력(크고 느림)을 서로 기다리지 않고 각자 도착하는 대로 반영
+  const activePromise = Promise.all(
+    FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
+  ).then(results => {
+    allData = results.flat();
     populateFilterOptions();
     applyFilters();
+  });
+
+  const archivePromise = Promise.all(
+    ARCHIVES.map(f => fetchArchiveData(f).catch(e => { loadErrors.push(`${f.label} 검사완료 리스트(누적 이력): ${e.message}`); return null; }))
+  ).then(archives => {
+    archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
+    archiveRows = archives.filter(Boolean).flatMap(t => t.items);
+    _saveArchiveCache(archiveTotals, archiveRows);
+    renderArchiveKPI();
+    renderQualityCharts();
+    applyFilters(); // 이력 데이터가 검색결과 카운트에도 반영되므로 갱신 후 다시 그림
+  });
+
+  try {
+    await Promise.all([activePromise, archivePromise]);
     document.getElementById('syncTime').textContent = new Date().toLocaleTimeString('ko-KR');
     renderLoadWarnings();
     setConnStatus(loadErrors.length ? 'partial' : 'ok');
