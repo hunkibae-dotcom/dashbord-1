@@ -3149,11 +3149,10 @@
                     : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '-');
                 const _pallet = item.pallet;
                 const _pk = !_isShipped ? ((item.code||'')+'___'+(item.round||'')).replace(/['"\\]/g,'_') : null;
-                if (_pk && _pallet !== '-') window._palletEditMap[_pk] = { code: item.code, round: item.round, currentPallet: _pallet };
                 const _palletCellHtml = _isShipped
                     ? `<span style="color:${item.status==='피킹'?'#A78BFA':'#34D399'};font-weight:600;">${_pallet}</span>`
                     : (_pallet !== '-' && _pk
-                        ? `<button onclick="openPalletEdit('${_pk}')" style="color:#38BDF8;text-decoration:underline;text-underline-offset:2px;cursor:pointer;background:none;border:none;font-size:15px;padding:0;">${_pallet}</button>`
+                        ? `<span style="color:#38BDF8;font-size:15px;">${_pallet}</span>`
                         : `<span style="color:#475569">—</span>`);
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
