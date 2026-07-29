@@ -1586,11 +1586,14 @@
 
     // ── 바코드 스캔 ───────────────────────────────────────
     let _scanStream = null, _scanRaf = null, _scanDetector = null;
+    let _zxingReader = null, _zxingLoading = false, _zxingLastTry = 0;
 
     async function openScanView() {
         openView('viewScan');
         document.getElementById('scanResultBar').style.display = 'none';
         document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+        _zxingLastTry = 0;
+        _loadZXing(function(){});
         await _startScan();
     }
     function closeScanView() { _stopScan(); closeView(); }
@@ -1623,12 +1626,54 @@
     async function _scanTick() {
         if (!_scanStream || !_scanDetector) return;
         const vid = document.getElementById('scanVideo');
+        const target = _cropToScanFrame(vid) || vid;
         try {
-            const target = _cropToScanFrame(vid) || vid;
             const codes = await _scanDetector.detect(target);
             if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
         } catch(e) {}
+
+        // 네이티브 인식이 계속 실패할 때 ZXing(TRY_HARDER)으로 주기적 재시도
+        // — 구겨짐/저대비/기울어짐 등 네이티브 디코더가 놓치는 케이스에 더 강함
+        if (target instanceof HTMLCanvasElement) {
+            const now = Date.now();
+            if (now - _zxingLastTry > 700) {
+                _zxingLastTry = now;
+                const reader = _getZXingReader();
+                if (reader) {
+                    try {
+                        const result = reader.decodeFromCanvas(target);
+                        if (result) { _onScanDetect(result.getText()); return; }
+                    } catch(e) { /* NotFoundException 등 — 계속 진행 */ }
+                }
+            }
+        }
+
         if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+    }
+
+    function _loadZXing(cb) {
+        if (window.ZXing) { cb(); return; }
+        if (_zxingLoading) { setTimeout(function(){ _loadZXing(cb); }, 200); return; }
+        _zxingLoading = true;
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+        s.onload = function(){ _zxingLoading = false; cb(); };
+        s.onerror = function(){ _zxingLoading = false; };
+        document.head.appendChild(s);
+    }
+
+    function _getZXingReader() {
+        if (!window.ZXing) return null;
+        if (_zxingReader) return _zxingReader;
+        const hints = new Map();
+        hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+            ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+            ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_93,
+            ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX
+        ]);
+        _zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+        return _zxingReader;
     }
 
     // 화면에 보이는 스캔 가이드 프레임 영역만 잘라 분석용 캔버스로 반환
