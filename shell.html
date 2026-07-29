@@ -1148,12 +1148,25 @@
     }
 
     // ── 수출/제품 상세검색 ─────────────────────────────────
+    let _sfDateField = 'date';
+    function setSfDateField(field) {
+        _sfDateField = field;
+        [['date','sfDateFieldDate'], ['dueDate','sfDateFieldDue'], ['regDate','sfDateFieldReg']].forEach(([v, id]) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            btn.style.background = v === field ? '#00B0FF' : 'transparent';
+            btn.style.color      = v === field ? '#0B0F19'  : 'var(--text-sub)';
+        });
+        runSearch();
+    }
     function runSearch() {
         const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
         const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
         const color   = (document.getElementById('sf_color').value   || '').trim().toLowerCase();
         const country = (document.getElementById('sf_country').value || '').trim().toLowerCase();
-        if (!round && !code && !color && !country) {
+        const dateFrom = document.getElementById('sf_dateFrom').value || '';
+        const dateTo   = document.getElementById('sf_dateTo').value || '';
+        if (!round && !code && !color && !country && !dateFrom && !dateTo) {
             document.getElementById('srCount').textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
@@ -1163,6 +1176,12 @@
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
             if (country && !((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
+            if (dateFrom || dateTo) {
+                const dv = _nd(d[_sfDateField]);
+                if (!dv) return false;
+                if (dateFrom && dv < dateFrom) return false;
+                if (dateTo   && dv > dateTo)   return false;
+            }
             return true;
         });
         document.getElementById('srCount').textContent = filtered.length;
