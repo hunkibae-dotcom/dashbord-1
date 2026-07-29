@@ -5005,6 +5005,90 @@
             URL.revokeObjectURL(url);
         }
 
+        // ── 적재번호 편집 모달 ───────────────────────────────────
+        let _palletEditActiveKey = null;
+
+        function openPalletEdit(key) {
+            const item = window._palletEditMap && window._palletEditMap[key];
+            if (!item) return;
+            _palletEditActiveKey = key;
+            document.getElementById('palletEditCodeLabel').textContent = item.code || '';
+            document.getElementById('palletEditRoundLabel').textContent = item.round || '';
+            document.getElementById('palletEditInput').value = (item.currentPallet !== '-') ? item.currentPallet : '';
+            const st = document.getElementById('palletEditStatus');
+            st.textContent = '';
+            st.style.color = 'transparent';
+            const modal = document.getElementById('palletEditModal');
+            modal.style.display = 'flex';
+            setTimeout(() => document.getElementById('palletEditInput').focus(), 80);
+        }
+
+        function closePalletEdit() {
+            document.getElementById('palletEditModal').style.display = 'none';
+            _palletEditActiveKey = null;
+        }
+
+        async function savePalletEdit() {
+            if (!_palletEditActiveKey) return;
+            const item = window._palletEditMap[_palletEditActiveKey];
+            if (!item) return;
+            const newVal = document.getElementById('palletEditInput').value.trim();
+            const st = document.getElementById('palletEditStatus');
+            if (!newVal) {
+                st.textContent = '값을 입력해주세요.';
+                st.style.color = '#F87171';
+                return;
+            }
+            const btn = document.getElementById('palletEditSaveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            st.textContent = '';
+            st.style.color = 'transparent';
+            try {
+                const scriptUrl = localStorage.getItem('sheet_pub_url') ||
+                    'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
+                const params = new URLSearchParams({
+                    action: 'updatePallet',
+                    code: item.code || '',
+                    round: item.round || '',
+                    pallet: newVal
+                });
+                const res = await fetch(scriptUrl + '?' + params.toString(), { signal: AbortSignal.timeout(15000) });
+                const text = await res.text();
+                const ok = text.includes('success') || text.includes('OK') || res.ok;
+                if (ok) {
+                    st.textContent = '✓ 저장되었습니다.';
+                    st.style.color = '#34D399';
+                    // 로컬 즉시 반영
+                    item.currentPallet = newVal;
+                    const fd = state.filteredData && state.filteredData.find(d => d.code === item.code && d.round === item.round);
+                    if (fd) fd.pallet = newVal;
+                    if (state.rawStockRows && state.rawStockRows.length > 1) {
+                        const _ph = state.rawStockRows[0].map(h => (h||'').toString().trim());
+                        const _piC = _ph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                        const _piR = _ph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                        for (let i = 1; i < state.rawStockRows.length; i++) {
+                            const r = state.rawStockRows[i];
+                            if (!r) continue;
+                            if ((r[_piC>=0?_piC:1]||'').toString().trim().toUpperCase() === (item.code||'').toUpperCase() &&
+                                (r[_piR>=0?_piR:4]||'').toString().trim() === (item.round||'')) {
+                                r[10] = newVal;
+                            }
+                        }
+                    }
+                    setTimeout(() => { closePalletEdit(); renderTable(); }, 700);
+                } else {
+                    throw new Error(text || '서버 응답 오류');
+                }
+            } catch(e) {
+                st.textContent = '저장 실패: ' + (e.message || '네트워크 오류');
+                st.style.color = '#F87171';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장';
+            }
+        }
+
         function exportDetailPanelCSV() {
             if (!_currentDetailProductCode) return;
             const matchedList = state.data.filter(item => item.code.toLowerCase() === _currentDetailProductCode.toLowerCase());
