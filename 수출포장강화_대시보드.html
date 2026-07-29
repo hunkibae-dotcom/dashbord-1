@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    /* 설정의 "웹으로 열기(PC 대시보드)"로 진입 시(?forceDesktop=1) — 실제 PC에서 보는 화면과 동일하게
+       나오도록 뷰포트를 데스크톱 폭으로 고정. 이게 없으면 폰 브라우저에서 열어도 화면폭이 좁아서
+       모바일 반응형(@media max-width) 레이아웃이 그대로 적용돼버림 */
+    if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
+        document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1280');
+    }
+    </script>
     <title>포장강화 대시보드</title>
     <link rel="manifest" href="manifest-packing.json">
     <meta name="theme-color" content="#0B0F19">
