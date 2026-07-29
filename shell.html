@@ -1866,6 +1866,91 @@
         }).join('');
     }
 
+    // ── 제품 상세스펙 바텀시트 ───────────────────────────────
+    function openSpecDetail(code) {
+        const content = document.getElementById('specDetailContent');
+        if (!content) return;
+        const matches = allData.filter(d => (d.code||'').toUpperCase() === (code||'').toUpperCase());
+        if (!matches.length) {
+            content.innerHTML = '<div style="text-align:center;padding:24px 0;font-size:13px;color:var(--text-sub);">스펙 데이터 없음</div>';
+        } else {
+            const _su = v => { if (!v||v==='-') return NaN; return parseFloat((v+'').replace(/[^0-9.]/g,'')); };
+            const _arr = f => matches.map(d => _su((d[f]||'').toString())).filter(v => !isNaN(v) && v > 0);
+            const _avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
+            const ws = _arr('specW'), ds = _arr('specD'), hs = _arr('specH'), gs = _arr('specG');
+            const wA = _avg(ws), dA = _avg(ds), hA = _avg(hs);
+            const cbm = (wA&&dA&&hA) ? (parseFloat(wA)*parseFloat(dA)*parseFloat(hA)/1e9).toFixed(4) : null;
+            const _cell = (lbl, avg, unit) => `<div style="background:var(--icon-bg);border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--label);margin-bottom:4px;">${lbl}</div><div style="font-size:16px;font-weight:800;color:var(--text);font-family:monospace;">${avg ? avg+unit : '—'}</div></div>`;
+            content.innerHTML = `
+                <div style="font-size:14px;font-weight:800;font-family:monospace;color:var(--text);padding:2px 0 6px;">${code}</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    ${_cell('가로',wA,'mm')}${_cell('세로',dA,'mm')}${_cell('높이',hA,'mm')}${_cell('중량',_avg(gs),'kg')}
+                </div>
+                <div style="background:var(--icon-bg);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:11px;color:var(--label);">CBM (추정)</span>
+                    <span style="font-size:16px;font-weight:800;color:var(--text);font-family:monospace;">${cbm || '—'}</span>
+                </div>
+                <div style="font-size:10px;color:var(--text-sub);text-align:center;">${matches.length}개 데이터 기준 평균값</div>`;
+        }
+        document.getElementById('specDetailSheet').style.display = 'flex';
+    }
+    function closeSpecDetail() {
+        document.getElementById('specDetailSheet').style.display = 'none';
+    }
+
+    // ── 적재번호 편집 바텀시트 (모바일) ──────────────────────
+    let _mPalletCode = '', _mPalletRound = '';
+    function openPalletEditMobile(code, round, current) {
+        _mPalletCode = code;
+        _mPalletRound = round;
+        const info = document.getElementById('palletEditMobileInfo');
+        if (info) info.innerHTML = '품목코드 <strong style="color:var(--text);font-family:monospace;">' + code + '</strong><br>건&nbsp;&nbsp;&nbsp;명 <span style="color:var(--text);">' + round + '</span>';
+        const inp = document.getElementById('palletEditMobileInput');
+        if (inp) inp.value = (current && current !== '—') ? current : '';
+        const st = document.getElementById('palletEditMobileSaveStatus');
+        if (st) { st.textContent = ''; st.style.color = ''; }
+        document.getElementById('palletEditMobileSheet').style.display = 'flex';
+        setTimeout(() => { if (inp) inp.focus(); }, 80);
+    }
+    function closePalletEditMobile() {
+        document.getElementById('palletEditMobileSheet').style.display = 'none';
+        _mPalletCode = ''; _mPalletRound = '';
+    }
+    async function savePalletEditMobile() {
+        const inp = document.getElementById('palletEditMobileInput');
+        const st  = document.getElementById('palletEditMobileSaveStatus');
+        const btn = document.getElementById('palletEditMobileSaveBtn');
+        const newVal = (inp ? inp.value : '').trim();
+        if (!newVal) { if (st) { st.textContent = '값을 입력해주세요.'; st.style.color = '#FF4444'; } return; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...'; }
+        if (st) { st.textContent = ''; st.style.color = ''; }
+        try {
+            const params = new URLSearchParams({ action:'updatePallet', code:_mPalletCode, round:_mPalletRound, pallet:newVal });
+            const res = await fetch(GAS_URL + '?' + params, { signal: AbortSignal.timeout(15000) });
+            const text = await res.text();
+            if (text.includes('success') || text.includes('OK') || res.ok) {
+                if (st) { st.textContent = '✓ 저장되었습니다.'; st.style.color = '#00E676'; }
+                if (rawStockRows && rawStockRows.length > 1) {
+                    const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
+                    const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                    const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                    for (let i = 1; i < rawStockRows.length; i++) {
+                        const r = rawStockRows[i]; if (!r) continue;
+                        if ((r[iC>=0?iC:1]||'').toString().trim().toUpperCase() === _mPalletCode.toUpperCase() &&
+                            (r[iR>=0?iR:4]||'').toString().trim() === _mPalletRound) r[10] = newVal;
+                    }
+                }
+                setTimeout(() => { closePalletEditMobile(); renderPendingModal(); renderMgmtModal(); }, 700);
+            } else {
+                throw new Error(text || '서버 응답 오류');
+            }
+        } catch(e) {
+            if (st) { st.textContent = '저장 실패: ' + (e.message||'오류'); st.style.color = '#FF4444'; }
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
+        }
+    }
+
     // ── 초기 실행 ─────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         // 테마: 저장값 없으면 라이트 모드
