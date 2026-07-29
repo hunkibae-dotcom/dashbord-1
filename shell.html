@@ -1565,15 +1565,22 @@
             el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">포장 대기 항목 없음</div>';
             return;
         }
+        const _pm = _buildPalletMap();
         el.innerHTML = pending.map((d, i, arr) => {
             const isLast  = i === arr.length - 1;
             const today   = new Date(); today.setHours(0,0,0,0);
             const dt      = d.date && d.date !== '-' ? new Date(d.date) : null;
             const diff    = dt ? Math.ceil((dt - today) / 86400000) : null;
             const ddayTxt = diff === null ? '' : diff <= 0 ? '<span style="color:#FF4444;font-weight:800;font-size:10px;margin-left:4px;">D-Day</span>' : '<span style="color:#FF9100;font-weight:800;font-size:10px;margin-left:4px;">D-'+diff+'</span>';
+            const _sc = (d.code||'').replace(/'/g,'&#39;');
+            const _sr = (d.round||'').replace(/'/g,'&#39;');
+            const _pv = _pm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || '—';
+            const _palletRow = _pv !== '—'
+                ? `<button onclick="openPalletEditMobile('${_sc}','${_sr}','${_pv.replace(/'/g,"&#39;")}')" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_pv}</button>`
+                : `<span style="font-size:11px;color:var(--text-sub);">—</span>`;
             return `<div style="padding:13px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
+                    <button onclick="openSpecDetail('${_sc}')" style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;background:none;border:none;cursor:pointer;padding:0;text-align:left;">${d.code || '—'}</button>
                     <span style="font-size:11px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:2px 9px;border-radius:20px;flex-shrink:0;">${d.status}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:4px;">
@@ -1585,6 +1592,10 @@
                 <div style="display:flex;align-items:center;font-size:10px;font-family:monospace;color:var(--label);">
                     <span>상차 ${fmtKr(d.date)}${ddayTxt}</span>
                     <span style="margin-left:auto;">납기 ${fmtKr(d.dueDate)}</span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;padding-top:5px;border-top:1px solid var(--divider);">
+                    <span style="font-size:10px;color:var(--label);">적재</span>
+                    ${_palletRow}
                 </div>
             </div>`;
         }).join('');
