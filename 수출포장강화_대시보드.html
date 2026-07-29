@@ -3184,7 +3184,7 @@
                     <td class="py-3.5 px-2 text-center font-bold" style="color:#38BDF8;">${item.shippedQty.toLocaleString()}</td>
                     <td class="py-3.5 px-2 text-center text-slate-400 text-[15px]">${_cbm}</td>
                     <td class="py-3.5 px-2 text-center text-[15px]">${_palletCellHtml}</td>
-                    <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-[13px] ${badgeClass} cursor-pointer select-none" onclick="openStatusEdit('${_stC}','${_stR}','${_stL}')">${item.statusLabel || item.status}</span></td>`;
+                    <td class="py-3.5 px-4 text-center"><span class="px-2 py-0.5 rounded text-[13px] ${badgeClass} select-none">${item.statusLabel || item.status}</span></td>`;
                 tbody.appendChild(tr);
 
                 cardHtmlParts.push(`
