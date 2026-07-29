@@ -1524,6 +1524,22 @@
 
     // ── 작업 인원 초기화 ──────────────────────────────────
     // ── 포장 대기 상세 모달 ───────────────────────────────
+    function _buildPalletMap() {
+        const map = {};
+        if (!rawStockRows || rawStockRows.length <= 1) return map;
+        const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
+        const iC  = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+        const iR  = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+        for (let i = 1; i < rawStockRows.length; i++) {
+            const r = rawStockRows[i];
+            if (!r || r.every(c => !c || !c.toString().trim())) continue;
+            const code   = (r[iC >= 0 ? iC : 1] || '').toString().trim().toUpperCase();
+            const round  = (r[iR >= 0 ? iR : 4] || '').toString().trim();
+            const pallet = (r[10] || '').toString().trim();
+            if (code && pallet) map[code + '|' + round] = pallet;
+        }
+        return map;
+    }
     function openPendingModal() {
         renderPendingModal();
         document.getElementById('pendingModal').style.display = 'flex';
