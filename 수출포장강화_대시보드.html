@@ -6059,5 +6059,39 @@
     });
 })();
 </script>
+
+<!-- ── 적재번호 수정 모달 ─────────────────────────────────── -->
+<div id="palletEditModal" onclick="if(event.target===this)closePalletEdit()"
+    style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#1E293B;border:1px solid #334155;border-radius:16px;padding:28px 32px;width:400px;max-width:94vw;box-shadow:0 24px 64px rgba(0,0,0,.6);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+            <i class="fa-solid fa-pallet" style="color:#38BDF8;font-size:18px;"></i>
+            <h3 style="font-size:16px;font-weight:700;color:#F1F5F9;margin:0;">적재번호 변경</h3>
+            <button onclick="closePalletEdit()" style="margin-left:auto;background:none;border:none;color:#64748B;font-size:20px;cursor:pointer;line-height:1;padding:0 4px;">✕</button>
+        </div>
+        <div style="margin-bottom:16px;font-size:13px;color:#94A3B8;line-height:1.8;background:#0F172A;border-radius:10px;padding:10px 14px;">
+            품목코드 &nbsp;<span id="palletEditCodeLabel" style="font-family:monospace;color:#E2E8F0;font-weight:700;"></span><br>
+            건&nbsp;&nbsp;&nbsp;&nbsp;명 &nbsp;<span id="palletEditRoundLabel" style="color:#CBD5E1;"></span>
+        </div>
+        <div style="margin-bottom:20px;">
+            <label style="display:block;font-size:12px;color:#64748B;margin-bottom:6px;">파렛트 번호 (충주공장 재고 K열에 반영)</label>
+            <input id="palletEditInput" type="text"
+                style="width:100%;background:#0F172A;border:1px solid #475569;border-radius:10px;padding:11px 14px;font-size:15px;color:#F1F5F9;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                placeholder="예: 1, 2, A-1 ..."
+                onfocus="this.style.borderColor='#38BDF8'"
+                onblur="this.style.borderColor='#475569'"
+                onkeydown="if(event.key==='Enter')savePalletEdit()">
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="closePalletEdit()"
+                style="padding:9px 22px;border-radius:8px;border:1px solid #334155;background:transparent;color:#94A3B8;font-size:14px;cursor:pointer;">취소</button>
+            <button onclick="savePalletEdit()" id="palletEditSaveBtn"
+                style="padding:9px 22px;border-radius:8px;border:none;background:#38BDF8;color:#0F172A;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-check"></i> 저장
+            </button>
+        </div>
+        <div id="palletEditStatus" style="margin-top:12px;font-size:12px;text-align:center;min-height:18px;"></div>
+    </div>
+</div>
 </body>
 </html>
