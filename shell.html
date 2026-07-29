@@ -1964,6 +1964,74 @@
         }
     }
 
+    // ── 진행상태 편집 (모바일) ─────────────────────────────
+    const _STATUS_OPTS_M = [
+        { v:'미확인',  c:'#64748B' },
+        { v:'포장대기', c:'#F59E0B' },
+        { v:'입고',    c:'#38BDF8' },
+        { v:'포장완료', c:'#3B82F6' },
+        { v:'철물',    c:'#EF4444' },
+    ];
+    let _mStatusCode = '', _mStatusRound = '';
+
+    function openStatusEditMobile(code, round, current) {
+        _mStatusCode = code; _mStatusRound = round;
+        document.getElementById('statusEditMobileInfo').textContent = code + (round ? '  ' + round : '');
+        const opts = document.getElementById('statusEditMobileOptions');
+        opts.innerHTML = _STATUS_OPTS_M.map(opt => {
+            const isCur = opt.v === current;
+            return `<button onclick="saveStatusEditMobile('${opt.v.replace(/'/g,"&#39;")}')"
+                style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;border:1px solid ${isCur?opt.c:'var(--border)'};background:${isCur?opt.c+'22':'var(--input-bg)'};color:${opt.c};font-size:14px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;width:100%;box-sizing:border-box;">
+                <i class="fa-solid fa-circle" style="font-size:8px;opacity:.6;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:12px;"></i>':''}
+            </button>`;
+        }).join('');
+        document.getElementById('statusEditMobileStatus').textContent = '';
+        const sh = document.getElementById('statusEditMobileSheet');
+        sh.style.display = 'flex';
+    }
+
+    function closeStatusEditMobile() {
+        document.getElementById('statusEditMobileSheet').style.display = 'none';
+        _mStatusCode = ''; _mStatusRound = '';
+    }
+
+    async function saveStatusEditMobile(newStatus) {
+        if (!_mStatusCode) return;
+        const st = document.getElementById('statusEditMobileStatus');
+        st.textContent = '저장 중...'; st.style.color = 'var(--text-sub)';
+        try {
+            const params = new URLSearchParams({ action:'updateStatus', code:_mStatusCode, round:_mStatusRound, status:newStatus });
+            const res = await fetch(GAS_URL + '?' + params, { signal: AbortSignal.timeout(15000) });
+            const text = await res.text();
+            if (text.includes('success') || res.ok) {
+                st.textContent = '✓ 저장되었습니다.'; st.style.color = '#34D399';
+                // 로컬 데이터 업데이트
+                [allData, stockData].forEach(arr => {
+                    if (!arr) return;
+                    arr.forEach(it => {
+                        if ((it.code||'').toUpperCase() === _mStatusCode.toUpperCase() && (it.round||'') === _mStatusRound) {
+                            it.status = newStatus;
+                        }
+                    });
+                });
+                setTimeout(() => {
+                    closeStatusEditMobile();
+                    if (document.getElementById('pendingModal')?.style.display !== 'none') renderPendingModal();
+                    if (document.getElementById('mgmtView')?.style.display !== 'none') renderMgmtModal();
+                    const specSheet = document.getElementById('specDetailSheet');
+                    if (specSheet && specSheet.style.display !== 'none') {
+                        const codeInSpec = specSheet.dataset.code;
+                        if (codeInSpec) openSpecDetail(codeInSpec);
+                    }
+                }, 500);
+            } else {
+                throw new Error(text || '서버 오류');
+            }
+        } catch(e) {
+            st.textContent = '저장 실패: ' + (e.message||'오류'); st.style.color = '#FF4444';
+        }
+    }
+
     // ── 초기 실행 ─────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         // 테마: 저장값 없으면 라이트 모드
