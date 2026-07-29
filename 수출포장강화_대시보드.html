@@ -5608,8 +5608,8 @@
     var p = new URLSearchParams(location.search);
     if(!p.get('shell')) return;
 
-    /* ?shell=1 → shell.html 로 즉시 이동 */
-    window.location.replace('shell.html');
+    /* ?shell=1 → shell.html 로 즉시 이동 (쿼리스트링 그대로 전달) */
+    window.location.replace('shell.html' + location.search);
 })();
 (function(){
     var p = new URLSearchParams(location.search);
