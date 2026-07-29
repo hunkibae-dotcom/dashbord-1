@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<script>
+/* 설정의 "웹으로 열기(PC 대시보드)"로 진입 시(?forceDesktop=1) — 실제 PC에서 보는 화면과 동일하게
+   나오도록 뷰포트를 데스크톱 폭으로 고정. isMobile()이 window.innerWidth로 판단하므로
+   뷰포트만 넓혀주면 #mobileApp 오버레이 대신 데스크톱 사이드바+그리드 레이아웃이 그대로 나온다 */
+if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
+    document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1280');
+}
+</script>
 <title>수출건 검사리스트 대시보드</title>
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMzNEQzOTkiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyMkQzRUUiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iNDMiIGN5PSI0MyIgcj0iMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiLz48bGluZSB4MT0iNTUiIHkxPSI1NSIgeDI9IjcyIiB5Mj0iNzIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
 <link rel="manifest" href="manifest.json">
