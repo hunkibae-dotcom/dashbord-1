@@ -733,7 +733,9 @@
             const div    = divRaw || sheetDiv;
             const color  = iColor >= 0 && r[iColor] ? r[iColor].toString().trim() : '';
             const sn     = status.replace(/\s+/g,'').toLowerCase();
-            const isDone = sn.includes('출고') || sn.includes('포장완료') || sn.includes('피킹');
+            // "포장완료"는 아직 출고 전(포장 단계 완료일 뿐)이라 isDone(출고 완료)에 포함시키면 안 됨
+            // — 이게 섞여있어서 관리현황의 "포장완료" 탭이 전부 걸러져 항목 없음으로 나오는 버그가 있었음
+            const isDone = sn.includes('출고') || sn.includes('피킹');
             const specW  = iSpecW >= 0 && r[iSpecW] ? r[iSpecW].toString().trim() : '';
             const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
             const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
