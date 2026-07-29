@@ -1939,6 +1939,25 @@ function toggleMTheme() {
 }
 applyMTheme((localStorage.getItem('shell_theme') || 'light') === 'dark');
 
+// ── 설정 (모바일) ──
+function openMSettings() {
+  const syncEl = document.getElementById('syncTime');
+  const target = document.getElementById('mSettingsSyncTime');
+  if (target) target.textContent = syncEl ? '마지막 동기화 ' + syncEl.textContent : '';
+  document.getElementById('mSettingsModal').style.display = 'flex';
+}
+function closeMSettings() {
+  document.getElementById('mSettingsModal').style.display = 'none';
+}
+function openMPCDashboard() {
+  const url = 'https://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%EA%B2%80%EC%82%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html';
+  if (/Android/i.test(navigator.userAgent)) {
+    window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/%EC%88%98%EC%B6%9C%EA%B2%80%EC%82%AC%EB%A6%AC%EC%8A%A4%ED%8A%B8_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
+}
+
 function onMTabScroll(el) {
   const btn = document.getElementById('mToTopBtn');
   if (btn) btn.classList.toggle('show', el.scrollTop > 200);
