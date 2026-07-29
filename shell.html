@@ -2074,7 +2074,7 @@
             const ieDate = document.getElementById('ieDate');
             const ieDue = document.getElementById('ieDue');
             if (ieColor) ieColor.textContent = item.color || '—';
-            if (ieCountry) ieCountry.textContent = item.country || '—';
+            if (ieCountry) ieCountry.textContent = item.div || item.country || '—';
             if (ieQty) ieQty.textContent = (item.qty||0).toLocaleString() + ' BOX';
             if (ieDate) ieDate.textContent = fmtKr(item.date);
             if (ieDue) ieDue.textContent = fmtKr(item.dueDate);
