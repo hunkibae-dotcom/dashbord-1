@@ -366,23 +366,6 @@
     </nav>
 
     <!-- ── 작업 인원 모달 ────────────────────────────────── -->
-    <div id="workerModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:24px;width:100%;max-width:520px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <span style="font-size:16px;font-weight:800;color:var(--text);">금일 작업 인원 등록</span>
-                <button onclick="closeWorkerInput()" style="width:36px;height:36px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <input id="workerInput" type="number" inputmode="numeric" placeholder="인원 수 입력"
-                   style="width:100%;background:var(--input-bg);color:var(--text);padding:14px 16px;border-radius:12px;border:1px solid var(--border);font-size:20px;font-weight:700;outline:none;margin-bottom:12px;transition:border-color .2s;"
-                   onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-            <button onclick="saveWorkers()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:15px;border-radius:12px;border:none;font-size:15px;font-weight:800;cursor:pointer;">
-                저장
-            </button>
-        </div>
-    </div>
-
     <!-- ── 뷰: 수출/제품 상세검색 ──────────────────────── -->
     <div id="viewSearch" style="position:fixed;inset:0;z-index:42;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;">
         <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
@@ -628,12 +611,10 @@
     // ── 데이터 로드 ───────────────────────────────────────
     async function loadData() {
         setStatus('loading');
-        const icon = document.getElementById('syncIcon');
-        icon.classList.add('spin');
         try {
             const res  = await fetch(GAS_URL, { signal: AbortSignal.timeout(15000) });
             const json = JSON.parse(await res.text());
-            allData = []; stockData = []; rawStockRows = []; rawShippedRows = [];
+            allData = []; stockData = []; rawStockRows = []; rawShippedRows = []; rawWorkLogRows = [];
             for (const sheet in json) {
                 const rows = json[sheet];
                 if (sheet.includes('충주공장 재고')) {
@@ -653,8 +634,6 @@
             setStatus('ok');
         } catch(e) {
             setStatus('error');
-        } finally {
-            icon.classList.remove('spin');
         }
     }
 
@@ -983,8 +962,6 @@
             if (d.isDone) {
                 cMap[c].strengthened += d.qty;
                 cMap[c].shipped      += d.qty;
-            } else if (s.includes('포장완료')) {
-                cMap[c].strengthened += d.qty;
             }
         });
         const labels = Object.keys(cMap).filter(Boolean).sort();
@@ -1242,22 +1219,6 @@
     }
 
     // ── 작업 인원 모달 ────────────────────────────────────
-    function openWorkerInput() {
-        const cur = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '';
-        document.getElementById('workerInput').value = cur;
-        const m = document.getElementById('workerModal');
-        m.style.display = 'flex';
-        setTimeout(() => document.getElementById('workerInput').focus(), 150);
-    }
-    function closeWorkerInput() { document.getElementById('workerModal').style.display = 'none'; }
-    function saveWorkers() {
-        const v = parseInt(document.getElementById('workerInput').value) || 0;
-        localStorage.setItem('todayWorkers_'+todayStr(), v);
-        localStorage.setItem('todayWorkers', v);
-        document.getElementById('kpiWorkers').textContent = v;
-        closeWorkerInput();
-    }
-
     // ── INFORM 렌더링 ─────────────────────────────────────
     function renderInform() {
         // 납기일·상차일 변경 내역 (메인 대시보드와 같은 localStorage 키)
@@ -1503,10 +1464,7 @@
         for (let i = 1; i < rows.length; i++) {
             const r = rows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
-            let d = (r[iDate]||'').toString().trim();
-            // Date 객체 직렬화 처리
-            if (d.includes('T')) d = d.substring(0, 10);
-            if (d !== today) continue;
+            if (_nd((r[iDate]||'').toString()) !== today) continue;
             total += parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0;
             const w = (r[iWorker]||'').toString().trim();
             const m = (r[iMemo]  ||'').toString().trim();
@@ -1545,12 +1503,6 @@
     }
 
     // ── 작업 인원 초기화 ──────────────────────────────────
-    function clearWorkers() {
-        localStorage.removeItem('todayWorkers_' + todayStr());
-        localStorage.removeItem('todayWorkers');
-        document.getElementById('kpiWorkers').textContent = '0';
-    }
-
     // ── 포장 대기 상세 모달 ───────────────────────────────
     function openPendingModal() {
         renderPendingModal();
@@ -1715,9 +1667,6 @@
         renderMgmtModal();
         openView('viewMgmt');
     }
-    function closeMgmtModal() {
-        closeView();
-    }
     function setMgmtTab(tab) {
         _mgmtTab = tab;
         renderMgmtModal();
@@ -1780,8 +1729,6 @@
         applyTheme(saved === 'dark');
 
         document.getElementById('kpiTodayDate').textContent = fmtKr(todayStr());
-        const w = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '0';
-        document.getElementById('kpiWorkers').textContent = w;
         loadData();
         _startSlideTimer();
     });
