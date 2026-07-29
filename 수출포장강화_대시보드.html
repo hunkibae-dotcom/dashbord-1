@@ -3022,33 +3022,60 @@
                 return;
             }
 
-            // 제품코드별 스펙 룩업 맵 (CBM·중량용)
+            // 제품코드별 스펙 룩업 맵 (CBM용)
             const _specLookup = {};
             const _su = v => { if (!v || v === '-') return NaN; return parseFloat(v.toString().replace(/[a-zA-Z가-힣\s]+$/g, '')); };
             Object.keys(datasetMap).forEach(k => {
                 (datasetMap[k] || []).forEach(si => {
                     if (!si.code) return;
                     const c = si.code.toUpperCase();
-                    if (!_specLookup[c]) _specLookup[c] = { w:[], d:[], h:[], g:[] };
-                    const w=_su(si.specW), d=_su(si.specD), h=_su(si.specH), g=_su(si.specG);
+                    if (!_specLookup[c]) _specLookup[c] = { w:[], d:[], h:[] };
+                    const w=_su(si.specW), d=_su(si.specD), h=_su(si.specH);
                     if (!isNaN(w)&&w>0) _specLookup[c].w.push(w);
                     if (!isNaN(d)&&d>0) _specLookup[c].d.push(d);
                     if (!isNaN(h)&&h>0) _specLookup[c].h.push(h);
-                    if (!isNaN(g)&&g>0) _specLookup[c].g.push(g);
                 });
             });
             const _avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+
+            // 충주공장 재고 K열(파렛트) 룩업 맵 — code+round 키
+            window._palletEditMap = {};
+            const _palletMap = {};
+            if (state.rawStockRows && state.rawStockRows.length > 1) {
+                const _ph = state.rawStockRows[0].map(h => (h||'').toString().trim());
+                const _piC = _ph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                const _piR = _ph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                for (let _pi = 1; _pi < state.rawStockRows.length; _pi++) {
+                    const _pr = state.rawStockRows[_pi];
+                    if (!_pr || _pr.every(c => !c || !c.toString().trim())) continue;
+                    const _pc = (_pr[_piC >= 0 ? _piC : 1] || '').toString().trim().toUpperCase();
+                    const _prnd = (_pr[_piR >= 0 ? _piR : 4] || '').toString().trim();
+                    const _pv = (_pr[10] || '').toString().trim(); // K열
+                    if (_pc && _pv) _palletMap[_pc + '|' + _prnd] = _pv;
+                }
+            }
             const cardHtmlParts = [];
 
             state.filteredData.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150';
-                const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[],g:[]};
-                const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h), _gA=_avg(_sp.g);
+                const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[]};
+                const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h);
                 item._cbm = (_wA&&_dA&&_hA) ? (_wA*_dA*_hA)/1e9 : null;
-                item._wgt = _gA || null;
                 const _cbm = item._cbm != null ? item._cbm.toFixed(4) : '-';
-                const _wgt = item._wgt != null ? item._wgt.toFixed(1) : '-';
+                // 적재(파렛트): 출고/피킹 상태는 고정 표시, 재고는 K열 값
+                const _isShipped = item.status === '출고' || item.status === '피킹';
+                item.pallet = _isShipped
+                    ? (item.status === '피킹' ? '피킹' : '출고')
+                    : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '-');
+                const _pallet = item.pallet;
+                const _pk = !_isShipped ? ((item.code||'')+'___'+(item.round||'')).replace(/['"\\]/g,'_') : null;
+                if (_pk && _pallet !== '-') window._palletEditMap[_pk] = { code: item.code, round: item.round, currentPallet: _pallet };
+                const _palletCellHtml = _isShipped
+                    ? `<span style="color:${item.status==='피킹'?'#A78BFA':'#34D399'};font-weight:600;">${_pallet}</span>`
+                    : (_pallet !== '-' && _pk
+                        ? `<button onclick="openPalletEdit('${_pk}')" style="color:#38BDF8;text-decoration:underline;text-underline-offset:2px;cursor:pointer;background:none;border:none;font-size:15px;padding:0;">${_pallet}</button>`
+                        : `<span style="color:#475569">—</span>`);
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
                 if (item.status === '출고') {
