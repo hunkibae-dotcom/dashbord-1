@@ -1855,13 +1855,14 @@
         return _ocrWorkerPromise;
     }
 
-    // "코드 (로트) / 색상" 형태로 뒤섞여 나오는 OCR 결과에서 제품코드·색상 후보를 뽑아낸다
+    // "코드(로트)  색상" 형태로 뒤섞여 나오는 OCR 결과에서 제품코드·색상 후보를 뽑아낸다
+    // (로트번호 괄호는 검색에 안 쓰이므로 제거)
     function _parseOcrText(raw) {
         const tokens = (raw || '').toUpperCase().replace(/[^A-Z0-9()\n]/g, ' ').split(/\s+/).filter(Boolean);
         let code = '', color = '';
         tokens.forEach(t => {
             const bare = t.replace(/\(.*/, '');
-            if (!code && bare.length >= 5 && /[A-Z]/.test(bare) && /[0-9]/.test(bare)) { code = t.replace(/\(.*\)?$/, m => m.includes(')') ? m : ''); code = t; return; }
+            if (!code && bare.length >= 5 && /[A-Z]/.test(bare) && /[0-9]/.test(bare)) { code = bare; return; }
             if (!color && /^[A-Z]{2,8}$/.test(bare)) { color = bare; }
         });
         return { code, color };
