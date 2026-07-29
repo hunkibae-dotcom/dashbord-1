@@ -1779,11 +1779,11 @@ function renderProductSearchResults(results) {
   const shippedQty = shipped.reduce((s, d) => s + (d.수량 || 0), 0);
   const uniqueCodes = new Set(results.map(d => d.단품코드).filter(Boolean)).size;
 
-  summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">검색결과</div><div class="text-[19px] font-extrabold text-slate-900">${results.length.toLocaleString()}건</div></div>
-    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">고유 단품코드</div><div class="text-[19px] font-extrabold text-slate-900">${uniqueCodes.toLocaleString()}개</div></div>
-    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">검사 완료 이력</div><div class="text-[19px] font-extrabold text-emerald-600">${inspected.toLocaleString()}건</div></div>
-    <div class="border border-slate-200 rounded-xl p-3"><div class="text-[11px] text-slate-400">출고(이력) 수량</div><div class="text-[19px] font-extrabold text-accent-600">${shippedQty.toLocaleString()}개 · ${shipped.length.toLocaleString()}건</div></div>
+  summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">검색결과</div><div class="text-[15px] font-extrabold text-slate-900 truncate">${results.length.toLocaleString()}건</div></div>
+    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">고유 단품코드</div><div class="text-[15px] font-extrabold text-slate-900 truncate">${uniqueCodes.toLocaleString()}개</div></div>
+    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">검사 완료 이력</div><div class="text-[15px] font-extrabold text-emerald-600 truncate">${inspected.toLocaleString()}건</div></div>
+    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">출고(이력) 수량</div><div class="text-[15px] font-extrabold text-accent-600 truncate">${shippedQty.toLocaleString()}개 · ${shipped.length.toLocaleString()}건</div></div>
   </div>`;
 
   const sorted = [...results].sort((a, b) => {
