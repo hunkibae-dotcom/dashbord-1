@@ -2594,10 +2594,6 @@
                 }
 
                 const _dtIsS = item.status === '출고' || item.status === '피킹';
-                const _dtPk  = (item.code||'').toUpperCase() + '|' + (item.round||'');
-                const _stDC = (item.code||'').replace(/'/g,'&#39;');
-                const _stDR = (item.round||'').replace(/'/g,'&#39;');
-                const _stDL = (item.statusLabel||item.status||'').replace(/'/g,'&#39;');
                 const _dtPv  = item.pallet || '-';
                 let _dtPCH;
                 if (_dtIsS) {
