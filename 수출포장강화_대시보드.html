@@ -3167,9 +3167,6 @@
                 } else if (item.status === '입고') {
                     badgeClass = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20';
                 }
-                const _stC = (item.code||'').replace(/'/g,'&#39;');
-                const _stR = (item.round||'').replace(/'/g,'&#39;');
-                const _stL = (item.statusLabel||item.status||'').replace(/'/g,'&#39;');
 
                 tr.innerHTML = `
                     <td class="py-3.5 px-4 text-[17.5px] text-slate-600 text-center">${normalizeDate(item.regDate)}</td>
