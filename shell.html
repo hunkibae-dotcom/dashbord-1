@@ -1966,6 +1966,7 @@
     function resumeScan() {
         document.getElementById('scanResultBar').style.display = 'none';
         document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+        _scanStartedAt = Date.now();
         if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
     }
 
