@@ -747,28 +747,72 @@
         document.getElementById('kpiWorkers').textContent = w;
     }
 
+    let _schPrimaryRound = '';
+
     function renderSchedule() {
         const today = new Date(); today.setHours(0,0,0,0);
         const candidates = allData.filter(d => d.date && d.date !== '-' && !d.isDone);
         let nearest = null, minDiff = Infinity;
         candidates.forEach(d => {
-            const dt = new Date(d.date);
-            if (isNaN(dt)) return;
+            const raw = _nd(d.date); if (!raw) return;
+            const dt = new Date(raw); if (isNaN(dt)) return;
+            dt.setHours(0,0,0,0);
             const diff = dt - today;
             if (diff >= 0 && diff < minDiff) { minDiff = diff; nearest = d; }
         });
+        const body  = document.getElementById('schBody');
+        const empty = document.getElementById('schEmpty');
         if (nearest) {
             const days = Math.ceil(minDiff / 86400000);
-            document.getElementById('nearestDDay').textContent     = days === 0 ? 'D-Day' : 'D-' + days;
-            document.getElementById('nearestRound').textContent    = nearest.round;
-            document.getElementById('nearestLoadDate').textContent = fmtKr(nearest.date);
-            document.getElementById('nearestQtyVal').textContent   = nearest.qty.toLocaleString();
+            const ddayTxt   = days === 0 ? 'D-Day' : 'D-' + days;
+            const ddayColor = days === 0 ? '#FF4444' : (days <= 3 ? '#F59E0B' : '#00E676');
+
+            // 같은 상차일 전체 항목
+            const nearDate = _nd(nearest.date);
+            const same = allData.filter(d => d.date && d.date !== '-' && _nd(d.date) === nearDate);
+
+            // 건명 (중복 제거)
+            const rounds = [];
+            same.forEach(x => { if (x.round && !rounds.includes(x.round)) rounds.push(x.round); });
+            _schPrimaryRound = rounds[0] || nearest.round;
+            const displayRound = rounds.length > 1 ? _schPrimaryRound + ' 외 ' + (rounds.length - 1) + '건' : _schPrimaryRound;
+
+            // 수량
+            const totalQty  = same.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
+            const doneQty   = same.reduce((s, x) => {
+                const st = (x.status || '').replace(/\s+/g,'');
+                return s + ((st.includes('포장완료') || x.isDone) ? (parseInt(x.qty) || 0) : 0);
+            }, 0);
+            const remainQty = Math.max(0, totalQty - doneQty);
+            const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
+
+            // DOM 업데이트
+            document.getElementById('nearestRound').textContent    = displayRound;
+            const ddEl = document.getElementById('nearestDDay');
+            ddEl.textContent = ddayTxt;
+            ddEl.style.cssText = `font-size:11.5px;font-weight:800;color:${ddayColor};background:${ddayColor}22;padding:2px 9px;border-radius:14px;flex-shrink:0;`;
+            document.getElementById('nearestDueDate').textContent  = fmtKr(nearest.dueDate) || '—';
+            document.getElementById('nearestLoadDate').textContent = fmtKr(nearest.date) || '—';
+            document.getElementById('nearestQtyVal').textContent   = totalQty.toLocaleString() + ' BOX';
+            document.getElementById('nearestDoneQty').textContent  = doneQty.toLocaleString() + ' BOX';
+            document.getElementById('nearestRemainQty').textContent= remainQty.toLocaleString() + ' BOX';
+            document.getElementById('nearestProgressBar').style.width = pct + '%';
+            document.getElementById('nearestProgressPct').textContent = pct + '%';
+
+            if (body)  body.style.display  = 'flex';
+            if (empty) empty.style.display = 'none';
         } else {
-            document.getElementById('nearestDDay').textContent     = '—';
-            document.getElementById('nearestRound').textContent    = '예정 일정 없음';
-            document.getElementById('nearestLoadDate').textContent = '';
-            document.getElementById('nearestQtyVal').textContent   = '—';
+            _schPrimaryRound = '';
+            if (body)  body.style.display  = 'none';
+            if (empty) empty.style.display = 'flex';
         }
+    }
+
+    function goToScheduleSearch() {
+        if (!_schPrimaryRound) return;
+        openView('viewSearch');
+        const inp = document.getElementById('sf_round');
+        if (inp) { inp.value = _schPrimaryRound; runSearch(); }
     }
 
     function _nd(raw) {
