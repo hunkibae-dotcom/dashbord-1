@@ -1146,7 +1146,7 @@
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
-            if (country && !(d.country ||'').toLowerCase().includes(country)) return false;
+            if (country && !((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
             return true;
         });
         document.getElementById('srCount').textContent = filtered.length;

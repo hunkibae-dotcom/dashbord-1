@@ -2062,6 +2062,16 @@ function setMFactory(f) {
   [['All','all'], ['Cj1','cj1'], ['Cj2','cj2']].forEach(([s, v]) => {
     document.getElementById('mF' + s)?.classList.toggle('active', v === f);
   });
+  ['All','Cj1','Cj2'].forEach((s, i) => {
+    document.getElementById('mHomeF' + s)?.classList.toggle('active', ['all','cj1','cj2'][i] === f);
+  });
+  document.querySelectorAll('#mTab_home [data-mf]').forEach(el => {
+    el.style.display = (f === 'all' || el.dataset.mf === f) ? '' : 'none';
+  });
+  document.querySelectorAll('#mTab_home [data-mf-divider]').forEach(el => {
+    el.style.display = (f === 'all') ? '' : 'none';
+  });
+  renderMobileKPIs();
   renderMobileList();
 }
 
