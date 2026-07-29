@@ -5081,6 +5081,79 @@
             URL.revokeObjectURL(url);
         }
 
+        // ── 진행상태 편집 모달 ─────────────────────────────────────
+        const _STATUS_OPTS = [
+            { v:'미확인',  c:'#64748B' },
+            { v:'포장대기', c:'#F59E0B' },
+            { v:'입고',    c:'#38BDF8' },
+            { v:'포장완료', c:'#3B82F6' },
+            { v:'철물',    c:'#EF4444' },
+        ];
+        let _seCode = '', _seRound = '', _seCurrentLabel = '';
+
+        function openStatusEdit(code, round, currentLabel) {
+            _seCode = code; _seRound = round; _seCurrentLabel = currentLabel;
+            document.getElementById('statusEditCodeLabel').textContent = code;
+            document.getElementById('statusEditRoundLabel').textContent = round;
+            const opts = document.getElementById('statusEditOptions');
+            opts.innerHTML = _STATUS_OPTS.map(opt => {
+                const isCur = opt.v === currentLabel;
+                return `<button onclick="saveStatusEdit('${opt.v}')"
+                    style="display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:9px;border:1px solid ${isCur?opt.c:'#334155'};background:${isCur?opt.c+'22':'transparent'};color:${opt.c};font-size:14px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;width:100%;transition:all .12s;"
+                    onmouseenter="this.style.background='${opt.c}22';this.style.borderColor='${opt.c}'"
+                    onmouseleave="this.style.background='${isCur?opt.c+'22':'transparent'}';this.style.borderColor='${isCur?opt.c:'#334155'}'">
+                    <i class="fa-solid fa-circle" style="font-size:7px;opacity:.6;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:11px;"></i>':''}
+                </button>`;
+            }).join('');
+            document.getElementById('statusEditFeedback').textContent = '';
+            document.getElementById('statusEditModal').style.display = 'flex';
+        }
+
+        function closeStatusEdit() {
+            document.getElementById('statusEditModal').style.display = 'none';
+            _seCode = ''; _seRound = ''; _seCurrentLabel = '';
+        }
+
+        async function saveStatusEdit(newStatus) {
+            if (!_seCode) return;
+            const fb = document.getElementById('statusEditFeedback');
+            fb.textContent = '저장 중...'; fb.style.color = '#94A3B8';
+            const scriptUrl = localStorage.getItem('sheet_pub_url') ||
+                'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
+            try {
+                const params = new URLSearchParams({ action:'updateStatus', code:_seCode, round:_seRound, status:newStatus });
+                const res = await fetch(scriptUrl + '?' + params, { signal: AbortSignal.timeout(15000) });
+                const text = await res.text();
+                if (text.includes('success') || res.ok) {
+                    fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#34D399';
+                    const _mapCat = sv => {
+                        const s = (sv||'').toLowerCase().replace(/\s/g,'');
+                        if (s.includes('포장완료')) return '포장완료';
+                        if (s === '입고') return '입고';
+                        return '미입고';
+                    };
+                    const newCat = _mapCat(newStatus);
+                    [state.data, state.filteredData].forEach(arr => {
+                        arr.forEach(it => {
+                            if ((it.code||'').toUpperCase() === _seCode.toUpperCase() && (it.round||'') === _seRound) {
+                                it.status = newCat; it.statusLabel = newStatus;
+                            }
+                        });
+                    });
+                    setTimeout(() => {
+                        closeStatusEdit();
+                        const exactCode = (document.getElementById('productCodeFilter')?.value||'').trim();
+                        if (exactCode) renderProductDetailTable(exactCode);
+                        else renderTable();
+                    }, 500);
+                } else {
+                    throw new Error(text || '서버 오류');
+                }
+            } catch(e) {
+                fb.textContent = '저장 실패: ' + (e.message||'오류'); fb.style.color = '#F87171';
+            }
+        }
+
         // ── 적재번호 편집 모달 ───────────────────────────────────
         let _palletEditActiveKey = null;
 

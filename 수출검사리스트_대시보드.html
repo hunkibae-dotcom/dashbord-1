@@ -2648,7 +2648,7 @@ if ('serviceWorker' in navigator) {
         <!-- 검색 -->
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[12.5px]"></i>
-          <input type="text" id="mSearch" oninput="renderMobileList()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field" style="font-size:13px;padding-left:36px;border-radius:12px;">
+          <input type="text" id="mSearch" oninput="renderMobileListDebounced()" placeholder="건명, 단품코드, 단품명칭 검색" class="in-field" style="font-size:13px;padding-left:36px;border-radius:12px;">
         </div>
       </div>
       <!-- List body -->
