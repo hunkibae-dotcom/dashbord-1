@@ -2229,46 +2229,71 @@
         }
     });
     </script>
-<!-- 제품 상세스펙 바텀시트 -->
-<div id="specDetailSheet" onclick="if(event.target===this)closeSpecDetail()" style="position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;gap:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-ruler-combined" style="color:#00E676;font-size:14px;"></i> 제품 상세 스펙</span>
-            <button onclick="closeSpecDetail()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-        </div>
-        <div id="specDetailContent" class="no-scrollbar" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;"></div>
-    </div>
-</div>
-<!-- 적재번호 수정 바텀시트 (모바일) -->
-<div id="palletEditMobileSheet" onclick="if(event.target===this)closePalletEditMobile()" style="position:fixed;inset:0;z-index:60;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-pallet" style="color:#00B0FF;font-size:14px;"></i> 적재번호 변경</span>
-            <button onclick="closePalletEditMobile()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-        </div>
-        <div id="palletEditMobileInfo" style="font-size:12px;color:var(--text-sub);background:var(--input-bg);border-radius:10px;padding:10px 12px;line-height:1.9;"></div>
+<!-- 품목 통합 수정 바텀시트 -->
+<div id="itemEditSheet" onclick="if(event.target===this)closeItemEdit()"
+     style="display:none;opacity:0;position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;transition:opacity .2s;">
+  <div class="ie-inner" style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,.72,0,1);padding-bottom:env(safe-area-inset-bottom,0px);">
+    <div style="flex-shrink:0;">
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--divider);">
         <div>
-            <label style="display:block;font-size:11px;color:var(--label);margin-bottom:6px;">파렛트 번호 (충주공장 재고 K열)</label>
-            <input id="palletEditMobileInput" type="text" placeholder="예: 1, 2, A-1 ..."
-                style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'"
-                onkeydown="if(event.key==='Enter')savePalletEditMobile()">
+          <div id="ieCode" style="font-size:16px;font-weight:800;font-family:monospace;color:var(--text);"></div>
+          <div id="ieRound" style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:600;"></div>
         </div>
-        <button id="palletEditMobileSaveBtn" onclick="savePalletEditMobile()" style="background:#00B0FF;color:#0B0F19;font-size:14px;font-weight:800;border:none;border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-check"></i> 저장</button>
-        <div id="palletEditMobileSaveStatus" style="font-size:12px;text-align:center;min-height:16px;"></div>
+        <button onclick="closeItemEdit()" style="width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
     </div>
-</div>
-<!-- 진행상태 수정 바텀시트 (모바일) -->
-<div id="statusEditMobileSheet" onclick="if(event.target===this)closeStatusEditMobile()" style="position:fixed;inset:0;z-index:61;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-    <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-            <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;"><i class="fa-solid fa-tags" style="color:#F59E0B;font-size:14px;"></i> 진행상태 변경</span>
-            <button onclick="closeStatusEditMobile()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    <div class="no-scrollbar" style="overflow-y:auto;flex:1;padding:16px 20px 8px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+        <span id="ieColor" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;font-family:monospace;"></span>
+        <span id="ieCountry" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;"></span>
+        <span id="ieQty" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:800;margin-left:auto;font-family:monospace;"></span>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:16px;font-size:11px;font-family:monospace;">
+        <span style="color:var(--label);">상차 <span id="ieDate" style="color:var(--text-sub);font-weight:700;"></span></span>
+        <span style="color:var(--label);">납기 <span id="ieDue" style="color:var(--text-sub);font-weight:700;"></span></span>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">진행상태</div>
+        <div id="ieStatusOpts" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      </div>
+      <div style="margin-bottom:18px;">
+        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">적재번호</div>
+        <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
+          style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')saveItemEdit()">
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">규격</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div>
+            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">가로 (mm)</div>
+            <input id="ieW" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">세로 (mm)</div>
+            <input id="ieD" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">높이 (mm)</div>
+            <input id="ieH" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">무게 (kg)</div>
+            <input id="ieG" type="number" placeholder="—" step="0.01" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          </div>
         </div>
-        <div id="statusEditMobileInfo" style="font-size:12px;font-weight:700;color:var(--text-sub);font-family:monospace;"></div>
-        <div id="statusEditMobileOptions" style="display:flex;flex-direction:column;gap:8px;"></div>
-        <div id="statusEditMobileStatus" style="font-size:12px;text-align:center;min-height:16px;font-weight:600;"></div>
+      </div>
+      <div id="ieFeedback" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-bottom:8px;"></div>
+      <button id="ieSaveBtn" onclick="saveItemEdit()"
+        style="width:100%;background:var(--accent);color:#0B0F19;font-size:14px;font-weight:800;border:none;border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;-webkit-tap-highlight-color:transparent;">
+        <i class="fa-solid fa-check"></i> 저장
+      </button>
     </div>
+  </div>
 </div>
 </body>
 </html>
