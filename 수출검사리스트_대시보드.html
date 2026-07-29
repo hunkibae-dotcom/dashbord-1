@@ -2190,6 +2190,89 @@ function closeKpiDetail() {
   setTimeout(() => { sheet.style.display = 'none'; }, 220);
 }
 
+// ===== 품목 상세/수정 (리스트 항목 클릭) — 시트 연동 스크립트가 없어 이 기기(로컬)에만 저장됨 =====
+function _miNormDate(raw) {
+  if (!raw) return '';
+  let s = raw.toString().trim();
+  if (!s || s === '-' || s === '—') return '';
+  if (s.includes('T') || s.includes('GMT')) return s.substring(0, 10);
+  s = s.replace(/[.\/]/g, '-').replace(/\s+/g, '');
+  if (s.endsWith('-')) s = s.slice(0, -1);
+  const p = s.split('-');
+  if (p.length === 3 && p[0].length >= 4) return p[0] + '-' + p[1].padStart(2, '0') + '-' + p[2].padStart(2, '0');
+  return '';
+}
+const MI_OVERRIDE_KEY = 'qc_item_override_v1';
+function _miKey(d) { return [d.건명, d.단품코드, d.색상, d.수량].join('|'); }
+function _loadMiOverrides() {
+  try { return JSON.parse(localStorage.getItem(MI_OVERRIDE_KEY)) || {}; } catch (e) { return {}; }
+}
+function _saveMiOverride(key, patch) {
+  const all = _loadMiOverrides();
+  all[key] = Object.assign({}, all[key], patch);
+  try { localStorage.setItem(MI_OVERRIDE_KEY, JSON.stringify(all)); } catch (e) { /* 저장공간 부족 등은 무시 */ }
+}
+// 새로 불러온 데이터에 이 기기에 저장해둔 수정값을 다시 입혀준다
+function applyMiOverrides(list) {
+  const overrides = _loadMiOverrides();
+  if (!Object.keys(overrides).length) return;
+  list.forEach(d => {
+    const o = overrides[_miKey(d)];
+    if (o) Object.assign(d, o);
+  });
+}
+
+let _miCurrent = null;
+function _refreshMiStatusButtons(status) {
+  ['미검사', '검사', '양지'].forEach(v => {
+    const btn = document.getElementById('miStBtn_' + v);
+    if (!btn) return;
+    const on = status === v;
+    btn.style.background = on ? '#6D5CE8' : 'var(--input-bg)';
+    btn.style.color = on ? '#fff' : 'var(--text-sub)';
+    btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
+  });
+}
+function _updateMiCbm() {
+  const w = parseFloat(document.getElementById('miW').value) || 0;
+  const d = parseFloat(document.getElementById('miD').value) || 0;
+  const h = parseFloat(document.getElementById('miH').value) || 0;
+  document.getElementById('miCbm').textContent = (w && d && h) ? 'CBM ' + ((w * d * h) / 1e9).toFixed(4) + 'm³' : 'CBM —';
+}
+function openMItemDetail(key) {
+  const d = window._mItemMap && window._mItemMap[key];
+  if (!d) return;
+  _miCurrent = d;
+  document.getElementById('miTitle').textContent = d.건명 || '—';
+  document.getElementById('miSub').textContent = `${d.단품코드 || '—'} · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
+  _refreshMiStatusButtons(d.검사);
+  document.getElementById('miDateInput').value = _miNormDate(d.검사일);
+  document.getElementById('miW').value = d.가로 || '';
+  document.getElementById('miD').value = d.세로 || '';
+  document.getElementById('miH').value = d.높이 || '';
+  document.getElementById('miG').value = d.중량 || '';
+  _updateMiCbm();
+  document.getElementById('mItemDetailModal').style.display = 'flex';
+}
+function closeMItemDetail() {
+  document.getElementById('mItemDetailModal').style.display = 'none';
+  _miCurrent = null;
+}
+function setMiField(field, value) {
+  if (!_miCurrent) return;
+  if (['가로', '세로', '높이', '중량'].includes(field)) {
+    value = parseFloat(value) || 0;
+    _updateMiCbm();
+  }
+  _miCurrent[field] = value;
+  if (field === '검사') _refreshMiStatusButtons(value);
+  _saveMiOverride(_miKey(_miCurrent), { [field]: value });
+  // 검사 상태 변경은 KPI·뱃지·리스트 색상에도 영향을 주므로 관련 화면을 함께 갱신
+  renderMobileKPIs();
+  renderMobileFactoryPanels();
+  renderMobileList();
+}
+
 function renderMobileFactoryPanels() {
   ['cj1', 'cj2'].forEach((key, i) => {
     const sfx = i + 1;
