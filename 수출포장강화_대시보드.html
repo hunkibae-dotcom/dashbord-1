@@ -3121,7 +3121,7 @@
                             <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
                             <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
                             <div class="flex justify-between"><span>CBM</span><span class="text-slate-300">${_cbm}</span></div>
-                            <div class="flex justify-between"><span>중량(kg)</span><span class="text-slate-300">${_wgt}</span></div>
+                            <div class="flex justify-between"><span>적재</span><span style="color:${_isShipped?(item.status==='피킹'?'#A78BFA':'#34D399'):'#CBD5E1'}">${_pallet}</span></div>
                         </div>
                     </div>`);
             });
