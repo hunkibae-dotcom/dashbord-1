@@ -2022,13 +2022,10 @@
             const isShipped = d.isDone && (s.includes('출고') || s.includes('피킹'));
             const _pv = isShipped ? (s.includes('피킹') ? '피킹' : '출고') : (_mm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || '—');
             const _pc = isShipped ? (s.includes('피킹') ? '#A78BFA' : '#00E676') : '#00B0FF';
-            const _palletRow = isShipped
-                ? `<span style="font-size:11px;font-weight:700;color:${_pc};">${_pv}</span>`
-                : `<button onclick="openPalletEditMobile('${_sc}','${_sr}','${(_pv!=='—'?_pv:'').replace(/'/g,"&#39;")}')" style="font-size:11px;font-weight:700;color:${_pv!=='—'?'#00B0FF':'var(--text-sub)'};background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_pv!=='—'?_pv:'—'}</button>`;
-            return `<div style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
+            return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-                    <button onclick="openSpecDetail('${_sc}')" style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;background:none;border:none;cursor:pointer;padding:0;text-align:left;">${d.code || '—'}</button>
-                    <button onclick="openStatusEditMobile('${_sc}','${_sr}','${(d.status||'').replace(/'/g,'&#39;')}')" style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;border:none;cursor:pointer;">${d.status}</button>
+                    <span style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
+                    <span style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;">${d.status}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;font-size:11px;margin-bottom:3px;">
                     <span style="font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;">${d.round}</span>
@@ -2039,7 +2036,7 @@
                 <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)}${ddayTxt} · 납기 ${fmtKr(d.dueDate)}</div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;padding-top:4px;border-top:1px solid var(--divider);">
                     <span style="font-size:10px;color:var(--label);">적재</span>
-                    ${_palletRow}
+                    <span style="font-size:11px;font-weight:700;color:${_pv!=='—'?_pc:'var(--text-sub)'};">${_pv}</span>
                 </div>
             </div>`;
         }).join('');
