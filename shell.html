@@ -2034,160 +2034,180 @@
         }).join('');
     }
 
-    // ── 제품 상세스펙 바텀시트 ───────────────────────────────
-    function openSpecDetail(code) {
-        const content = document.getElementById('specDetailContent');
-        if (!content) return;
-        const matches = allData.filter(d => (d.code||'').toUpperCase() === (code||'').toUpperCase());
-        if (!matches.length) {
-            content.innerHTML = '<div style="text-align:center;padding:24px 0;font-size:13px;color:var(--text-sub);">스펙 데이터 없음</div>';
-        } else {
-            const _su = v => { if (!v||v==='-') return NaN; return parseFloat((v+'').replace(/[^0-9.]/g,'')); };
-            const _arr = f => matches.map(d => _su((d[f]||'').toString())).filter(v => !isNaN(v) && v > 0);
-            const _avg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toFixed(1) : null;
-            const ws = _arr('specW'), ds = _arr('specD'), hs = _arr('specH'), gs = _arr('specG');
-            const wA = _avg(ws), dA = _avg(ds), hA = _avg(hs);
-            const cbm = (wA&&dA&&hA) ? (parseFloat(wA)*parseFloat(dA)*parseFloat(hA)/1e9).toFixed(4) : null;
-            const _cell = (lbl, avg, unit) => `<div style="background:var(--icon-bg);border-radius:10px;padding:10px 12px;"><div style="font-size:10px;color:var(--label);margin-bottom:4px;">${lbl}</div><div style="font-size:16px;font-weight:800;color:var(--text);font-family:monospace;">${avg ? avg+unit : '—'}</div></div>`;
-            content.innerHTML = `
-                <div style="font-size:14px;font-weight:800;font-family:monospace;color:var(--text);padding:2px 0 6px;">${code}</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                    ${_cell('가로',wA,'mm')}${_cell('세로',dA,'mm')}${_cell('높이',hA,'mm')}${_cell('중량',_avg(gs),'kg')}
-                </div>
-                <div style="background:var(--icon-bg);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;">
-                    <span style="font-size:11px;color:var(--label);">CBM (추정)</span>
-                    <span style="font-size:16px;font-weight:800;color:var(--text);font-family:monospace;">${cbm || '—'}</span>
-                </div>
-                <div style="font-size:10px;color:var(--text-sub);text-align:center;">${matches.length}개 데이터 기준 평균값</div>`;
-        }
-        const sh = document.getElementById('specDetailSheet');
-        sh.dataset.code = code;
-        sh.style.display = 'flex';
-    }
-    function closeSpecDetail() {
-        const sh = document.getElementById('specDetailSheet');
-        sh.style.display = 'none';
-        sh.dataset.code = '';
-    }
-
-    // ── 적재번호 편집 바텀시트 (모바일) ──────────────────────
-    let _mPalletCode = '', _mPalletRound = '';
-    function openPalletEditMobile(code, round, current) {
-        _mPalletCode = code;
-        _mPalletRound = round;
-        const info = document.getElementById('palletEditMobileInfo');
-        if (info) info.innerHTML = '품목코드 <strong style="color:var(--text);font-family:monospace;">' + code + '</strong><br>건&nbsp;&nbsp;&nbsp;명 <span style="color:var(--text);">' + round + '</span>';
-        const inp = document.getElementById('palletEditMobileInput');
-        if (inp) inp.value = (current && current !== '—') ? current : '';
-        const st = document.getElementById('palletEditMobileSaveStatus');
-        if (st) { st.textContent = ''; st.style.color = ''; }
-        document.getElementById('palletEditMobileSheet').style.display = 'flex';
-        setTimeout(() => { if (inp) inp.focus(); }, 80);
-    }
-    function closePalletEditMobile() {
-        document.getElementById('palletEditMobileSheet').style.display = 'none';
-        _mPalletCode = ''; _mPalletRound = '';
-    }
-    async function savePalletEditMobile() {
-        const inp = document.getElementById('palletEditMobileInput');
-        const st  = document.getElementById('palletEditMobileSaveStatus');
-        const btn = document.getElementById('palletEditMobileSaveBtn');
-        const newVal = (inp ? inp.value : '').trim();
-        if (!newVal) { if (st) { st.textContent = '값을 입력해주세요.'; st.style.color = '#FF4444'; } return; }
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...'; }
-        if (st) { st.textContent = ''; st.style.color = ''; }
-        try {
-            const params = new URLSearchParams({ action:'updatePallet', code:_mPalletCode, round:_mPalletRound, pallet:newVal });
-            const res = await fetch(GAS_URL + '?' + params, { signal: AbortSignal.timeout(15000) });
-            const text = await res.text();
-            if (text.includes('success') || text.includes('OK') || res.ok) {
-                if (st) { st.textContent = '✓ 저장되었습니다.'; st.style.color = '#00E676'; }
-                if (rawStockRows && rawStockRows.length > 1) {
-                    const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
-                    const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
-                    const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
-                    for (let i = 1; i < rawStockRows.length; i++) {
-                        const r = rawStockRows[i]; if (!r) continue;
-                        if ((r[iC>=0?iC:1]||'').toString().trim().toUpperCase() === _mPalletCode.toUpperCase() &&
-                            (r[iR>=0?iR:4]||'').toString().trim() === _mPalletRound) r[10] = newVal;
-                    }
-                }
-                setTimeout(() => { closePalletEditMobile(); renderPendingModal(); renderMgmtModal(); }, 700);
-            } else {
-                throw new Error(text || '서버 응답 오류');
-            }
-        } catch(e) {
-            if (st) { st.textContent = '저장 실패: ' + (e.message||'오류'); st.style.color = '#FF4444'; }
-        } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
-        }
-    }
-
-    // ── 진행상태 편집 (모바일) ─────────────────────────────
-    const _STATUS_OPTS_M = [
+    // ── 품목 통합 수정 바텀시트 ─────────────────────────────
+    const _IE_STATUS_OPTS = [
         { v:'미확인',  c:'#64748B' },
         { v:'포장대기', c:'#F59E0B' },
         { v:'입고',    c:'#38BDF8' },
         { v:'포장완료', c:'#3B82F6' },
         { v:'철물',    c:'#EF4444' },
     ];
-    let _mStatusCode = '', _mStatusRound = '';
+    let _ieCode = '', _ieRound = '';
+    let _ieOrigStatus = '', _ieCurStatus = '';
+    let _ieOrigPallet = '';
+    let _ieOrigW = '', _ieOrigD = '', _ieOrigH = '', _ieOrigG = '';
 
-    function openStatusEditMobile(code, round, current) {
-        _mStatusCode = code; _mStatusRound = round;
-        document.getElementById('statusEditMobileInfo').textContent = code + (round ? '  ' + round : '');
-        const opts = document.getElementById('statusEditMobileOptions');
-        opts.innerHTML = _STATUS_OPTS_M.map(opt => {
-            const isCur = opt.v === current;
-            return `<button onclick="saveStatusEditMobile('${opt.v.replace(/'/g,"&#39;")}')"
-                style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;border:1px solid ${isCur?opt.c:'var(--border)'};background:${isCur?opt.c+'22':'var(--input-bg)'};color:${opt.c};font-size:14px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;width:100%;box-sizing:border-box;">
-                <i class="fa-solid fa-circle" style="font-size:8px;opacity:.6;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:12px;"></i>':''}
-            </button>`;
+    function openItemEdit(code, round) {
+        _ieCode = code; _ieRound = round;
+        const item = allData.find(d =>
+            (d.code||'').toUpperCase() === (code||'').toUpperCase() && (d.round||'') === round
+        );
+        const ieCode = document.getElementById('ieCode');
+        const ieRound = document.getElementById('ieRound');
+        if (ieCode) ieCode.textContent = code;
+        if (ieRound) ieRound.textContent = round;
+        if (item) {
+            const ieColor = document.getElementById('ieColor');
+            const ieCountry = document.getElementById('ieCountry');
+            const ieQty = document.getElementById('ieQty');
+            const ieDate = document.getElementById('ieDate');
+            const ieDue = document.getElementById('ieDue');
+            if (ieColor) ieColor.textContent = item.color || '—';
+            if (ieCountry) ieCountry.textContent = item.country || '—';
+            if (ieQty) ieQty.textContent = (item.qty||0).toLocaleString() + ' BOX';
+            if (ieDate) ieDate.textContent = fmtKr(item.date);
+            if (ieDue) ieDue.textContent = fmtKr(item.dueDate);
+            _ieOrigStatus = item.status || '';
+            _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
+            _ieOrigD = (item.specD||'').toString().replace(/[^0-9.]/g,'');
+            _ieOrigH = (item.specH||'').toString().replace(/[^0-9.]/g,'');
+            _ieOrigG = (item.specG||'').toString().replace(/[^0-9.]/g,'');
+        } else {
+            ['ieColor','ieCountry','ieQty','ieDate','ieDue'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.textContent = '—';
+            });
+            _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
+        }
+        _ieCurStatus = _ieOrigStatus;
+        _renderIeStatus();
+        const pm = _buildPalletMap();
+        _ieOrigPallet = pm[(code||'').toUpperCase() + '|' + round] || '';
+        const palInp = document.getElementById('iePallet');
+        if (palInp) palInp.value = _ieOrigPallet;
+        const ieW = document.getElementById('ieW');
+        const ieD = document.getElementById('ieD');
+        const ieH = document.getElementById('ieH');
+        const ieG = document.getElementById('ieG');
+        if (ieW) ieW.value = _ieOrigW;
+        if (ieD) ieD.value = _ieOrigD;
+        if (ieH) ieH.value = _ieOrigH;
+        if (ieG) ieG.value = _ieOrigG;
+        const fb = document.getElementById('ieFeedback');
+        if (fb) { fb.textContent = ''; fb.style.color = ''; }
+        const sheet = document.getElementById('itemEditSheet');
+        if (!sheet) return;
+        sheet.style.display = 'flex';
+        requestAnimationFrame(() => {
+            sheet.style.opacity = '1';
+            const inner = sheet.querySelector('.ie-inner');
+            if (inner) inner.style.transform = 'translateY(0)';
+        });
+    }
+
+    function closeItemEdit() {
+        const sheet = document.getElementById('itemEditSheet');
+        if (!sheet) return;
+        sheet.style.opacity = '0';
+        const inner = sheet.querySelector('.ie-inner');
+        if (inner) inner.style.transform = 'translateY(100%)';
+        setTimeout(() => { sheet.style.display = 'none'; }, 220);
+        _ieCode = ''; _ieRound = '';
+    }
+
+    function _renderIeStatus() {
+        const container = document.getElementById('ieStatusOpts');
+        if (!container) return;
+        container.innerHTML = _IE_STATUS_OPTS.map(opt => {
+            const active = opt.v === _ieCurStatus;
+            return `<button onclick="selectIeStatus('${opt.v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${active?opt.c:'var(--border)'};background:${active?opt.c+'22':'var(--input-bg)'};color:${active?opt.c:'var(--text-sub)'};font-size:11px;font-weight:${active?800:600};cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;">${opt.v}</button>`;
         }).join('');
-        document.getElementById('statusEditMobileStatus').textContent = '';
-        const sh = document.getElementById('statusEditMobileSheet');
-        sh.style.display = 'flex';
     }
 
-    function closeStatusEditMobile() {
-        document.getElementById('statusEditMobileSheet').style.display = 'none';
-        _mStatusCode = ''; _mStatusRound = '';
+    function selectIeStatus(v) {
+        _ieCurStatus = v;
+        _renderIeStatus();
     }
 
-    async function saveStatusEditMobile(newStatus) {
-        if (!_mStatusCode) return;
-        const st = document.getElementById('statusEditMobileStatus');
-        st.textContent = '저장 중...'; st.style.color = 'var(--text-sub)';
+    async function saveItemEdit() {
+        if (!_ieCode) return;
+        const btn = document.getElementById('ieSaveBtn');
+        const fb  = document.getElementById('ieFeedback');
+        if (fb) { fb.textContent = '저장 중...'; fb.style.color = 'var(--text-sub)'; }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...'; }
+        const newPallet = (document.getElementById('iePallet')?.value || '').trim();
+        const newW = (document.getElementById('ieW')?.value || '').trim();
+        const newD = (document.getElementById('ieD')?.value || '').trim();
+        const newH = (document.getElementById('ieH')?.value || '').trim();
+        const newG = (document.getElementById('ieG')?.value || '').trim();
+        const tasks = [];
+        const changed = {};
+        if (_ieCurStatus && _ieCurStatus !== _ieOrigStatus) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateStatus', code:_ieCode, round:_ieRound, status:_ieCurStatus }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.status = _ieCurStatus;
+        }
+        if (newPallet !== _ieOrigPallet) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updatePallet', code:_ieCode, round:_ieRound, pallet:newPallet }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.pallet = newPallet;
+        }
+        const specChanged = newW !== _ieOrigW || newD !== _ieOrigD || newH !== _ieOrigH || newG !== _ieOrigG;
+        if (specChanged) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateSpec', code:_ieCode, round:_ieRound, w:newW, d:newD, h:newH, g:newG }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.spec = true;
+        }
+        if (!tasks.length) {
+            if (fb) { fb.textContent = '변경사항이 없습니다.'; fb.style.color = 'var(--text-sub)'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
+            return;
+        }
         try {
-            const params = new URLSearchParams({ action:'updateStatus', code:_mStatusCode, round:_mStatusRound, status:newStatus });
-            const res = await fetch(GAS_URL + '?' + params, { signal: AbortSignal.timeout(15000) });
-            const text = await res.text();
-            if (text.includes('success') || res.ok) {
-                st.textContent = '✓ 저장되었습니다.'; st.style.color = '#34D399';
-                // 로컬 데이터 업데이트
-                [allData, stockData].forEach(arr => {
-                    if (!arr) return;
+            await Promise.all(tasks);
+            if (changed.status) {
+                [allData, stockData].forEach(arr => { if (!arr) return;
                     arr.forEach(it => {
-                        if ((it.code||'').toUpperCase() === _mStatusCode.toUpperCase() && (it.round||'') === _mStatusRound) {
-                            it.status = newStatus;
-                        }
+                        if ((it.code||'').toUpperCase() === _ieCode.toUpperCase() && (it.round||'') === _ieRound)
+                            it.status = changed.status;
                     });
                 });
-                setTimeout(() => {
-                    closeStatusEditMobile();
-                    if (document.getElementById('pendingModal')?.style.display !== 'none') renderPendingModal();
-                    if (document.getElementById('mgmtView')?.style.display !== 'none') renderMgmtModal();
-                    const specSheet = document.getElementById('specDetailSheet');
-                    if (specSheet && specSheet.style.display !== 'none') {
-                        const codeInSpec = specSheet.dataset.code;
-                        if (codeInSpec) openSpecDetail(codeInSpec);
-                    }
-                }, 500);
-            } else {
-                throw new Error(text || '서버 오류');
             }
+            if (changed.spec) {
+                allData.forEach(it => {
+                    if ((it.code||'').toUpperCase() === _ieCode.toUpperCase() && (it.round||'') === _ieRound) {
+                        if (newW) it.specW = newW;
+                        if (newD) it.specD = newD;
+                        if (newH) it.specH = newH;
+                        if (newG) it.specG = newG;
+                    }
+                });
+            }
+            if (changed.pallet !== undefined && rawStockRows && rawStockRows.length > 1) {
+                const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
+                const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                for (let i = 1; i < rawStockRows.length; i++) {
+                    const r = rawStockRows[i]; if (!r) continue;
+                    if ((r[iC>=0?iC:1]||'').toString().trim().toUpperCase() === _ieCode.toUpperCase() &&
+                        (r[iR>=0?iR:4]||'').toString().trim() === _ieRound) { r[10] = changed.pallet; break; }
+                }
+            }
+            if (fb) { fb.textContent = '✓ 저장 완료'; fb.style.color = '#00E676'; }
+            setTimeout(() => {
+                closeItemEdit();
+                renderPendingModal();
+                renderMgmtModal();
+            }, 600);
         } catch(e) {
-            st.textContent = '저장 실패: ' + (e.message||'오류'); st.style.color = '#FF4444';
+            if (fb) { fb.textContent = '저장 실패: ' + (e.message||'오류'); fb.style.color = '#FF4444'; }
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
         }
     }
 
