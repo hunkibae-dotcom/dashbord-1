@@ -2500,77 +2500,81 @@ if ('serviceWorker' in navigator) {
       <div class="grid grid-cols-2 gap-3 mb-6">
 
         <!-- 금일 포장 -->
-        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
-          <div class="flex items-center gap-2 mb-4">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="openKpiDetail('today')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+          <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#E0F2FE;">
               <i class="fa-solid fa-box text-sky-500 text-[13px]"></i>
             </span>
             <span class="text-[12px] font-bold text-slate-400 tracking-wide">금일 포장</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-slate-900 leading-none" id="mKpiPkd1">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+              <div class="text-[22px] font-extrabold text-slate-900 leading-none" id="mKpiPkd1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주1</div>
             </div>
-            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="w-px bg-slate-100" style="height:28px;margin-bottom:2px;"></div>
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-slate-900 leading-none" id="mKpiPkd2">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+              <div class="text-[22px] font-extrabold text-slate-900 leading-none" id="mKpiPkd2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주2</div>
             </div>
           </div>
         </div>
 
         <!-- 검사 대기 -->
-        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
-          <div class="flex items-center gap-2 mb-4">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory('all');setMStatus('미검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+          <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#FEE2E2;">
               <i class="fa-solid fa-hourglass-half text-rose-500 text-[13px]"></i>
             </span>
             <span class="text-[12px] font-bold text-slate-400 tracking-wide">검사 대기</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-rose-500 leading-none" id="mKpiWt1">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+              <div class="text-[22px] font-extrabold text-rose-500 leading-none" id="mKpiWt1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주1</div>
             </div>
-            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="w-px bg-slate-100" style="height:28px;margin-bottom:2px;"></div>
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-rose-500 leading-none" id="mKpiWt2">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+              <div class="text-[22px] font-extrabold text-rose-500 leading-none" id="mKpiWt2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주2</div>
             </div>
           </div>
         </div>
 
         <!-- 검사 완료 -->
-        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
-          <div class="flex items-center gap-2 mb-4">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory('all');setMStatus('검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+          <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#DCFCE7;">
               <i class="fa-solid fa-circle-check text-emerald-500 text-[13px]"></i>
             </span>
             <span class="text-[12px] font-bold text-slate-400 tracking-wide">검사 완료</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-emerald-500 leading-none" id="mKpiDn1">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주1</div>
+              <div class="text-[22px] font-extrabold text-emerald-500 leading-none" id="mKpiDn1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주1</div>
             </div>
-            <div class="w-px bg-slate-100" style="height:36px;margin-bottom:2px;"></div>
+            <div class="w-px bg-slate-100" style="height:28px;margin-bottom:2px;"></div>
             <div class="text-center">
-              <div class="text-[34px] font-extrabold text-emerald-500 leading-none" id="mKpiDn2">—</div>
-              <div class="text-[10px] font-bold text-slate-400 mt-2">충주2</div>
+              <div class="text-[22px] font-extrabold text-emerald-500 leading-none" id="mKpiDn2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주2</div>
             </div>
           </div>
         </div>
 
         <!-- 누적 완료 -->
-        <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
-          <div class="flex items-center gap-2 mb-4">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="openKpiDetail('accum')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+          <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#EDE9FE;">
               <i class="fa-solid fa-box-archive text-violet-500 text-[13px]"></i>
             </span>
             <span class="text-[12px] font-bold text-slate-400 tracking-wide">누적 완료</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
           </div>
-          <div class="text-[34px] font-extrabold text-violet-500 leading-none" id="mKpiArc">—</div>
+          <div class="text-[22px] font-extrabold text-violet-500 leading-none" id="mKpiArc">—</div>
           <div class="text-[10.5px] text-slate-400 font-bold mt-2" id="mKpiArcBk">충주1 — · 충주2 —</div>
         </div>
 
