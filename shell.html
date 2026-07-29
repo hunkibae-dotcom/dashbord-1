@@ -1869,9 +1869,7 @@
             const _pc = isShipped ? (s.includes('피킹') ? '#A78BFA' : '#00E676') : '#00B0FF';
             const _palletRow = isShipped
                 ? `<span style="font-size:11px;font-weight:700;color:${_pc};">${_pv}</span>`
-                : (_pv !== '—'
-                    ? `<button onclick="openPalletEditMobile('${_sc}','${_sr}','${_pv.replace(/'/g,"&#39;")}')" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_pv}</button>`
-                    : `<span style="font-size:11px;color:var(--text-sub);">—</span>`);
+                : `<button onclick="openPalletEditMobile('${_sc}','${_sr}','${(_pv!=='—'?_pv:'').replace(/'/g,"&#39;")}')" style="font-size:11px;font-weight:700;color:${_pv!=='—'?'#00B0FF':'var(--text-sub)'};background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_pv!=='—'?_pv:'—'}</button>`;
             return `<div style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                     <button onclick="openSpecDetail('${_sc}')" style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;background:none;border:none;cursor:pointer;padding:0;text-align:left;">${d.code || '—'}</button>
