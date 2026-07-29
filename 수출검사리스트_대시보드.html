@@ -2109,8 +2109,17 @@ function renderMobileKPIs() {
   setMTxt('mKpiWt2', s2.undone);
   setMTxt('mKpiDn1', (s1.done + arc1).toLocaleString());
   setMTxt('mKpiDn2', (s2.done + arc2).toLocaleString());
-  setMTxt('mKpiArc', (arc1 + arc2).toLocaleString());
-  setMTxt('mKpiArcBk', `충주1 ${arc1.toLocaleString()}건 · 충주2 ${arc2.toLocaleString()}건`);
+  // 누적완료는 두 공장 합산 카드라 상단 공장 필터에 맞춰 표시값을 바꿔준다
+  if (mFactory === 'cj1') {
+    setMTxt('mKpiArc', arc1.toLocaleString());
+    setMTxt('mKpiArcBk', `충주1 ${arc1.toLocaleString()}건`);
+  } else if (mFactory === 'cj2') {
+    setMTxt('mKpiArc', arc2.toLocaleString());
+    setMTxt('mKpiArcBk', `충주2 ${arc2.toLocaleString()}건`);
+  } else {
+    setMTxt('mKpiArc', (arc1 + arc2).toLocaleString());
+    setMTxt('mKpiArcBk', `충주1 ${arc1.toLocaleString()}건 · 충주2 ${arc2.toLocaleString()}건`);
+  }
 }
 
 function openKpiDetail(type) {
