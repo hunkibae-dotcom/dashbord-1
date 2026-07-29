@@ -1241,9 +1241,10 @@
                 const _hp  = _isS ? (d.status.includes('피킹')?'피킹':'출고') : _rawHp;
                 const _hpc = _isS ? (d.status.includes('피킹')?'#A78BFA':'#00E676') : '#00B0FF';
                 const _isInStock = !_isS && _ssk.has((d.code||'').toUpperCase()+'|'+(d.round||''));
+                const _canEditPallet = !_isS && (_rawHp || _isInStock);
                 const _hpHtml = _isS
                     ? `<span style="font-size:10px;font-weight:700;color:${_hpc};">${_hp}</span>`
-                    : (_isInStock
+                    : (_canEditPallet
                         ? `<button onclick="openPalletEditMobile('${(d.code||'').replace(/'/g,"&#39;")}','${(d.round||'').replace(/'/g,"&#39;")}','${(_rawHp||'').replace(/'/g,"&#39;")}')" style="font-size:10px;font-weight:700;color:${_rawHp?'#00B0FF':'var(--text-sub)'};background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">${_rawHp || '—'}</button>`
                         : `<span style="font-size:10px;color:var(--text-sub);">—</span>`);
                 const _hsc = (d.code||'').replace(/'/g,"&#39;");
