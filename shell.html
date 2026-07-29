@@ -1143,6 +1143,14 @@
             // 이력
             const history = [...items].sort((a,b)=>b.regDate>a.regDate?1:-1).slice(0,10).map(d => {
                 const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기')?'#FF9100':'#64748B');
+                const _isS = d.isDone && (d.status.includes('출고')||d.status.includes('피킹'));
+                const _hp  = _isS ? (d.status.includes('피킹')?'피킹':'출고') : (_spm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || null);
+                const _hpc = _isS ? (d.status.includes('피킹')?'#A78BFA':'#00E676') : '#00B0FF';
+                const _hpHtml = _hp
+                    ? (_isS
+                        ? `<span style="font-size:10px;font-weight:700;color:${_hpc};">적재:${_hp}</span>`
+                        : `<button onclick="openPalletEditMobile('${(d.code||'').replace(/'/g,"&#39;")}','${(d.round||'').replace(/'/g,"&#39;")}','${_hp.replace(/'/g,"&#39;")}')" style="font-size:10px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0;">적재:${_hp}</button>`)
+                    : `<span style="font-size:10px;color:var(--text-sub);">적재 —</span>`;
                 return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--log-border);">
                     <div style="min-width:0;flex:1;">
                         <div style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
@@ -1151,6 +1159,7 @@
                     <div style="flex-shrink:0;margin-left:10px;display:flex;flex-direction:column;align-items:flex-end;gap:3px;">
                         <span style="font-size:10px;font-weight:700;color:${sc};background:${sc}22;padding:1px 7px;border-radius:20px;">${d.status}</span>
                         <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${d.qty.toLocaleString()} BOX</span>
+                        ${_hpHtml}
                     </div>
                 </div>`;
             }).join('');
