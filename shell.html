@@ -1118,6 +1118,7 @@
         matches.forEach(d => {
             const k = d.code; if (!groups[k]) groups[k] = []; groups[k].push(d);
         });
+        const _spm = _buildPalletMap();
 
         list.innerHTML = Object.entries(groups).slice(0,5).map(([, items]) => {
             const dc  = items[0].code;
