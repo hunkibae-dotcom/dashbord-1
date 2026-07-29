@@ -2595,7 +2595,10 @@ if ('serviceWorker' in navigator) {
     <div id="mTab_list" class="absolute inset-0 flex flex-col" style="display:none;">
       <!-- Filters -->
       <div class="bg-white shrink-0" style="padding:12px 16px 14px;box-shadow:0 1px 0 #EAECF0;z-index:5;">
-        <div class="text-[20px] font-extrabold text-slate-900 mb-3" style="letter-spacing:-0.5px;">검사 목록</div>
+        <div class="flex items-center gap-2 mb-3">
+          <button onclick="setMTab('home')" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 -ml-1.5" style="-webkit-tap-highlight-color:transparent;"><i class="fa-solid fa-chevron-left text-[15px]"></i></button>
+          <div class="text-[20px] font-extrabold text-slate-900" style="letter-spacing:-0.5px;">검사 목록</div>
+        </div>
         <!-- 공장 필터 -->
         <div class="flex gap-1 mb-2.5" style="background:#F4F6F9;border-radius:12px;padding:3px;">
           <button onclick="setMFactory('all')" id="mFAll" class="tab-btn active flex-1" style="font-size:12.5px;border-radius:9px;">전체</button>
