@@ -802,6 +802,7 @@ async function loadData() {
     allData = results.flat();
     populateFilterOptions();
     applyFilters();
+    renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
   });
 
   const archivePromise = Promise.all(
