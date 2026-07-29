@@ -1119,6 +1119,18 @@
             const k = d.code; if (!groups[k]) groups[k] = []; groups[k].push(d);
         });
         const _spm = _buildPalletMap();
+        // 충주공장 재고에 존재하는 code|round 키 집합 (적재 편집 가능 여부 판단)
+        const _ssk = new Set();
+        if (rawStockRows && rawStockRows.length > 1) {
+            const _sh = rawStockRows[0].map(h=>(h||'').toString().trim());
+            const _siC = _sh.findIndex(h=>h.replace(/\s/g,'').includes('품목코드')||h.replace(/\s/g,'').includes('제품코드'));
+            const _siR = _sh.findIndex(h=>h.replace(/\s/g,'').includes('수주건명')||h.replace(/\s/g,'').includes('건명'));
+            for (let i=1;i<rawStockRows.length;i++){
+                const r=rawStockRows[i];
+                if(!r||r.every(c=>!c||!c.toString().trim()))continue;
+                _ssk.add((r[_siC>=0?_siC:1]||'').toString().trim().toUpperCase()+'|'+(r[_siR>=0?_siR:4]||'').toString().trim());
+            }
+        }
 
         list.innerHTML = Object.entries(groups).slice(0,5).map(([, items]) => {
             const dc  = items[0].code;
