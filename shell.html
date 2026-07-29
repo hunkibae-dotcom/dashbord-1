@@ -1162,7 +1162,7 @@
                     <span style="font-size:11px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:20px;">${d.status}</span>
                 </div>
                 <div style="font-size:11px;color:var(--text-sub);display:flex;gap:12px;align-items:center;">
-                    <span>${d.country}</span><span>${d.round}</span>
+                    <span>${d.div || d.country}</span><span>${d.round}</span>
                     <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
                 </div>
                 <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${d.date} · 납기 ${d.dueDate}</div>
