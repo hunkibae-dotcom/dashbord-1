@@ -2623,6 +2623,7 @@
                             <div class="flex justify-between"><span>등록일</span><span class="text-slate-300">${normalizeDate(item.regDate)}</span></div>
                             <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
                             <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
+                            <div class="flex justify-between"><span>적재</span><span style="color:${_dtIsS?(_dtPv==='피킹'?'#A78BFA':'#34D399'):'#CBD5E1'}">${_dtPv}</span></div>
                         </div>
                     </div>`);
             });
