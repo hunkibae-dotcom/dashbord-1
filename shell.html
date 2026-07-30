@@ -2328,6 +2328,23 @@
     // 가이드박스·상태문구·직접입력 버튼·결과바 버튼만 CSS로 반대 방향 회전시킨다.
     // (카메라 화면 자체는 그대로 둠 — 실제 세상 이미지는 폰이 도는 대로 자연스럽게 찍히기 때문)
     let _scanTiltDeg = 0;
+    function _applyScanTilt(deg) {
+        const t = deg ? ('rotate(' + deg + 'deg)') : '';
+        // scanFrame / scanResultInner는 각각 그 자체가 이미 하나의 그룹(가이드박스 전체, 결과바 한 줄)이라
+        // 통째로 돌려도 안쪽 요소끼리의 간격은 그대로 유지된다.
+        ['scanFrame', 'scanResultInner'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.transform = t;
+        });
+        // scanOverlayControls(상태문구+직접입력 버튼)는 평소엔 세로로 쌓여있는데, 그대로 90도 돌리면
+        // 좁은 세로 간격이 안 맞아 겹쳐버린다. 돌리기 전에 먼저 가로 배치(row)로 바꿔주면,
+        // 회전 후엔 다시 위아래로 적절히 떨어진 것처럼 보인다.
+        const controls = document.getElementById('scanOverlayControls');
+        if (controls) {
+            controls.style.flexDirection = deg ? 'row' : 'column';
+            controls.style.transform = t;
+        }
+    }
     function _onScanDeviceOrientation(e) {
         const g = e.gamma; // 좌우 기울기: -90(왼쪽으로 90도) ~ 90(오른쪽으로 90도)
         if (g == null) return;
@@ -2336,11 +2353,7 @@
         else if (g < -35) deg = 90;  // 폰을 왼쪽으로 눕힘 → UI를 오른쪽으로 90도 돌려서 보정
         if (deg === _scanTiltDeg) return;
         _scanTiltDeg = deg;
-        const t = 'rotate(' + deg + 'deg)';
-        [ 'scanFrame', 'scanStatus', 'manualInputBtn', 'scanResultInner' ].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.transform = t;
-        });
+        _applyScanTilt(deg);
     }
     function _startScanTiltSensor() {
         _scanTiltDeg = 0;
@@ -2351,10 +2364,7 @@
     function _stopScanTiltSensor() {
         window.removeEventListener('deviceorientation', _onScanDeviceOrientation);
         _scanTiltDeg = 0;
-        [ 'scanFrame', 'scanStatus', 'manualInputBtn', 'scanResultInner' ].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.transform = '';
-        });
+        _applyScanTilt(0);
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
