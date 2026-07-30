@@ -722,13 +722,17 @@
         const iSpecH  = fi('높이','H','HEIGHT','spech');
         const iSpecG  = fi('무게','중량','G','KG','specg');
 
-        // 시트명으로 공장 구분 보완
+        // 시트명으로 공장 구분 및 소스 태그 보완
         const st = sheetTag || '';
         const sheetDiv = st.includes('충주1') ? '충주1'
                        : st.includes('충주2') ? '충주2'
                        : st.includes('표준품 현황') ? '표준품'
                        : st.includes('출고 완료') ? '출고완료'
                        : '';
+        const srcTag = (st.includes('충주공장 재고') || st.includes('충주1') || st.includes('충주2')) ? 'stock'
+                     : st.includes('표준품 현황') ? 'standard'
+                     : st.includes('출고 완료') ? 'shipped'
+                     : '';
 
         const result = [];
         for (let i = 1; i < rows.length; i++) {
