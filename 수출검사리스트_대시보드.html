@@ -2613,7 +2613,13 @@ function _stopScan() {
 
 // 라벨 형식: "FAD0018NO(C26724)" 처럼 코드 뒤 로트번호가 괄호로 붙는 경우가 많아 괄호를 제거
 function _parseBarcodeRaw(raw) {
-  return (raw || '').trim().replace(/\s*\([^)]*\)\s*$/, '').trim();
+  let s = (raw || '').trim();
+  // 코드 뒤 로트번호 괄호 제거: FAD0018NO(C26724) → FAD0018NO
+  s = s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  // "코드-색상" / "코드 - 색상" 형식 분리 (라벨마다 색상이 대시로 붙어 나오는 경우가 있음)
+  const m = s.match(/^(.+?)\s*-\s*([A-Za-z0-9]{1,6})\s*$/);
+  if (m) return { code: m[1].trim(), color: m[2].trim() };
+  return { code: s, color: '' };
 }
 
 function _onScanDetect(raw) {
