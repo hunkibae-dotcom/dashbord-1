@@ -445,6 +445,10 @@
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재번호 (예: 1, 2, A-1)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                    oninput="onPalletSearchInput()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;display:none;align-items:center;gap:8px;flex-wrap:wrap;"></div>
 
                 <!-- 날짜 필터: 기준 필드 선택 + 기간 -->
                 <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;">
