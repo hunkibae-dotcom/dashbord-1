@@ -2140,7 +2140,8 @@
         _ieCurStatus = _ieOrigStatus;
         _renderIeStatus();
         const pm = _buildPalletMap();
-        _ieOrigPallet = pm[(code||'').toUpperCase() + '|' + round] || '';
+        // 시트엔 "적재 99" 형식으로 저장돼있는데, 숫자만 입력하기 편하도록 편집창엔 접두사 빼고 보여줌
+        _ieOrigPallet = (pm[(code||'').toUpperCase() + '|' + round] || '').replace(/^적재\s*/, '');
         const palInp = document.getElementById('iePallet');
         if (palInp) palInp.value = _ieOrigPallet;
         const ieW = document.getElementById('ieW');
