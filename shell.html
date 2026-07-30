@@ -1110,40 +1110,222 @@
         }
     }
 
+    // ── 포장 강화 현황 시계열 차트 헬퍼 ──────────────────────────────
+    function _buildPackingDateQtyMap() {
+        _packingDateQtyMap = {};
+        function parseQty(v) { return v ? (parseInt((v+'').replace(/[^0-9]/g,'')) || 0) : 0; }
+        function hasData(row) { return row && row.some(c => c && (c+'').trim()); }
+        function normDate(s) {
+            if (!s) return null;
+            s = s.trim();
+            const m = s.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+            if (m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+            const n = parseInt(s);
+            if (!isNaN(n) && n > 40000) {
+                const d = new Date((n - 25569) * 86400000);
+                return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+            }
+            return null;
+        }
+        if (rawShippedRows && rawShippedRows.length > 1) {
+            for (let i = 1; i < rawShippedRows.length; i++) {
+                const row = rawShippedRows[i];
+                if (!hasData(row)) continue;
+                const d = normDate((row[7]||'')+'');
+                if (!d) continue;
+                _packingDateQtyMap[d] = (_packingDateQtyMap[d]||0) + parseQty(row[3]);
+            }
+        }
+        if (rawStockRows && rawStockRows.length > 1) {
+            let iRound=-1, iCode=-1, iColor=-1;
+            rawStockRows[0].forEach((h,i) => {
+                const hh=(h||'').toString().trim();
+                if(iRound<0&&(hh==='건명'||hh==='수주건명')) iRound=i;
+                if(iCode <0&&(hh==='제품코드'||hh==='품목코드')) iCode=i;
+                if(iColor<0&&(hh==='색상'||hh==='컬러')) iColor=i;
+            });
+            if(iRound<0) iRound=1; if(iCode<0) iCode=2; if(iColor<0) iColor=5;
+            const grouped={};
+            for (let j=1; j<rawStockRows.length; j++) {
+                const sr=rawStockRows[j];
+                if(!hasData(sr)) continue;
+                const sd=normDate((sr[7]||'')+'');
+                if(!sd) continue;
+                const gKey=(sr[iRound]||'')+'|'+(sr[iCode]||'')+'|'+(sr[iColor]||'')+'|'+sd;
+                if(!grouped[gKey]) grouped[gKey]={d:sd,qty:0};
+                grouped[gKey].qty+=parseQty(sr[3]);
+            }
+            Object.keys(grouped).forEach(k => {
+                const g=grouped[k];
+                _packingDateQtyMap[g.d]=(_packingDateQtyMap[g.d]||0)+g.qty;
+            });
+        }
+    }
+
+    function _dateStrM(d) {
+        return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+
+    function _computeDailySlotsM() {
+        const today=new Date();
+        const toMon=today.getDay()===0?-6:1-today.getDay();
+        const thisMon=new Date(today); thisMon.setDate(today.getDate()+toMon);
+        function weekNumInMonth(mon,mo){
+            const yr=mon.getFullYear(),fom=new Date(yr,mo,1),fdow=fom.getDay();
+            const firstMon=new Date(yr,mo,1-(fdow+6)%7);
+            return Math.round((mon-firstMon)/(7*86400000))+1;
+        }
+        const slots=[];
+        for(let w=0;w<=104;w++){
+            const mon=new Date(thisMon); mon.setDate(thisMon.getDate()-w*7);
+            const fri=new Date(mon); fri.setDate(mon.getDate()+4);
+            if(mon.getMonth()===fri.getMonth()){
+                const dates=[];
+                for(let d=0;d<5;d++){const dd=new Date(mon);dd.setDate(mon.getDate()+d);dates.push(_dateStrM(dd));}
+                slots.push({label:(mon.getMonth()+1)+'월 '+weekNumInMonth(mon,mon.getMonth())+'주차',dates});
+            } else {
+                const newMo=fri.getMonth(),oldMo=mon.getMonth();
+                const newDates=[],oldDates=[];
+                for(let d=0;d<5;d++){const dd=new Date(mon);dd.setDate(mon.getDate()+d);(dd.getMonth()===newMo?newDates:oldDates).push(_dateStrM(dd));}
+                if(newDates.length>0) slots.push({label:(newMo+1)+'월 '+weekNumInMonth(mon,newMo)+'주차',dates:newDates});
+                if(oldDates.length>0) slots.push({label:(oldMo+1)+'월 '+weekNumInMonth(mon,oldMo)+'주차',dates:oldDates});
+            }
+        }
+        return slots;
+    }
+    function _getDailySlotsM(){if(!_dailySlotsCacheM)_dailySlotsCacheM=_computeDailySlotsM();return _dailySlotsCacheM;}
+
+    function setPackingViewModeM(mode) {
+        packingViewMode=mode;
+        packingDailyWeekOffset=0; packingWeeklyMonthOffset=0; packingMonthlyHalfOffset=0;
+        renderChart();
+    }
+    function _updatePackingModeSliderM() {
+        const slider=document.getElementById('packingModeSliderM');
+        if(!slider) return;
+        const modes=['daily','weekly','monthly'];
+        const idx=modes.indexOf(packingViewMode);
+        slider.style.left=(idx*33.33+0.5)+'%';
+        modes.forEach((m,i)=>{
+            const btn=document.getElementById('packingBtnM_'+m);
+            if(btn) btn.style.color=(i===idx)?'#ffffff':'#475569';
+        });
+    }
+    function packingNavPrev() {
+        if(packingViewMode==='daily') packingDailyWeekOffset--;
+        else if(packingViewMode==='weekly') packingWeeklyMonthOffset--;
+        else packingMonthlyHalfOffset--;
+        renderChart();
+    }
+    function packingNavNext() {
+        if(packingViewMode==='daily'){if(packingDailyWeekOffset<0)packingDailyWeekOffset++;}
+        else if(packingViewMode==='weekly'){if(packingWeeklyMonthOffset<0)packingWeeklyMonthOffset++;}
+        else{if(packingMonthlyHalfOffset<0)packingMonthlyHalfOffset++;}
+        renderChart();
+    }
+
     function renderChart() {
         if (typeof Chart === 'undefined') return;
+        _buildPackingDateQtyMap();
         const isDark  = document.documentElement.classList.contains('dark');
         const textClr = isDark ? '#64748B' : '#94A3B8';
         const gridClr = isDark ? '#1E293B' : '#E2E8F0';
-        const cMap = {};
-        allData.forEach(d => {
-            // 이 데이터엔 "국가" 컬럼이 없어서 d.country는 항상 비어있음 — 실제로 값이 있는 d.div(품목구분) 기준으로 집계
-            const c = d.div || d.country;
-            if (!c || c === '-') return;
-            if (!cMap[c]) cMap[c] = { pending: 0, done: 0 };
-            if (d.isDone) cMap[c].done    += d.qty;
-            else          cMap[c].pending += d.qty;
-        });
-        const labels = Object.keys(cMap).filter(Boolean).sort();
-        if (!labels.length) return;
-        if (chartInst) { chartInst.destroy(); chartInst = null; }
-        chartInst = new Chart(document.getElementById('mainChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [
-                    { label: '포장대기', data: labels.map(c=>cMap[c].pending), backgroundColor:'rgba(255,145,0,.75)', borderRadius:5 },
-                    { label: '완료',     data: labels.map(c=>cMap[c].done),    backgroundColor:'rgba(0,176,255,.6)',  borderRadius:5 }
-                ]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: textClr, font:{size:11} } } },
-                scales: {
-                    y: { ticks:{color:textClr}, grid:{color:gridClr} },
-                    x: { ticks:{color:textClr}, grid:{display:false} }
-                }
+        const DAY = ['일','월','화','수','목','금','토'];
+        let labels=[], dataArr=[], navLabel='';
+
+        if (packingViewMode==='daily') {
+            const slots=_getDailySlotsM();
+            const slotIdx=Math.min(slots.length-1,-packingDailyWeekOffset);
+            const slot=slots[Math.max(0,slotIdx)];
+            navLabel=slot?slot.label:'';
+            (slot?slot.dates:[]).forEach(ds=>{
+                const d=new Date(ds.replace(/-/g,'/'));
+                labels.push((d.getMonth()+1)+'/'+d.getDate()+'('+DAY[d.getDay()]+')');
+                dataArr.push(_packingDateQtyMap[ds]||0);
+            });
+        } else if (packingViewMode==='weekly') {
+            const today=new Date();
+            const targetDate=new Date(today.getFullYear(),today.getMonth()+packingWeeklyMonthOffset,1);
+            const yr=targetDate.getFullYear(), mo=targetDate.getMonth();
+            const fom=new Date(yr,mo,1);
+            const wkStart=new Date(yr,mo,1-(fom.getDay()+6)%7);
+            const lastOfMonth=new Date(yr,mo+1,0);
+            navLabel=(mo+1)+'월 '+yr;
+            while(wkStart<=lastOfMonth){
+                let wkTotal=0,wkDates=[];
+                for(let j=0;j<5;j++){const dd=new Date(wkStart);dd.setDate(wkStart.getDate()+j);if(dd.getMonth()!==mo)continue;const ds=_dateStrM(dd);wkDates.push(ds);wkTotal+=_packingDateQtyMap[ds]||0;}
+                if(wkDates.length>0){labels.push((mo+1)+'월 '+(labels.length+1)+'주차');dataArr.push(wkTotal);}
+                wkStart.setDate(wkStart.getDate()+7);
+                if(labels.length>7) break;
             }
+        } else {
+            const _today=new Date();
+            const curHalfIdx=_today.getFullYear()*2+(_today.getMonth()>=6?1:0);
+            const tgtHalfIdx=curHalfIdx+packingMonthlyHalfOffset;
+            const tgtYear=Math.floor(tgtHalfIdx/2), tgtHalf=((tgtHalfIdx%2)+2)%2;
+            const startMo=tgtHalf*6, yr=String(tgtYear);
+            const MO=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+            navLabel=yr+'년 '+(tgtHalf===0?'상반기':'하반기');
+            for(let mi=startMo;mi<startMo+6;mi++){
+                const moStr=yr+'-'+String(mi+1).padStart(2,'0');
+                let total=0;
+                Object.keys(_packingDateQtyMap).forEach(d=>{if(d.startsWith(moStr))total+=_packingDateQtyMap[d];});
+                labels.push(MO[mi]); dataArr.push(total);
+            }
+        }
+
+        const navLbl=document.getElementById('packingNavLabel');
+        if(navLbl) navLbl.textContent=navLabel;
+        _updatePackingModeSliderM();
+
+        if (chartInst) { chartInst.destroy(); chartInst=null; }
+        const canvas = document.getElementById('mainChart');
+        if (!canvas) { renderProductChart(textClr, gridClr); return; }
+
+        const packingBarTopPlugin = {
+            id:'packingBarTopM',
+            afterDatasetsDraw(chart) {
+                const ctx=chart.ctx, ds=chart.data.datasets[0], meta=chart.getDatasetMeta(0);
+                meta.data.forEach((bar,i)=>{
+                    const val=ds.data[i]; if(!val) return;
+                    ctx.save();
+                    ctx.fillStyle='#0284C7';
+                    ctx.font='bold 11px Inter,sans-serif';
+                    ctx.textAlign='center'; ctx.textBaseline='bottom';
+                    ctx.fillText(val.toLocaleString(),bar.x,bar.y-2);
+                    ctx.restore();
+                });
+            }
+        };
+
+        chartInst = new Chart(canvas.getContext('2d'), {
+            type:'bar',
+            data:{
+                labels,
+                datasets:[{
+                    label:'강화 수량 (EA)',
+                    data:dataArr,
+                    backgroundColor:'rgba(125,211,252,0.65)',
+                    borderColor:'#38BDF8',
+                    borderWidth:1.5,
+                    borderRadius:6
+                }]
+            },
+            options:{
+                responsive:true, maintainAspectRatio:false,
+                barPercentage:packingViewMode==='daily'?0.675:0.825,
+                categoryPercentage:0.9,
+                layout:{padding:{top:16}},
+                plugins:{
+                    legend:{display:false},
+                    tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y.toLocaleString()+' EA'}}
+                },
+                scales:{
+                    y:{ticks:{color:textClr,font:{size:10}},grid:{color:gridClr}},
+                    x:{ticks:{color:textClr,font:{size:10},maxRotation:0},grid:{display:false}}
+                }
+            },
+            plugins:[packingBarTopPlugin]
         });
         renderProductChart(textClr, gridClr);
     }
