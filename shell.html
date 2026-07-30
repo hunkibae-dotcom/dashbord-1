@@ -561,7 +561,9 @@
     </div>
 
     <!-- ── 뷰: 바코드 스캔 ──────────────────────────────── -->
-    <div id="viewScan" style="position:fixed;inset:0;z-index:43;background:#000;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overflow:hidden;">
+    <!-- viewScan 자체의 transform은 슬라이드 인/아웃 애니메이션 전용이라, 가로/세로 회전은 안쪽 래퍼(scanRotateWrap)에만 적용한다 -->
+    <div id="viewScan" style="position:fixed;inset:0;z-index:43;background:#000;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow:hidden;">
+      <div id="scanRotateWrap" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;">
         <!-- 헤더 -->
         <div style="position:absolute;top:0;left:0;right:0;z-index:2;padding:10px 16px;display:flex;align-items:center;gap:8px;background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
             <button onclick="closeScanView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:#fff;display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
