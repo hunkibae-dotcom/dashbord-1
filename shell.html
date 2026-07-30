@@ -2054,6 +2054,51 @@
         if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
     }
 
+    // ── 바코드 직접 입력 (인식 실패 대비) ──────────────────
+    function openManualCodeModal() {
+        document.getElementById('manualCodeInput').value = '';
+        document.getElementById('manualColorInput').value = '';
+        document.getElementById('manualCodeModal').style.display = 'flex';
+        setTimeout(() => document.getElementById('manualCodeInput').focus(), 80);
+    }
+    function closeManualCodeModal() {
+        document.getElementById('manualCodeModal').style.display = 'none';
+    }
+    function confirmManualCode() {
+        const code = document.getElementById('manualCodeInput').value.trim();
+        const color = document.getElementById('manualColorInput').value.trim();
+        if (!code) { document.getElementById('manualCodeInput').focus(); return; }
+        closeManualCodeModal();
+        _stopScan();
+        closeScanView();
+        openView('viewSearch');
+        document.getElementById('sf_code').value  = code;
+        document.getElementById('sf_color').value = color;
+        ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
+        runSearch();
+    }
+
+    // ── 스캔 프레임 방향 전환 (라벨이 옆으로 돌아가 세로로 인쇄된 바코드 대응) ──
+    let _scanLandscape = false;
+    function toggleScanOrientation() {
+        _scanLandscape = !_scanLandscape;
+        const frame = document.getElementById('scanFrame');
+        const btn = document.getElementById('scanRotateBtn');
+        if (_scanLandscape) {
+            frame.style.width = '150px';
+            frame.style.maxWidth = '150px';
+            frame.style.height = '260px';
+            btn.style.background = '#00B0FF';
+            btn.title = '가로로 인쇄된 바코드로 되돌리기';
+        } else {
+            frame.style.width = '82%';
+            frame.style.maxWidth = '360px';
+            frame.style.height = '110px';
+            btn.style.background = 'rgba(255,255,255,.15)';
+            btn.title = '세로로 인쇄된 바코드 촬영';
+        }
+    }
+
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
     let _mgmtTab = '전체';
     function openMgmtModal() {
