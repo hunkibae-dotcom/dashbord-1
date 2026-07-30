@@ -1188,14 +1188,22 @@
             }
             return true;
         });
-        document.getElementById('srCount').textContent = filtered.length;
-        if (!filtered.length) {
+        // 수출 표준품 현황 항목 중 충주공장 재고에 동일 code+round가 있으면 제외 (중복 방지)
+        const _stk = new Set((stockData||[]).map(d => (d.code||'').toUpperCase() + '|' + (d.round||'')));
+        const deduped = filtered.filter(d => {
+            if (d.source !== 'standard') return true;
+            return !_stk.has((d.code||'').toUpperCase() + '|' + (d.round||''));
+        });
+        document.getElementById('srCount').textContent = deduped.length;
+        if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
             return;
         }
-        document.getElementById('srList').innerHTML = filtered.slice(0,50).map(d => {
-            const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : '#64748B');
-            return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+        document.getElementById('srList').innerHTML = deduped.slice(0,50).map(d => {
+            const sc  = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : (d.status.includes('포장완료') ? '#3B82F6' : (d.status.includes('입고') ? '#38BDF8' : '#64748B')));
+            const _sc = (d.code||'').replace(/'/g,"&#39;");
+            const _sr = (d.round||'').replace(/'/g,"&#39;");
+            return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}${d.color?' <span style="font-weight:500;color:#FF9100;">'+d.color+'</span>':''}</span>
                     <span style="font-size:11px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:20px;">${d.status}</span>
@@ -1204,7 +1212,7 @@
                     <span>${d.div || d.country}</span><span>${d.round}</span>
                     <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
                 </div>
-                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${d.date} · 납기 ${d.dueDate}</div>
+                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)} · 납기 ${fmtKr(d.dueDate)}</div>
             </div>`;
         }).join('');
     }
