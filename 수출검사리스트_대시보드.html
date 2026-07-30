@@ -2217,24 +2217,30 @@ function openKpiDetail(type) {
   const body  = document.getElementById('kpiDetailBody');
   if (!sheet || !title || !body) return;
 
+  const facLabel = mFactory === 'cj1' ? ' (충주1)' : mFactory === 'cj2' ? ' (충주2)' : '';
   let items = [], heading = '', dateField = '포장일', colorField = null;
 
   if (type === 'today') {
-    heading = '금일 포장 현황';
+    heading = '금일 포장 현황' + facLabel;
     items = allData.filter(d => {
+      if (d.검사 !== '미검사') return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
-      return dd !== null && dd <= 0;
+      if (dd === null || dd > 0) return false;
+      if (mFactory !== 'all' && d.공장 !== mFactory) return false;
+      return true;
     }).sort((a, b) => {
       const fa = a.공장 === 'cj1' ? 0 : 1, fb = b.공장 === 'cj1' ? 0 : 1;
       return fa - fb || (a.건명 || '').localeCompare(b.건명 || '');
     });
   } else if (type === 'accum') {
-    heading = '검사 완료 누적 현황';
-    items = allData.filter(d => d.검사 === '검사').sort((a, b) => {
-      const da = a[dateField] || '', db = b[dateField] || '';
-      return db.localeCompare(da);
-    });
+    heading = '검사 완료 누적 현황' + facLabel;
+    const accumAll = [...allData.filter(d => d.검사 === '검사'), ...archiveRows];
+    items = accumAll.filter(d => mFactory === 'all' || d.공장 === mFactory)
+      .sort((a, b) => {
+        const da = a[dateField] || '', db = b[dateField] || '';
+        return db.localeCompare(da);
+      });
   }
 
   title.textContent = heading + ' (' + items.length + '건)';
