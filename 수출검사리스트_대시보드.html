@@ -583,7 +583,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
 <!-- ===== 제품 검색 모달 ===== -->
 <div id="productSearchModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4" onclick="if(event.target===this) closeProductSearch()">
-  <div class="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden" style="height:100dvh;max-height:100dvh;" id="psModalInner" onload="this.style.maxHeight=window.innerWidth>=640?'85vh':'100dvh'">
+  <div class="bg-white rounded-none sm:rounded-2xl shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden" id="psModalInner">
     <div class="flex items-center justify-between px-5 py-4 border-b border-slate-200 shrink-0">
       <div class="flex items-center gap-2.5">
         <span class="w-8 h-8 rounded-lg bg-accent-50 flex items-center justify-center"><i class="fa-solid fa-magnifying-glass text-accent-600 text-[15px]"></i></span>
