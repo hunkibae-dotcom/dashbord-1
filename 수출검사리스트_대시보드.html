@@ -607,8 +607,13 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
         <input type="text" id="psCode" oninput="runProductSearchDebounced()" placeholder="단품코드 검색" class="in-field">
       </div>
-      <input type="date" id="psFrom" onchange="runProductSearch()" class="sel-field" title="시작일 (납기·포장·검사일 기준)">
-      <input type="date" id="psTo" onchange="runProductSearch()" class="sel-field" title="종료일">
+      <div class="relative">
+        <i class="fa-solid fa-palette absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
+        <input type="text" id="psColor" oninput="runProductSearchDebounced()" placeholder="색상 검색" class="in-field">
+      </div>
+      <button id="psDateBtn" onclick="openPsDatePicker()" class="sel-field font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100">
+        <i class="fa-solid fa-calendar-days"></i> <span id="psDateBtnLabel">날짜 전체</span>
+      </button>
       <select id="psFactory" onchange="runProductSearch()" class="sel-field">
         <option value="">공장 전체</option>
         <option value="cj1">충주1공장</option>
