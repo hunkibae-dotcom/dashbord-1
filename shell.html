@@ -2127,13 +2127,15 @@
             if (ieQty) ieQty.textContent = (item.qty||0).toLocaleString() + ' BOX';
             if (ieDate) ieDate.textContent = fmtKr(item.date);
             if (ieDue) ieDue.textContent = fmtKr(item.dueDate);
+            const ieReg = document.getElementById('ieReg');
+            if (ieReg) ieReg.textContent = item.regDate && item.regDate!=='-' ? fmtKr(item.regDate) : '—';
             _ieOrigStatus = item.status || '';
             _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigD = (item.specD||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigH = (item.specH||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigG = (item.specG||'').toString().replace(/[^0-9.]/g,'');
         } else {
-            ['ieColor','ieCountry','ieQty','ieDate','ieDue'].forEach(id => {
+            ['ieColor','ieCountry','ieQty','ieDate','ieDue','ieReg'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
             });
             _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
