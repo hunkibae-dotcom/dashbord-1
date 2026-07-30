@@ -613,6 +613,31 @@
             </div>
         </div>
     </div>
+
+    <!-- 바코드 직접 입력 모달 -->
+    <div id="manualCodeModal" style="position:fixed;inset:0;z-index:56;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-keyboard" style="color:#00B0FF;"></i> 직접 입력
+                </span>
+                <button onclick="closeManualCodeModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="font-size:12px;color:var(--text-sub);margin-top:-4px;">바코드가 찢어졌거나 인식이 안 될 때 직접 입력하세요</div>
+            <input id="manualCodeInput" type="text" placeholder="제품코드 (예: CAC2083SN)"
+                style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <input id="manualColorInput" type="text" placeholder="색상 (예: WW, BK, SN)"
+                style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
+                onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'"
+                onkeydown="if(event.key==='Enter')confirmManualCode()">
+            <button onclick="confirmManualCode()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
+                검색
+            </button>
+        </div>
+    </div>
     <style>
     @keyframes scanLaser {
         0%   { top: 10%; }
