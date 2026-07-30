@@ -2126,21 +2126,11 @@
     let _scanLandscape = false;
     function toggleScanOrientation() {
         _scanLandscape = !_scanLandscape;
-        const frame = document.getElementById('scanFrame');
+        const wrap = document.getElementById('scanRotateWrap');
         const btn = document.getElementById('scanRotateBtn');
-        if (_scanLandscape) {
-            frame.style.width = '150px';
-            frame.style.maxWidth = '150px';
-            frame.style.height = '260px';
-            btn.style.background = '#00B0FF';
-            btn.title = '가로로 인쇄된 바코드로 되돌리기';
-        } else {
-            frame.style.width = '82%';
-            frame.style.maxWidth = '360px';
-            frame.style.height = '110px';
-            btn.style.background = 'rgba(255,255,255,.15)';
-            btn.title = '세로로 인쇄된 바코드 촬영';
-        }
+        wrap.classList.toggle('landscape', _scanLandscape);
+        btn.style.background = _scanLandscape ? '#00B0FF' : 'rgba(255,255,255,.15)';
+        btn.title = _scanLandscape ? '세로 모드로 되돌리기' : '폰을 가로로 눕혀서 촬영';
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
