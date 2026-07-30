@@ -2371,11 +2371,17 @@
     let _scanTiltDeg = 0;
     function _applyScanTilt(deg) {
         const t = deg ? ('rotate(' + deg + 'deg)') : '';
+        const GAP = 14; // 회전 후 둘 사이에 남길 여유 간격(px)
 
-        // scanFrame: transform은 실제 레이아웃 공간을 넓히지 않고 그 자리에서 그림만 돌리기 때문에,
-        // 90도 돌면 가로/세로가 서로 바뀌면서 원래 박스보다 훨씬 세로로 길어져 아래 요소를 덮어버린다.
-        // 실제 크기를 재서, 늘어난 만큼 margin-bottom으로 미리 공간을 확보해둔다.
+        // transform은 실제 레이아웃 공간을 넓히지 않고 그 자리에서 그림만 돌리기 때문에,
+        // 90도 돌면 가로/세로가 서로 바뀌면서 자기 중심 기준으로 위·아래 양쪽으로 튀어나온다.
+        // scanFrame은 아래로 튀어나온 만큼(margin-bottom), scanOverlayControls는 위로 튀어나온 만큼(margin-top)
+        // 을 각각 미리 계산해서 공간을 확보해둬야 서로 안 겹친다 — 지난번엔 frame 쪽만 계산했던 게 문제였음.
         const frame = document.getElementById('scanFrame');
+        const controls = document.getElementById('scanOverlayControls');
+
+        if (controls) controls.style.flexDirection = deg ? 'row' : 'column';
+
         if (frame) {
             if (deg) {
                 const w = frame.offsetWidth, h = frame.offsetHeight;
@@ -2385,19 +2391,19 @@
             }
             frame.style.transform = t;
         }
+        if (controls) {
+            if (deg) {
+                const w = controls.offsetWidth, h = controls.offsetHeight;
+                controls.style.marginTop = (Math.max(0, (w - h) / 2) + GAP) + 'px';
+            } else {
+                controls.style.marginTop = '';
+            }
+            controls.style.transform = t;
+        }
 
         // scanResultInner는 그 자체가 이미 하나의 그룹(결과바 한 줄)이라 통째로 돌려도 안쪽 간격은 유지된다.
         const resultInner = document.getElementById('scanResultInner');
         if (resultInner) resultInner.style.transform = t;
-
-        // scanOverlayControls(상태문구+직접입력 버튼)는 평소엔 세로로 쌓여있는데, 그대로 90도 돌리면
-        // 좁은 세로 간격이 안 맞아 겹쳐버린다. 돌리기 전에 먼저 가로 배치(row)로 바꿔주면,
-        // 회전 후엔 다시 위아래로 적절히 떨어진 것처럼 보인다.
-        const controls = document.getElementById('scanOverlayControls');
-        if (controls) {
-            controls.style.flexDirection = deg ? 'row' : 'column';
-            controls.style.transform = t;
-        }
     }
     function _onScanDeviceOrientation(e) {
         const g = e.gamma; // 좌우 기울기: -90(왼쪽으로 90도) ~ 90(오른쪽으로 90도)
