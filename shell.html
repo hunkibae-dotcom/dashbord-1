@@ -1135,10 +1135,10 @@
         const tc = textClr || (isDark ? '#64748B' : '#94A3B8');
         const gc = gridClr || (isDark ? '#1E293B' : '#E2E8F0');
 
-        // 국가별 강화완료(포장완료+출고) vs 출고완료
+        // 품목구분별 강화완료(포장완료+출고) vs 출고완료 (국가 컬럼이 없어 d.div 기준으로 집계)
         const cMap = {};
         allData.forEach(d => {
-            const c = (d.country||'').replace(/\s+/g,'');
+            const c = (d.div || d.country || '').replace(/\s+/g,'');
             if (!c || c === '-') return;
             if (!cMap[c]) cMap[c] = { strengthened:0, shipped:0 };
             const s = d.status.replace(/\s+/g,'').toLowerCase();
