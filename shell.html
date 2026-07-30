@@ -1625,20 +1625,28 @@
     // ── 수출 포장 관리 현황 ────────────────────────────────
     function renderManagementStatus() {
         const STATUS_DEFS = [
-            { key:'포장대기',  label:'포장 대기',     color:'#FF9100', icon:'fa-box-open'      },
-            { key:'포장완료',  label:'포장 완료',     color:'#00B0FF', icon:'fa-boxes-stacked' },
-            { key:'출고완료',  label:'출고 완료',     color:'#00E676', icon:'fa-truck-fast'    },
-            { key:'미입고',    label:'미입고 / 기타', color:'#64748B', icon:'fa-clock'         },
+            { key:'미입고',   label:'미입고',    color:'#64748B', icon:'fa-clock'          },
+            { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open'       },
+            { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked'  },
+            { key:'출고완료', label:'출고 완료', color:'#00E676', icon:'fa-truck-fast'     },
+            { key:'피킹',     label:'피킹',      color:'#A855F7', icon:'fa-dolly'          },
         ];
         const groups = {};
         STATUS_DEFS.forEach(s => { groups[s.key] = { cnt:0, qty:0 }; });
 
         allData.forEach(d => {
             const s = d.status.replace(/\s+/g,'').toLowerCase();
-            if (s.includes('포장대기'))      { groups['포장대기'].cnt++; groups['포장대기'].qty+=d.qty; }
-            else if (s.includes('포장완료')) { groups['포장완료'].cnt++; groups['포장완료'].qty+=d.qty; }
-            else if (d.isDone)              { groups['출고완료'].cnt++; groups['출고완료'].qty+=d.qty; }
-            else                            { groups['미입고'].cnt++;   groups['미입고'].qty+=d.qty;   }
+            if (s.includes('피킹')) {
+                groups['피킹'].cnt++;    groups['피킹'].qty+=d.qty;
+            } else if (s.includes('포장대기') || s.includes('미확인') || (s.includes('입고') && !s.includes('미입고'))) {
+                groups['포장대기'].cnt++; groups['포장대기'].qty+=d.qty;
+            } else if (s.includes('포장완료')) {
+                groups['포장완료'].cnt++; groups['포장완료'].qty+=d.qty;
+            } else if (d.isDone) {
+                groups['출고완료'].cnt++; groups['출고완료'].qty+=d.qty;
+            } else if (s.includes('미입고')) {
+                groups['미입고'].cnt++;   groups['미입고'].qty+=d.qty;
+            }
         });
 
         const totalCnt = allData.length;
