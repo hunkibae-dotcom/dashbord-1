@@ -2118,32 +2118,39 @@
         runSearch();
     }
 
-    // ── 스캔 중에만 화면 회전 잠금 해제 (실제 폰 회전 센서를 그대로 따라감) ──
-    // 앱 전체는 manifest에 orientation:"portrait"로 고정돼있어서, 스캔뷰에 들어가있는 동안만
-    // Screen Orientation API로 잠금을 풀고, 나가면 다시 portrait로 되돌린다.
-    async function _unlockScanOrientation() {
-        // 일부 웹뷰는 Fullscreen 상태가 아니면 orientation.lock 자체를 거부하므로 먼저 시도해봄 (실패해도 무시)
-        try {
-            const el = document.getElementById('viewScan');
-            if (el && el.requestFullscreen) await el.requestFullscreen().catch(() => {});
-        } catch (e) {}
-        try {
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('any');
-            } else if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-            }
-        } catch (e) { /* 이 기기/웹뷰가 지원 안 하면 조용히 무시 — 세로 스캔은 그대로 동작 */ }
+    // ── 폰 실제 회전 센서에 맞춰 스캔 UI만 반대로 돌려서 항상 똑바로 보이게 함 ──
+    // 앱이 manifest에서 portrait로 고정돼있어 화면(Activity) 자체는 안 돌아가므로,
+    // 대신 자이로/가속도 센서(deviceorientation)로 폰이 어느 쪽으로 기울었는지 감지해서
+    // 가이드박스·상태문구·직접입력 버튼·결과바 버튼만 CSS로 반대 방향 회전시킨다.
+    // (카메라 화면 자체는 그대로 둠 — 실제 세상 이미지는 폰이 도는 대로 자연스럽게 찍히기 때문)
+    let _scanTiltDeg = 0;
+    function _onScanDeviceOrientation(e) {
+        const g = e.gamma; // 좌우 기울기: -90(왼쪽으로 90도) ~ 90(오른쪽으로 90도)
+        if (g == null) return;
+        let deg = 0;
+        if (g > 35) deg = -90;       // 폰을 오른쪽으로 눕힘 → UI를 왼쪽으로 90도 돌려서 보정
+        else if (g < -35) deg = 90;  // 폰을 왼쪽으로 눕힘 → UI를 오른쪽으로 90도 돌려서 보정
+        if (deg === _scanTiltDeg) return;
+        _scanTiltDeg = deg;
+        const t = 'rotate(' + deg + 'deg)';
+        [ 'scanFrame', 'scanStatus', 'manualInputBtn', 'scanResultInner' ].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.transform = t;
+        });
     }
-    async function _relockScanOrientation() {
-        try {
-            if (screen.orientation && screen.orientation.lock) {
-                await screen.orientation.lock('portrait');
-            }
-        } catch (e) { /* 무시 */ }
-        try {
-            if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
-        } catch (e) { /* 무시 */ }
+    function _startScanTiltSensor() {
+        _scanTiltDeg = 0;
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', _onScanDeviceOrientation);
+        }
+    }
+    function _stopScanTiltSensor() {
+        window.removeEventListener('deviceorientation', _onScanDeviceOrientation);
+        _scanTiltDeg = 0;
+        [ 'scanFrame', 'scanStatus', 'manualInputBtn', 'scanResultInner' ].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.transform = '';
+        });
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
