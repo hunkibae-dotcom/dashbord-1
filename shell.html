@@ -676,6 +676,9 @@
         'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
 
     let allData = [], stockData = [], rawStockRows = [], rawShippedRows = [], rawWorkLogRows = [], chartInst = null;
+    let _packingDateQtyMap = {};
+    let packingViewMode = 'daily', packingDailyWeekOffset = 0, packingWeeklyMonthOffset = 0, packingMonthlyHalfOffset = 0;
+    let _dailySlotsCacheM = null;
 
     // ── 테마 ─────────────────────────────────────────────
     function applyTheme(dark) {
