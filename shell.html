@@ -1098,10 +1098,12 @@
         const gridClr = isDark ? '#1E293B' : '#E2E8F0';
         const cMap = {};
         allData.forEach(d => {
-            if (!d.country || d.country === '-') return;
-            if (!cMap[d.country]) cMap[d.country] = { pending: 0, done: 0 };
-            if (d.isDone) cMap[d.country].done    += d.qty;
-            else          cMap[d.country].pending += d.qty;
+            // 이 데이터엔 "국가" 컬럼이 없어서 d.country는 항상 비어있음 — 실제로 값이 있는 d.div(품목구분) 기준으로 집계
+            const c = d.div || d.country;
+            if (!c || c === '-') return;
+            if (!cMap[c]) cMap[c] = { pending: 0, done: 0 };
+            if (d.isDone) cMap[c].done    += d.qty;
+            else          cMap[c].pending += d.qty;
         });
         const labels = Object.keys(cMap).filter(Boolean).sort();
         if (!labels.length) return;
