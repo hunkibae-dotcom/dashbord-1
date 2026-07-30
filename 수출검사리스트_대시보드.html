@@ -1783,6 +1783,7 @@ function parseInputDate(str) {
 
 function openProductSearch() {
   document.getElementById('productSearchModal').classList.remove('hidden');
+  updatePsDateBtnLabel();
   runProductSearch();
 }
 function closeProductSearch() {
@@ -1792,16 +1793,39 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); }
 });
 
+// ── 날짜 필터 팝업 ──
+function openPsDatePicker() {
+  document.getElementById('psDateModal').classList.remove('hidden');
+}
+function closePsDatePicker() {
+  document.getElementById('psDateModal').classList.add('hidden');
+}
+function clearPsDate() {
+  document.getElementById('psFrom').value = '';
+  document.getElementById('psTo').value = '';
+  updatePsDateBtnLabel();
+  runProductSearch();
+}
+function updatePsDateBtnLabel() {
+  const from = document.getElementById('psFrom').value;
+  const to = document.getElementById('psTo').value;
+  const label = document.getElementById('psDateBtnLabel');
+  if (!label) return;
+  const short = s => s ? s.slice(2).replace(/-/g, '.') : '';
+  label.textContent = (from || to) ? `${short(from) || '~'} - ${short(to) || '~'}` : '날짜 전체';
+}
+
 function runProductSearch() {
   const code = document.getElementById('psCode').value.trim().toLowerCase();
   const name = document.getElementById('psName').value.trim().toLowerCase();
+  const color = document.getElementById('psColor').value.trim().toLowerCase();
   const fromStr = document.getElementById('psFrom').value;
   const toStr = document.getElementById('psTo').value;
   const factory = document.getElementById('psFactory').value;
   const fromDate = parseInputDate(fromStr);
   const toDate = parseInputDate(toStr);
 
-  const hasFilter = code || name || fromStr || toStr || factory;
+  const hasFilter = code || name || color || fromStr || toStr || factory;
   const tbody = document.getElementById('psTableBody');
   const noData = document.getElementById('psNoData');
   const summary = document.getElementById('psSummary');
