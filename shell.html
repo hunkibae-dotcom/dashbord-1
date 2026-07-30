@@ -2104,15 +2104,24 @@
         runSearch();
     }
 
-    // ── 스캔 화면 가로/세로 전환 (폰을 가로로 눕혀서 촬영할 수 있게 화면 전체를 90도 회전) ──
-    let _scanLandscape = false;
-    function toggleScanOrientation() {
-        _scanLandscape = !_scanLandscape;
-        const wrap = document.getElementById('scanRotateWrap');
-        const btn = document.getElementById('scanRotateBtn');
-        wrap.classList.toggle('landscape', _scanLandscape);
-        btn.style.background = _scanLandscape ? '#00B0FF' : 'rgba(255,255,255,.15)';
-        btn.title = _scanLandscape ? '세로 모드로 되돌리기' : '폰을 가로로 눕혀서 촬영';
+    // ── 스캔 중에만 화면 회전 잠금 해제 (실제 폰 회전 센서를 그대로 따라감) ──
+    // 앱 전체는 manifest에 orientation:"portrait"로 고정돼있어서, 스캔뷰에 들어가있는 동안만
+    // Screen Orientation API로 잠금을 풀고, 나가면 다시 portrait로 되돌린다.
+    async function _unlockScanOrientation() {
+        try {
+            if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
+            } else if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('any');
+            }
+        } catch (e) { /* 이 기기/웹뷰가 지원 안 하면 조용히 무시 — 세로 스캔은 그대로 동작 */ }
+    }
+    async function _relockScanOrientation() {
+        try {
+            if (screen.orientation && screen.orientation.lock) {
+                await screen.orientation.lock('portrait');
+            }
+        } catch (e) { /* 무시 */ }
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
