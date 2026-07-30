@@ -142,7 +142,7 @@
         <div id="statusBar" style="display:flex;align-items:center;gap:8px;font-size:11px;font-family:monospace;">
             <i id="statusIcon" class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:10px;"></i>
             <span id="statusText" style="color:var(--text-sub);">데이터 로딩 중...</span>
-            <button onclick="loadData()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;">
+            <button onclick="loadData(true)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;">
                 <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i>
             </button>
         </div>
@@ -1676,7 +1676,7 @@
     // ── 상태 표시 ─────────────────────────────────────────
     function setStatus(s) {
         const bar = document.getElementById('statusBar');
-        const btn = `<button onclick="loadData()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i id="syncIcon" class="fa-solid fa-arrows-rotate"></i></button>`;
+        const btn = `<button onclick="loadData(true)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i id="syncIcon" class="fa-solid fa-arrows-rotate"></i></button>`;
         if (s==='loading') {
             bar.innerHTML = `<i class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">데이터 로딩 중...</span>${btn}`;
         } else if (s==='ok') {
