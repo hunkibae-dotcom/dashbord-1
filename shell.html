@@ -1434,23 +1434,52 @@
         });
         runSearch();
     }
+    function onPalletSearchInput() {
+        const val = (document.getElementById('sf_pallet').value || '').trim();
+        const noticeEl = document.getElementById('sf_palletNotice');
+        if (val && noticeEl) {
+            const pm = _buildPalletMap();
+            const palNorm = /^\d+$/.test(val) ? '적재 ' + val : val;
+            const cnt = allData.filter(d => {
+                const p = pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || '';
+                return p === palNorm || p.replace(/^적재\s*/,'') === val;
+            }).length;
+            if (cnt > 0) {
+                noticeEl.style.display = 'flex';
+                noticeEl.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:#A855F7;"></i> 적재 <strong style="color:#E879F9;">${val}번</strong>에 기존 <strong style="color:#E879F9;">${cnt}개</strong> 품목이 있습니다. 계속 입력하시겠습니까?&nbsp;<button onclick="document.getElementById('sf_palletNotice').style.display='none'" style="-webkit-appearance:none;appearance:none;background:#A855F7;color:#fff;border:none;border-radius:6px;padding:3px 9px;font-size:10px;cursor:pointer;font-weight:700;flex-shrink:0;">확인</button>`;
+            } else {
+                noticeEl.style.display = 'none';
+            }
+        } else if (noticeEl) {
+            noticeEl.style.display = 'none';
+        }
+        runSearch();
+    }
+
     function runSearch() {
         const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
         const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
         const color   = (document.getElementById('sf_color').value   || '').trim().toLowerCase();
         const country = (document.getElementById('sf_country').value || '').trim().toLowerCase();
+        const pallet  = (document.getElementById('sf_pallet').value  || '').trim();
         const dateFrom = document.getElementById('sf_dateFrom').value || '';
         const dateTo   = document.getElementById('sf_dateTo').value || '';
-        if (!round && !code && !color && !country && !dateFrom && !dateTo) {
+        if (!round && !code && !color && !country && !pallet && !dateFrom && !dateTo) {
             document.getElementById('srCount').textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
         }
+        const _pm = _buildPalletMap();
+        const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
         const filtered = allData.filter(d => {
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
             if (country && !((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
+            if (pallet) {
+                const p = _pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || '';
+                if (p !== palNorm && p.replace(/^적재\s*/,'') !== pallet) return false;
+            }
             if (dateFrom || dateTo) {
                 const dv = _nd(d[_sfDateField]);
                 if (!dv) return false;
@@ -1474,6 +1503,7 @@
             const sc  = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : (d.status.includes('포장완료') ? '#3B82F6' : (d.status.includes('입고') ? '#38BDF8' : '#64748B')));
             const _sc = (d.code||'').replace(/'/g,"&#39;");
             const _sr = (d.round||'').replace(/'/g,"&#39;");
+            const _pv = (() => { const raw = _pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || ''; return raw || ''; })();
             return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}${d.color?' <span style="font-weight:500;color:#FF9100;">'+d.color+'</span>':''}</span>
@@ -1484,12 +1514,19 @@
                     <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
                 </div>
                 <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)} · 납기 ${fmtKr(d.dueDate)}${d.regDate && d.regDate!=='-' ? ' · 포장완료 '+fmtKr(d.regDate) : ''}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;padding-top:4px;border-top:1px solid var(--divider);">
+                    <span style="font-size:10px;color:var(--label);">적재</span>
+                    <span style="font-size:11px;font-weight:700;color:${_pv?'#A855F7':'var(--text-sub)'};">${_pv||'—'}</span>
+                </div>
             </div>`;
         }).join('');
     }
     function clearSearch() {
-        ['sf_round','sf_code','sf_color','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
+        ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+        const notice = document.getElementById('sf_palletNotice');
+        if (notice) notice.style.display = 'none';
         setSfDateField('date');
+        runSearch();
     }
 
     // ── 제품 상세스펙 조회 ─────────────────────────────────
