@@ -1431,9 +1431,10 @@
         const url = document.getElementById('connUrlInput').value.trim();
         if (!url) return;
         localStorage.setItem('sheet_pub_url', url);
+        try { sessionStorage.removeItem(_DATA_CACHE_KEY); } catch(e) {}
         closeModal('connModal');
         closeModal('settingsModal');
-        loadData();
+        loadData(true);
     }
     function resetConn() {
         if (!confirm('연동 설정을 초기화하고 기본 URL로 되돌릴까요?')) return;
