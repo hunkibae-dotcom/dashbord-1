@@ -1842,6 +1842,7 @@ function runProductSearch() {
   const results = pool.filter(d => {
     if (code && !d.단품코드.toLowerCase().includes(code)) return false;
     if (name && !d.건명.toLowerCase().includes(name)) return false;
+    if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
     if (factory && d.공장 !== factory) return false;
     if (fromDate || toDate) {
       const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
