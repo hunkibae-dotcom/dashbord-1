@@ -2396,7 +2396,7 @@
                 const w = controls.offsetWidth, h = controls.offsetHeight;
                 controls.style.marginTop = (Math.max(0, (w - h) / 2) + GAP) + 'px';
             } else {
-                controls.style.marginTop = '';
+                controls.style.marginTop = '20px'; // 세로 모드일 때 원래 간격으로 복원 (JS로 덮어썼던 값을 되돌림)
             }
             controls.style.transform = t;
         }
