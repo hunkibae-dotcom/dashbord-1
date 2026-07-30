@@ -2141,6 +2141,9 @@
                 await screen.orientation.lock('portrait');
             }
         } catch (e) { /* 무시 */ }
+        try {
+            if (document.fullscreenElement && document.exitFullscreen) await document.exitFullscreen();
+        } catch (e) { /* 무시 */ }
     }
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
