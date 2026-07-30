@@ -624,25 +624,30 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
     <div id="psSummary" class="px-5 pt-4 pb-2 shrink-0"></div>
 
-    <div class="flex-1 overflow-auto px-5 pb-5">
-      <table class="w-full text-[13px]" style="min-width:960px">
-        <thead class="sticky top-0 z-10 bg-white">
-          <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
-            <th class="text-left py-2 pr-3 font-semibold">상태</th>
-            <th class="text-left py-2 pr-3 font-semibold">공장</th>
-            <th class="text-left py-2 pr-3 font-semibold">건명</th>
-            <th class="text-left py-2 pr-3 font-semibold">단품코드</th>
-            <th class="text-left py-2 pr-3 font-semibold">단품명칭</th>
-            <th class="text-center py-2 pr-3 font-semibold">색상</th>
-            <th class="text-center py-2 pr-3 font-semibold">수량</th>
-            <th class="text-center py-2 pr-3 font-semibold">CBM</th>
-            <th class="text-left py-2 pr-3 font-semibold">납기일</th>
-            <th class="text-left py-2 pr-3 font-semibold">포장일</th>
-            <th class="text-left py-2 font-semibold">검사일</th>
-          </tr>
-        </thead>
-        <tbody id="psTableBody"></tbody>
-      </table>
+    <div class="flex-1 overflow-y-auto px-4 sm:px-5 pb-5" id="psScrollArea">
+      <!-- 데스크탑 테이블 -->
+      <div id="psTableContainer">
+        <table class="w-full text-[13px]" style="min-width:960px">
+          <thead class="sticky top-0 z-10 bg-white">
+            <tr class="text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
+              <th class="text-left py-2 pr-3 font-semibold">상태</th>
+              <th class="text-left py-2 pr-3 font-semibold">공장</th>
+              <th class="text-left py-2 pr-3 font-semibold">건명</th>
+              <th class="text-left py-2 pr-3 font-semibold">단품코드</th>
+              <th class="text-left py-2 pr-3 font-semibold">단품명칭</th>
+              <th class="text-center py-2 pr-3 font-semibold">색상</th>
+              <th class="text-center py-2 pr-3 font-semibold">수량</th>
+              <th class="text-center py-2 pr-3 font-semibold">CBM</th>
+              <th class="text-left py-2 pr-3 font-semibold">납기일</th>
+              <th class="text-left py-2 pr-3 font-semibold">포장일</th>
+              <th class="text-left py-2 font-semibold">검사일</th>
+            </tr>
+          </thead>
+          <tbody id="psTableBody"></tbody>
+        </table>
+      </div>
+      <!-- 모바일 카드 목록 -->
+      <div id="psCardContainer" class="hidden"></div>
       <div id="psNoData" class="text-center py-10 text-slate-400">
         <i class="fa-solid fa-magnifying-glass text-[25px] mb-2 block text-slate-300"></i>
         단품코드, 건명, 날짜, 공장으로 검색해 보세요.
