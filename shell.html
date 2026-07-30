@@ -2099,6 +2099,7 @@
         if (!code) { document.getElementById('manualCodeInput').focus(); return; }
         closeManualCodeModal();
         _stopScan();
+        _relockScanOrientation();
         openView('viewSearch');
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
