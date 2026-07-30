@@ -567,7 +567,12 @@
             <button onclick="closeScanView()" style="-webkit-appearance:none;appearance:none;border:none;background:transparent;color:#fff;display:flex;align-items:center;font-size:20px;cursor:pointer;padding:6px;line-height:1;">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <span style="font-size:15px;font-weight:800;color:#fff;flex:1;">바코드 스캔</span>
+            <span style="font-size:15px;font-weight:800;color:#fff;">바코드 스캔</span>
+            <button id="scanRotateBtn" onclick="toggleScanOrientation()" title="세로로 인쇄된 바코드 촬영"
+                style="-webkit-appearance:none;appearance:none;border:none;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:8px;font-size:13px;cursor:pointer;">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+            <span style="flex:1;"></span>
             <span style="font-size:10px;color:rgba(255,255,255,.6);">CODE128 · CODE39</span>
         </div>
         <!-- 카메라 영역 -->
