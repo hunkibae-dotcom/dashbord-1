@@ -2122,11 +2122,16 @@
     // 앱 전체는 manifest에 orientation:"portrait"로 고정돼있어서, 스캔뷰에 들어가있는 동안만
     // Screen Orientation API로 잠금을 풀고, 나가면 다시 portrait로 되돌린다.
     async function _unlockScanOrientation() {
+        // 일부 웹뷰는 Fullscreen 상태가 아니면 orientation.lock 자체를 거부하므로 먼저 시도해봄 (실패해도 무시)
         try {
-            if (screen.orientation && screen.orientation.unlock) {
-                screen.orientation.unlock();
-            } else if (screen.orientation && screen.orientation.lock) {
+            const el = document.getElementById('viewScan');
+            if (el && el.requestFullscreen) await el.requestFullscreen().catch(() => {});
+        } catch (e) {}
+        try {
+            if (screen.orientation && screen.orientation.lock) {
                 await screen.orientation.lock('any');
+            } else if (screen.orientation && screen.orientation.unlock) {
+                screen.orientation.unlock();
             }
         } catch (e) { /* 이 기기/웹뷰가 지원 안 하면 조용히 무시 — 세로 스캔은 그대로 동작 */ }
     }
