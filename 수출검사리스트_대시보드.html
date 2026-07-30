@@ -1280,18 +1280,18 @@ function renderKPIs(fullData) {
   const cj1 = computeStats(cj1Items);
   const cj2 = computeStats(cj2Items);
 
-  // 1) 금일 포장
-  const cj1Packed = cj1Items.filter(d => d.포장일 && ddayInfo(d.포장일) <= 0);
-  const cj2Packed = cj2Items.filter(d => d.포장일 && ddayInfo(d.포장일) <= 0);
+  // 1) 금일 포장: 포장일 <= 오늘 AND 미검사
+  const cj1Packed = cj1Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
+  const cj2Packed = cj2Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
   document.getElementById('kpiPackedCj1').textContent = cj1.packedToday.toLocaleString();
   document.getElementById('kpiPackedCj2').textContent = cj2.packedToday.toLocaleString();
   document.getElementById('kpiPackedDetail').innerHTML = renderDetailList(scopedPool(cj1Packed, cj2Packed), '포장일');
 
-  // 2) 검사 대기 품목 (미검사 && 포장 예정일 오늘 이전 포함)
-  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
-  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
-  document.getElementById('kpiWaitCj1').textContent = cj1.waitNow.toLocaleString();
-  document.getElementById('kpiWaitCj2').textContent = cj2.waitNow.toLocaleString();
+  // 2) 검사 대기 품목 (미검사 전체)
+  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사');
+  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사');
+  document.getElementById('kpiWaitCj1').textContent = cj1.undone.toLocaleString();
+  document.getElementById('kpiWaitCj2').textContent = cj2.undone.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
   // 3) 검사 완료 품목: 진행중 리스트에서 이미 완료된 건 + 완료 이력(누적)까지 합산한 전체 누적 완료 건수
