@@ -1749,6 +1749,7 @@
                 </div>
                 <div style="display:flex;align-items:center;font-size:10px;font-family:monospace;color:var(--label);">
                     <span>상차 ${fmtKr(d.date)}${ddayTxt}</span>
+                    ${d.regDate && d.regDate!=='-' ? `<span style="margin:0 6px;color:var(--divider);">·</span><span>포장완료 ${fmtKr(d.regDate)}</span>` : ''}
                     <span style="margin-left:auto;">납기 ${fmtKr(d.dueDate)}</span>
                 </div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:5px;padding-top:5px;border-top:1px solid var(--divider);">
