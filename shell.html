@@ -590,9 +590,9 @@
                 </div>
             </div>
             <!-- 상태 텍스트 -->
-            <div id="scanStatus" style="margin-top:20px;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;letter-spacing:.02em;">카메라 초기화 중...</div>
+            <div id="scanStatus" style="margin-top:20px;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;letter-spacing:.02em;transition:transform .25s ease;">카메라 초기화 중...</div>
             <!-- 직접 입력 (바코드가 찢어지는 등 인식이 아예 안 될 때 대비) -->
-            <button onclick="openManualCodeModal()" style="pointer-events:auto;margin-top:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <button id="manualInputBtn" onclick="openManualCodeModal()" style="pointer-events:auto;margin-top:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:transform .25s ease;">
                 <i class="fa-solid fa-keyboard" style="font-size:12px;"></i> 직접 입력
             </button>
         </div>
