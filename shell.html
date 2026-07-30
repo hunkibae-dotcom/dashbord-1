@@ -2085,7 +2085,7 @@
                     ${d.color ? `<span style="font-size:10px;font-weight:700;color:var(--text-sub);font-family:monospace;">${d.color}</span>` : ''}
                     <span style="margin-left:auto;font-weight:800;color:var(--text);font-family:monospace;flex-shrink:0;">${d.qty.toLocaleString()} BOX</span>
                 </div>
-                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)}${ddayTxt} · 납기 ${fmtKr(d.dueDate)}</div>
+                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)}${ddayTxt} · 납기 ${fmtKr(d.dueDate)}${d.regDate && d.regDate!=='-' ? ' · 포장완료 '+fmtKr(d.regDate) : ''}</div>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;padding-top:4px;border-top:1px solid var(--divider);">
                     <span style="font-size:10px;color:var(--label);">적재</span>
                     <span style="font-size:11px;font-weight:700;color:${_pv!=='—'?_pc:'var(--text-sub)'};">${_pv}</span>
