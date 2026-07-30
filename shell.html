@@ -2150,21 +2150,23 @@
         renderMgmtModal();
     }
     function renderMgmtModal() {
-        const tabs = ['전체', '미입고', '미확인', '포장대기', '포장완료', '출고완료'];
+        const tabs = ['전체', '미입고', '미확인', '포장대기', '포장완료', '출고완료', '피킹'];
         tabs.forEach(t => {
             const btn = document.getElementById('mgmtTab_' + t);
             if (!btn) return;
-            btn.style.background = t === _mgmtTab ? '#00B0FF' : 'var(--icon-bg)';
-            btn.style.color      = t === _mgmtTab ? '#0B0F19'  : 'var(--text-sub)';
+            const isActive = t === _mgmtTab;
+            btn.style.background = isActive ? (t === '피킹' ? '#A855F7' : '#00B0FF') : 'var(--icon-bg)';
+            btn.style.color      = isActive ? '#fff' : 'var(--text-sub)';
         });
         const filtered = allData.filter(d => {
             if (_mgmtTab === '전체') return true;
             const s = d.status.replace(/\s+/g,'').toLowerCase();
+            if (_mgmtTab === '피킹')     return s.includes('피킹');
             if (_mgmtTab === '포장대기') return s.includes('포장대기');
             if (_mgmtTab === '미확인')   return s.includes('미확인');
             if (_mgmtTab === '포장완료') return s.includes('포장완료') && !d.isDone;
-            if (_mgmtTab === '출고완료') return d.isDone;
-            if (_mgmtTab === '미입고')   return !s.includes('포장대기') && !s.includes('미확인') && !s.includes('포장완료') && !d.isDone;
+            if (_mgmtTab === '출고완료') return d.isDone && !s.includes('피킹');
+            if (_mgmtTab === '미입고')   return !s.includes('포장대기') && !s.includes('미확인') && !s.includes('포장완료') && !d.isDone && !s.includes('피킹');
             return true;
         });
         const el = document.getElementById('mgmtList');
