@@ -651,6 +651,29 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== 필터검색 날짜 선택 팝업 ===== -->
+<div id="psDateModal" class="hidden fixed inset-0 z-[110] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closePsDatePicker()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xs p-5 flex flex-col gap-3">
+    <div class="flex items-center justify-between">
+      <h4 class="text-[14px] font-bold text-slate-800">날짜 필터</h4>
+      <button onclick="closePsDatePicker()" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="text-[11px] text-slate-400 -mt-1">포장일 → 검사일 → 납기일 순으로 있는 값을 기준으로 검색</div>
+    <div>
+      <div class="text-[11px] font-semibold text-slate-400 mb-1">시작일</div>
+      <input type="date" id="psFrom" onchange="runProductSearch();updatePsDateBtnLabel()" class="sel-field w-full">
+    </div>
+    <div>
+      <div class="text-[11px] font-semibold text-slate-400 mb-1">종료일</div>
+      <input type="date" id="psTo" onchange="runProductSearch();updatePsDateBtnLabel()" class="sel-field w-full">
+    </div>
+    <div class="flex gap-2 mt-1">
+      <button onclick="clearPsDate()" class="flex-1 sel-field font-semibold text-slate-600 hover:bg-slate-100">초기화</button>
+      <button onclick="closePsDatePicker()" class="flex-1 py-2 rounded-lg font-semibold text-[13.5px] text-white" style="background:#6D5CE8;">적용</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 상세스펙 모달 ===== -->
 <div id="specModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeSpecModal()">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
@@ -1269,11 +1292,11 @@ function renderKPIs(fullData) {
   document.getElementById('kpiPackedCj2').textContent = cj2.packedToday.toLocaleString();
   document.getElementById('kpiPackedDetail').innerHTML = renderDetailList(scopedPool(cj1Packed, cj2Packed), '포장일');
 
-  // 2) 검사 대기 품목 (미검사만, 양지는 별도)
-  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사');
-  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사');
-  document.getElementById('kpiWaitCj1').textContent = cj1.undone.toLocaleString();
-  document.getElementById('kpiWaitCj2').textContent = cj2.undone.toLocaleString();
+  // 2) 검사 대기 품목 (미검사 && 포장 예정일 오늘 이전 포함)
+  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
+  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
+  document.getElementById('kpiWaitCj1').textContent = cj1.waitNow.toLocaleString();
+  document.getElementById('kpiWaitCj2').textContent = cj2.waitNow.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
   // 3) 검사 완료 품목: 진행중 리스트에서 이미 완료된 건 + 완료 이력(누적)까지 합산한 전체 누적 완료 건수
