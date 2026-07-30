@@ -758,7 +758,7 @@
             const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
             const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
             const specG  = iSpecG >= 0 && r[iSpecG] ? r[iSpecG].toString().trim() : '';
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, specW, specD, specH, specG });
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, source: srcTag, specW, specD, specH, specG });
         }
         return result;
     }
