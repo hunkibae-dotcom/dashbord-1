@@ -647,6 +647,18 @@
         50%  { top: 85%; }
         100% { top: 10%; }
     }
+    /* 스캔 화면을 통째로 90도 돌려서 폰을 가로로 눕혀 찍을 수 있게 함 (viewScan 자체의 transform은
+       슬라이드 인/아웃 전용이라 건드릴 수 없어서, 안쪽 래퍼에 별도로 회전을 적용) */
+    #scanRotateWrap.landscape {
+        width: 100vh;
+        height: 100vw;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -50vw;
+        margin-left: -50vh;
+        transform: rotate(90deg);
+    }
     </style>
 
     <!-- ── 뷰: 수출 포장 관리 현황 상세 ─────────────── -->
