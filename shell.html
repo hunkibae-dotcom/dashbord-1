@@ -1212,7 +1212,7 @@
                     <span>${d.div || d.country}</span><span>${d.round}</span>
                     <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
                 </div>
-                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)} · 납기 ${fmtKr(d.dueDate)}</div>
+                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)} · 납기 ${fmtKr(d.dueDate)}${d.regDate && d.regDate!=='-' ? ' · 포장완료 '+fmtKr(d.regDate) : ''}</div>
             </div>`;
         }).join('');
     }
