@@ -310,10 +310,25 @@
 
                 <!-- Chart Slide 0: 포장 강화 현황 -->
                 <div style="min-width:100%;padding:14px 14px 32px;box-sizing:border-box;">
-                    <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;margin-bottom:10px;">
-                        <i class="fa-solid fa-chart-column" style="color:#00B0FF;"></i> 포장 강화 현황
+                    <!-- 헤더 + 네비게이션 -->
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                        <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
+                            <i class="fa-solid fa-chart-column" style="color:#00B0FF;"></i> 포장 강화 현황
+                        </div>
+                        <div style="display:flex;align-items:center;gap:4px;">
+                            <button onclick="packingNavPrev()" style="-webkit-appearance:none;appearance:none;background:var(--icon-bg);border:none;color:var(--text-sub);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-chevron-left"></i></button>
+                            <span id="packingNavLabel" style="font-size:11px;color:var(--label);min-width:74px;text-align:center;font-weight:600;"></span>
+                            <button onclick="packingNavNext()" style="-webkit-appearance:none;appearance:none;background:var(--icon-bg);border:none;color:var(--text-sub);width:26px;height:26px;border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
                     </div>
-                    <div style="position:relative;height:200px;">
+                    <!-- 모드 토글 -->
+                    <div style="position:relative;background:var(--icon-bg);border-radius:20px;padding:3px;display:flex;margin-bottom:10px;">
+                        <div id="packingModeSliderM" style="position:absolute;top:3px;left:3px;height:calc(100% - 6px);width:calc(33.33% - 2px);background:#0284C7;border-radius:16px;transition:left .25s;pointer-events:none;"></div>
+                        <button id="packingBtnM_daily"   onclick="setPackingViewModeM('daily')"   style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#fff;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">일별</button>
+                        <button id="packingBtnM_weekly"  onclick="setPackingViewModeM('weekly')"  style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#475569;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">주간별</button>
+                        <button id="packingBtnM_monthly" onclick="setPackingViewModeM('monthly')" style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#475569;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">월간별</button>
+                    </div>
+                    <div style="position:relative;height:175px;">
                         <canvas id="mainChart"></canvas>
                     </div>
                 </div>
