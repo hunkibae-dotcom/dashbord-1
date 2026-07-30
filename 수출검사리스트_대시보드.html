@@ -2174,8 +2174,8 @@ function renderMobileKPIs() {
   const arc2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
   setMTxt('mKpiPkd1', s1.packedToday);
   setMTxt('mKpiPkd2', s2.packedToday);
-  setMTxt('mKpiWt1', s1.undone);
-  setMTxt('mKpiWt2', s2.undone);
+  setMTxt('mKpiWt1', s1.waitNow);
+  setMTxt('mKpiWt2', s2.waitNow);
   setMTxt('mKpiDn1', (s1.done + arc1).toLocaleString());
   setMTxt('mKpiDn2', (s2.done + arc2).toLocaleString());
   // 누적완료는 두 공장 합산 카드라 상단 공장 필터에 맞춰 표시값을 바꿔준다
