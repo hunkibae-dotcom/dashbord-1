@@ -649,15 +649,16 @@
     }
     /* 스캔 화면을 통째로 90도 돌려서 폰을 가로로 눕혀 찍을 수 있게 함 (viewScan 자체의 transform은
        슬라이드 인/아웃 전용이라 건드릴 수 없어서, 안쪽 래퍼에 별도로 회전을 적용) */
+    /* scanRotateWrap에 인라인으로 position/width/height가 이미 박혀있어서(inline이 항상 우선) !important로 확실히 덮어씀 */
     #scanRotateWrap.landscape {
-        width: 100vh;
-        height: 100vw;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        margin-top: -50vw;
-        margin-left: -50vh;
-        transform: rotate(90deg);
+        width: 100vh !important;
+        height: 100vw !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        margin-top: -50vw !important;
+        margin-left: -50vh !important;
+        transform: rotate(90deg) !important;
     }
     </style>
 
