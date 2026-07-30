@@ -2209,11 +2209,13 @@
             changed.status = _ieCurStatus;
         }
         if (newPallet !== _ieOrigPallet) {
+            // 숫자만 입력했으면 시트 형식("적재 99")에 맞춰 접두사를 붙여서 보냄 — 문자 섞인 라벨(예: A-1)은 그대로 전송
+            const sendPallet = /^\d+$/.test(newPallet) ? '적재 ' + newPallet : newPallet;
             tasks.push(
-                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updatePallet', code:_ieCode, round:_ieRound, pallet:newPallet }),
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updatePallet', code:_ieCode, round:_ieRound, pallet:sendPallet }),
                     { signal: AbortSignal.timeout(15000) }).then(r => r.text())
             );
-            changed.pallet = newPallet;
+            changed.pallet = sendPallet;
         }
         const specChanged = newW !== _ieOrigW || newD !== _ieOrigD || newH !== _ieOrigH || newG !== _ieOrigG;
         if (specChanged) {
