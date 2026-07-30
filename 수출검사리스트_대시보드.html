@@ -1213,7 +1213,14 @@ function computeStats(items) {
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
   }).length;
-  return { total, done, undone, yangji, packedToday };
+  // 검사 대기: 미검사 && 포장 예정일이 오늘 이전(당일 포함)
+  const waitNow = items.filter(d => {
+    if (d.검사 !== '미검사') return false;
+    if (!d.포장일) return false;
+    const dd = ddayInfo(d.포장일);
+    return dd !== null && dd <= 0;
+  }).length;
+  return { total, done, undone, yangji, packedToday, waitNow };
 }
 
 // KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
