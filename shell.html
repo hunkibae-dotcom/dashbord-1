@@ -1854,9 +1854,10 @@
         document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
         _zxingLastTry = 0;
         _loadZXing(function(){});
+        _unlockScanOrientation();
         await _startScan();
     }
-    function closeScanView() { _stopScan(); closeView(); }
+    function closeScanView() { _stopScan(); _relockScanOrientation(); closeView(); }
 
     async function _startScan() {
         try {
