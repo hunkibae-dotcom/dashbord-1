@@ -2632,9 +2632,10 @@ function _onScanDetect(raw) {
 
 function confirmScanResult() {
   const raw = document.getElementById('scanResultText').textContent;
-  const code = _parseBarcodeRaw(raw);
+  const { code, color } = _parseBarcodeRaw(raw);
   closeScanView();
   document.getElementById('psCode').value = code;
+  document.getElementById('psColor').value = color;
   openProductSearch();
 }
 
