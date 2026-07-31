@@ -4971,6 +4971,161 @@
             display.innerHTML = html;
         }
 
+        // ─── 작업일지 · 용역 인원 현황 (카드3 슬라이드3 + 상세 모달) ───────
+        function _parseWorkLogRows() {
+            const rows = state.workLogRows;
+            if (!rows || rows.length < 2) return [];
+            const hdr = rows[0].map(h => (h||'').toString().trim());
+            let iDate=-1, iDept=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g,'');
+                if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
+                if (iDept   < 0 && hn==='부서')                    iDept   = i;
+                if (iWorker < 0 && hn==='작업자')                  iWorker = i;
+                if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
+                if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+            });
+            if (iDate < 0) { iDate=0; iDept=1; iWorker=2; iMemo=3; iTotal=4; }
+            const out = [];
+            for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.every(c => !c || !c.toString().trim())) continue;
+                const date = normalizeDate((r[iDate]||'').toString().trim());
+                if (date === '-') continue;
+                const memo = (r[iMemo]||'').toString().trim();
+                const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
+                out.push({
+                    date,
+                    dept:    (r[iDept]  ||'').toString().trim() || '미지정',
+                    worker:  (r[iWorker]||'').toString().trim(),
+                    memo,
+                    total:   parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0,
+                    service: svcMatch ? parseInt(svcMatch[1]) : 0
+                });
+            }
+            return out;
+        }
+
+        function renderWorkLogSummaryCard() {
+            const body = document.getElementById('workLogSummaryBody');
+            if (!body) return;
+            const rows = _parseWorkLogRows();
+            if (!rows.length) {
+                body.innerHTML = '<div class="text-[12px] text-slate-600 text-center py-3">작업일지 시트 연동 대기 중</div>';
+                return;
+            }
+            const totalService = rows.reduce((s, r) => s + r.service, 0);
+            body.innerHTML = `
+                <div style="display:flex;align-items:baseline;gap:6px;">
+                    <span style="font-size:28px;font-weight:800;color:#0F172A;">${totalService}</span>
+                    <span style="font-size:13px;color:#334155;font-weight:600;">명</span>
+                </div>
+                <div style="font-size:11.5px;color:#64748B;">누적 요청 용역 인원 (전체 기간)</div>
+            `;
+        }
+
+        let _wlmMode = 'daily';
+        let _wlmGroups = [];
+
+        function openWorkLogModal() {
+            document.getElementById('workLogModal').classList.remove('hidden');
+            setWorkLogViewMode(_wlmMode);
+        }
+        function closeWorkLogModal() {
+            document.getElementById('workLogModal').classList.add('hidden');
+        }
+
+        // 'YYYY-MM-DD' 날짜가 속한 주의 월요일 날짜를 같은 형식으로 반환
+        function _startOfWeek(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const dt = new Date(y, m - 1, d);
+            const dow = dt.getDay();
+            dt.setDate(dt.getDate() + (dow === 0 ? -6 : 1 - dow));
+            return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+        }
+
+        function _groupWorkLogByPeriod(rows, mode) {
+            const groups = {};
+            const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+            rows.forEach(r => {
+                let key, label;
+                if (mode === 'daily') {
+                    key = r.date;
+                    const [y, m, d] = r.date.split('-').map(Number);
+                    label = r.date + ' (' + DOW[new Date(y, m - 1, d).getDay()] + ')';
+                } else if (mode === 'weekly') {
+                    const wkStart = _startOfWeek(r.date);
+                    const [y, m, d] = wkStart.split('-').map(Number);
+                    const endDt = new Date(y, m - 1, d); endDt.setDate(endDt.getDate() + 6);
+                    const endStr = endDt.getFullYear() + '-' + String(endDt.getMonth() + 1).padStart(2, '0') + '-' + String(endDt.getDate()).padStart(2, '0');
+                    key = wkStart;
+                    label = wkStart + ' ~ ' + endStr;
+                } else {
+                    key = r.date.slice(0, 7);
+                    label = key.replace('-', '년 ') + '월';
+                }
+                if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, service: 0, workers: new Set(), depts: new Set() };
+                groups[key].total   += r.total;
+                groups[key].service += r.service;
+                if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
+                if (r.dept) groups[key].depts.add(r.dept);
+            });
+            return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+        }
+
+        function setWorkLogViewMode(mode) {
+            _wlmMode = mode;
+            ['daily', 'weekly', 'monthly'].forEach(m => {
+                const btn = document.getElementById('wlmTab_' + m);
+                if (!btn) return;
+                if (m === mode) { btn.style.background = '#4F46E5'; btn.style.color = '#fff'; }
+                else { btn.style.background = 'transparent'; btn.style.color = '#94A3B8'; }
+            });
+            renderWorkLogModalTable();
+        }
+
+        function renderWorkLogModalTable() {
+            const rows = _parseWorkLogRows();
+            const totalHeadcount = rows.reduce((s, r) => s + r.total, 0);
+            const totalService   = rows.reduce((s, r) => s + r.service, 0);
+            const days = new Set(rows.map(r => r.date)).size;
+            document.getElementById('wlmTotalHeadcount').textContent = totalHeadcount + '명';
+            document.getElementById('wlmTotalService').textContent   = totalService + '명';
+            document.getElementById('wlmTotalDays').textContent      = days + '일';
+
+            _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode);
+            const tbody = document.getElementById('workLogModalBody');
+            if (!_wlmGroups.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500 text-[13px]">작업일지 데이터가 없습니다</td></tr>';
+                return;
+            }
+            tbody.innerHTML = _wlmGroups.map(g => `
+                <tr class="text-[13px] text-slate-300 hover:bg-darkBg/40 transition-colors">
+                    <td class="py-2.5 px-3 font-semibold text-white whitespace-nowrap">${g.label}</td>
+                    <td class="py-2.5 px-3 text-right font-semibold">${g.total}명</td>
+                    <td class="py-2.5 px-3 text-right ${g.service > 0 ? 'text-indigo-400 font-semibold' : 'text-slate-600'}">${g.service > 0 ? g.service + '명' : '-'}</td>
+                    <td class="py-2.5 px-3">${[...g.workers].join(' · ') || '-'}</td>
+                    <td class="py-2.5 px-3">${[...g.depts].join(', ') || '-'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function downloadWorkLogData() {
+            if (!_wlmGroups.length) return;
+            const modeLabel = _wlmMode === 'daily' ? '일별' : _wlmMode === 'weekly' ? '주간별' : '월간별';
+            let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
+            _wlmGroups.forEach(g => {
+                csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = '용역인원현황_' + modeLabel + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         // ─── 작업 인원 등록 모달 ─────────────────────────────────────
         let _wrmWorkers = [];  // 모달 임시 작업자 목록
         let _wrmCount = 0;     // 인원 수 (이름 추가 시 자동 증가, 수동 조정 가능)
