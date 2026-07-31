@@ -2116,18 +2116,19 @@
             if (w) workers.push(w);
             if (m) memos.push(m);
         }
-        // 오늘 데이터 없으면 가장 최근 행 날짜로 재시도(weekend 등)
+        // 오늘 데이터 없으면 카드 초기화 (이전 날짜 값이 남지 않도록)
         if (total === 0 && workers.length === 0) {
-            // localStorage 폴백값 유지
+            document.getElementById('kpiWorkers').textContent = '—';
+            const nm = document.getElementById('kpiWorkerNames');
+            if (nm) nm.textContent = '작업일지 연동';
+            localStorage.removeItem('todayWorkers_' + today);
             return;
         }
         document.getElementById('kpiWorkers').textContent = total || workers.length || '0';
         const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
         const nm = document.getElementById('kpiWorkerNames');
         if (nm) nm.textContent = parts.length ? parts.join(' · ') : '작업일지 연동';
-        // localStorage에도 저장 (renderKPIs 덮어쓰기 방지)
         localStorage.setItem('todayWorkers_' + today, total || workers.length);
-        localStorage.setItem('todayWorkers', total || workers.length);
     }
 
     // ── 금일 작업 카드: 인원 투입 / 이력 보기 ────────────────
