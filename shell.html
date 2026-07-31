@@ -598,7 +598,7 @@
             <!-- 프레임 + 상태문구 + 결과바를 하나의 그룹으로 묶어서, 회전할 때 이 그룹 전체를 통째로 돌린다.
                  (개별로 따로 돌리고 간격을 따로 계산하는 방식은 계속 어긋났어서, 회전 전에 이미 올바른
                  순서로 쌓여있는 판 자체를 그대로 돌리는 방식으로 바꿈 — 순서/간격이 절대 안 깨짐) -->
-            <div id="scanRotateGroup" style="display:flex;flex-direction:column;align-items:center;gap:20px;transition:transform .25s ease;">
+            <div id="scanRotateGroup" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;transition:transform .25s ease;">
                 <!-- 스캔 프레임 -->
                 <div id="scanFrame" style="position:relative;width:82%;max-width:360px;height:110px;">
                     <!-- 외부 어두운 오버레이는 box-shadow로 구현 -->
