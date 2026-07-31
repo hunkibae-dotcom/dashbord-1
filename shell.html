@@ -903,7 +903,14 @@
         }
         setStatus('loading');
         try {
-            const res  = await fetch(GAS_URL, { signal: AbortSignal.timeout(15000) });
+            // force=true일 때 캐시 완전 우회: 타임스탬프 파라미터 + no-store 옵션
+            const url = force
+                ? GAS_URL + (GAS_URL.includes('?') ? '&' : '?') + '_t=' + Date.now()
+                : GAS_URL;
+            const res  = await fetch(url, {
+                signal: AbortSignal.timeout(15000),
+                cache: force ? 'no-store' : 'default'
+            });
             const json = JSON.parse(await res.text());
             _saveDataCache(json);
             _applyJson(json);
