@@ -2311,10 +2311,17 @@
                 label.classList.remove('hidden');
             }
 
-            // 선택된 항목 강조
+            // 선택된 항목 강조 (헤더 드롭다운)
             ['전체','출고','피킹','포장완료','미입고'].forEach(s => {
                 const btn = document.getElementById('sf-' + s);
                 if (btn) btn.classList.toggle('bg-slate-700/60', s === value);
+            });
+            // 사이드바 버튼 강조
+            document.querySelectorAll('.sidebar-sf-btn').forEach(btn => {
+                const active = btn.dataset.sbsv === value;
+                btn.style.background  = active ? '#3B82F6'  : 'transparent';
+                btn.style.color       = active ? '#fff'     : '#94A3B8';
+                btn.style.borderColor = active ? '#3B82F6'  : '#334155';
             });
 
             applyFilters();
