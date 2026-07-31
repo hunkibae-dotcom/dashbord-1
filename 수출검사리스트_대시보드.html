@@ -965,7 +965,7 @@ function parseRows(rows, factory) {
     if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
 
     const 검사raw = g(13).trim();
-    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : '미검사';
+    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : '미검사';
     const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
 
     result.push({
