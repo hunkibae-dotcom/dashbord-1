@@ -2314,7 +2314,7 @@ function openKpiDetail(type) {
         <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #F1F5F9;">${label} · ${list.length}건</div>
         ${list.map(d => {
           const status = d.검사 || '미검사';
-          const sc = status === '검사' ? '#10B981' : status === '양지' ? '#8B5CF6' : '#F59E0B';
+          const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : '#EF4444';
           return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC;">
             <div style="flex:1;min-width:0;">
               <div style="font-size:13.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
