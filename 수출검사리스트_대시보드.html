@@ -3128,6 +3128,7 @@ function _closeTopOverlay() {
   if (transformOpen('productSearchModal')) { closeProductSearch(); return true; }
   if (hiddenClassOpen('specModal'))     { closeSpecModal();     return true; }
   if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
+  if (displayOpen('mSearchSubMenu'))    { closeMSearchSub();    return true; }
   return false;
 }
 function _showExitBackToast() {
