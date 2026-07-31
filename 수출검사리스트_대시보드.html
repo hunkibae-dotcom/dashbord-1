@@ -1828,6 +1828,32 @@ function parseInputDate(str) {
   return new Date(y, m - 1, d);
 }
 
+// ── 제품검색 서브메뉴 (포장강화 shell.html과 동일 UI) ──
+function toggleMSearchSub() {
+  const menu = document.getElementById('mSearchSubMenu');
+  const bd   = document.getElementById('mSearchSubBd');
+  if (menu.style.display !== 'none') {
+    closeMSearchSub();
+  } else {
+    menu.style.display = 'flex';
+    bd.style.display   = 'block';
+    requestAnimationFrame(() => {
+      menu.style.opacity   = '1';
+      menu.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    document.getElementById('mNav2')?.classList.add('active');
+    _armBackTrap();
+  }
+}
+function closeMSearchSub() {
+  const menu = document.getElementById('mSearchSubMenu');
+  const bd   = document.getElementById('mSearchSubBd');
+  menu.style.opacity   = '0';
+  menu.style.transform = 'translateX(-50%) translateY(12px)';
+  setTimeout(() => { menu.style.display = 'none'; bd.style.display = 'none'; }, 200);
+  document.getElementById('mNav2')?.classList.remove('active');
+}
+
 function openProductSearch() {
   const modal = document.getElementById('productSearchModal');
   modal.style.transform = 'translateX(0)';
