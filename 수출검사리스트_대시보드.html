@@ -70,7 +70,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .toggle-slider::before { content:''; position:absolute; width:16px; height:16px; border-radius:50%; left:2px; top:2px; background:var(--text-sub); border:2px solid var(--text-sub); transition:transform .25s, background .25s, border-color .25s; }
   html.dark .toggle-slider::before { transform:translateX(20px); }
 
-  body { background:#F8FAFC; color:#1E293B; }
+  body { background:var(--bg); color:var(--text); }
   ::-webkit-scrollbar { width:6px; height:6px; }
   ::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
 
