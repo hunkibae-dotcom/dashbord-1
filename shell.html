@@ -171,7 +171,7 @@
             </div>
 
             <!-- 금일 작업 인원 -->
-            <div class="card" style="position:relative;overflow:hidden;">
+            <div class="card" onclick="openWorkCardActions()" style="position:relative;overflow:hidden;cursor:pointer;">
                 <span class="card-icon" style="color:#00B0FF;"><i class="fa-solid fa-users"></i></span>
                 <div class="label">금일 작업</div>
                 <div style="margin-top:12px;">
@@ -182,9 +182,12 @@
                     <div style="margin-top:4px;font-size:11px;color:var(--text-sub);">작업 인원</div>
                 </div>
                 <div class="divider"></div>
-                <div style="font-size:10px;color:var(--label);display:flex;align-items:center;gap:4px;overflow:hidden;">
-                    <i class="fa-solid fa-link" style="font-size:8px;flex-shrink:0;"></i>
-                    <span id="kpiWorkerNames" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">작업일지 연동</span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;">
+                    <div style="font-size:10px;color:var(--label);display:flex;align-items:center;gap:4px;overflow:hidden;min-width:0;">
+                        <i class="fa-solid fa-link" style="font-size:8px;flex-shrink:0;"></i>
+                        <span id="kpiWorkerNames" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">작업일지 연동</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="font-size:9px;color:var(--label);flex-shrink:0;"></i>
                 </div>
             </div>
         </div>
