@@ -2269,7 +2269,8 @@ function setMStatus(s) {
   mStatus = s;
   document.getElementById('mSAll')?.classList.toggle('active', s === '');
   document.getElementById('mSDone')?.classList.toggle('active', s === '검사');
-  document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사');
+  // '진행_미검사'는 카드 클릭 전용(활성 미검사만) — 미검사 버튼에 하이라이트
+  document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사' || s === '진행_미검사');
   document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
   document.getElementById('mSArchiveUndone')?.classList.toggle('active', s === '미검사출고');
   renderMobileList();
