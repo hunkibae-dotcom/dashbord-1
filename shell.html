@@ -612,8 +612,9 @@
                         <div id="scanLaser" style="position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(to right,transparent,#FF4444,transparent);border-radius:2px;top:50%;animation:scanLaser 1.8s ease-in-out infinite;"></div>
                     </div>
                 </div>
-                <!-- 상태문구 + 직접입력 버튼 -->
-                <div id="scanOverlayControls" style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                <!-- 상태문구 + 직접입력 버튼 (position:relative — 프레임의 box-shadow가 position:absolute라
+                     CSS 규칙상 항상 그 위에 그려지는데, 이렇게 하면 이 요소도 "positioned"가 되어 정상적으로 위로 올라옴) -->
+                <div id="scanOverlayControls" style="position:relative;display:flex;flex-direction:column;align-items:center;gap:12px;">
                     <div id="scanStatus" style="font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;letter-spacing:.02em;white-space:nowrap;">카메라 초기화 중...</div>
                     <!-- 직접 입력 (바코드가 찢어지는 등 인식이 아예 안 될 때 대비) -->
                     <button id="manualInputBtn" onclick="openManualCodeModal()" style="pointer-events:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12.5px;font-weight:700;padding:8px 16px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;">
