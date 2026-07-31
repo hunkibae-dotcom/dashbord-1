@@ -1961,7 +1961,11 @@ function runProductSearch() {
     if (name && !d.건명.toLowerCase().includes(name)) return false;
     if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
     if (factory && d.공장 !== factory) return false;
-    if (status && (d.검사 || '미검사') !== status) return false;
+    if (status) {
+      if (status === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
+      else if (status === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
+      else if ((d.검사 || '미검사') !== status) return false;
+    }
     if (fromDate || toDate) {
       const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
       if (!ref) return false;
