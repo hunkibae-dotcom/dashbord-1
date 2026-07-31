@@ -2866,6 +2866,7 @@
         const sheet = document.getElementById('itemEditSheet');
         if (!sheet) return;
         sheet.style.display = 'flex';
+        _armBackTrap();
         requestAnimationFrame(() => {
             sheet.style.opacity = '1';
             const inner = sheet.querySelector('.ie-inner');
