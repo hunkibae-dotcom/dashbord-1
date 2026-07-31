@@ -1913,10 +1913,11 @@ function runProductSearch() {
   const fromStr = document.getElementById('psFrom').value;
   const toStr = document.getElementById('psTo').value;
   const factory = document.getElementById('psFactory').value;
+  const status = document.getElementById('psStatus').value;
   const fromDate = parseInputDate(fromStr);
   const toDate = parseInputDate(toStr);
 
-  const hasFilter = code || name || color || fromStr || toStr || factory;
+  const hasFilter = code || name || color || fromStr || toStr || factory || status;
   const tbody = document.getElementById('psTableBody');
   const noData = document.getElementById('psNoData');
   const summary = document.getElementById('psSummary');
