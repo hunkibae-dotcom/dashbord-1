@@ -2163,20 +2163,29 @@
         if (!date)   { fb.textContent = '등록일자를 선택하세요.'; fb.style.color = '#FF4444'; return; }
         if (!worker) { fb.textContent = '작업자를 입력하세요.'; fb.style.color = '#FF4444'; return; }
 
+        // 용역인원 정규화: "2" → "용역2명", "용역2" → "용역2명", "용역2명" → 유지
+        let memoNorm = memo;
+        if (/^\d+$/.test(memo)) {
+            memoNorm = '용역' + memo + '명';
+        } else if (/^용역\s*\d+$/.test(memo)) {
+            memoNorm = memo.replace(/용역\s*(\d+)/, '용역$1명');
+        }
+
         const namedCount = worker.split(/[,·]/).map(s => s.trim()).filter(Boolean).length;
-        const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
+        const svcMatch = memoNorm.match(/용역\s*:?\s*(\d+)\s*명/);
         const total = namedCount + (svcMatch ? parseInt(svcMatch[1]) : 0);
+        const totalStr = total + '명';
 
         fb.textContent = '등록 중...'; fb.style.color = 'var(--text-sub)';
         btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
         try {
-            await fetch(GAS_URL + '?' + new URLSearchParams({ action:'addWorkLog', date, dept, worker, memo, total }),
+            await fetch(GAS_URL + '?' + new URLSearchParams({ action:'addWorkLog', date, dept, worker, memo: memoNorm, total: totalStr }),
                 { signal: AbortSignal.timeout(15000) }).then(r => r.text());
             localStorage.setItem('workLog_lastDept', dept);
             fb.textContent = '등록 완료되었습니다.'; fb.style.color = '#00E676';
             // 재동기화 전까지 화면에 바로 보이도록 로컬 캐시에도 즉시 반영
             if (!rawWorkLogRows || rawWorkLogRows.length < 1) rawWorkLogRows = [['등록일자','부서','작업자','비고','총 인원']];
-            rawWorkLogRows.push([date, dept, worker, memo, total]);
+            rawWorkLogRows.push([date, dept, worker, memoNorm, totalStr]);
             processTodayWorkers(rawWorkLogRows);
             setTimeout(closeWorkerInputModal, 700);
         } catch (e) {
