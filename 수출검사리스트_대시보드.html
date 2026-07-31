@@ -3433,6 +3433,27 @@ if ('serviceWorker' in navigator) {
     <i class="fa-solid fa-chevron-up text-[13px]"></i>
   </button>
 
+  <!-- 제품검색 서브메뉴 (포장강화 shell.html과 동일 UI: 네비 위 팝업) -->
+  <div id="mSearchSubMenu" style="position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
+    <button onclick="closeMSearchSub();openScanView()"
+        style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+        <i class="fa-solid fa-barcode" style="color:#FF9100;font-size:16px;width:20px;"></i>
+        바코드 스캔 검색
+    </button>
+    <button onclick="closeMSearchSub();openProductSearch()"
+        style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+        <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
+        수출 / 제품 상세검색
+    </button>
+    <button onclick="closeMSearchSub();openSpecModal()"
+        style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+        <i class="fa-solid fa-ruler-combined" style="color:#00E676;font-size:16px;width:20px;"></i>
+        제품 상세 스펙 조회
+    </button>
+  </div>
+  <!-- 서브메뉴 백드롭 -->
+  <div id="mSearchSubBd" onclick="closeMSearchSub()" style="position:fixed;inset:0;z-index:44;display:none;"></div>
+
   <!-- Bottom Nav (포장강화 shell.html과 동일하게 4항목: 홈·차트·제품검색·설정) -->
   <div id="mQualityBottomNav" class="shrink-0" style="background:var(--panel);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom,0px);">
     <div class="flex" style="height:84px;padding:0 4px;">
@@ -3444,7 +3465,7 @@ if ('serviceWorker' in navigator) {
         <span class="m-nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
         <span>차트</span>
       </button>
-      <button onclick="openProductSearch()" id="mNav2" class="mobile-nav-btn">
+      <button onclick="toggleMSearchSub()" id="mNav2" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
         <span>제품검색</span>
       </button>
