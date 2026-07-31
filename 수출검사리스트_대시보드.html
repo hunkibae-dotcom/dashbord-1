@@ -2964,7 +2964,63 @@ function confirmScanResult() {
 function resumeScan() {
   document.getElementById('scanResultBar').classList.add('hidden');
   document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+  _scanStartedAt = Date.now();
   if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
+}
+
+// ── 바코드 직접 입력 (인식 실패 대비) ──────────────────
+function openManualCodeModal() {
+  document.getElementById('manualCodeInput').value = '';
+  document.getElementById('manualColorInput').value = '';
+  document.getElementById('manualCodeModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('manualCodeInput').focus(), 80);
+}
+function closeManualCodeModal() {
+  document.getElementById('manualCodeModal').classList.add('hidden');
+}
+function confirmManualCode() {
+  const code = document.getElementById('manualCodeInput').value.trim();
+  const color = document.getElementById('manualColorInput').value.trim();
+  if (!code) { document.getElementById('manualCodeInput').focus(); return; }
+  closeManualCodeModal();
+  closeScanView();
+  document.getElementById('psCode').value = code;
+  document.getElementById('psColor').value = color;
+  openProductSearch();
+}
+
+// ── 폰 실제 회전 센서에 맞춰 스캔 UI만 반대로 돌려서 항상 똑바로 보이게 함 ──
+// 앱이 manifest에서 portrait로 고정돼있어 화면(Activity) 자체는 안 돌아가므로,
+// 대신 자이로/가속도 센서(deviceorientation)로 폰이 어느 쪽으로 기울었는지 감지해서
+// 가이드박스·상태문구·직접입력 버튼·결과바 버튼만 CSS로 반대 방향 회전시킨다.
+// (카메라 화면 자체는 그대로 둠 — 실제 세상 이미지는 폰이 도는 대로 자연스럽게 찍히기 때문)
+let _scanTiltDeg = 0;
+function _applyScanTilt(deg) {
+  // 프레임 · 상태문구 · 결과바가 이미 한 그룹(scanRotateGroup) 안에 순서대로 쌓여있으므로,
+  // 그 그룹 하나만 통째로 회전시키면 순서/간격이 항상 그대로 유지된다.
+  const group = document.getElementById('scanRotateGroup');
+  if (group) group.style.transform = deg ? ('rotate(' + deg + 'deg)') : '';
+}
+function _onScanDeviceOrientation(e) {
+  const g = e.gamma; // 좌우 기울기: -90(왼쪽으로 90도) ~ 90(오른쪽으로 90도)
+  if (g == null) return;
+  let deg = 0;
+  if (g > 35) deg = -90;       // 폰을 오른쪽으로 눕힘 → UI를 왼쪽으로 90도 돌려서 보정
+  else if (g < -35) deg = 90;  // 폰을 왼쪽으로 눕힘 → UI를 오른쪽으로 90도 돌려서 보정
+  if (deg === _scanTiltDeg) return;
+  _scanTiltDeg = deg;
+  _applyScanTilt(deg);
+}
+function _startScanTiltSensor() {
+  _scanTiltDeg = 0;
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', _onScanDeviceOrientation);
+  }
+}
+function _stopScanTiltSensor() {
+  window.removeEventListener('deviceorientation', _onScanDeviceOrientation);
+  _scanTiltDeg = 0;
+  _applyScanTilt(0);
 }
 
 // ===== INIT =====
