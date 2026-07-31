@@ -1953,7 +1953,7 @@ function renderProductSearchResults(results) {
 
   const renderCard = (d) => {
     const statusLabel = STATUS_LABEL(d);
-    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : 'pill-undone';
+    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : 'pill-undone';
     const facColor = d.공장 === 'cj1' ? '#3B82F6' : '#8B5CF6';
     const facBg    = d.공장 === 'cj1' ? '#EFF6FF' : '#F5F3FF';
     const cbm = d.CBM ? d.CBM.toFixed(3) + 'm³' : '';
