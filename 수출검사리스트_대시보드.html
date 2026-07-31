@@ -1339,10 +1339,13 @@ function renderFactoryPanels(data) {
     const undone = items.filter(d => d.검사 === '미검사');
     const done = items.filter(d => d.검사 === '검사').length;
     const yangji = items.filter(d => d.검사 === '양지').length;
+    const reinspect = items.filter(d => d.검사 === '재투입').length;
 
     const badgeEl = document.getElementById(key + 'Badge');
-    badgeEl.textContent = undone.length + '건 미검사' + (yangji > 0 ? ` · ${yangji}건 양지` : '');
-    badgeEl.className = 'pill ' + (undone.length === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
+    badgeEl.textContent = undone.length + '건 미검사'
+      + (reinspect > 0 ? ` · ${reinspect}건 재투입` : '')
+      + (yangji > 0 ? ` · ${yangji}건 양지` : '');
+    badgeEl.className = 'pill ' + (undone.length === 0 && reinspect === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
 
     renderSidebarFlyout(key, items, done, undone.length);
 
