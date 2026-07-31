@@ -2269,65 +2269,165 @@ function renderMobileKPIs() {
   }
 }
 
-function openKpiDetail(type) {
-  const sheet = document.getElementById('kpiDetailSheet');
+// ── KPI 상세 바텀시트 상태 ──────────────────────────────────────
+let _kpiDetailItems = [], _kpiDetailType = '';
+let _kpiDetailSortField = '납기일', _kpiDetailSortDir = 'asc';
+
+function _kpiFmtDate(raw) {
+  if (!raw || raw === '-' || raw === '—') return '—';
+  const s = raw.toString().replace(/\./g, '-').replace(/\s/g, '');
+  const d = new Date(s + 'T00:00:00');
+  if (isNaN(d)) return raw;
+  const DAY = ['일','월','화','수','목','금','토'];
+  return (d.getMonth()+1) + '/' + d.getDate() + '(' + DAY[d.getDay()] + ')';
+}
+
+function _kpiDetailToggleSearch() {
+  const row = document.getElementById('kpiDetailSearchRow');
+  const inp = document.getElementById('kpiDetailSearchInput');
+  if (!row) return;
+  if (row.style.display === 'none') {
+    row.style.display = 'block';
+    setTimeout(() => inp && inp.focus(), 60);
+  } else {
+    row.style.display = 'none';
+    if (inp) inp.value = '';
+    _kpiDetailRender();
+  }
+}
+
+function _kpiDetailSetSort(field) {
+  if (_kpiDetailSortField === field) {
+    _kpiDetailSortDir = _kpiDetailSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _kpiDetailSortField = field;
+    _kpiDetailSortDir = 'asc';
+  }
+  _updateKpiSortButtons();
+  _kpiDetailRender();
+}
+
+function _updateKpiSortButtons() {
+  ['납기일', '포장일'].forEach(f => {
+    const btn = document.getElementById('kpiSortBtn_' + f);
+    if (!btn) return;
+    const active = _kpiDetailSortField === f;
+    btn.textContent = f + (active ? (_kpiDetailSortDir === 'asc' ? ' ↑' : ' ↓') : '');
+    btn.style.background = active ? '#EFF6FF' : '#F8FAFC';
+    btn.style.color      = active ? '#1D4ED8'  : '#64748B';
+    btn.style.borderColor= active ? '#BFDBFE'  : '#E2E8F0';
+  });
+}
+
+function _kpiDetailRender() {
   const title = document.getElementById('kpiDetailTitle');
   const body  = document.getElementById('kpiDetailBody');
-  if (!sheet || !title || !body) return;
+  if (!body) return;
 
   const facLabel = mFactory === 'cj1' ? ' (충주1)' : mFactory === 'cj2' ? ' (충주2)' : '';
-  let items = [], heading = '', dateField = '포장일', colorField = null;
+  const query = ((document.getElementById('kpiDetailSearchInput') || {}).value || '').trim().toLowerCase();
+
+  let items = [..._kpiDetailItems];
+  if (query) {
+    items = items.filter(d =>
+      (d.건명     ||'').toLowerCase().includes(query) ||
+      (d.단품코드 ||'').toLowerCase().includes(query) ||
+      (d.색상     ||'').toLowerCase().includes(query) ||
+      (d.단품명칭 ||'').toLowerCase().includes(query)
+    );
+  }
+
+  if (_kpiDetailType === 'today') {
+    items.sort((a, b) => {
+      const fa = a.공장 === 'cj1' ? 0 : 1, fb = b.공장 === 'cj1' ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      const da = a[_kpiDetailSortField] || '', db = b[_kpiDetailSortField] || '';
+      const cmp = da.localeCompare(db);
+      return _kpiDetailSortDir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  if (title) {
+    const heading = _kpiDetailType === 'today' ? '금일 포장 현황' : '검사 완료 누적 현황';
+    title.textContent = heading + facLabel + ' (' + items.length + '건)';
+  }
+
+  if (!items.length) {
+    body.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px 0;font-size:14px;">' + (query ? '검색 결과 없음' : '데이터 없음') + '</div>';
+    return;
+  }
+
+  const cj1items = items.filter(d => d.공장 === 'cj1');
+  const cj2items = items.filter(d => d.공장 === 'cj2');
+
+  const renderGroup = (list, label) => {
+    if (!list.length) return '';
+    return `<div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #F1F5F9;">${label} · ${list.length}건</div>
+      ${list.map(d => {
+        const status = d.검사 || '미검사';
+        const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : '#EF4444';
+        const dateRow = _kpiDetailType === 'today'
+          ? `<div style="display:flex;gap:14px;margin-top:4px;">
+               <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">납기</span> ${_kpiFmtDate(d.납기일)}</span>
+               <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">포장</span> ${_kpiFmtDate(d.포장일)}</span>
+             </div>` : '';
+        return `<div style="padding:9px 0;border-bottom:1px solid #F8FAFC;">
+          <div style="display:flex;align-items:flex-start;gap:8px;">
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
+              <div style="font-size:11.5px;color:#94A3B8;margin-top:2px;">${d.단품코드 || '—'} · ${d.색상 || '—'} · ${d.수량 || 0}개</div>
+              ${dateRow}
+            </div>
+            <span style="font-size:10.5px;font-weight:700;color:${sc};white-space:nowrap;flex-shrink:0;margin-top:2px;">${status}</span>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  };
+  body.innerHTML = renderGroup(cj1items, '충주1') + renderGroup(cj2items, '충주2');
+}
+
+function openKpiDetail(type) {
+  const sheet = document.getElementById('kpiDetailSheet');
+  if (!sheet) return;
+
+  _kpiDetailType = type;
+  const facLabel = mFactory === 'cj1' ? ' (충주1)' : mFactory === 'cj2' ? ' (충주2)' : '';
+  const searchBtn = document.getElementById('kpiDetailSearchBtn');
+  const sortBar   = document.getElementById('kpiDetailSortBar');
+  const searchRow = document.getElementById('kpiDetailSearchRow');
+  const searchInput = document.getElementById('kpiDetailSearchInput');
+
+  // 검색/정렬 바 초기화
+  if (searchRow)  searchRow.style.display = 'none';
+  if (searchInput) searchInput.value = '';
 
   if (type === 'today') {
-    heading = '금일 포장 현황' + facLabel;
-    items = allData.filter(d => {
+    _kpiDetailItems = allData.filter(d => {
       if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
       if (mFactory !== 'all' && d.공장 !== mFactory) return false;
       return true;
-    }).sort((a, b) => {
-      const fa = a.공장 === 'cj1' ? 0 : 1, fb = b.공장 === 'cj1' ? 0 : 1;
-      return fa - fb || (a.건명 || '').localeCompare(b.건명 || '');
     });
-  } else if (type === 'accum') {
-    heading = '검사 완료 누적 현황' + facLabel;
-    const accumAll = [...allData.filter(d => d.검사 === '검사'), ...archiveRows];
-    items = accumAll.filter(d => mFactory === 'all' || d.공장 === mFactory)
-      .sort((a, b) => {
-        const da = a[dateField] || '', db = b[dateField] || '';
-        return db.localeCompare(da);
-      });
-  }
-
-  title.textContent = heading + ' (' + items.length + '건)';
-
-  if (!items.length) {
-    body.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px 0;font-size:14px;">데이터 없음</div>';
+    _kpiDetailSortField = '납기일';
+    _kpiDetailSortDir   = 'asc';
+    if (searchBtn) searchBtn.style.display = '';
+    if (sortBar)   sortBar.style.display   = 'flex';
+    _updateKpiSortButtons();
   } else {
-    const cj1items = items.filter(d => d.공장 === 'cj1');
-    const cj2items = items.filter(d => d.공장 === 'cj2');
-    const renderGroup = (list, label) => {
-      if (!list.length) return '';
-      return `<div style="margin-bottom:16px;">
-        <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #F1F5F9;">${label} · ${list.length}건</div>
-        ${list.map(d => {
-          const status = d.검사 || '미검사';
-          const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : '#EF4444';
-          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC;">
-            <div style="flex:1;min-width:0;">
-              <div style="font-size:13.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
-              <div style="font-size:11.5px;color:#94A3B8;margin-top:2px;">${d.단품코드 || '—'} · ${d.색상 || '—'} · ${d.수량 || 0}개</div>
-            </div>
-            <span style="font-size:10.5px;font-weight:700;color:${sc};white-space:nowrap;">${status}</span>
-          </div>`;
-        }).join('')}
-      </div>`;
-    };
-    body.innerHTML = renderGroup(cj1items, '충주1') + renderGroup(cj2items, '충주2');
+    if (searchBtn) searchBtn.style.display = 'none';
+    if (sortBar)   sortBar.style.display   = 'none';
+    if (type === 'accum') {
+      const accumAll = [...allData.filter(d => d.검사 === '검사'), ...archiveRows];
+      _kpiDetailItems = accumAll.filter(d => mFactory === 'all' || d.공장 === mFactory)
+        .sort((a, b) => (b.포장일 || '').localeCompare(a.포장일 || ''));
+    }
   }
 
+  _kpiDetailRender();
   sheet.style.display = 'flex';
   requestAnimationFrame(() => {
     sheet.style.opacity = '1';
