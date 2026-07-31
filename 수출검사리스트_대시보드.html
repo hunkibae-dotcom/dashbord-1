@@ -2214,6 +2214,7 @@ function openMSettings() {
   const target = document.getElementById('mSettingsSyncTime');
   if (target) target.textContent = syncEl ? '마지막 동기화 ' + syncEl.textContent : '';
   document.getElementById('mSettingsModal').style.display = 'flex';
+  _armBackTrap();
 }
 function closeMSettings() {
   document.getElementById('mSettingsModal').style.display = 'none';
