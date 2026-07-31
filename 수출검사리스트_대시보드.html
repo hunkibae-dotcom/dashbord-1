@@ -2099,6 +2099,7 @@ function onSpecFieldEdit() {
 
 function openSpecModal(code) {
   document.getElementById('specModal').classList.remove('hidden');
+  _armBackTrap();
   const input = document.getElementById('specCodeInput');
   if (code) input.value = code;
   runSpecLookup();
