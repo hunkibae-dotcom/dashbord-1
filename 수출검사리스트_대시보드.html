@@ -2277,7 +2277,7 @@ function openKpiDetail(type) {
   if (type === 'today') {
     heading = '금일 포장 현황' + facLabel;
     items = allData.filter(d => {
-      if (d.검사 !== '미검사') return false;
+      if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
