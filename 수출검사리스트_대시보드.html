@@ -658,7 +658,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <select id="psStatus" onchange="runProductSearch()"
         style="background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;width:100%;">
         <option value="">진행상태 전체</option>
-        <option value="미검사">미검사</option>
+        <option value="진행_미검사">미검사 (진행중)</option>
+        <option value="미검사출고">미검사 (출고완료)</option>
         <option value="검사">검사완료</option>
         <option value="재투입">재투입</option>
         <option value="양지">양지(회수)</option>
