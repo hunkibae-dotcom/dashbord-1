@@ -614,7 +614,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;font-family:monospace;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <input id="psColor" type="text" oninput="runProductSearchDebounced()" placeholder="색상"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
         onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
@@ -623,11 +623,21 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <i class="fa-solid fa-calendar-days" style="font-size:11px;flex-shrink:0;color:var(--label);"></i>
         <span id="psDateBtnLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sub);">날짜 전체</span>
       </button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <select id="psFactory" onchange="runProductSearch()"
         style="background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;width:100%;">
         <option value="">공장 전체</option>
         <option value="cj1">충주1공장</option>
         <option value="cj2">충주2공장</option>
+      </select>
+      <select id="psStatus" onchange="runProductSearch()"
+        style="background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:12px;font-weight:600;cursor:pointer;outline:none;width:100%;">
+        <option value="">진행상태 전체</option>
+        <option value="미검사">미검사</option>
+        <option value="검사">검사완료</option>
+        <option value="재투입">재투입</option>
+        <option value="양지">양지(회수)</option>
       </select>
     </div>
   </div>
