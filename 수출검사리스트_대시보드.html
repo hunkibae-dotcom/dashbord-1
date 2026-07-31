@@ -1828,18 +1828,16 @@ function parseInputDate(str) {
 }
 
 function openProductSearch() {
-  document.getElementById('productSearchModal').classList.remove('hidden');
-  const inner = document.getElementById('psModalInner');
-  if (inner) {
-    const mob = window.innerWidth < 640;
-    inner.style.height = mob ? '100dvh' : 'auto';
-    inner.style.maxHeight = mob ? '100dvh' : '85vh';
-  }
+  const modal = document.getElementById('productSearchModal');
+  modal.style.transform = 'translateX(0)';
+  document.body.classList.add('m-lock');
   updatePsDateBtnLabel();
   runProductSearch();
 }
 function closeProductSearch() {
-  document.getElementById('productSearchModal').classList.add('hidden');
+  const modal = document.getElementById('productSearchModal');
+  modal.style.transform = 'translateX(100%)';
+  document.body.classList.remove('m-lock');
 }
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); }
