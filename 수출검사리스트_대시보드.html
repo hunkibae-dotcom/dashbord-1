@@ -2431,10 +2431,13 @@ function renderMobileFactoryPanels() {
     const items = allData.filter(d => d.공장 === key);
     const undone = items.filter(d => d.검사 === '미검사');
     const yangji = items.filter(d => d.검사 === '양지').length;
+    const reinspect = items.filter(d => d.검사 === '재투입').length;
     const badge = document.getElementById('mBadge' + sfx);
     if (badge) {
-      badge.textContent = undone.length + '건 미검사' + (yangji > 0 ? ` · ${yangji}건 양지` : '');
-      badge.className = 'pill ' + (undone.length === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
+      badge.textContent = undone.length + '건 미검사'
+        + (reinspect > 0 ? ` · ${reinspect}건 재투입` : '')
+        + (yangji > 0 ? ` · ${yangji}건 양지` : '');
+      badge.className = 'pill ' + (undone.length === 0 && reinspect === 0 && yangji === 0 ? 'pill-done' : 'pill-undone');
     }
     const panel = document.getElementById('mPanel' + sfx);
     if (!panel) return;
