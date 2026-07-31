@@ -106,10 +106,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .sel-field { background:var(--input-bg); border:1px solid var(--border); border-radius:9px; font-size:14.5px; padding:8px 10px; width:100%; outline:none; color:var(--text); }
   .sel-field:focus { border-color:#94A3B8; background:var(--panel); }
 
-  .tbl-row { border-bottom:1px solid #F1F5F9; }
-  .tbl-row:hover { background:#F8FAFC; }
+  .tbl-row { border-bottom:1px solid var(--border); }
+  .tbl-row:hover { background:var(--input-bg); }
 
-  .code-tag { font-family:ui-monospace,monospace; font-size:12.5px; background:#F1F5F9; color:#475569; padding:1.5px 6px; border-radius:5px; }
+  .code-tag { font-family:ui-monospace,monospace; font-size:12.5px; background:var(--icon-bg); color:var(--text-sub); padding:1.5px 6px; border-radius:5px; }
 
   @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.25} }
   .pulse-dot { animation:pulse-dot 2s infinite; }
