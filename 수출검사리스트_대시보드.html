@@ -2011,11 +2011,27 @@ function exportCSV(rows, filename, columns) {
 }
 
 const STATUS_LABEL = (d) => {
-  if (d.source === 'archive') return d.검사 === '검사' ? '출고완료' : '출고(미검사)';
+  if (d.source === 'archive') return d.검사 === '검사' ? '출고완료' : '미검사출고';
   if (d.검사 === '검사') return '진행중·검사완료';
   if (d.검사 === '양지') return '진행중·양지(회수)';
+  if (d.검사 === '재투입') return '진행중·재투입';
   return '진행중·미검사';
 };
+
+function _toggleTextExpand(el, e) {
+  if (e) e.stopPropagation();
+  if (el.dataset.expanded === '1') {
+    el.style.whiteSpace = 'nowrap';
+    el.style.overflow = 'hidden';
+    el.style.textOverflow = 'ellipsis';
+    el.dataset.expanded = '0';
+  } else {
+    el.style.whiteSpace = 'normal';
+    el.style.overflow = 'visible';
+    el.style.textOverflow = '';
+    el.dataset.expanded = '1';
+  }
+}
 
 function exportProductSearch() {
   exportCSV(lastSearchResults, `제품검색_${new Date().toISOString().slice(0,10)}.csv`, [
