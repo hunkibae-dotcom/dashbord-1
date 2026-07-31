@@ -1845,10 +1845,12 @@ window.addEventListener('keydown', (e) => {
 
 // ── 날짜 필터 팝업 ──
 function openPsDatePicker() {
-  document.getElementById('psDateModal').classList.remove('hidden');
+  const m = document.getElementById('psDateModal');
+  m.style.display = 'flex';
 }
 function closePsDatePicker() {
-  document.getElementById('psDateModal').classList.add('hidden');
+  const m = document.getElementById('psDateModal');
+  m.style.display = 'none';
 }
 function clearPsDate() {
   document.getElementById('psFrom').value = '';
