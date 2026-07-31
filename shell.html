@@ -582,6 +582,105 @@
         </div>
     </div>
 
+    <!-- ── 금일 작업 카드: 인원 투입 / 이력 보기 선택 시트 ──────── -->
+    <div id="workCardActionSheet" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeWorkCardActions()">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-users" style="color:#00B0FF;"></i> 금일 작업 인원
+                </span>
+                <button onclick="closeWorkCardActions()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <button onclick="openWorkerInputModal()" style="display:flex;align-items:center;gap:10px;padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--icon-bg);cursor:pointer;-webkit-tap-highlight-color:transparent;width:100%;text-align:left;">
+                <span style="width:38px;height:38px;border-radius:11px;background:rgba(0,176,255,.15);color:#00B0FF;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"><i class="fa-solid fa-user-plus"></i></span>
+                <span style="flex:1;min-width:0;">
+                    <span style="display:block;font-size:14px;font-weight:800;color:var(--text);">인원 투입</span>
+                    <span style="display:block;font-size:11px;color:var(--text-sub);margin-top:1px;">작업일지 시트에 오늘 투입 인원 등록</span>
+                </span>
+                <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--label);flex-shrink:0;"></i>
+            </button>
+            <button onclick="openWorkLogHistoryModal()" style="display:flex;align-items:center;gap:10px;padding:16px;border-radius:14px;border:1px solid var(--border);background:var(--icon-bg);cursor:pointer;-webkit-tap-highlight-color:transparent;width:100%;text-align:left;">
+                <span style="width:38px;height:38px;border-radius:11px;background:rgba(129,140,248,.15);color:#818CF8;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"><i class="fa-solid fa-calendar-days"></i></span>
+                <span style="flex:1;min-width:0;">
+                    <span style="display:block;font-size:14px;font-weight:800;color:var(--text);">이력 보기</span>
+                    <span style="display:block;font-size:11px;color:var(--text-sub);margin-top:1px;">일별·주별·월별 용역 인원 현황 조회</span>
+                </span>
+                <i class="fa-solid fa-chevron-right" style="font-size:11px;color:var(--label);flex-shrink:0;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ── 인원 투입 입력창 ─────────────────────────────── -->
+    <div id="workerInputModal" style="position:fixed;inset:0;z-index:51;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeWorkerInputModal()">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-user-plus" style="color:#00B0FF;"></i> 인원 투입
+                </span>
+                <button onclick="closeWorkerInputModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div>
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">등록일자</div>
+                <input id="wiDate" type="date" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">부서</div>
+                <input id="wiDept" type="text" placeholder="예: 품질보증팀" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">작업자 <span style="color:var(--label);font-weight:400;">(여러 명은 쉼표로 구분)</span></div>
+                <input id="wiWorker" type="text" placeholder="예: 배훈기, 김기원" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">비고 <span style="color:var(--label);font-weight:400;">(용역 인원은 "용역N명" 형식으로 입력)</span></div>
+                <input id="wiMemo" type="text" placeholder="예: 용역2명" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')submitWorkerInput()">
+            </div>
+            <div id="wiFeedback" style="font-size:11.5px;color:var(--text-sub);min-height:14px;"></div>
+            <button id="wiSaveBtn" onclick="submitWorkerInput()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
+                <i class="fa-solid fa-check"></i> 등록
+            </button>
+        </div>
+    </div>
+
+    <!-- ── 용역 인원 이력 보기 (PC INFORM 카드3와 동일 데이터) ──── -->
+    <div id="workLogHistoryModal" style="position:fixed;inset:0;z-index:51;display:none;flex-direction:column;background:var(--bg);">
+        <div style="padding:10px 16px;position:relative;z-index:2;display:flex;align-items:center;gap:8px;background:var(--panel);box-shadow:0 1px 0 var(--border);flex-shrink:0;">
+            <button onclick="closeWorkLogHistoryModal()" style="width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size:16px;font-weight:800;color:var(--text);flex:1;">용역 인원 현황</span>
+            <button onclick="downloadWorkLogHistoryCsv()" style="width:36px;height:36px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;">
+                <i class="fa-solid fa-file-arrow-down"></i>
+            </button>
+        </div>
+        <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;">
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
+                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">총 인원(연인원)</div>
+                    <div id="wlhTotalHeadcount" style="font-size:18px;font-weight:800;color:var(--text);">0명</div>
+                </div>
+                <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
+                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">총 용역 인원</div>
+                    <div id="wlhTotalService" style="font-size:18px;font-weight:800;color:#818CF8;">0명</div>
+                </div>
+                <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
+                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">작업일수</div>
+                    <div id="wlhTotalDays" style="font-size:18px;font-weight:800;color:var(--text);">0일</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;background:var(--icon-bg);padding:4px;border-radius:12px;margin-bottom:14px;width:fit-content;">
+                <button id="wlhTab_daily" onclick="setWorkLogHistoryMode('daily')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">일별</button>
+                <button id="wlhTab_weekly" onclick="setWorkLogHistoryMode('weekly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">주간별</button>
+                <button id="wlhTab_monthly" onclick="setWorkLogHistoryMode('monthly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">월간별</button>
+            </div>
+            <div id="workLogHistoryList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+    </div>
+
     <!-- ── 뷰: 바코드 스캔 ──────────────────────────────── -->
     <!-- 회전은 CSS 트릭이 아니라 실제 폰 회전 센서(Screen Orientation API)를 그대로 따라감 —
          openScanView/closeScanView에서 잠금을 풀었다 다시 잠근다 -->
