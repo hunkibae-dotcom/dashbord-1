@@ -1840,6 +1840,7 @@
                                             state.workLogRows = jsonObj[sheetName];
                                             renderCard1WorkerDisplay();
                                             updatePrevDayCard();
+                                            renderWorkLogSummaryCard();
                                         }
                                     } else if (ALLOWED_SHEETS.some(name => sheetName.includes(name))) {
                                         const sheetRows = jsonObj[sheetName];
