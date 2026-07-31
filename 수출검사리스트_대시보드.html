@@ -2710,9 +2710,9 @@ function renderMobileList() {
         <div class="flex items-start justify-between mb-2.5">
           <div style="flex:1;min-width:0;margin-right:10px;">
             <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;">${d.건명}</div>
-            <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;">${d.단품명칭 || '—'}</div>
+            <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기">${d.단품명칭 || '—'}</div>
           </div>
-          <span class="pill ${isDone?'pill-done':isYangji?'pill-yangji':'pill-undone'} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${isDone?'fa-check':isYangji?'fa-rotate-left':'fa-xmark'}" style="font-size:9px;"></i> ${d.검사}</span>
+          <span class="pill ${pillCls} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${pillIcon}" style="font-size:9px;"></i> ${pillText}</span>
         </div>
         <div class="flex items-center flex-wrap" style="gap:6px;">
           <span class="rounded-lg font-bold ${fCls}" style="font-size:10px;padding:2px 8px;">${fIsCj1?'충주1':'충주2'}</span>
