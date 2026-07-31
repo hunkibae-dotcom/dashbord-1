@@ -3022,6 +3022,7 @@ function openManualCodeModal() {
   document.getElementById('manualColorInput').value = '';
   document.getElementById('manualCodeModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('manualCodeInput').focus(), 80);
+  _armBackTrap();
 }
 function closeManualCodeModal() {
   document.getElementById('manualCodeModal').classList.add('hidden');
