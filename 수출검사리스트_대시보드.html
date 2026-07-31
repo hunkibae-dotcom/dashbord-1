@@ -158,6 +158,30 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   html.dark #mTab_home .border-slate-100, html.dark #mTab_list .border-slate-100,
   html.dark #mTab_home .border-slate-50, html.dark #mToTopBtn { border-color: var(--border) !important; }
 
+  /* 다크모드: 연결 상태 배지 */
+  html.dark #mConnBadge { background:rgba(251,146,60,.15) !important; color:#FB923C !important; border-color:rgba(251,146,60,.3) !important; }
+
+  /* 다크모드: KPI 카드 아이콘 배경 */
+  html.dark .m-kpi-c { background:rgba(14,165,233,.18) !important; }
+  html.dark .m-kpi-r { background:rgba(239,68,68,.18)  !important; }
+  html.dark .m-kpi-g { background:rgba(34,197,94,.18)  !important; }
+  html.dark .m-kpi-v { background:rgba(139,92,246,.18) !important; }
+  html.dark .m-kpi-a { background:rgba(245,158,11,.18) !important; }
+
+  /* 다크모드: 납기임박 공장 패널 아이콘 · 개별보기 버튼 */
+  html.dark .m-fi-bl { background:rgba(59,130,246,.18) !important; }
+  html.dark .m-fi-vi { background:rgba(139,92,246,.18) !important; }
+  html.dark .m-fb-bl { color:#60A5FA !important; background:rgba(59,130,246,.15) !important; border-color:rgba(59,130,246,.35) !important; }
+  html.dark .m-fb-vi { color:#A78BFA !important; background:rgba(139,92,246,.15) !important; border-color:rgba(139,92,246,.35) !important; }
+
+  /* 다크모드: 차트탭 카드 */
+  html.dark #mTab_chart .bg-white { background:var(--panel) !important; }
+  html.dark #mTab_chart .text-slate-900,
+  html.dark #mTab_chart .text-slate-800 { color:var(--text) !important; }
+
+  /* 다크모드: KPI 바텀시트 */
+  html.dark .kpiDetailInner { background:var(--panel) !important; }
+
   html.dark #productSearchModal .tbl-row { border-color: var(--border) !important; }
   html.dark #productSearchModal .tbl-row:hover { background: var(--input-bg) !important; }
   html.dark #mTab_home .bg-slate-100, html.dark #mTab_list .bg-slate-100, html.dark #productSearchModal .bg-slate-100,
