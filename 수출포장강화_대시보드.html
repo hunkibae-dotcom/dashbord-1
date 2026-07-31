@@ -5242,6 +5242,14 @@
             const _totalCount = _wrmCount;
             const _extraCount = _totalCount - _wrmWorkers.length;
 
+            // 용역인원 메모 정규화: "2" → "용역2명", "용역2" → "용역2명"
+            let memoNorm = memo;
+            if (/^\d+$/.test(memo)) {
+                memoNorm = '용역' + memo + '명';
+            } else if (/^용역\s*\d+$/.test(memo)) {
+                memoNorm = memo.replace(/용역\s*(\d+)/, '용역$1명');
+            }
+
             // localStorage 저장
             const logs = getWorkerLogs();
             const now = new Date();
@@ -5252,7 +5260,7 @@
                 count: _totalCount,
                 extraCount: _extraCount,
                 workers: [..._wrmWorkers],
-                memo,
+                memo: memoNorm,
                 registeredAt: date + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
             };
             logs.push(record);
@@ -5272,10 +5280,10 @@
                     action: 'addWorkerLog',
                     date,
                     dept,
-                    totalCount: String(record.count),
+                    totalCount: String(record.count) + '명',
                     extraCount: String(record.extraCount),
                     workers: JSON.stringify(record.workers),
-                    memo
+                    memo: memoNorm
                 });
                 const res = await fetch(scriptUrl + '?' + params.toString(), { signal: controller.signal });
                 clearTimeout(timeoutId);
