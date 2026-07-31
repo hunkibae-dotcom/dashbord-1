@@ -2494,6 +2494,7 @@ function openKpiDetail(type) {
 
   _kpiDetailRender();
   sheet.style.display = 'flex';
+  _armBackTrap();
   requestAnimationFrame(() => {
     sheet.style.opacity = '1';
     sheet.querySelector('.kpiDetailInner').style.transform = 'translateY(0)';
