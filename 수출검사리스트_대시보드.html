@@ -2784,6 +2784,7 @@ async function openScanView() {
   _zxingLastTry = 0;
   _loadZXing(function(){});
   _startScanTiltSensor();
+  _armBackTrap();
   await _startScan();
 }
 function closeScanView() {
