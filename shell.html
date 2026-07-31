@@ -648,8 +648,14 @@
                 <input id="wiDept" type="text" placeholder="예: 품질보증팀" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
             </div>
             <div>
-                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">작업자 <span style="color:var(--label);font-weight:400;">(여러 명은 쉼표로 구분)</span></div>
-                <input id="wiWorker" type="text" placeholder="예: 배훈기, 김기원" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">작업자 <span style="color:var(--label);font-weight:400;">(이름 입력 후 Enter 또는 추가)</span></div>
+                <div style="display:flex;gap:6px;">
+                    <input id="wiWorkerInput" type="text" placeholder="이름 입력"
+                        style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;"
+                        onkeydown="if(event.key==='Enter'){event.preventDefault();wiAddWorker()}">
+                    <button onclick="wiAddWorker()" style="-webkit-appearance:none;appearance:none;padding:0 16px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">추가</button>
+                </div>
+                <div id="wiWorkerChips" style="display:flex;flex-wrap:wrap;gap:5px;min-height:0;margin-top:7px;"></div>
             </div>
             <div>
                 <div style="font-size:11px;color:var(--text-sub);margin-bottom:3px;font-weight:600;">외 인원</div>
