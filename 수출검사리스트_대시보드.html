@@ -2764,6 +2764,7 @@ async function _startScan() {
     const fmts = await BarcodeDetector.getSupportedFormats().catch(() => ['code_128','code_39','ean_13','qr_code','code_93','data_matrix']);
     _scanDetector = new BarcodeDetector({ formats: fmts });
     document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+    _scanStartedAt = Date.now();
     _scanRaf = requestAnimationFrame(_scanTick);
   } catch (e) {
     document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
