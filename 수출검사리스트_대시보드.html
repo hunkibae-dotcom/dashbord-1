@@ -1914,7 +1914,7 @@ function renderProductSearchResults(results) {
   const noData = document.getElementById('psNoData');
   const summary = document.getElementById('psSummary');
 
-  noData.classList.toggle('hidden', results.length > 0);
+  noData.style.display = results.length > 0 ? 'none' : '';
   if (!results.length) { tbody.innerHTML = ''; summary.innerHTML = ''; return; }
 
   const inspected = results.filter(d => d.검사 === '검사').length;
@@ -1922,11 +1922,11 @@ function renderProductSearchResults(results) {
   const shippedQty = shipped.reduce((s, d) => s + (d.수량 || 0), 0);
   const uniqueCodes = new Set(results.map(d => d.단품코드).filter(Boolean)).size;
 
-  summary.innerHTML = `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">검색결과</div><div class="text-[15px] font-extrabold text-slate-900 truncate">${results.length.toLocaleString()}건</div></div>
-    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">고유 단품코드</div><div class="text-[15px] font-extrabold text-slate-900 truncate">${uniqueCodes.toLocaleString()}개</div></div>
-    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">검사 완료 이력</div><div class="text-[15px] font-extrabold text-emerald-600 truncate">${inspected.toLocaleString()}건</div></div>
-    <div class="border border-slate-200 rounded-xl p-2.5"><div class="text-[10.5px] text-slate-400">출고(이력) 수량</div><div class="text-[15px] font-extrabold text-accent-600 truncate">${shippedQty.toLocaleString()}개 · ${shipped.length.toLocaleString()}건</div></div>
+  summary.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검색결과 <strong style="color:var(--text);font-size:12px;">${results.length.toLocaleString()}</strong>건</span>
+    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">단품코드 <strong style="color:var(--text);font-size:12px;">${uniqueCodes.toLocaleString()}</strong>개</span>
+    <span style="background:#DCFCE7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검사완료 <strong style="color:#15803D;font-size:12px;">${inspected.toLocaleString()}</strong>건</span>
+    <span style="background:#EDE9FE;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">출고이력 <strong style="color:#6D5CE8;font-size:12px;">${shippedQty.toLocaleString()}</strong>개 · <strong style="color:#6D5CE8;">${shipped.length.toLocaleString()}</strong>건</span>
   </div>`;
 
   const sorted = [...results].sort((a, b) => {
