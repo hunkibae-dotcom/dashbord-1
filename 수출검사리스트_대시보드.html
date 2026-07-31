@@ -1236,15 +1236,16 @@ function computeStats(items) {
   const total = items.length;
   const done = items.filter(d => d.검사 === '검사').length;
   const yangji = items.filter(d => d.검사 === '양지').length;
+  const reinspect = items.filter(d => d.검사 === '재투입').length;
   const undone = items.filter(d => d.검사 === '미검사').length;
-  // 금일 포장: 포장일 <= 오늘 AND 아직 미검사인 항목
+  // 금일 포장: 포장일 <= 오늘 AND 아직 미검사 또는 재투입인 항목
   const packedToday = items.filter(d => {
-    if (d.검사 !== '미검사') return false;
+    if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
     if (!d.포장일) return false;
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
   }).length;
-  return { total, done, undone, yangji, packedToday };
+  return { total, done, undone, yangji, reinspect, packedToday };
 }
 
 // KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
