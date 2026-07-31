@@ -1539,6 +1539,16 @@
 
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
+    let _sfStatusFilter = '';
+    function setSfStatus(val) {
+        _sfStatusFilter = val;
+        document.querySelectorAll('.sf-sbtn').forEach(btn => {
+            const active = btn.dataset.sv === val;
+            btn.style.background = active ? '#00B0FF' : 'var(--icon-bg)';
+            btn.style.color      = active ? '#0B0F19'  : 'var(--text-sub)';
+        });
+        runSearch();
+    }
     function setSfDateField(field) {
         _sfDateField = field;
         [['date','sfDateFieldDate'], ['dueDate','sfDateFieldDue'], ['regDate','sfDateFieldReg']].forEach(([v, id]) => {
