@@ -2095,6 +2095,211 @@
         localStorage.setItem('todayWorkers', total || workers.length);
     }
 
+    // ── 금일 작업 카드: 인원 투입 / 이력 보기 ────────────────
+    function openWorkCardActions() {
+        document.getElementById('workCardActionSheet').style.display = 'flex';
+    }
+    function closeWorkCardActions() {
+        document.getElementById('workCardActionSheet').style.display = 'none';
+    }
+
+    function openWorkerInputModal() {
+        closeWorkCardActions();
+        document.getElementById('wiDate').value = todayStr();
+        document.getElementById('wiDept').value = localStorage.getItem('workLog_lastDept') || '품질보증팀';
+        document.getElementById('wiWorker').value = '';
+        document.getElementById('wiMemo').value = '';
+        const fb = document.getElementById('wiFeedback');
+        fb.textContent = ''; fb.style.color = 'var(--text-sub)';
+        document.getElementById('workerInputModal').style.display = 'flex';
+    }
+    function closeWorkerInputModal() {
+        document.getElementById('workerInputModal').style.display = 'none';
+    }
+
+    async function submitWorkerInput() {
+        const date   = document.getElementById('wiDate').value;
+        const dept   = document.getElementById('wiDept').value.trim() || '품질보증팀';
+        const worker = document.getElementById('wiWorker').value.trim();
+        const memo   = document.getElementById('wiMemo').value.trim();
+        const fb  = document.getElementById('wiFeedback');
+        const btn = document.getElementById('wiSaveBtn');
+        if (!date)   { fb.textContent = '등록일자를 선택하세요.'; fb.style.color = '#FF4444'; return; }
+        if (!worker) { fb.textContent = '작업자를 입력하세요.'; fb.style.color = '#FF4444'; return; }
+
+        const namedCount = worker.split(/[,·]/).map(s => s.trim()).filter(Boolean).length;
+        const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
+        const total = namedCount + (svcMatch ? parseInt(svcMatch[1]) : 0);
+
+        fb.textContent = '등록 중...'; fb.style.color = 'var(--text-sub)';
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
+        try {
+            await fetch(GAS_URL + '?' + new URLSearchParams({ action:'addWorkLog', date, dept, worker, memo, total }),
+                { signal: AbortSignal.timeout(15000) }).then(r => r.text());
+            localStorage.setItem('workLog_lastDept', dept);
+            fb.textContent = '등록 완료되었습니다.'; fb.style.color = '#00E676';
+            // 재동기화 전까지 화면에 바로 보이도록 로컬 캐시에도 즉시 반영
+            if (!rawWorkLogRows || rawWorkLogRows.length < 1) rawWorkLogRows = [['등록일자','부서','작업자','비고','총 인원']];
+            rawWorkLogRows.push([date, dept, worker, memo, total]);
+            processTodayWorkers(rawWorkLogRows);
+            setTimeout(closeWorkerInputModal, 700);
+        } catch (e) {
+            fb.textContent = '등록 실패 — 네트워크를 확인하세요.'; fb.style.color = '#FF4444';
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 등록';
+        }
+    }
+
+    // ── 작업일지 전체 파싱 (이력 보기 모달용) ────────────────
+    // ISO datetime("...T15:00:00.000Z")은 스프레드시트 타임존(KST) 기준 로컬 날짜로 변환해야
+    // 하루 밀리지 않는다 — _nd()의 단순 substring 방식과 달리 new Date()로 로컬 변환.
+    function _wlmNormDate(raw) {
+        if (!raw) return '';
+        const s = raw.toString().trim();
+        if (!s || s === '-') return '';
+        if (s.includes('T') || s.includes('GMT')) {
+            const d = new Date(s);
+            if (!isNaN(d.getTime())) return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        }
+        return _nd(s);
+    }
+
+    function _parseAllWorkLogRows() {
+        const rows = rawWorkLogRows;
+        if (!rows || rows.length < 2) return [];
+        const hdr = rows[0].map(h => (h||'').toString().trim());
+        let iDate=-1, iDept=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+        hdr.forEach((h, i) => {
+            const hn = h.replace(/\s/g,'');
+            if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
+            if (iDept   < 0 && hn==='부서')                    iDept   = i;
+            if (iWorker < 0 && hn==='작업자')                  iWorker = i;
+            if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
+            if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+        });
+        if (iDate < 0) { iDate=0; iDept=1; iWorker=2; iMemo=3; iTotal=4; }
+        const out = [];
+        for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            if (!r || r.every(c => !c || !c.toString().trim())) continue;
+            const date = _wlmNormDate((r[iDate]||'').toString().trim());
+            if (!date) continue;
+            const memo = (r[iMemo]||'').toString().trim();
+            const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
+            out.push({
+                date,
+                dept:    (r[iDept]  ||'').toString().trim() || '미지정',
+                worker:  (r[iWorker]||'').toString().trim(),
+                memo,
+                total:   parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0,
+                service: svcMatch ? parseInt(svcMatch[1]) : 0
+            });
+        }
+        return out;
+    }
+
+    // 'YYYY-MM-DD' 날짜가 속한 주의 월요일 날짜를 같은 형식으로 반환
+    function _wlmStartOfWeek(dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const dow = dt.getDay();
+        dt.setDate(dt.getDate() + (dow === 0 ? -6 : 1 - dow));
+        return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+    }
+
+    function _wlmGroupByPeriod(rows, mode) {
+        const groups = {};
+        const DOW = ['일', '월', '화', '수', '목', '금', '토'];
+        rows.forEach(r => {
+            let key, label;
+            if (mode === 'daily') {
+                key = r.date;
+                const [y, m, d] = r.date.split('-').map(Number);
+                label = r.date + ' (' + DOW[new Date(y, m - 1, d).getDay()] + ')';
+            } else if (mode === 'weekly') {
+                const wkStart = _wlmStartOfWeek(r.date);
+                const [y, m, d] = wkStart.split('-').map(Number);
+                const endDt = new Date(y, m - 1, d); endDt.setDate(endDt.getDate() + 6);
+                const endStr = endDt.getFullYear() + '-' + String(endDt.getMonth() + 1).padStart(2, '0') + '-' + String(endDt.getDate()).padStart(2, '0');
+                key = wkStart;
+                label = wkStart + ' ~ ' + endStr;
+            } else {
+                key = r.date.slice(0, 7);
+                label = key.replace('-', '년 ') + '월';
+            }
+            if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, service: 0, workers: new Set(), depts: new Set() };
+            groups[key].total   += r.total;
+            groups[key].service += r.service;
+            if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
+            if (r.dept) groups[key].depts.add(r.dept);
+        });
+        return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+    }
+
+    let _wlhMode = 'daily';
+    let _wlhGroups = [];
+
+    function openWorkLogHistoryModal() {
+        closeWorkCardActions();
+        document.getElementById('workLogHistoryModal').style.display = 'flex';
+        setWorkLogHistoryMode(_wlhMode);
+    }
+    function closeWorkLogHistoryModal() {
+        document.getElementById('workLogHistoryModal').style.display = 'none';
+    }
+    function setWorkLogHistoryMode(mode) {
+        _wlhMode = mode;
+        ['daily','weekly','monthly'].forEach(m => {
+            const btn = document.getElementById('wlhTab_' + m);
+            if (!btn) return;
+            if (m === mode) { btn.style.background = '#00B0FF'; btn.style.color = '#0B0F19'; }
+            else { btn.style.background = 'transparent'; btn.style.color = 'var(--text-sub)'; }
+        });
+        renderWorkLogHistoryList();
+    }
+    function renderWorkLogHistoryList() {
+        const rows = _parseAllWorkLogRows();
+        const totalHeadcount = rows.reduce((s, r) => s + r.total, 0);
+        const totalService   = rows.reduce((s, r) => s + r.service, 0);
+        const days = new Set(rows.map(r => r.date)).size;
+        document.getElementById('wlhTotalHeadcount').textContent = totalHeadcount + '명';
+        document.getElementById('wlhTotalService').textContent   = totalService + '명';
+        document.getElementById('wlhTotalDays').textContent      = days + '일';
+
+        _wlhGroups = _wlmGroupByPeriod(rows, _wlhMode);
+        const el = document.getElementById('workLogHistoryList');
+        if (!_wlhGroups.length) {
+            el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">작업일지 데이터가 없습니다</div>';
+            return;
+        }
+        el.innerHTML = _wlhGroups.map(g => `
+            <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:13px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                    <span style="font-size:13px;font-weight:800;color:var(--text);">${g.label}</span>
+                    <span style="font-size:12px;font-weight:700;color:var(--text);">총 ${g.total}명</span>
+                </div>
+                ${g.service > 0 ? `<div style="font-size:11px;color:#818CF8;font-weight:700;margin-bottom:4px;">용역 ${g.service}명</div>` : ''}
+                <div style="font-size:12px;color:var(--text-sub);">${[...g.workers].join(' · ') || '—'}</div>
+                <div style="font-size:10px;color:var(--label);margin-top:4px;">${[...g.depts].join(', ') || '—'}</div>
+            </div>
+        `).join('');
+    }
+    function downloadWorkLogHistoryCsv() {
+        if (!_wlhGroups.length) return;
+        const modeLabel = _wlhMode === 'daily' ? '일별' : _wlhMode === 'weekly' ? '주간별' : '월간별';
+        let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
+        _wlhGroups.forEach(g => {
+            csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = '용역인원현황_' + modeLabel + '.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
     // ── 홈 버튼 ───────────────────────────────────────────
     function goHome() {
         closeView();
