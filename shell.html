@@ -1627,6 +1627,7 @@
                 if (dateFrom && dv < dateFrom) return false;
                 if (dateTo   && dv > dateTo)   return false;
             }
+            if (_sfStatusFilter && (d.status || '') !== _sfStatusFilter) return false;
             return true;
         });
         // 수출 표준품 현황 항목 중 충주공장 재고에 동일 code+round가 있으면 제외 (중복 방지)
