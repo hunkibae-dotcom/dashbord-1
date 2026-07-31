@@ -2271,6 +2271,7 @@ function setMStatus(s) {
   document.getElementById('mSDone')?.classList.toggle('active', s === '검사');
   document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사');
   document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
+  document.getElementById('mSArchiveUndone')?.classList.toggle('active', s === '미검사출고');
   renderMobileList();
 }
 
