@@ -1975,23 +1975,25 @@ function renderProductSearchResults(results) {
       d.포장일 ? `포장 ${d.포장일}` : '',
       d.검사일 ? `검사 ${d.검사일}` : ''
     ].filter(Boolean).join('  ·  ');
-    return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+    return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
         <span class="pill ${statusCls}" style="font-size:11px;">${statusLabel}</span>
-        <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 8px;border-radius:6px;">${d.공장명}</span>
+        <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 9px;border-radius:20px;">${d.공장명}</span>
       </div>
-      <div style="font-size:13px;font-weight:700;color:var(--text-sub);margin-bottom:2px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;min-width:0;">
-        <span style="font-family:monospace;font-size:14px;font-weight:700;color:#2563EB;white-space:nowrap;">${d.단품코드 || '—'}</span>
-        <span style="font-size:11.5px;color:var(--label);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기">${d.단품명칭 || ''}</span>
+      <div style="font-size:12px;font-weight:600;color:var(--text-sub);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;min-width:0;">
+        <span style="font-family:monospace;font-size:14px;font-weight:800;color:#2563EB;white-space:nowrap;flex-shrink:0;">${d.단품코드 || '—'}</span>
+        <span style="font-size:11px;color:var(--label);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기">${d.단품명칭 || ''}</span>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:5px;">
-        ${d.색상 ? `<span style="font-size:11px;font-weight:600;background:var(--icon-bg);color:var(--text-sub);padding:2px 8px;border-radius:6px;">${d.색상}</span>` : ''}
-        <span style="font-size:11px;font-weight:600;background:var(--icon-bg);color:var(--text-sub);padding:2px 8px;border-radius:6px;">${d.수량 || 0}개</span>
-        ${cbm ? `<span style="font-size:11px;font-weight:600;background:#EFF6FF;color:#2563EB;padding:2px 8px;border-radius:6px;">${cbm}</span>` : ''}
-        ${d.BOM ? `<span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;${d.BOM==='Y'?'background:#DCFCE7;color:#15803D':'background:#FEE2E2;color:#B91C1C'}">BOM ${d.BOM}</span>` : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          ${d.색상 ? `<span style="font-size:11px;font-weight:700;background:var(--panel);color:var(--text-sub);padding:3px 9px;border-radius:20px;border:1px solid var(--border);">${d.색상}</span>` : ''}
+          <span style="font-size:11px;font-weight:700;background:var(--panel);color:var(--text-sub);padding:3px 9px;border-radius:20px;border:1px solid var(--border);">${d.수량 || 0}개</span>
+          ${cbm ? `<span style="font-size:11px;font-weight:700;background:#EFF6FF;color:#2563EB;padding:3px 9px;border-radius:20px;">${cbm}</span>` : ''}
+          ${d.BOM ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;${d.BOM==='Y'?'background:#DCFCE7;color:#15803D':'background:#FEE2E2;color:#B91C1C'}">BOM ${d.BOM}</span>` : ''}
+        </div>
+        ${dates ? `<div style="font-size:10px;font-family:monospace;color:var(--label);white-space:nowrap;flex-shrink:0;margin-left:8px;">${dates}</div>` : ''}
       </div>
-      ${dates ? `<div style="font-size:11px;font-family:monospace;color:var(--label);">${dates}</div>` : ''}
     </div>`;
   };
 
