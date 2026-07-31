@@ -2146,12 +2146,43 @@
         document.getElementById('workCardActionSheet').style.display = 'none';
     }
 
+    // ── 작업자 칩 관리 ──────────────────────────────────────
+    let _wiWorkers = [];
+
+    function wiAddWorker() {
+        const inp = document.getElementById('wiWorkerInput');
+        const name = inp.value.trim();
+        if (!name) return;
+        if (!_wiWorkers.includes(name)) _wiWorkers.push(name);
+        inp.value = '';
+        _renderWiChips();
+        inp.focus();
+    }
+
+    function wiRemoveWorker(idx) {
+        _wiWorkers.splice(idx, 1);
+        _renderWiChips();
+    }
+
+    function _renderWiChips() {
+        const area = document.getElementById('wiWorkerChips');
+        if (!area) return;
+        area.innerHTML = _wiWorkers.map((w, i) =>
+            `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--icon-bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--text);">
+                ${w}
+                <button onclick="wiRemoveWorker(${i})" style="-webkit-appearance:none;appearance:none;border:none;background:none;color:var(--text-sub);font-size:14px;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;">×</button>
+            </span>`
+        ).join('');
+    }
+
     function openWorkerInputModal() {
         closeWorkCardActions();
+        _wiWorkers = [];
         document.getElementById('wiDate').value = todayStr();
         document.getElementById('wiDept').value = localStorage.getItem('workLog_lastDept') || '품질보증팀';
-        document.getElementById('wiWorker').value = '';
+        document.getElementById('wiWorkerInput').value = '';
         document.getElementById('wiMemo').value = '';
+        _renderWiChips();
         const fb = document.getElementById('wiFeedback');
         fb.textContent = ''; fb.style.color = 'var(--text-sub)';
         document.getElementById('workerInputModal').style.display = 'flex';
