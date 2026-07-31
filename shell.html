@@ -984,7 +984,7 @@
         document.getElementById('kpiPendingQty').textContent   = pending.reduce((s,d)=>s+d.qty,0).toLocaleString() || '0';
         document.getElementById('kpiPendingItems').textContent = pending.length;
         document.getElementById('kpiTodayDate').textContent    = fmtKr(todayStr());
-        const w = localStorage.getItem('todayWorkers_'+todayStr()) || localStorage.getItem('todayWorkers') || '0';
+        const w = localStorage.getItem('todayWorkers_'+todayStr()) || '—';
         document.getElementById('kpiWorkers').textContent = w;
     }
 
