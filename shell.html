@@ -466,6 +466,22 @@
                         style="flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;">
                 </div>
             </div>
+            <!-- 진행 상태 필터 -->
+            <div style="margin-top:2px;">
+                <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+                    <i class="fa-solid fa-filter" style="font-size:10px;"></i> 진행 상태
+                </div>
+                <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+                    <button class="sf-sbtn" data-sv=""       onclick="setSfStatus('')"        style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;white-space:nowrap;">전체</button>
+                    <button class="sf-sbtn" data-sv="미입고"  onclick="setSfStatus('미입고')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미입고</button>
+                    <button class="sf-sbtn" data-sv="미확인"  onclick="setSfStatus('미확인')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미확인</button>
+                    <button class="sf-sbtn" data-sv="철물"    onclick="setSfStatus('철물')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">철물</button>
+                    <button class="sf-sbtn" data-sv="포장대기" onclick="setSfStatus('포장대기')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장대기</button>
+                    <button class="sf-sbtn" data-sv="포장완료" onclick="setSfStatus('포장완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장완료</button>
+                    <button class="sf-sbtn" data-sv="출고완료" onclick="setSfStatus('출고완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">출고완료</button>
+                    <button class="sf-sbtn" data-sv="피킹"    onclick="setSfStatus('피킹')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">피킹</button>
+                </div>
+            </div>
             <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;">
                 <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
                 <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;">초기화</button>
