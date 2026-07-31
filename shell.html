@@ -2702,6 +2702,49 @@
             history.replaceState(null, '', location.pathname);
         }
     });
+
+    // ── PWA 설치 배너 ──────────────────────────────────────
+    (function() {
+        let _deferredPrompt = null, _banner = null;
+        function _showBanner() {
+            if (_banner) return;
+            _banner = document.createElement('div');
+            _banner.style.cssText = 'position:fixed;bottom:72px;left:50%;transform:translateX(-50%);z-index:9999;' +
+                'background:var(--panel);border:1px solid var(--border);' +
+                'border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;' +
+                'box-shadow:0 8px 32px rgba(0,0,0,.6);width:calc(100% - 40px);max-width:380px;' +
+                'animation:pwaBannerIn .35s cubic-bezier(.4,0,.2,1);';
+            _banner.innerHTML =
+                '<div style="width:36px;height:36px;background:#0B0F19;border:1px solid var(--border);border-radius:9px;' +
+                'display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:900;color:#fff;font-family:Segoe UI,Arial,sans-serif;">F</div>' +
+                '<div style="flex:1;min-width:0;">' +
+                '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:1px;">F.WORK 앱 설치</div>' +
+                '<div style="font-size:11px;color:var(--text-sub);">홈 화면에 추가하여 앱처럼 사용</div></div>' +
+                '<button id="shellInstallBtn" style="-webkit-appearance:none;appearance:none;background:#0284C7;color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">설치</button>' +
+                '<button id="shellInstallDismiss" style="-webkit-appearance:none;appearance:none;background:none;border:none;color:var(--text-sub);cursor:pointer;padding:4px;font-size:16px;line-height:1;">✕</button>';
+            const st = document.createElement('style');
+            st.textContent = '@keyframes pwaBannerIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+            document.head.appendChild(st);
+            document.body.appendChild(_banner);
+            document.getElementById('shellInstallBtn').addEventListener('click', () => {
+                if (!_deferredPrompt) return;
+                _deferredPrompt.prompt();
+                _deferredPrompt.userChoice.then(r => { if (r.outcome === 'accepted') _hideBanner(); _deferredPrompt = null; });
+            });
+            document.getElementById('shellInstallDismiss').addEventListener('click', () => {
+                _hideBanner();
+                try { sessionStorage.setItem('shellInstallDismissed','1'); } catch(e) {}
+            });
+        }
+        function _hideBanner() { if (_banner) { _banner.remove(); _banner = null; } }
+        window.addEventListener('beforeinstallprompt', e => {
+            e.preventDefault(); _deferredPrompt = e;
+            try { if (sessionStorage.getItem('shellInstallDismissed')) return; } catch(e) {}
+            if (window.matchMedia('(display-mode: standalone)').matches) return;
+            setTimeout(_showBanner, 2000);
+        });
+        window.addEventListener('appinstalled', _hideBanner);
+    })();
     </script>
 <!-- 품목 통합 수정 바텀시트 -->
 <div id="itemEditSheet" onclick="if(event.target===this)closeItemEdit()"
