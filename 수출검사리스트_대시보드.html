@@ -2724,9 +2724,11 @@ function onMSliderScroll() {
   });
 }
 
-// ===== 바코드 스캐너 (실시간 카메라 + 크롭 + ZXing TRY_HARDER 폴백) =====
+// ===== 바코드 스캐너 (실시간 카메라 + 크롭 + ZXing TRY_HARDER + OCR 폴백) =====
 let _scanStream = null, _scanRaf = null, _scanDetector = null;
 let _zxingReader = null, _zxingLoading = false, _zxingLastTry = 0;
+let _scanStartedAt = 0, _ocrRunning = false, _lastOcrAttempt = 0;
+let _tessLoading = false, _ocrWorkerPromise = null;
 
 async function openScanView() {
   document.getElementById('viewScan').classList.remove('hidden');
@@ -2734,10 +2736,12 @@ async function openScanView() {
   document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
   _zxingLastTry = 0;
   _loadZXing(function(){});
+  _startScanTiltSensor();
   await _startScan();
 }
 function closeScanView() {
   _stopScan();
+  _stopScanTiltSensor();
   document.getElementById('viewScan').classList.add('hidden');
 }
 
