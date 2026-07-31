@@ -778,27 +778,54 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
   <video id="scanVideo" autoplay playsinline muted class="flex-1 w-full object-cover"></video>
   <div class="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none">
-    <div id="scanFrame" class="relative" style="width:82%;max-width:360px;height:110px;">
-      <div class="absolute inset-0 rounded-xl" style="border:2px solid #6366F1;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
-        <span class="absolute w-5 h-5" style="top:-2px;left:-2px;border-top:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:4px 0 0 0;"></span>
-        <span class="absolute w-5 h-5" style="top:-2px;right:-2px;border-top:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 4px 0 0;"></span>
-        <span class="absolute w-5 h-5" style="bottom:-2px;left:-2px;border-bottom:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:0 0 0 4px;"></span>
-        <span class="absolute w-5 h-5" style="bottom:-2px;right:-2px;border-bottom:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 0 4px 0;"></span>
-        <div id="scanLaser" class="absolute" style="left:4px;right:4px;height:2px;top:50%;background:linear-gradient(to right,transparent,#F43F5E,transparent);border-radius:2px;animation:scanLaser 1.8s ease-in-out infinite;"></div>
+    <!-- 프레임 + 상태문구 + 결과바를 하나의 그룹으로 묶어서, 폰을 기울이면 이 그룹 전체를 통째로 회전시킨다
+         (개별로 따로 돌리면 순서/간격이 깨져서, 미리 올바르게 쌓여있는 판 자체를 그대로 돌리는 방식으로 함) -->
+    <div id="scanRotateGroup" class="w-full flex flex-col items-center" style="gap:20px;transition:transform .25s ease;">
+      <div id="scanFrame" class="relative" style="width:82%;max-width:360px;height:110px;">
+        <div class="absolute inset-0 rounded-xl" style="border:2px solid #6366F1;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
+          <span class="absolute w-5 h-5" style="top:-2px;left:-2px;border-top:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:4px 0 0 0;"></span>
+          <span class="absolute w-5 h-5" style="top:-2px;right:-2px;border-top:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 4px 0 0;"></span>
+          <span class="absolute w-5 h-5" style="bottom:-2px;left:-2px;border-bottom:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:0 0 0 4px;"></span>
+          <span class="absolute w-5 h-5" style="bottom:-2px;right:-2px;border-bottom:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 0 4px 0;"></span>
+          <div id="scanLaser" class="absolute" style="left:4px;right:4px;height:2px;top:50%;background:linear-gradient(to right,transparent,#F43F5E,transparent);border-radius:2px;animation:scanLaser 1.8s ease-in-out infinite;"></div>
+        </div>
+      </div>
+      <!-- 상태문구 + 직접입력 버튼 (position:relative — 프레임의 box-shadow가 position:absolute라
+           CSS상 항상 그 위에 그려지는데, 이렇게 해야 정상적으로 위로 올라와 안 어두워짐) -->
+      <div id="scanOverlayControls" class="flex flex-col items-center" style="position:relative;gap:12px;">
+        <div id="scanStatus" class="text-white text-[13px] font-bold bg-black/50 px-4 py-1.5 rounded-full" style="white-space:nowrap;">카메라 초기화 중...</div>
+        <!-- 직접 입력 (바코드가 찢어지는 등 인식이 아예 안 될 때 대비) -->
+        <button id="manualInputBtn" onclick="openManualCodeModal()" class="text-white text-[12.5px] font-bold flex items-center gap-1.5" style="pointer-events:auto;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:8px 16px;border-radius:20px;white-space:nowrap;">
+          <i class="fa-solid fa-keyboard" style="font-size:12px;"></i> 직접 입력
+        </button>
+      </div>
+      <!-- 결과 바 (스캔 성공 시, 같은 그룹 안에서 상태문구 바로 아래에 나옴) -->
+      <div id="scanResultBar" class="hidden p-3 bg-black/80 border border-white/10 rounded-2xl" style="position:relative;pointer-events:auto;">
+        <div id="scanResultInner" class="flex items-center gap-2.5">
+          <div class="min-w-0">
+            <div class="text-[10px] text-white/50 mb-0.5" style="white-space:nowrap;">스캔 결과</div>
+            <div id="scanResultText" class="text-[14px] font-extrabold text-indigo-400 font-mono truncate" style="max-width:200px;"></div>
+          </div>
+          <button onclick="confirmScanResult()" class="shrink-0 bg-indigo-500 text-white rounded-xl px-4 py-2.5 text-[13px] font-extrabold" style="white-space:nowrap;">검색</button>
+          <button onclick="resumeScan()" class="shrink-0 bg-white/15 text-white rounded-xl px-3.5 py-2.5 text-[13px] font-bold" style="white-space:nowrap;">재스캔</button>
+        </div>
       </div>
     </div>
-    <div id="scanStatus" class="mt-5 text-white text-[13px] font-bold bg-black/50 px-4 py-1.5 rounded-full">카메라 초기화 중...</div>
   </div>
   <canvas id="scanCanvas" class="hidden"></canvas>
-  <div id="scanResultBar" class="hidden absolute bottom-6 left-0 right-0 z-10 p-3 bg-black/80 border-t border-white/10">
-    <div class="flex items-center gap-2.5">
-      <div class="flex-1 min-w-0">
-        <div class="text-[10px] text-white/50 mb-0.5">스캔 결과</div>
-        <div id="scanResultText" class="text-[14px] font-extrabold text-indigo-400 font-mono truncate"></div>
-      </div>
-      <button onclick="confirmScanResult()" class="shrink-0 bg-indigo-500 text-white rounded-xl px-4 py-2.5 text-[13px] font-extrabold">검색</button>
-      <button onclick="resumeScan()" class="shrink-0 bg-white/15 text-white rounded-xl px-3.5 py-2.5 text-[13px] font-bold">재스캔</button>
+</div>
+
+<!-- 바코드 직접 입력 모달 -->
+<div id="manualCodeModal" class="hidden fixed inset-0 z-[120] flex items-end justify-center" style="background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+  <div class="bg-white rounded-t-3xl p-5 w-full flex flex-col gap-3" style="max-width:520px;">
+    <div class="flex items-center justify-between">
+      <span class="text-[16px] font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-keyboard text-indigo-500"></i> 직접 입력</span>
+      <button onclick="closeManualCodeModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <div class="text-[12px] text-slate-400" style="margin-top:-4px;">바코드가 찢어졌거나 인식이 안 될 때 직접 입력하세요</div>
+    <input id="manualCodeInput" type="text" placeholder="단품코드 (예: CAC2083SN)" class="in-field" style="padding-left:12px;">
+    <input id="manualColorInput" type="text" placeholder="색상 (예: WW, BK, SN)" class="in-field" style="padding-left:12px;" onkeydown="if(event.key==='Enter')confirmManualCode()">
+    <button onclick="confirmManualCode()" class="w-full bg-indigo-500 text-white rounded-xl py-3.5 text-[14px] font-extrabold">검색</button>
   </div>
 </div>
 <style>
