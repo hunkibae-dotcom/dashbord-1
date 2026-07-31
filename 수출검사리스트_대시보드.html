@@ -1086,7 +1086,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '양지' ? '양지(회수) ✓' : '검사상태';
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : '검사상태';
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
