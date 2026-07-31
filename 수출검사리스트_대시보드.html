@@ -3649,35 +3649,35 @@ if ('serviceWorker' in navigator) {
 <!-- KPI 상세 바텀시트 -->
 <div id="kpiDetailSheet" onclick="if(event.target===this)closeKpiDetail()"
      style="display:none;opacity:0;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.45);align-items:flex-end;transition:opacity .2s;">
-  <div class="kpiDetailInner" style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-height:82vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .22s cubic-bezier(.32,.72,0,1);">
+  <div class="kpiDetailInner" style="background:var(--panel);border-radius:20px 20px 0 0;width:100%;max-height:82vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .22s cubic-bezier(.32,.72,0,1);">
     <!-- 헤더 -->
-    <div style="padding:14px 16px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #F1F5F9;flex-shrink:0;">
-      <div style="width:32px;height:4px;background:#E2E8F0;border-radius:2px;flex-shrink:0;"></div>
+    <div style="padding:14px 16px 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="width:32px;height:4px;background:var(--border);border-radius:2px;flex-shrink:0;"></div>
       <button id="kpiDetailSearchBtn" onclick="_kpiDetailToggleSearch()" title="검색"
-        style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:4px 6px;color:#64748B;font-size:15px;cursor:pointer;flex-shrink:0;display:none;">
+        style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:4px 6px;color:var(--text-sub);font-size:15px;cursor:pointer;flex-shrink:0;display:none;">
         <i class="fa-solid fa-magnifying-glass"></i>
       </button>
-      <div id="kpiDetailTitle" style="font-size:14px;font-weight:700;color:#1E293B;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-      <button onclick="closeKpiDetail()" style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:4px;color:#94A3B8;font-size:18px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+      <div id="kpiDetailTitle" style="font-size:14px;font-weight:700;color:var(--text);flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+      <button onclick="closeKpiDetail()" style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:4px;color:var(--label);font-size:18px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <!-- 검색 입력 행 (숨김) -->
-    <div id="kpiDetailSearchRow" style="display:none;padding:8px 16px;border-bottom:1px solid #F1F5F9;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:8px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:7px 12px;">
-        <i class="fa-solid fa-magnifying-glass" style="color:#94A3B8;font-size:12px;flex-shrink:0;"></i>
+    <div id="kpiDetailSearchRow" style="display:none;padding:8px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+      <div style="display:flex;align-items:center;gap:8px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:7px 12px;">
+        <i class="fa-solid fa-magnifying-glass" style="color:var(--label);font-size:12px;flex-shrink:0;"></i>
         <input id="kpiDetailSearchInput" type="text" placeholder="건명 · 코드 · 색상 검색..."
           oninput="_kpiDetailRender()"
-          style="flex:1;background:none;border:none;outline:none;font-size:13px;color:#1E293B;min-width:0;">
+          style="flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);min-width:0;">
         <button onclick="document.getElementById('kpiDetailSearchInput').value='';_kpiDetailRender()"
-          style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:0;color:#94A3B8;font-size:13px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+          style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:0;color:var(--label);font-size:13px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
     <!-- 정렬 바 (숨김, today 타입만 표시) -->
-    <div id="kpiDetailSortBar" style="display:none;padding:7px 16px;border-bottom:1px solid #F1F5F9;flex-shrink:0;align-items:center;gap:6px;">
-      <span style="font-size:11px;color:#94A3B8;font-weight:600;flex-shrink:0;">정렬</span>
+    <div id="kpiDetailSortBar" style="display:none;padding:7px 16px;border-bottom:1px solid var(--border);flex-shrink:0;align-items:center;gap:6px;">
+      <span style="font-size:11px;color:var(--label);font-weight:600;flex-shrink:0;">정렬</span>
       <button id="kpiSortBtn_납기일" onclick="_kpiDetailSetSort('납기일')"
         style="-webkit-appearance:none;appearance:none;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid #BFDBFE;cursor:pointer;background:#EFF6FF;color:#1D4ED8;">납기일 ↑</button>
       <button id="kpiSortBtn_포장일" onclick="_kpiDetailSetSort('포장일')"
-        style="-webkit-appearance:none;appearance:none;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid #E2E8F0;cursor:pointer;background:#F8FAFC;color:#64748B;">포장일</button>
+        style="-webkit-appearance:none;appearance:none;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid var(--border);cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
     </div>
     <div id="kpiDetailBody" style="overflow-y:auto;padding:12px 20px 32px;flex:1;"></div>
   </div>
