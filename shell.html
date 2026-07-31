@@ -1028,10 +1028,17 @@
                     _addItem((r[siC]||'').toString().trim(), (r[siR]||'').toString().trim()||'-', _pqty(r[siQ]));
                 }
             }
+            const totalBox = items.reduce((s, x) => s + x.qty, 0);
             list.innerHTML =
-                `<div style="display:flex;justify-content:space-between;align-items:center;padding:0 0 8px;border-bottom:1px solid var(--log-border);">
-                    <span style="font-size:10px;color:var(--text-sub);font-family:monospace;">${dateLabel}</span>
-                    <span style="font-size:12px;font-weight:700;color:#00B0FF;">작업인원 ${total || workers.length}명</span>
+                `<div style="padding:0 0 8px;border-bottom:1px solid var(--log-border);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                        <span style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;">${dateLabel}</span>
+                        <span style="font-size:11px;font-weight:700;color:#00B0FF;">작업인원 ${total || workers.length}명</span>
+                    </div>
+                    <div style="display:flex;gap:8px;">
+                        <span style="font-size:10px;font-weight:700;background:var(--icon-bg);color:#00E676;padding:3px 9px;border-radius:20px;">총 ${items.length}건</span>
+                        <span style="font-size:10px;font-weight:700;background:var(--icon-bg);color:#00B0FF;padding:3px 9px;border-radius:20px;">${totalBox.toLocaleString()} BOX</span>
+                    </div>
                 </div>` +
                 (parts.length ? `<div style="font-size:11px;color:var(--text-sub);padding:6px 0 8px;border-bottom:1px solid var(--log-border);">${parts.join(' · ')}</div>` : '') +
                 (items.length
