@@ -3360,9 +3360,9 @@ if ('serviceWorker' in navigator) {
       <div class="space-y-3">
 
         <div class="bg-white rounded-2xl overflow-hidden" data-mf="cj1" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
-          <div class="flex items-center justify-between px-4 py-3.5" style="border-bottom:1px solid #F1F5F9;">
+          <div class="flex items-center justify-between px-4 py-3.5" style="border-bottom:1px solid var(--border);">
             <div class="flex items-center gap-3">
-              <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background:#EFF6FF;">
+              <span class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 m-fi-bl" style="background:#EFF6FF;">
                 <i class="fa-solid fa-industry text-blue-500 text-[14px]"></i>
               </span>
               <div>
@@ -3372,7 +3372,7 @@ if ('serviceWorker' in navigator) {
             <div class="flex items-center gap-2">
               <span id="mBadge1" class="pill pill-undone" style="font-size:10.5px;">— 미검사</span>
               <button onclick="event.stopPropagation();setMFactory('cj1');setMStatus('');setMTab('list')"
-                style="font-size:10px;font-weight:700;color:#3B82F6;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:3px 8px;cursor:pointer;white-space:nowrap;">개별보기</button>
+                class="m-fb-bl" style="font-size:10px;font-weight:700;color:#3B82F6;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:3px 8px;cursor:pointer;white-space:nowrap;">개별보기</button>
             </div>
           </div>
           <div id="mPanel1" class="text-[13px] text-slate-400 text-center" style="padding:12px 16px;">로딩중...</div>
