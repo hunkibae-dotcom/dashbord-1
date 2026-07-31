@@ -3072,6 +3072,63 @@ function _stopScanTiltSensor() {
   _applyScanTilt(0);
 }
 
+// ── 폰 기본 뒤로가기 버튼 처리 ────────────────────────────
+// TWA(설치된 앱)에서 시스템 뒤로가기를 누르면 브라우저 히스토리를 그대로 따라가서
+// 열려있는 모달/화면 상관없이 F.WORK 메인으로 곧장 나가버리는 문제가 있었음.
+// 오버레이가 열릴 때마다 히스토리를 하나씩 쌓아두고(각 open* 함수의 _armBackTrap 호출),
+// 뒤로가기 = 그 오버레이 하나만 닫도록 가로챈다. 아무것도 열려있지 않은
+// 대시보드 초기화면에서는 "한번 더 누르면 앱 초기화면" 안내 후 2번째에만 실제로 나간다.
+function _armBackTrap() {
+  history.pushState({ fworkOverlay: true }, '', location.href);
+}
+function _closeTopOverlay() {
+  const displayOpen = (id) => {
+    const el = document.getElementById(id);
+    return !!el && (el.style.display === 'flex' || el.style.display === 'block');
+  };
+  const hiddenClassOpen = (id) => {
+    const el = document.getElementById(id);
+    return !!el && !el.classList.contains('hidden');
+  };
+  const transformOpen = (id) => {
+    const el = document.getElementById(id);
+    return !!el && (el.style.transform === 'translateX(0)' || el.style.transform === 'translateX(0px)');
+  };
+  if (displayOpen('mItemDetailModal'))  { closeMItemDetail();   return true; }
+  if (hiddenClassOpen('manualCodeModal')) { closeManualCodeModal(); return true; }
+  if (displayOpen('mSettingsModal'))    { closeMSettings();     return true; }
+  if (hiddenClassOpen('viewScan'))      { closeScanView();      return true; }
+  if (displayOpen('psDateModal'))       { closePsDatePicker();  return true; }
+  if (transformOpen('productSearchModal')) { closeProductSearch(); return true; }
+  if (hiddenClassOpen('specModal'))     { closeSpecModal();     return true; }
+  if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
+  return false;
+}
+function _showExitBackToast() {
+  let t = document.getElementById('exitBackToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'exitBackToast';
+    t.style.cssText = 'position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:rgba(20,24,32,.92);color:#fff;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:999px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;box-shadow:0 6px 20px rgba(0,0,0,.3);';
+    t.textContent = '뒤로가기를 한번 더 누르면 앱 초기화면으로 이동합니다';
+    document.body.appendChild(t);
+  }
+  t.style.opacity = '1';
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => { t.style.opacity = '0'; }, 1800);
+}
+let _backExitArmed = false, _backExitTimer = null;
+window.addEventListener('popstate', () => {
+  if (_closeTopOverlay()) return;
+  if (_backExitArmed) { window.location.href = './index.html'; return; }
+  _backExitArmed = true;
+  _showExitBackToast();
+  history.pushState({ fworkBase: true }, '', location.href);
+  clearTimeout(_backExitTimer);
+  _backExitTimer = setTimeout(() => { _backExitArmed = false; }, 2000);
+});
+history.pushState({ fworkBase: true }, '', location.href);
+
 // ===== INIT =====
 var _scanCodeHandled = false;
 loadData();
