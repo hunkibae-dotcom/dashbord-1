@@ -1885,7 +1885,7 @@ function runProductSearch() {
   if (!hasFilter) {
     tbody.innerHTML = '';
     summary.innerHTML = '';
-    noData.classList.remove('hidden');
+    noData.style.display = '';
     lastSearchResults = [];
     return;
   }
