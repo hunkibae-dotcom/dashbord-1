@@ -2789,6 +2789,7 @@ function renderMobileFactoryPanels() {
 
 function renderMobileCharts() {
   if (!isMobile()) return;
+  const c = _chartThemeColors();
   ['cj1', 'cj2'].forEach(key => {
     const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
     const archive = archiveRows.filter(d => d.공장 === key);
