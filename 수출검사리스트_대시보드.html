@@ -3427,7 +3427,16 @@ loadData();
 initMobile();
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js');
+  // updateViaCache:'none' — 기본값이면 브라우저가 service-worker.js 파일 자체를 HTTP
+  // 캐시로 응답할 수 있어서, 로직을 고쳐 올려도 한참 지나야(최대 24시간) 새 버전이
+  // 감지되는 경우가 있었다(스캐너 수정이 반영 안 되고 계속 예전 코드로 보이던 원인).
+  navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' });
+  var _swReloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (_swReloading) return;
+    _swReloading = true;
+    window.location.reload();
+  });
 }
 
 // F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈
