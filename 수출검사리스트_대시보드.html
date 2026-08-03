@@ -209,6 +209,18 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   html.dark #mTab_home [style*="color:#64748B"], html.dark #mTab_list [style*="color:#64748B"] { color: var(--text-sub) !important; }
   html.dark #mTab_home [style*="color:#94A3B8"], html.dark #mTab_list [style*="color:#94A3B8"] { color: var(--label) !important; }
   html.dark #mTab_home [style*="color:#334155"], html.dark #mTab_list [style*="color:#334155"] { color: var(--text) !important; }
+
+  /* 다크모드: hover 변형은 클래스 토큰이 달라 위 규칙들이 못 잡음 — 별도 지정 */
+  html.dark #specModal .hover\:bg-slate-100:hover, html.dark #mTab_list .hover\:bg-slate-100:hover, html.dark #manualCodeModal .hover\:bg-slate-100:hover { background: var(--icon-bg) !important; }
+  html.dark #specModal .hover\:text-slate-600:hover { color: var(--text) !important; }
+
+  /* 다크모드: 상세스펙 헤더 배지 글자색 */
+  html.dark #specModal .text-indigo-600 { color: #818CF8 !important; }
+
+  /* 다크모드: 바코드 직접입력 모달 (오버라이드 대상 컨테이너 목록에 없었음) */
+  html.dark #manualCodeModal .bg-white { background: var(--panel) !important; }
+  html.dark #manualCodeModal .text-slate-800 { color: var(--text) !important; }
+  html.dark #manualCodeModal .text-slate-400 { color: var(--label) !important; }
 </style>
 </head>
 <body class="font-sans antialiased min-h-screen">
