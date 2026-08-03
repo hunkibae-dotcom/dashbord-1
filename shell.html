@@ -2570,6 +2570,13 @@
             vid.srcObject = stream;
             await vid.play();
             _setupScanTorch(stream);
+            // getUserMedia 생성 시점의 advanced 제약은 기기별로 무시되는 경우가 많아,
+            // 스트림을 받은 트랙에 직접 한 번 더 걸어준다 — 연속 자동초점이 실제로 켜져야
+            // 카메라가 계속 흐릿하게 나오는 문제(화질 저하로 느껴지는 원인)가 해결된다.
+            const _vtrack = stream.getVideoTracks()[0];
+            if (_vtrack && typeof _vtrack.applyConstraints === 'function') {
+                _vtrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+            }
 
             if (!('BarcodeDetector' in window)) {
                 document.getElementById('scanStatus').textContent = '이 기기는 자동 스캔을 지원하지 않습니다';
