@@ -2991,6 +2991,15 @@ async function _startScan() {
 
 async function _scanTick() {
   if (!_scanStream || !_scanDetector) return;
+  // 매 애니메이션 프레임(초당 최대 60회)마다 4K 영상을 크롭+디코딩하면 메인스레드가
+  // 밀려서 카메라 프리뷰 자체가 끊기는 느낌이 난다 — 인식 시도 자체를 150ms 간격으로
+  // 늦춰도 사람이 느끼는 지연은 거의 없으면서 프레임 드랍은 크게 줄어든다.
+  const _now0 = Date.now();
+  if (_now0 - _lastDetectAttempt < 150) {
+    if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+    return;
+  }
+  _lastDetectAttempt = _now0;
   const vid = document.getElementById('scanVideo');
   const target = _cropToScanFrame(vid) || vid;
   try {
