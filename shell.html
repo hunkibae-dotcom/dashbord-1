@@ -2543,10 +2543,10 @@
         document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
         _zxingLastTry = 0;
         _loadZXing(function(){});
-        _startScanTiltSensor();
+        _resetScanRotation();
         await _startScan();
     }
-    function closeScanView() { _stopScan(); _stopScanTiltSensor(); closeView(); }
+    function closeScanView() { _stopScan(); closeView(); }
 
     async function _startScan() {
         try {
