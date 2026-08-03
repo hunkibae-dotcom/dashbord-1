@@ -2019,12 +2019,16 @@ function renderProductSearchResults(results) {
   if (tableContainer) tableContainer.style.display = isMob ? 'none' : '';
   if (cardContainer)  cardContainer.style.display  = isMob ? 'block' : 'none';
 
-  const renderRow = (d) => {
+  if (!window._mItemMap) window._mItemMap = {};
+
+  const renderRow = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
     const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : 'pill-undone';
     const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
     const cbmText = d.CBM ? d.CBM.toFixed(3) + ' m³' : '—';
-    return `<tr class="tbl-row">
+    const mik = 'mps_' + idx;
+    window._mItemMap[mik] = d;
+    return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;">
       <td class="py-2.5 pr-3"><span class="pill ${statusCls}">${statusLabel}</span></td>
       <td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span></td>
       <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
@@ -2039,7 +2043,7 @@ function renderProductSearchResults(results) {
     </tr>`;
   };
 
-  const renderCard = (d) => {
+  const renderCard = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
     const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : 'pill-undone';
     const facColor = d.공장 === 'cj1' ? '#3B82F6' : '#8B5CF6';
