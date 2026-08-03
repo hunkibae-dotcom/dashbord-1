@@ -2804,7 +2804,6 @@
         const raw = document.getElementById('scanResultText').textContent;
         const { code, color } = _parseBarcodeRaw(raw);
         _stopScan();
-        _stopScanTiltSensor();
         openView('viewSearch');
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
@@ -2836,7 +2835,6 @@
         if (!code) { document.getElementById('manualCodeInput').focus(); return; }
         closeManualCodeModal();
         _stopScan();
-        _stopScanTiltSensor();
         openView('viewSearch');
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
