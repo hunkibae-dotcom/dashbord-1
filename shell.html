@@ -1099,12 +1099,7 @@
                 if (d && d < today) dates.add(d);
             }
         }
-        if (allData && allData.length) {
-            allData.filter(d => d.isDone).forEach(d => {
-                const rd = _nd(d.regDate || '');
-                if (rd && rd < today) dates.add(rd);
-            });
-        }
+        // allData.isDone(출고 완료) 날짜는 사용하지 않음 — 출고 이력 날짜와 실제 작업일이 달라 잘못된 날짜가 기준이 됨
         return dates.size ? [...dates].sort().pop() : null;
     }
 

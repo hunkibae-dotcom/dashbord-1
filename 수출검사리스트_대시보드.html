@@ -2905,13 +2905,12 @@ async function openScanView() {
   document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
   _zxingLastTry = 0;
   _loadZXing(function(){});
-  _startScanTiltSensor();
+  _resetScanRotation();
   _armBackTrap();
   await _startScan();
 }
 function closeScanView() {
   _stopScan();
-  _stopScanTiltSensor();
   document.getElementById('viewScan').classList.add('hidden');
 }
 
