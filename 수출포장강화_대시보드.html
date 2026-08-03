@@ -6883,75 +6883,22 @@ function confirmManualCode() {
   switchToProductDetailView(code);
 }
 
-// ── 폰 실제 회전 센서에 맞춰 스캔 UI만 반대로 돌려서 항상 똑바로 보이게 함 ──
-// gamma 원값을 그대로 임계값과 비교하면 손떨림만으로도 임계값 부근에서 0도↔90도로
-// 계속 튀는 문제(과민 반응)와, 폰을 세워 든 자세(beta≈90도 부근)에서 센서 좌표계
-// 특이점 때문에 반대 방향으로 뒤집히는 문제가 있었다. 그래서
-// ① 저역통과 필터로 잔떨림을 걸러내고, ② 진입/복귀 임계값을 다르게 둬 경계에서
-// 계속 왕복하지 않도록(이력현상, hysteresis) 하고, ③ 새 각도가 일정 시간(dwell)
-// 이상 유지된 경우에만 실제로 반영해 순간적인 오독을 무시하도록 했다.
-let _scanTiltDeg = 0;
-let _scanTiltPending = 0;
-let _scanTiltPendingSince = 0;
-let _scanGammaSmoothed = 0;
-
-const SCAN_TILT_ENTER_DEG = 42;   // 이 각도를 넘어야 회전을 "시작"
-const SCAN_TILT_EXIT_DEG  = 20;   // 이 각도 아래로 내려와야 정방향으로 "복귀"
-const SCAN_TILT_DWELL_MS  = 250;  // 새 각도가 이 시간 이상 유지돼야 실제 반영
-const SCAN_TILT_SMOOTH    = 0.2;  // 지수이동평균 계수 (작을수록 부드럽지만 반응은 느려짐)
-
+// ── 스캔 UI 회전 (수동 버튼) ──────────────────────────────
+// 센서(deviceorientation) 기반 자동 회전은 손떨림·기울기 각도에 따라 예측 없이
+// 제멋대로 돌아가는 문제가 있어 완전히 제거했다. 대신 화면은 항상 고정해두고,
+// 사용자가 회전 버튼을 누를 때만 90도씩 돌아가게 한다 (0→90→180→270→0 순환).
+let _scanManualRotateDeg = 0;
 function _applyScanTilt(deg) {
   const group = document.getElementById('scanRotateGroup');
   if (group) group.style.transform = deg ? ('rotate(' + deg + 'deg)') : '';
 }
-function _onScanDeviceOrientation(e) {
-  const g = e.gamma;
-  if (g == null) return;
-
-  _scanGammaSmoothed += (g - _scanGammaSmoothed) * SCAN_TILT_SMOOTH;
-  const sg = _scanGammaSmoothed;
-
-  let candidate = _scanTiltDeg;
-  if (_scanTiltDeg === 0) {
-    if (sg > SCAN_TILT_ENTER_DEG) candidate = -90;
-    else if (sg < -SCAN_TILT_ENTER_DEG) candidate = 90;
-  } else if (Math.abs(sg) < SCAN_TILT_EXIT_DEG) {
-    candidate = 0;
-  } else if (sg > SCAN_TILT_ENTER_DEG) {
-    candidate = -90;
-  } else if (sg < -SCAN_TILT_ENTER_DEG) {
-    candidate = 90;
-  }
-
-  if (candidate === _scanTiltDeg) {
-    _scanTiltPending = _scanTiltDeg;
-    return;
-  }
-
-  const now = Date.now();
-  if (candidate !== _scanTiltPending) {
-    _scanTiltPending = candidate;
-    _scanTiltPendingSince = now;
-    return;
-  }
-  if (now - _scanTiltPendingSince >= SCAN_TILT_DWELL_MS) {
-    _scanTiltDeg = candidate;
-    _applyScanTilt(candidate);
-  }
+function _cycleScanRotation() {
+  _scanManualRotateDeg = (_scanManualRotateDeg + 90) % 360;
+  _applyScanTilt(_scanManualRotateDeg);
 }
-function _startScanTiltSensor() {
-  _scanTiltDeg = 0;
-  _scanTiltPending = 0;
-  _scanTiltPendingSince = 0;
-  _scanGammaSmoothed = 0;
-  if (window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', _onScanDeviceOrientation);
-  }
-}
-function _stopScanTiltSensor() {
-  window.removeEventListener('deviceorientation', _onScanDeviceOrientation);
-  _scanTiltDeg = 0;
-  _scanTiltPending = 0;
+function _resetScanRotation() {
+  _scanManualRotateDeg = 0;
+  _scanFrameBaseRect = null;
   _applyScanTilt(0);
 }
 </script>
