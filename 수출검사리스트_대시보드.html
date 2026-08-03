@@ -879,6 +879,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </div>
     </div>
   </div>
+  <!-- 화면이 이상한 방향으로 자동 회전되던 문제 때문에 자동 회전은 없애고, 누르면 90도로
+       돌아갔다가 다시 누르면 원래대로 돌아오는 버튼으로 대체함 (좌하단 고정 배치) -->
+  <button onclick="_cycleScanRotation()" class="absolute z-[6] flex items-center gap-1.5 text-white text-[11px] font-bold bg-white/10 border border-white/25 px-3 py-1.5 rounded-full" style="left:16px;bottom:24px;">
+    <i class="fa-solid fa-arrows-rotate text-[11px]"></i> 회전
+  </button>
   <canvas id="scanCanvas" class="hidden"></canvas>
 </div>
 
