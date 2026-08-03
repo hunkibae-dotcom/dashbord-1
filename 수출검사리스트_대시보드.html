@@ -3013,7 +3013,7 @@ function _getZXingReader() {
 // 좌표만 계속 캐싱해두고, 회전 중에는 그 값을 그대로 재사용한다.
 let _scanFrameBaseRect = null;
 function _getScanFrameRect(frame) {
-  if (_scanTiltDeg === 0) {
+  if (_scanManualRotateDeg === 0) {
     _scanFrameBaseRect = frame.getBoundingClientRect();
   }
   return _scanFrameBaseRect || frame.getBoundingClientRect();
