@@ -3004,43 +3004,45 @@ async function _startScan() {
 
 async function _scanTick() {
   if (!_scanStream || !_scanDetector) return;
-  // 매 애니메이션 프레임(초당 최대 60회)마다 4K 영상을 크롭+디코딩하면 메인스레드가
-  // 밀려서 카메라 프리뷰 자체가 끊기는 느낌이 난다 — 인식 시도 자체를 150ms 간격으로
-  // 늦춰도 사람이 느끼는 지연은 거의 없으면서 프레임 드랍은 크게 줄어든다.
-  const _now0 = Date.now();
-  if (_now0 - _lastDetectAttempt < 150) {
-    if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
-    return;
-  }
-  _lastDetectAttempt = _now0;
   const vid = document.getElementById('scanVideo');
-  const target = _cropToScanFrame(vid) || vid;
+
+  // 네이티브 디코더는 화면 전체에서 바코드를 스스로 찾아내는 성능이 좋고 비동기라
+  // 메인스레드를 안 막는다 — 가이드 박스 안에 딱 맞춰 대야만 잡히던 좁은 크롭 대신
+  // 화면 전체를 매 프레임 그대로 넘겨서, 가져다 대는 즉시(정렬 안 해도) 잡히게 한다.
+  // 이게 "10개 중 3개만 잡히던" 문제의 핵심 원인 — 그동안은 좁은 크롭 안에 바코드가
+  // 정확히 들어와야만 인식이 시도됐다.
   try {
-    const codes = await _scanDetector.detect(target);
+    const codes = await _scanDetector.detect(vid);
     if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
   } catch (e) {}
 
-  // 네이티브 인식이 계속 실패할 때 ZXing(TRY_HARDER)으로 주기적 재시도
-  if (target instanceof HTMLCanvasElement) {
-    const now = Date.now();
-    if (now - _zxingLastTry > 700) {
-      _zxingLastTry = now;
-      const reader = _getZXingReader();
-      if (reader) {
-        try {
-          const result = reader.decodeFromCanvas(target);
-          if (result) { _onScanDetect(result.getText()); return; }
-        } catch (e) { /* NotFoundException 등 — 계속 진행 */ }
+  // ZXing/OCR 폴백(크롭+디코딩)은 동기라 무거워서 150ms 간격으로만 시도 — 이 정도
+  // 간격은 사람이 느끼는 지연은 거의 없으면서 프리뷰가 끊기는 건 막아준다.
+  const now = Date.now();
+  if (now - _lastDetectAttempt >= 150) {
+    _lastDetectAttempt = now;
+    // ZXing은 반대로 좁혀서 넘기는 쪽이 유리해서(배경이 없어야 오래된 디코더가
+    // 헷갈리지 않음) 여기서만 가이드 박스 크롭을 사용
+    const target = _cropToScanFrame(vid) || vid;
+    if (target instanceof HTMLCanvasElement) {
+      if (now - _zxingLastTry > 700) {
+        _zxingLastTry = now;
+        const reader = _getZXingReader();
+        if (reader) {
+          try {
+            const result = reader.decodeFromCanvas(target);
+            if (result) { _onScanDetect(result.getText()); return; }
+          } catch (e) { /* NotFoundException 등 — 계속 진행 */ }
+        }
       }
     }
-  }
 
-  // 바코드 자체가 인쇄 품질 문제 등으로 계속 인식이 안 되면, 라벨의 사람이 읽는
-  // 텍스트(색상 + 제품코드)를 OCR로 대신 읽어보는 폴백으로 전환 — 바코드 크롭과는
-  // 별도로 화면 전체를 넓게 잡아야 하므로 target이 아니라 원본 video를 넘긴다
-  const nowOcr = Date.now();
-  if (!_ocrRunning && nowOcr - _scanStartedAt > 3500 && nowOcr - _lastOcrAttempt > 3500) {
-    _tryOcrFallback(vid);
+    // 바코드 자체가 인쇄 품질 문제 등으로 계속 인식이 안 되면, 라벨의 사람이 읽는
+    // 텍스트(색상 + 제품코드)를 OCR로 대신 읽어보는 폴백으로 전환 — 바코드 크롭과는
+    // 별도로 화면 전체를 넓게 잡아야 하므로 target이 아니라 원본 video를 넘긴다
+    if (!_ocrRunning && now - _scanStartedAt > 3500 && now - _lastOcrAttempt > 3500) {
+      _tryOcrFallback(vid);
+    }
   }
 
   if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
