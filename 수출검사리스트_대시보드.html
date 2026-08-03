@@ -192,6 +192,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   html.dark #specModal .border-slate-200 { border-color: var(--border) !important; }
   html.dark #specModal .bg-indigo-50 { background: rgba(99,102,241,.15) !important; }
 
+  /* 다크모드: 충주1/충주2 공장 배지 (리스트·검색결과·상세스펙 공통) */
+  html.dark #mTab_list .bg-f1-50, html.dark #productSearchModal .bg-f1-50, html.dark #specModal .bg-f1-50 { background: rgba(59,130,246,.18) !important; }
+  html.dark #mTab_list .bg-f2-50, html.dark #productSearchModal .bg-f2-50, html.dark #specModal .bg-f2-50 { background: rgba(139,92,246,.18) !important; }
+  html.dark #mTab_list .text-f1-700, html.dark #productSearchModal .text-f1-700, html.dark #specModal .text-f1-700 { color: #60A5FA !important; }
+  html.dark #mTab_list .text-f2-700, html.dark #productSearchModal .text-f2-700, html.dark #specModal .text-f2-700 { color: #A78BFA !important; }
+
   /* 인라인 스타일로 박힌 밝은 배경/보더/글자색도 자주 쓰이는 값 위주로 보정 */
   html.dark #mTab_home [style*="border-bottom:1px solid #F1F5F9"],
   html.dark #mTab_list [style*="border-bottom:1px solid #F1F5F9"] { border-bottom-color: var(--border) !important; }
