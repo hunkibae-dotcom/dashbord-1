@@ -2901,6 +2901,15 @@
         if (btn) btn.style.color = _scanTorchOn ? '#fde047' : '#fff';
     }
 
+    // 자동초점이 안 되는 기기용 수동 초점 슬라이더 — 사람이 직접 또렷해지는 지점을 찾는다
+    function _onScanFocusSlide(val) {
+        if (!_scanVideoTrack) return;
+        const v = parseFloat(val);
+        _scanVideoTrack.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: v }] }).catch(() => {});
+        const _dbg = document.getElementById('scanDebugInfo');
+        if (_dbg) _dbg.textContent = _dbg.textContent.replace(/cur=.*/, 'cur=' + v);
+    }
+
     function _parseBarcodeRaw(raw) {
         // "CODE - COLOR" or "CODE-COLOR" 형식 파싱
         const m = raw.match(/^(.+?)\s*-\s*([A-Za-z0-9]+)\s*$/);
