@@ -1856,7 +1856,18 @@ function exportQualityChart() {
 }
 
 function lightTooltip() {
-  return { backgroundColor:'#fff', titleColor:'#334155', bodyColor:'#334155', borderColor:'#E2E8F0', borderWidth:1, padding:8 };
+  const c = _chartThemeColors();
+  return { backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:8 };
+}
+
+// 모바일 다크모드에서도 Chart.js 캔버스(축 라벨·그리드선·툴팁)가 밝은 하드코딩 색으로 남지 않도록
+// — CSS로는 canvas 픽셀을 건드릴 수 없어서 렌더링 시점에 직접 색을 골라 넘겨준다. 데스크탑은
+// html.dark가 절대 켜지지 않으므로(다크 토글이 모바일 헤더에만 있음) 항상 라이트 색을 반환한다.
+function _chartThemeColors() {
+  const dark = document.documentElement.classList.contains('dark');
+  return dark
+    ? { tick:'#A0B4CC', tickSub:'#6B8BAA', grid:'rgba(255,255,255,.08)', tooltipBg:'#1C2840', tooltipTitle:'#F1F5F9', tooltipBody:'#A0B4CC', tooltipBorder:'#2D3F5A' }
+    : { tick:'#475569', tickSub:'#94A3B8', grid:'#F1F5F9', tooltipBg:'#fff', tooltipTitle:'#334155', tooltipBody:'#475569', tooltipBorder:'#E2E8F0' };
 }
 
 // ===== STATUS =====
