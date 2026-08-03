@@ -1065,7 +1065,9 @@ function rescan(){
 // SW 등록 + 업데이트 시 자동 새로고침
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
-        navigator.serviceWorker.register('service-worker.js').catch(function(){});
+        // updateViaCache:'none' — 기본값이면 브라우저가 service-worker.js 파일 자체를
+        // HTTP 캐시로 응답할 수 있어서, 로직을 고쳐 올려도 한참 지나야 새 버전이 감지된다.
+        navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' }).catch(function(){});
     });
     var _swReloading = false;
     navigator.serviceWorker.addEventListener('controllerchange', function() {
