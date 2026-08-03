@@ -2352,6 +2352,8 @@ function applyMTheme(dark) {
   const chk = document.getElementById('mThemeCheck');
   if (chk) chk.checked = dark;
   localStorage.setItem('shell_theme', dark ? 'dark' : 'light');
+  // Chart.js는 CSS로 색을 못 바꾸므로(캔버스), 차트탭이 열려있으면 새 테마 색으로 다시 그려준다
+  if (typeof mCurrentTab !== 'undefined' && mCurrentTab === 'chart' && typeof renderMobileCharts === 'function') renderMobileCharts();
 }
 function toggleMTheme() {
   applyMTheme(document.getElementById('mThemeCheck').checked);
