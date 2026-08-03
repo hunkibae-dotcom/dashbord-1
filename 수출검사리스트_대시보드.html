@@ -873,7 +873,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     <div id="scanDebugInfo" class="text-white/45 text-[9.5px] truncate" style="padding:0 12px 6px;"></div>
     <!-- 이 기기는 자동초점이 안 돼서(AF:manual) 수동으로 직접 맞춰야 함 — focusDistance를
          지원하는 기기에서만 표시됨 (_startScan에서 표시 여부 결정) -->
-    <div id="scanFocusRow" class="hidden flex items-center gap-2" style="padding:0 12px 10px;">
+    <div id="scanFocusRow" class="items-center gap-2" style="display:none;padding:0 12px 10px;">
       <i class="fa-solid fa-magnifying-glass-plus text-white/60 text-xs shrink-0"></i>
       <input id="scanFocusSlider" type="range" oninput="_onScanFocusSlide(this.value)" class="flex-1" style="height:20px;">
     </div>
