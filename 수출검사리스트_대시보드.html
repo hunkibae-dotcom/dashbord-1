@@ -2675,6 +2675,9 @@ function setMiField(field, value) {
   renderMobileKPIs();
   renderMobileFactoryPanels();
   renderMobileList();
+  // 제품검색 결과·상세스펙 화면이 열려있었다면 그 화면도 함께 갱신
+  if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
+  if (specHistoryRows && specHistoryRows.length) runSpecLookup();
 }
 
 function renderMobileFactoryPanels() {
