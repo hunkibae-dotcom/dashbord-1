@@ -2487,9 +2487,9 @@ function _updateKpiSortButtons() {
     if (!btn) return;
     const active = _kpiDetailSortField === f;
     btn.textContent = f + (active ? (_kpiDetailSortDir === 'asc' ? ' ↑' : ' ↓') : '');
-    btn.style.background = active ? '#EFF6FF' : '#F8FAFC';
-    btn.style.color      = active ? '#1D4ED8'  : '#64748B';
-    btn.style.borderColor= active ? '#BFDBFE'  : '#E2E8F0';
+    btn.style.background = active ? 'var(--tint-bg)' : 'var(--input-bg)';
+    btn.style.color      = active ? 'var(--tint-text)'  : 'var(--text-sub)';
+    btn.style.borderColor= active ? 'var(--tint-border)'  : 'var(--border)';
   });
 }
 
