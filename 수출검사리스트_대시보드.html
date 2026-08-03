@@ -3006,7 +3006,8 @@ async function _startScan() {
         _focusInfo = 'continuous';
       } else if (_caps.focusMode && _caps.focusMode.includes('manual') && _caps.focusDistance) {
         const fd = _caps.focusDistance;
-        const startVal = (fd.min + fd.max) / 2;
+        // 슬라이더 테스트 결과 min쪽보다 max쪽(근접)이 더 또렷했음 — 기본값을 max로
+        const startVal = fd.max;
         await _vtrack.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: startVal }] }).catch(() => {});
         _focusInfo = 'manual(FD ' + fd.min + '~' + fd.max + ')';
         // 자동으로는 방향(값이 클수록 근접인지 반대인지)을 알 수 없어서, 슬라이더를
