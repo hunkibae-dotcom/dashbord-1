@@ -2844,6 +2844,13 @@ function renderMobileList() {
     if (mStatus === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
     else if (mStatus === '출고완료') { if (d.source !== 'archive') return false; }
     else if (mStatus === '진행_미검사') { if (d.source === 'archive' || d.검사 !== '미검사') return false; }
+    else if (mStatus === '금일포장') {
+      if (d.source === 'archive') return false;
+      if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
+      if (!d.포장일) return false;
+      const dd = ddayInfo(d.포장일);
+      if (dd === null || dd > 0) return false;
+    }
     else if (mStatus) { if (d.검사 !== mStatus) return false; }
     if (search && !d.건명.toLowerCase().includes(search) && !d.단품코드.toLowerCase().includes(search) && !(d.단품명칭||'').toLowerCase().includes(search)) return false;
     return true;
