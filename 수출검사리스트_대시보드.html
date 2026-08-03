@@ -2965,14 +2965,13 @@ function closeScanView() {
 
 async function _startScan() {
   try {
-    // 기기가 지원하는 한 최대한 높은 해상도로 찍어야 바코드 폭이 좁은 바(막대) 하나하나가
-    // 더 많은 픽셀로 표현돼 인식률이 올라간다 — 4K로 먼저 시도하고, 기기가 거부하면
-    // 단계적으로 낮춰가며 재시도한다 (ideal이라 대부분은 첫 시도에서 바로 성공함).
+    // 바코드는 막대 하나가 몇 픽셀만 넘으면 디코딩 가능해서 4K 같은 초고해상도는
+    // 오히려 역효과였다 — 프레임이 커질수록 매 인식 시도(크롭·디코딩)가 느려지고,
+    // 센서 리드아웃이 느려져 자동초점이 맞는 속도·프레임레이트도 떨어진다. 실제 전문
+    // 스캐너 앱들도 뷰파인더를 720p 안팎으로 쓴다 — 그 쪽이 더 빠르고 더 잘 잡힌다.
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 }, advanced: [{ focusMode: 'continuous' }] }
+      video: { facingMode: { exact: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } }
     }).catch(() => navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
-    })).catch(() => navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
     }));
     _scanStream = stream;
