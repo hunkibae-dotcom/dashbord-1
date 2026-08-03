@@ -2754,6 +2754,33 @@
         if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
         const vid = document.getElementById('scanVideo');
         if (vid) vid.srcObject = null;
+        _scanTorchTrack = null;
+        _scanTorchOn = false;
+        const torchBtn = document.getElementById('scanTorchBtn');
+        if (torchBtn) { torchBtn.style.display = 'none'; torchBtn.style.color = '#fff'; }
+    }
+
+    // 비닐 포장 반사광으로 대비가 낮아져 인식이 안 될 때, 사용자가 직접 켜서 보완할 수 있는 손전등 토글
+    let _scanTorchTrack = null, _scanTorchOn = false;
+    function _setupScanTorch(stream) {
+        const btn = document.getElementById('scanTorchBtn');
+        if (!btn) return;
+        btn.style.display = 'none';
+        _scanTorchTrack = null;
+        _scanTorchOn = false;
+        const track = stream.getVideoTracks()[0];
+        if (!track || typeof track.getCapabilities !== 'function') return;
+        const caps = track.getCapabilities();
+        if (!caps || !caps.torch) return;
+        _scanTorchTrack = track;
+        btn.style.display = '';
+    }
+    function _toggleScanTorch() {
+        if (!_scanTorchTrack) return;
+        _scanTorchOn = !_scanTorchOn;
+        _scanTorchTrack.applyConstraints({ advanced: [{ torch: _scanTorchOn }] }).catch(() => {});
+        const btn = document.getElementById('scanTorchBtn');
+        if (btn) btn.style.color = _scanTorchOn ? '#fde047' : '#fff';
     }
 
     function _parseBarcodeRaw(raw) {
