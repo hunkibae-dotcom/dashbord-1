@@ -868,7 +868,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     <button id="scanTorchBtn" onclick="_toggleScanTorch()" class="hidden text-white text-lg p-1.5">
       <i class="fa-solid fa-bolt"></i>
     </button>
-    <span class="text-white/60 text-[10px]">CODE128 · CODE39</span>
+    <span id="scanDebugInfo" class="text-white/60 text-[10px]">CODE128 · CODE39</span>
   </div>
   <video id="scanVideo" autoplay playsinline muted class="flex-1 w-full object-cover"></video>
   <div class="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none">
