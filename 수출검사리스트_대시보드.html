@@ -2521,7 +2521,7 @@ function _kpiDetailRender() {
   }
 
   if (!items.length) {
-    body.innerHTML = '<div style="text-align:center;color:#94A3B8;padding:24px 0;font-size:14px;">' + (query ? '검색 결과 없음' : '데이터 없음') + '</div>';
+    body.innerHTML = '<div style="text-align:center;color:var(--label);padding:24px 0;font-size:14px;">' + (query ? '검색 결과 없음' : '데이터 없음') + '</div>';
     return;
   }
 
@@ -2533,21 +2533,21 @@ function _kpiDetailRender() {
   const renderGroup = (list, label) => {
     if (!list.length) return '';
     return `<div style="margin-bottom:16px;">
-      <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #F1F5F9;">${label} · ${list.length}건</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">${label} · ${list.length}건</div>
       ${list.map(d => {
         const status = d.검사 || '미검사';
         const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : '#EF4444';
         const dateRow = _kpiDetailType === 'today'
           ? `<div style="display:flex;gap:14px;margin-top:4px;">
-               <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">납기</span> ${_kpiFmtDate(d.납기일)}</span>
-               <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">포장</span> ${_kpiFmtDate(d.포장일)}</span>
+               <span style="font-size:10.5px;color:var(--text-sub);"><span style="color:var(--label);">납기</span> ${_kpiFmtDate(d.납기일)}</span>
+               <span style="font-size:10.5px;color:var(--text-sub);"><span style="color:var(--label);">포장</span> ${_kpiFmtDate(d.포장일)}</span>
              </div>` : '';
         const mik = 'mkpi_' + (_kpiRowIdx++);
         window._mItemMap[mik] = d;
-        return `<div onclick="openMItemDetail('${mik}')" style="padding:9px 0;border-bottom:1px solid #F8FAFC;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+        return `<div onclick="openMItemDetail('${mik}')" style="padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;-webkit-tap-highlight-color:transparent;">
           <div style="display:flex;align-items:flex-start;gap:8px;">
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13.5px;font-weight:700;color:#1E293B;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.단품코드 || '—'} <span style="font-weight:600;color:#94A3B8;font-family:inherit;">· ${d.색상 || '—'} · ${d.수량 || 0}개</span></div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.단품코드 || '—'} <span style="font-weight:600;color:var(--label);font-family:inherit;">· ${d.색상 || '—'} · ${d.수량 || 0}개</span></div>
               ${dateRow}
             </div>
             <span style="font-size:10.5px;font-weight:700;color:${sc};white-space:nowrap;flex-shrink:0;margin-top:2px;">${status}</span>
