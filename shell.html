@@ -714,6 +714,11 @@
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
             <span style="font-size:15px;font-weight:800;color:#fff;flex:1;">바코드 스캔</span>
+            <!-- 포장재 비닐 반사광 때문에 바코드가 안 읽힐 때 수동으로 켜서 눈부심을 줄이기 위한 손전등 토글
+                 (기기가 torch를 지원할 때만 표시됨 — _setupScanTorch에서 display를 바꿔줌) -->
+            <button id="scanTorchBtn" onclick="_toggleScanTorch()" style="display:none;-webkit-appearance:none;appearance:none;border:none;background:transparent;color:#fff;font-size:18px;cursor:pointer;padding:6px;line-height:1;">
+                <i class="fa-solid fa-bolt"></i>
+            </button>
             <span style="font-size:10px;color:rgba(255,255,255,.6);">CODE128 · CODE39</span>
         </div>
         <!-- 카메라 영역 -->
