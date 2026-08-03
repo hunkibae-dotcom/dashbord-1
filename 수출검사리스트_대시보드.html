@@ -837,6 +837,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   <div class="absolute top-0 left-0 right-0 z-10 p-3 flex items-center gap-2" style="background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
     <button onclick="closeScanView()" class="text-white text-xl p-1.5"><i class="fa-solid fa-chevron-left"></i></button>
     <span class="text-white font-extrabold text-[15px] flex-1">바코드 스캔</span>
+    <!-- 포장재 비닐 반사광 때문에 바코드가 안 읽힐 때 수동으로 켜서 눈부심을 줄이기 위한 손전등 토글
+         (기기가 torch를 지원할 때만 표시됨 — _setupScanTorch에서 hidden 클래스를 뗌) -->
+    <button id="scanTorchBtn" onclick="_toggleScanTorch()" class="hidden text-white text-lg p-1.5">
+      <i class="fa-solid fa-bolt"></i>
+    </button>
     <span class="text-white/60 text-[10px]">CODE128 · CODE39</span>
   </div>
   <video id="scanVideo" autoplay playsinline muted class="flex-1 w-full object-cover"></video>
