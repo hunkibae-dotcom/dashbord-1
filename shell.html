@@ -2557,7 +2557,9 @@
         openView('viewScan');
         document.getElementById('scanResultBar').style.display = 'none';
         document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+        document.getElementById('scanFrame')?.classList.remove('scan-locked');
         _zxingLastTry = 0;
+        _lastDetectAttempt = 0;
         _loadZXing(function(){});
         _resetScanRotation();
         await _startScan();
