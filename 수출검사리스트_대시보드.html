@@ -3033,12 +3033,14 @@ async function _scanTick() {
         } catch (e) { /* NotFoundException 등 — 계속 진행 */ }
       }
     }
+  }
 
-    // 바코드 자체가 인쇄 품질 문제 등으로 계속 인식이 안 되면, 라벨의 사람이 읽는
-    // 텍스트(좌하단 색상 + 중하단 제품코드)를 OCR로 대신 읽어보는 폴백으로 전환
-    if (!_ocrRunning && now - _scanStartedAt > 3500 && now - _lastOcrAttempt > 3500) {
-      _tryOcrFallback(target);
-    }
+  // 바코드 자체가 인쇄 품질 문제 등으로 계속 인식이 안 되면, 라벨의 사람이 읽는
+  // 텍스트(색상 + 제품코드)를 OCR로 대신 읽어보는 폴백으로 전환 — 바코드 크롭과는
+  // 별도로 화면 전체를 넓게 잡아야 하므로 target이 아니라 원본 video를 넘긴다
+  const nowOcr = Date.now();
+  if (!_ocrRunning && nowOcr - _scanStartedAt > 3500 && nowOcr - _lastOcrAttempt > 3500) {
+    _tryOcrFallback(vid);
   }
 
   if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
