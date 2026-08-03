@@ -139,22 +139,23 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   #mToTopBtn { position:absolute; right:16px; bottom:80px; width:40px; height:40px; border-radius:50%; background:var(--panel); border:1px solid var(--border); box-shadow:0 2px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-sub); opacity:0; pointer-events:none; transition:opacity .2s; z-index:10; }
   #mToTopBtn.show { opacity:1; pointer-events:auto; }
 
-  /* ===== 다크모드: 홈 리스트 · 검사목록 · 필터검색 결과 영역 (Tailwind 라이트 하드코딩 보정) ===== */
+  /* ===== 다크모드: 홈 리스트 · 검사목록 · 필터검색 결과 · 상세스펙 영역 (Tailwind 라이트 하드코딩 보정) ===== */
   html.dark #mTab_home .bg-white,
   html.dark #mTab_list .bg-white,
   html.dark #productSearchModal .bg-white,
+  html.dark #specModal .bg-white,
   html.dark #mToTopBtn { background: var(--panel) !important; }
 
-  html.dark #mTab_home .text-slate-900, html.dark #mTab_list .text-slate-900, html.dark #productSearchModal .text-slate-900,
-  html.dark #mTab_home .text-slate-800, html.dark #mTab_list .text-slate-800,
-  html.dark #mTab_home .text-slate-700, html.dark #productSearchModal .text-slate-700 { color: var(--text) !important; }
+  html.dark #mTab_home .text-slate-900, html.dark #mTab_list .text-slate-900, html.dark #productSearchModal .text-slate-900, html.dark #specModal .text-slate-900,
+  html.dark #mTab_home .text-slate-800, html.dark #mTab_list .text-slate-800, html.dark #specModal .text-slate-800,
+  html.dark #mTab_home .text-slate-700, html.dark #productSearchModal .text-slate-700, html.dark #specModal .text-slate-700 { color: var(--text) !important; }
 
-  html.dark #mTab_home .text-slate-600, html.dark #productSearchModal .text-slate-600,
-  html.dark #mTab_home .text-slate-500, html.dark #productSearchModal .text-slate-500,
-  html.dark #mTab_home .text-slate-400, html.dark #mTab_list .text-slate-400, html.dark #productSearchModal .text-slate-400,
-  html.dark #mTab_home .text-slate-300, html.dark #mTab_list .text-slate-300, html.dark #mToTopBtn { color: var(--text-sub) !important; }
+  html.dark #mTab_home .text-slate-600, html.dark #productSearchModal .text-slate-600, html.dark #specModal .text-slate-600,
+  html.dark #mTab_home .text-slate-500, html.dark #productSearchModal .text-slate-500, html.dark #specModal .text-slate-500,
+  html.dark #mTab_home .text-slate-400, html.dark #mTab_list .text-slate-400, html.dark #productSearchModal .text-slate-400, html.dark #specModal .text-slate-400,
+  html.dark #mTab_home .text-slate-300, html.dark #mTab_list .text-slate-300, html.dark #specModal .text-slate-300, html.dark #mToTopBtn { color: var(--text-sub) !important; }
 
-  html.dark #mTab_home .border-slate-200, html.dark #mTab_list .border-slate-200, html.dark #productSearchModal .border-slate-200,
+  html.dark #mTab_home .border-slate-200, html.dark #mTab_list .border-slate-200, html.dark #productSearchModal .border-slate-200, html.dark #specModal .border-slate-200,
   html.dark #mTab_home .border-slate-100, html.dark #mTab_list .border-slate-100,
   html.dark #mTab_home .border-slate-50, html.dark #mToTopBtn { border-color: var(--border) !important; }
 
