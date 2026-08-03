@@ -484,7 +484,7 @@
                         <div>
                             <label class="block text-[14.5px] font-semibold text-slate-400 mb-1">제품 코드 검색</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 cursor-pointer" onclick="openScanView()" title="바코드 스캔">
                                     <i class="fa-solid fa-barcode text-[17.5px]"></i>
                                 </span>
                                 <input type="text" id="productCodeFilter" onkeydown="if(event.key==='Enter'){this.blur();applyFilters();}" placeholder="예: CAC2083SN, FAD0016NO"
