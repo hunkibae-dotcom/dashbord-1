@@ -115,11 +115,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .pulse-dot { animation:pulse-dot 2s infinite; }
 
   /* ===== MOBILE APP ===== */
-  .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:10px 0 12px; gap:4px; color:#94A3B8; font-size:13px; font-weight:700; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
+  .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-sub); font-size:10px; font-weight:600; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
   .mobile-nav-btn.active { color:#6D5CE8; }
-  .mobile-nav-btn.active .m-nav-icon { background:#EDE9FE; }
-  .m-nav-icon { display:flex; align-items:center; justify-content:center; width:52px; height:34px; border-radius:17px; transition:background .15s; }
-  .m-nav-icon i { font-size:22px; }
+  .m-nav-icon { display:flex; align-items:center; justify-content:center; }
+  .m-nav-icon i { font-size:18px; }
   .m-snap { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
   .m-snap::-webkit-scrollbar { display:none; }
   .m-snap > div { min-width:100%; scroll-snap-align:start; box-sizing:border-box; }
