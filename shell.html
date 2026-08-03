@@ -2621,8 +2621,7 @@
             const _dbg = document.getElementById('scanDebugInfo');
             if (_dbg) {
                 const _s = _vtrack.getSettings ? _vtrack.getSettings() : {};
-                const _c = _vtrack.getCapabilities ? _vtrack.getCapabilities() : {};
-                _dbg.textContent = (_s.width||'?') + '×' + (_s.height||'?') + ' · AF:' + (_c.focusMode ? _c.focusMode.join(',') : 'X') + ' · ' + fmts.join(',');
+                _dbg.textContent = (_s.width||'?') + '×' + (_s.height||'?') + ' · AF:' + _focusInfo + ' · cur=' + (_s.focusDistance!==undefined ? _s.focusDistance : '-');
             }
         } catch(e) {
             document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
