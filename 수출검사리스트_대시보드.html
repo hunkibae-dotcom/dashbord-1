@@ -2188,8 +2188,9 @@ function runSpecLookup() {
 
   if (!code) { empty.classList.remove('hidden'); content.classList.add('hidden'); specHistoryRows = []; return; }
 
+  const codeNorm = code.toUpperCase();
   const pool = [...allData, ...archiveRows];
-  const matches = pool.filter(d => d.단품코드 === code);
+  const matches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === codeNorm);
   specHistoryRows = matches;
 
   if (!matches.length) {
