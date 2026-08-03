@@ -2054,7 +2054,9 @@ function renderProductSearchResults(results) {
       d.포장일 ? `포장 ${d.포장일}` : '',
       d.검사일 ? `검사 ${d.검사일}` : ''
     ].filter(Boolean).join('  ·  ');
-    return `<div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;">
+    const mik = 'mps_' + idx;
+    window._mItemMap[mik] = d;
+    return `<div onclick="openMItemDetail('${mik}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
         <span class="pill ${statusCls}" style="font-size:11px;">${statusLabel}</span>
         <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 9px;border-radius:20px;">${d.공장명}</span>
