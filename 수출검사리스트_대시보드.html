@@ -221,6 +221,15 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   html.dark #manualCodeModal .bg-white { background: var(--panel) !important; }
   html.dark #manualCodeModal .text-slate-800 { color: var(--text) !important; }
   html.dark #manualCodeModal .text-slate-400 { color: var(--label) !important; }
+
+  /* 다크모드: 제품검색 요약칩·공장배지·CBM배지 (JS 템플릿의 인라인 hex — 클래스가 아니라 style 속성값으로 매칭) */
+  html.dark #productSearchModal [style*="background:#EDE9FE"] { background: rgba(139,92,246,.18) !important; }
+  html.dark #productSearchModal [style*="background:#EFF6FF"] { background: rgba(59,130,246,.18) !important; }
+  html.dark #productSearchModal [style*="background:#F5F3FF"] { background: rgba(139,92,246,.18) !important; }
+  html.dark #productSearchModal [style*="color:#3B82F6"] { color: #60A5FA !important; }
+  html.dark #productSearchModal [style*="color:#8B5CF6"] { color: #A78BFA !important; }
+  html.dark #productSearchModal [style*="color:#2563EB"] { color: #60A5FA !important; }
+  html.dark #productSearchModal [style*="color:#6D5CE8"] { color: #A78BFA !important; }
 </style>
 </head>
 <body class="font-sans antialiased min-h-screen">
