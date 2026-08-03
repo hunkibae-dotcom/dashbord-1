@@ -2627,7 +2627,7 @@ function applyMiOverrides(list) {
 
 let _miCurrent = null;
 function _refreshMiStatusButtons(status) {
-  ['미검사', '검사', '양지'].forEach(v => {
+  ['미검사', '검사', '재투입', '양지'].forEach(v => {
     const btn = document.getElementById('miStBtn_' + v);
     if (!btn) return;
     const on = status === v;
