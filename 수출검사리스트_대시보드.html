@@ -875,12 +875,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     <!-- 프레임 + 상태문구 + 결과바를 하나의 그룹으로 묶어서, 폰을 기울이면 이 그룹 전체를 통째로 회전시킨다
          (개별로 따로 돌리면 순서/간격이 깨져서, 미리 올바르게 쌓여있는 판 자체를 그대로 돌리는 방식으로 함) -->
     <div id="scanRotateGroup" class="w-full flex flex-col items-center" style="gap:20px;transition:transform .25s ease;">
-      <div id="scanFrame" class="relative" style="width:88%;max-width:400px;height:110px;">
-        <div class="absolute inset-0 rounded-xl" style="border:2px solid #6366F1;box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
-          <span class="absolute w-5 h-5" style="top:-2px;left:-2px;border-top:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:4px 0 0 0;"></span>
-          <span class="absolute w-5 h-5" style="top:-2px;right:-2px;border-top:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 4px 0 0;"></span>
-          <span class="absolute w-5 h-5" style="bottom:-2px;left:-2px;border-bottom:3px solid #6366F1;border-left:3px solid #6366F1;border-radius:0 0 0 4px;"></span>
-          <span class="absolute w-5 h-5" style="bottom:-2px;right:-2px;border-bottom:3px solid #6366F1;border-right:3px solid #6366F1;border-radius:0 0 4px 0;"></span>
+      <div id="scanFrame" class="relative" style="width:88%;max-width:400px;height:110px;--scan-accent:#6366F1;transition:transform .25s ease;">
+        <div id="scanFrameBox" class="absolute inset-0 rounded-xl" style="border:2px solid var(--scan-accent);box-shadow:0 0 0 9999px rgba(0,0,0,.55);">
+          <span class="absolute w-5 h-5" style="top:-2px;left:-2px;border-top:3px solid var(--scan-accent);border-left:3px solid var(--scan-accent);border-radius:4px 0 0 0;"></span>
+          <span class="absolute w-5 h-5" style="top:-2px;right:-2px;border-top:3px solid var(--scan-accent);border-right:3px solid var(--scan-accent);border-radius:0 4px 0 0;"></span>
+          <span class="absolute w-5 h-5" style="bottom:-2px;left:-2px;border-bottom:3px solid var(--scan-accent);border-left:3px solid var(--scan-accent);border-radius:0 0 0 4px;"></span>
+          <span class="absolute w-5 h-5" style="bottom:-2px;right:-2px;border-bottom:3px solid var(--scan-accent);border-right:3px solid var(--scan-accent);border-radius:0 0 4px 0;"></span>
           <div id="scanLaser" class="absolute" style="left:4px;right:4px;height:2px;top:50%;background:linear-gradient(to right,transparent,#F43F5E,transparent);border-radius:2px;animation:scanLaser 1.8s ease-in-out infinite;"></div>
         </div>
       </div>
