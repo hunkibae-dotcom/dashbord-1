@@ -2555,9 +2555,14 @@
 
     async function _startScan() {
         try {
+            // 기기가 지원하는 한 최대한 높은 해상도로 찍어야 바코드 폭이 좁은 바(막대) 하나하나가
+            // 더 많은 픽셀로 표현돼 인식률이 올라간다 — 4K로 먼저 시도하고, 기기가 거부하면
+            // 단계적으로 낮춰가며 재시도한다 (ideal이라 대부분은 첫 시도에서 바로 성공함).
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+                video: { facingMode: { exact: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 }, advanced: [{ focusMode: 'continuous' }] }
             }).catch(() => navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+            })).catch(() => navigator.mediaDevices.getUserMedia({
                 video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
             }));
             _scanStream = stream;
