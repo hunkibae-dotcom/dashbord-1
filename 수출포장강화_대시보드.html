@@ -6586,5 +6586,375 @@
 <style>
 @keyframes scanLaser { 0%{top:10%} 50%{top:85%} 100%{top:10%} }
 </style>
+
+<script>
+// ===== 바코드 스캐너 (실시간 카메라 + 크롭 + ZXing TRY_HARDER + OCR 폴백) =====
+// 수출검사리스트_대시보드.html / shell.html과 동일한 구현이며(회전 hysteresis, 크롭 좌표
+// 보정, 손전등 토글, 4K 우선 해상도 요청 포함), 스캔 성공 시 검색창 대신 이 대시보드의
+// switchToProductDetailView(code)를 바로 호출한다는 점만 다르다.
+let _scanStream = null, _scanRaf = null, _scanDetector = null;
+let _zxingReader = null, _zxingLoading = false, _zxingLastTry = 0;
+let _scanStartedAt = 0, _ocrRunning = false, _lastOcrAttempt = 0;
+let _tessLoading = false, _ocrWorkerPromise = null;
+
+async function openScanView() {
+  document.getElementById('viewScan').style.display = 'flex';
+  document.getElementById('scanResultBar').style.display = 'none';
+  document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+  _zxingLastTry = 0;
+  _loadZXing(function(){});
+  _startScanTiltSensor();
+  await _startScan();
+}
+function closeScanView() {
+  _stopScan();
+  _stopScanTiltSensor();
+  document.getElementById('viewScan').style.display = 'none';
+}
+
+async function _startScan() {
+  try {
+    // 기기가 지원하는 한 최대한 높은 해상도로 찍어야 바코드 폭이 좁은 바(막대) 하나하나가
+    // 더 많은 픽셀로 표현돼 인식률이 올라간다 — 4K로 먼저 시도하고, 기기가 거부하면
+    // 단계적으로 낮춰가며 재시도한다 (ideal이라 대부분은 첫 시도에서 바로 성공함).
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' }, width: { ideal: 3840 }, height: { ideal: 2160 }, advanced: [{ focusMode: 'continuous' }] }
+    }).catch(() => navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+    })).catch(() => navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    }));
+    _scanStream = stream;
+    const vid = document.getElementById('scanVideo');
+    vid.srcObject = stream;
+    await vid.play();
+    _setupScanTorch(stream);
+
+    if (!('BarcodeDetector' in window)) {
+      document.getElementById('scanStatus').textContent = '이 기기는 자동 스캔을 지원하지 않습니다';
+      return;
+    }
+    const fmts = await BarcodeDetector.getSupportedFormats().catch(() => ['code_128','code_39','ean_13','qr_code','code_93','data_matrix']);
+    _scanDetector = new BarcodeDetector({ formats: fmts });
+    document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+    _scanStartedAt = Date.now();
+    _scanRaf = requestAnimationFrame(_scanTick);
+  } catch (e) {
+    document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
+  }
+}
+
+async function _scanTick() {
+  if (!_scanStream || !_scanDetector) return;
+  const vid = document.getElementById('scanVideo');
+  const target = _cropToScanFrame(vid) || vid;
+  try {
+    const codes = await _scanDetector.detect(target);
+    if (codes.length > 0) { _onScanDetect(codes[0].rawValue); return; }
+  } catch (e) {}
+
+  // 네이티브 인식이 계속 실패할 때 ZXing(TRY_HARDER)으로 주기적 재시도
+  if (target instanceof HTMLCanvasElement) {
+    const now = Date.now();
+    if (now - _zxingLastTry > 700) {
+      _zxingLastTry = now;
+      const reader = _getZXingReader();
+      if (reader) {
+        try {
+          const result = reader.decodeFromCanvas(target);
+          if (result) { _onScanDetect(result.getText()); return; }
+        } catch (e) { /* NotFoundException 등 — 계속 진행 */ }
+      }
+    }
+
+    // 바코드 자체가 인쇄 품질 문제 등으로 계속 인식이 안 되면, 라벨의 사람이 읽는
+    // 텍스트(제품코드)를 OCR로 대신 읽어보는 폴백으로 전환
+    if (!_ocrRunning && now - _scanStartedAt > 3500 && now - _lastOcrAttempt > 3500) {
+      _tryOcrFallback(target);
+    }
+  }
+
+  if (_scanStream) _scanRaf = requestAnimationFrame(_scanTick);
+}
+
+function _loadZXing(cb) {
+  if (window.ZXing) { cb(); return; }
+  if (_zxingLoading) { setTimeout(function(){ _loadZXing(cb); }, 200); return; }
+  _zxingLoading = true;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
+  s.onload = function(){ _zxingLoading = false; cb(); };
+  s.onerror = function(){ _zxingLoading = false; };
+  document.head.appendChild(s);
+}
+
+function _getZXingReader() {
+  if (!window.ZXing) return null;
+  if (_zxingReader) return _zxingReader;
+  const hints = new Map();
+  hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
+    ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39,
+    ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.CODE_93,
+    ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.DATA_MATRIX
+  ]);
+  _zxingReader = new ZXing.BrowserMultiFormatReader(hints);
+  return _zxingReader;
+}
+
+// 화면에 보이는 스캔 가이드 프레임 영역만 잘라 분석용 캔버스로 반환
+// (object-fit:cover 좌표 보정 포함 — 배경을 잘라내 디코더가 바코드 영역에 집중하도록 함)
+//
+// scanFrame은 기울기 보정용으로 CSS 회전(rotate)되기도 하지만 <video>는 회전되지 않으므로,
+// 회전이 걸린 상태의 getBoundingClientRect()를 그대로 쓰면 잘라내는 좌표가 실제 영상과
+// 어긋난다. 회전이 0도일 때의 좌표만 계속 캐싱해두고, 회전 중에는 그 값을 그대로 재사용한다.
+let _scanFrameBaseRect = null;
+function _getScanFrameRect(frame) {
+  if (_scanTiltDeg === 0) {
+    _scanFrameBaseRect = frame.getBoundingClientRect();
+  }
+  return _scanFrameBaseRect || frame.getBoundingClientRect();
+}
+function _cropToScanFrame(video) {
+  const frame = document.getElementById('scanFrame');
+  const canvas = document.getElementById('scanCanvas');
+  const vw = video.videoWidth, vh = video.videoHeight;
+  if (!frame || !canvas || !vw || !vh) return null;
+
+  const vRect = video.getBoundingClientRect();
+  const fRect = _getScanFrameRect(frame);
+  const dispW = vRect.width, dispH = vRect.height;
+  if (!dispW || !dispH) return null;
+
+  const scale = Math.max(dispW / vw, dispH / vh);
+  const srcOffsetX = (vw - dispW / scale) / 2;
+  const srcOffsetY = (vh - dispH / scale) / 2;
+
+  // 코드 뒤에 로트번호까지 붙어 바코드 자체가 긴 라벨은 프레임 폭에 딱 맞춰 대기가
+  // 어렵다 보니 살짝만 삐져나가도 잘려서 인식이 안 됐다 — 좌우 여유를 넉넉히 늘림
+  const padX = fRect.width * 0.35, padY = fRect.height * 0.5;
+  const dispX = (fRect.left - vRect.left) - padX;
+  const dispY = (fRect.top - vRect.top) - padY;
+  const dispCropW = fRect.width + padX * 2;
+  const dispCropH = fRect.height + padY * 2;
+
+  const sx = Math.max(0, srcOffsetX + dispX / scale);
+  const sy = Math.max(0, srcOffsetY + dispY / scale);
+  const sw = Math.min(vw - sx, dispCropW / scale);
+  const sh = Math.min(vh - sy, dispCropH / scale);
+  if (sw <= 0 || sh <= 0) return null;
+
+  canvas.width = sw;
+  canvas.height = sh;
+  canvas.getContext('2d').drawImage(video, sx, sy, sw, sh, 0, 0, sw, sh);
+  return canvas;
+}
+
+// ── 라벨 텍스트 OCR 폴백 (바코드 자체가 인쇄 불량 등으로 계속 실패할 때만 사용) ──
+function _loadTesseract(cb) {
+  if (window.Tesseract) { cb(); return; }
+  if (_tessLoading) { setTimeout(function(){ _loadTesseract(cb); }, 200); return; }
+  _tessLoading = true;
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  s.onload = function(){ _tessLoading = false; cb(); };
+  s.onerror = function(){ _tessLoading = false; cb(); };
+  document.head.appendChild(s);
+}
+
+function _getOcrWorker() {
+  if (_ocrWorkerPromise) return _ocrWorkerPromise;
+  _ocrWorkerPromise = Tesseract.createWorker('eng').then(async (worker) => {
+    await worker.setParameters({ tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789()-' });
+    return worker;
+  });
+  return _ocrWorkerPromise;
+}
+
+function _parseOcrText(raw) {
+  const tokens = (raw || '').toUpperCase().replace(/[^A-Z0-9()\n]/g, ' ').split(/\s+/).filter(Boolean);
+  let code = '';
+  tokens.forEach(t => {
+    const bare = t.replace(/\(.*/, '');
+    if (!code && bare.length >= 5 && /[A-Z]/.test(bare) && /[0-9]/.test(bare)) { code = bare; }
+  });
+  return { code };
+}
+
+async function _tryOcrFallback(sourceCanvas) {
+  const snap = document.createElement('canvas');
+  snap.width = sourceCanvas.width * 2;
+  snap.height = sourceCanvas.height * 2;
+  snap.getContext('2d').drawImage(sourceCanvas, 0, 0, snap.width, snap.height);
+
+  _ocrRunning = true;
+  _lastOcrAttempt = Date.now();
+  document.getElementById('scanStatus').textContent = '바코드 인식 실패 — 라벨 텍스트로 재시도 중...';
+  try {
+    await new Promise(res => _loadTesseract(res));
+    if (!window.Tesseract) return;
+    const worker = await _getOcrWorker();
+    const { data } = await worker.recognize(snap);
+    const { code } = _parseOcrText(data.text);
+    if (code) { _onScanDetect(code); return; }
+  } catch (e) { /* OCR 실패 — 계속 바코드/ZXing 루프로 재시도 */ }
+  finally { _ocrRunning = false; }
+  if (_scanStream) document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+}
+
+function _stopScan() {
+  if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+  if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+  const vid = document.getElementById('scanVideo');
+  if (vid) vid.srcObject = null;
+  _scanTorchTrack = null;
+  _scanTorchOn = false;
+  const torchBtn = document.getElementById('scanTorchBtn');
+  if (torchBtn) { torchBtn.style.display = 'none'; torchBtn.style.color = '#fff'; }
+}
+
+// 비닐 포장 반사광으로 대비가 낮아져 인식이 안 될 때, 사용자가 직접 켜서 보완할 수 있는 손전등 토글
+let _scanTorchTrack = null, _scanTorchOn = false;
+function _setupScanTorch(stream) {
+  const btn = document.getElementById('scanTorchBtn');
+  if (!btn) return;
+  btn.style.display = 'none';
+  _scanTorchTrack = null;
+  _scanTorchOn = false;
+  const track = stream.getVideoTracks()[0];
+  if (!track || typeof track.getCapabilities !== 'function') return;
+  const caps = track.getCapabilities();
+  if (!caps || !caps.torch) return;
+  _scanTorchTrack = track;
+  btn.style.display = '';
+}
+function _toggleScanTorch() {
+  if (!_scanTorchTrack) return;
+  _scanTorchOn = !_scanTorchOn;
+  _scanTorchTrack.applyConstraints({ advanced: [{ torch: _scanTorchOn }] }).catch(() => {});
+  const btn = document.getElementById('scanTorchBtn');
+  if (btn) btn.style.color = _scanTorchOn ? '#fde047' : '#fff';
+}
+
+// 라벨 형식: "FAD0018NO(C26724)" 처럼 코드 뒤 로트번호가 괄호로 붙는 경우가 많아 괄호를 제거
+function _parseBarcodeRaw(raw) {
+  let s = (raw || '').trim();
+  s = s.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  const m = s.match(/^(.+?)\s*-\s*([A-Za-z0-9]{1,6})\s*$/);
+  if (m) return { code: m[1].trim() };
+  return { code: s };
+}
+
+function _onScanDetect(raw) {
+  if (_scanRaf) { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+  const bar = document.getElementById('scanResultBar');
+  document.getElementById('scanResultText').textContent = raw;
+  bar.style.display = 'block';
+  document.getElementById('scanStatus').textContent = '인식 완료 — 검색 또는 재스캔';
+}
+
+function confirmScanResult() {
+  const raw = document.getElementById('scanResultText').textContent;
+  const { code } = _parseBarcodeRaw(raw);
+  closeScanView();
+  switchToProductDetailView(code);
+}
+
+function resumeScan() {
+  document.getElementById('scanResultBar').style.display = 'none';
+  document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+  _scanStartedAt = Date.now();
+  if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
+}
+
+// ── 바코드 직접 입력 (인식 실패 대비) ──────────────────
+function openManualCodeModal() {
+  document.getElementById('manualCodeInput').value = '';
+  document.getElementById('manualCodeModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('manualCodeInput').focus(), 80);
+}
+function closeManualCodeModal() {
+  document.getElementById('manualCodeModal').style.display = 'none';
+}
+function confirmManualCode() {
+  const code = document.getElementById('manualCodeInput').value.trim();
+  if (!code) { document.getElementById('manualCodeInput').focus(); return; }
+  closeManualCodeModal();
+  closeScanView();
+  switchToProductDetailView(code);
+}
+
+// ── 폰 실제 회전 센서에 맞춰 스캔 UI만 반대로 돌려서 항상 똑바로 보이게 함 ──
+// gamma 원값을 그대로 임계값과 비교하면 손떨림만으로도 임계값 부근에서 0도↔90도로
+// 계속 튀는 문제(과민 반응)와, 폰을 세워 든 자세(beta≈90도 부근)에서 센서 좌표계
+// 특이점 때문에 반대 방향으로 뒤집히는 문제가 있었다. 그래서
+// ① 저역통과 필터로 잔떨림을 걸러내고, ② 진입/복귀 임계값을 다르게 둬 경계에서
+// 계속 왕복하지 않도록(이력현상, hysteresis) 하고, ③ 새 각도가 일정 시간(dwell)
+// 이상 유지된 경우에만 실제로 반영해 순간적인 오독을 무시하도록 했다.
+let _scanTiltDeg = 0;
+let _scanTiltPending = 0;
+let _scanTiltPendingSince = 0;
+let _scanGammaSmoothed = 0;
+
+const SCAN_TILT_ENTER_DEG = 42;   // 이 각도를 넘어야 회전을 "시작"
+const SCAN_TILT_EXIT_DEG  = 20;   // 이 각도 아래로 내려와야 정방향으로 "복귀"
+const SCAN_TILT_DWELL_MS  = 250;  // 새 각도가 이 시간 이상 유지돼야 실제 반영
+const SCAN_TILT_SMOOTH    = 0.2;  // 지수이동평균 계수 (작을수록 부드럽지만 반응은 느려짐)
+
+function _applyScanTilt(deg) {
+  const group = document.getElementById('scanRotateGroup');
+  if (group) group.style.transform = deg ? ('rotate(' + deg + 'deg)') : '';
+}
+function _onScanDeviceOrientation(e) {
+  const g = e.gamma;
+  if (g == null) return;
+
+  _scanGammaSmoothed += (g - _scanGammaSmoothed) * SCAN_TILT_SMOOTH;
+  const sg = _scanGammaSmoothed;
+
+  let candidate = _scanTiltDeg;
+  if (_scanTiltDeg === 0) {
+    if (sg > SCAN_TILT_ENTER_DEG) candidate = -90;
+    else if (sg < -SCAN_TILT_ENTER_DEG) candidate = 90;
+  } else if (Math.abs(sg) < SCAN_TILT_EXIT_DEG) {
+    candidate = 0;
+  } else if (sg > SCAN_TILT_ENTER_DEG) {
+    candidate = -90;
+  } else if (sg < -SCAN_TILT_ENTER_DEG) {
+    candidate = 90;
+  }
+
+  if (candidate === _scanTiltDeg) {
+    _scanTiltPending = _scanTiltDeg;
+    return;
+  }
+
+  const now = Date.now();
+  if (candidate !== _scanTiltPending) {
+    _scanTiltPending = candidate;
+    _scanTiltPendingSince = now;
+    return;
+  }
+  if (now - _scanTiltPendingSince >= SCAN_TILT_DWELL_MS) {
+    _scanTiltDeg = candidate;
+    _applyScanTilt(candidate);
+  }
+}
+function _startScanTiltSensor() {
+  _scanTiltDeg = 0;
+  _scanTiltPending = 0;
+  _scanTiltPendingSince = 0;
+  _scanGammaSmoothed = 0;
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', _onScanDeviceOrientation);
+  }
+}
+function _stopScanTiltSensor() {
+  window.removeEventListener('deviceorientation', _onScanDeviceOrientation);
+  _scanTiltDeg = 0;
+  _scanTiltPending = 0;
+  _applyScanTilt(0);
+}
+</script>
 </body>
 </html>
