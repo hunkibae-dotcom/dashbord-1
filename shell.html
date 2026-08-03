@@ -2861,7 +2861,7 @@
         if (group) group.style.transform = deg ? ('rotate(' + deg + 'deg)') : '';
     }
     function _cycleScanRotation() {
-        _scanManualRotateDeg = (_scanManualRotateDeg + 90) % 360;
+        _scanManualRotateDeg = _scanManualRotateDeg === 0 ? 90 : 0;
         _applyScanTilt(_scanManualRotateDeg);
     }
     function _resetScanRotation() {
