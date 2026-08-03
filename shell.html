@@ -2560,6 +2560,7 @@
     let _scanStartedAt = 0, _ocrRunning = false, _lastOcrAttempt = 0;
     let _tessLoading = false, _ocrWorkerPromise = null;
     let _lastDetectAttempt = 0;
+    let _scanVideoTrack = null;
 
     async function openScanView() {
         openView('viewScan');
