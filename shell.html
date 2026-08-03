@@ -2600,6 +2600,15 @@
             document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
             _scanStartedAt = Date.now();
             _scanRaf = requestAnimationFrame(_scanTick);
+
+            // 계속 인식이 잘 안 될 때 원인이 해상도/초점/포맷 중 뭔지 화면에서 바로 확인하려고
+            // 실제 값을 표시해둔다 — 문제 재현 시 이 값을 캡처해서 알려주면 원인을 좁힐 수 있다.
+            const _dbg = document.getElementById('scanDebugInfo');
+            if (_dbg) {
+                const _s = _vtrack.getSettings ? _vtrack.getSettings() : {};
+                const _c = _vtrack.getCapabilities ? _vtrack.getCapabilities() : {};
+                _dbg.textContent = (_s.width||'?') + '×' + (_s.height||'?') + ' · AF:' + (_c.focusMode ? _c.focusMode.join(',') : 'X') + ' · ' + fmts.join(',');
+            }
         } catch(e) {
             document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
         }
