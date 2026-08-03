@@ -2950,7 +2950,9 @@ async function openScanView() {
   document.getElementById('viewScan').classList.remove('hidden');
   document.getElementById('scanResultBar').classList.add('hidden');
   document.getElementById('scanStatus').textContent = '카메라 초기화 중...';
+  document.getElementById('scanFrame')?.classList.remove('scan-locked');
   _zxingLastTry = 0;
+  _lastDetectAttempt = 0;
   _loadZXing(function(){});
   _resetScanRotation();
   _armBackTrap();
