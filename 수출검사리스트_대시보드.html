@@ -2509,6 +2509,8 @@ function _kpiDetailRender() {
   const cj1items = items.filter(d => d.공장 === 'cj1');
   const cj2items = items.filter(d => d.공장 === 'cj2');
 
+  if (!window._mItemMap) window._mItemMap = {};
+  let _kpiRowIdx = 0;
   const renderGroup = (list, label) => {
     if (!list.length) return '';
     return `<div style="margin-bottom:16px;">
@@ -2521,7 +2523,9 @@ function _kpiDetailRender() {
                <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">납기</span> ${_kpiFmtDate(d.납기일)}</span>
                <span style="font-size:10.5px;color:#64748B;"><span style="color:#94A3B8;">포장</span> ${_kpiFmtDate(d.포장일)}</span>
              </div>` : '';
-        return `<div style="padding:9px 0;border-bottom:1px solid #F8FAFC;">
+        const mik = 'mkpi_' + (_kpiRowIdx++);
+        window._mItemMap[mik] = d;
+        return `<div onclick="openMItemDetail('${mik}')" style="padding:9px 0;border-bottom:1px solid #F8FAFC;cursor:pointer;-webkit-tap-highlight-color:transparent;">
           <div style="display:flex;align-items:flex-start;gap:8px;">
             <div style="flex:1;min-width:0;">
               <div style="font-size:13.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
