@@ -3016,7 +3016,7 @@ async function _startScan() {
           focusSlider.max = fd.max;
           focusSlider.step = fd.step || ((fd.max - fd.min) / 100) || 1;
           focusSlider.value = startVal;
-          focusRow.classList.remove('hidden');
+          focusRow.style.display = 'flex';
         }
       } else if (_caps.focusMode) {
         _focusInfo = _caps.focusMode.join(',') + '(FD 없음)';
