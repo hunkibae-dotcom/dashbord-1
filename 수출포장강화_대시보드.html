@@ -1708,6 +1708,15 @@
                     setTimeout(function(){ switchToProductDetailView(_sc); }, 600);
                 }
             }
+
+            // F.WORK 메인 화면에서 "스캔" 메뉴로 들어온 경우, 이 대시보드 자체 스캐너를 바로 열기
+            if (!_openScanHandled) {
+                var _os = new URLSearchParams(location.search).get('openScan');
+                if (_os) {
+                    _openScanHandled = true;
+                    setTimeout(function(){ openScanView(); }, 400);
+                }
+            }
         }
 
         // 복수 시트의 스펙 정보를 1:1 교차 대조 후 원장에 완벽 이식하는 빌더
