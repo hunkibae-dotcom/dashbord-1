@@ -926,11 +926,13 @@ let charts = {};
 // 이미 끝난 이력이라 내용이 거의 안 바뀜에도 페이지를 열 때마다 전체를 새로 받아왔던 게
 // 대시보드 진입이 느렸던 핵심 원인이었다. 캐시로 즉시 화면을 그리고, 최신 데이터는
 // 백그라운드에서 이어서 받아와 갱신한다 (검색 가능한 이력 범위는 그대로 전체 유지).
-const ARCHIVE_CACHE_KEY = 'qc_archive_cache_v1';
+const ARCHIVE_CACHE_KEY = 'qc_archive_cache_v2';
 function _loadArchiveCache() {
   try {
     const parsed = JSON.parse(localStorage.getItem(ARCHIVE_CACHE_KEY));
     if (!parsed || !parsed.rows || !parsed.totals) return null;
+    // 구버전 캐시에 source 필드가 없을 경우 정규화
+    parsed.rows = parsed.rows.map(r => r.source ? r : { ...r, source: 'archive' });
     return parsed;
   } catch (e) { return null; }
 }
