@@ -2815,10 +2815,10 @@ function renderMobileCharts() {
       options: {
         responsive:true, maintainAspectRatio:false,
         interaction:{mode:'index',intersect:false},
-        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'#fff', titleColor:'#334155', bodyColor:'#475569', borderColor:'#E2E8F0', borderWidth:1, padding:8, callbacks:{ label: item => item.datasetIndex===0 ? `기간: ${item.raw}건` : `누적: ${item.raw}건` } } },
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:8, callbacks:{ label: item => item.datasetIndex===0 ? `기간: ${item.raw}건` : `누적: ${item.raw}건` } } },
         scales:{
-          x:{ grid:{display:false}, ticks:{color:'#94A3B8',font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
-          yB:{ position:'left', grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8',font:{size:9.5}}, suggestedMax:pMax*3 },
+          x:{ grid:{display:false}, ticks:{color:c.tickSub,font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+          yB:{ position:'left', grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5}}, suggestedMax:pMax*3 },
           yC:{ position:'right', grid:{display:false}, ticks:{color:color+'BB',font:{size:9.5}} }
         }
       }
@@ -2832,12 +2832,12 @@ function renderMobileCharts() {
   const tLabels = top.map(([k]) => { const [n] = k.split('||'); return n.length>14?n.slice(0,14)+'…':n; });
   const tColors = top.map(([k]) => k.split('||')[1]==='cj1'?'rgba(59,130,246,.75)':'rgba(139,92,246,.75)');
   const tCtx = document.getElementById('mTopChart')?.getContext('2d');
-  if (tCtx) { if (mCharts.top) mCharts.top.destroy(); mCharts.top = new Chart(tCtx, { type:'bar', data:{labels:tLabels,datasets:[{data:top.map(([,v])=>v),backgroundColor:tColors,borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:lightTooltip()},scales:{x:{grid:{color:'#F1F5F9'},ticks:{color:'#94A3B8',font:{size:10},stepSize:1}},y:{grid:{display:false},ticks:{color:'#475569',font:{size:10.5}}}}}}); }
+  if (tCtx) { if (mCharts.top) mCharts.top.destroy(); mCharts.top = new Chart(tCtx, { type:'bar', data:{labels:tLabels,datasets:[{data:top.map(([,v])=>v),backgroundColor:tColors,borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:lightTooltip()},scales:{x:{grid:{color:c.grid},ticks:{color:c.tickSub,font:{size:10},stepSize:1}},y:{grid:{display:false},ticks:{color:c.tick,font:{size:10.5}}}}}}); }
   // Dday
   const bkt = {cj1:[0,0,0,0], cj2:[0,0,0,0]};
   undone.forEach(d => { const dd=ddayInfo(d.납기일); const idx=dd===null?3:dd<0?0:dd<=7?1:2; bkt[d.공장][idx]++; });
   const dCtx = document.getElementById('mDdChart')?.getContext('2d');
-  if (dCtx) { if (mCharts.dd) mCharts.dd.destroy(); mCharts.dd = new Chart(dCtx, { type:'bar', data:{ labels:['지연','7일 이내','8일 이상','미정'], datasets:[{label:'충주1',data:bkt.cj1,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5},{label:'충주2',data:bkt.cj2,backgroundColor:'rgba(139,92,246,.75)',borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:'#475569',font:{size:11},boxWidth:8,padding:8}},tooltip:lightTooltip()},scales:{x:{grid:{display:false},ticks:{color:'#475569',font:{size:11}}},y:{grid:{color:'#F1F5F9'},ticks:{color:'#94A3B8',font:{size:10},stepSize:1}}}}}); }
+  if (dCtx) { if (mCharts.dd) mCharts.dd.destroy(); mCharts.dd = new Chart(dCtx, { type:'bar', data:{ labels:['지연','7일 이내','8일 이상','미정'], datasets:[{label:'충주1',data:bkt.cj1,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5},{label:'충주2',data:bkt.cj2,backgroundColor:'rgba(139,92,246,.75)',borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:c.tick,font:{size:11},boxWidth:8,padding:8}},tooltip:lightTooltip()},scales:{x:{grid:{display:false},ticks:{color:c.tick,font:{size:11}}},y:{grid:{color:c.grid},ticks:{color:c.tickSub,font:{size:10},stepSize:1}}}}}); }
 }
 
 function renderMobileList() {
