@@ -2980,12 +2980,27 @@ async function _startScan() {
     vid.srcObject = stream;
     await vid.play();
     _setupScanTorch(stream);
-    // getUserMedia 생성 시점의 advanced 제약은 기기별로 무시되는 경우가 많아,
-    // 스트림을 받은 트랙에 직접 한 번 더 걸어준다 — 연속 자동초점이 실제로 켜져야
-    // 카메라가 계속 흐릿하게 나오는 문제(화질 저하로 느껴지는 원인)가 해결된다.
+    // 일부 기기는 continuous 자동초점 자체를 지원하지 않고 focusMode 지원 목록에
+    // 'manual'만 있다(실제로 이 앱에서 확인됨) — 그 경우 continuous 요청은 조용히
+    // 무시되고 카메라가 초기 고정 초점에 그대로 멈춰서 계속 흐리게 나온다.
+    // capabilities를 직접 확인해서 continuous가 있으면 그걸 켜고, 없고 manual +
+    // focusDistance 범위가 있으면 근접(매크로) 쪽 값으로 강제로 맞춘다.
     const _vtrack = stream.getVideoTracks()[0];
-    if (_vtrack && typeof _vtrack.applyConstraints === 'function') {
-      _vtrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+    let _focusInfo = 'X';
+    if (_vtrack && typeof _vtrack.getCapabilities === 'function') {
+      const _caps = _vtrack.getCapabilities();
+      if (_caps.focusMode && _caps.focusMode.includes('continuous')) {
+        _vtrack.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+        _focusInfo = 'continuous';
+      } else if (_caps.focusMode && _caps.focusMode.includes('manual') && _caps.focusDistance) {
+        const fd = _caps.focusDistance;
+        // focusDistance는 기기마다 방향이 다를 수 있어(값이 클수록 근접인 경우가 많음)
+        // 우선 최대값(근접 추정)으로 시도 — 결과가 여전히 흐리면 반대로 min을 시도해야 함
+        await _vtrack.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: fd.max }] }).catch(() => {});
+        _focusInfo = 'manual(FD ' + fd.min + '~' + fd.max + ', set=' + fd.max + ')';
+      } else if (_caps.focusMode) {
+        _focusInfo = _caps.focusMode.join(',') + '(FD 없음)';
+      }
     }
 
     if (!('BarcodeDetector' in window)) {
@@ -2998,13 +3013,12 @@ async function _startScan() {
     _scanStartedAt = Date.now();
     _scanRaf = requestAnimationFrame(_scanTick);
 
-    // 계속 인식이 잘 안 될 때 원인이 해상도/초점/포맷 중 뭔지 화면에서 바로 확인하려고
+    // 계속 인식이 잘 안 될 때 원인이 해상도/초점 중 뭔지 화면에서 바로 확인하려고
     // 실제 값을 표시해둔다 — 문제 재현 시 이 값을 캡처해서 알려주면 원인을 좁힐 수 있다.
     const _dbg = document.getElementById('scanDebugInfo');
     if (_dbg) {
       const _s = _vtrack.getSettings ? _vtrack.getSettings() : {};
-      const _c = _vtrack.getCapabilities ? _vtrack.getCapabilities() : {};
-      _dbg.textContent = (_s.width||'?') + '×' + (_s.height||'?') + ' · AF:' + (_c.focusMode ? _c.focusMode.join(',') : 'X') + ' · ' + fmts.join(',');
+      _dbg.textContent = (_s.width||'?') + '×' + (_s.height||'?') + ' · AF:' + _focusInfo + ' · cur=' + (_s.focusDistance!==undefined ? _s.focusDistance : '-');
     }
   } catch (e) {
     document.getElementById('scanStatus').textContent = '카메라 권한이 필요합니다. 설정에서 허용해주세요.';
