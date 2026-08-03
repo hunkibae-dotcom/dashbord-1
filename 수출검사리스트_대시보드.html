@@ -3231,6 +3231,9 @@ function _onScanDetect(raw) {
   document.getElementById('scanResultText').textContent = raw;
   bar.classList.remove('hidden');
   document.getElementById('scanStatus').textContent = '인식 완료 — 검색 또는 재스캔';
+  // 프레임을 초록색으로 고정 + 살짝 확대해서 "인식됐다"는 걸 보여주고, 화면(영상)도 그 순간에 멈춘다
+  document.getElementById('scanFrame')?.classList.add('scan-locked');
+  document.getElementById('scanVideo')?.pause();
 }
 
 function confirmScanResult() {
