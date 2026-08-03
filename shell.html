@@ -2697,6 +2697,18 @@
 
     // 화면에 보이는 스캔 가이드 프레임 영역만 잘라 분석용 캔버스로 반환
     // (배경을 잘라내 디코더가 바코드 영역에 집중하도록 함 — object-fit:cover 좌표 보정 포함)
+    //
+    // scanFrame은 기울기 보정용으로 CSS 회전(rotate)되기도 하지만 <video>는 회전되지 않으므로,
+    // 회전이 걸린 상태의 getBoundingClientRect()를 그대로 쓰면 잘라내는 좌표가 실제 영상과
+    // 어긋난다(기울인 채로는 멀쩡한 바코드도 엉뚱한 영역을 잘라 인식 실패). 회전이 0도일 때의
+    // 좌표만 계속 캐싱해두고, 회전 중에는 그 값을 그대로 재사용한다.
+    let _scanFrameBaseRect = null;
+    function _getScanFrameRect(frame) {
+        if (_scanTiltDeg === 0) {
+            _scanFrameBaseRect = frame.getBoundingClientRect();
+        }
+        return _scanFrameBaseRect || frame.getBoundingClientRect();
+    }
     function _cropToScanFrame(video) {
         const frame = document.getElementById('scanFrame');
         const canvas = document.getElementById('scanCanvas');
@@ -2704,7 +2716,7 @@
         if (!frame || !canvas || !vw || !vh) return null;
 
         const vRect = video.getBoundingClientRect();
-        const fRect = frame.getBoundingClientRect();
+        const fRect = _getScanFrameRect(frame);
         const dispW = vRect.width, dispH = vRect.height;
         if (!dispW || !dispH) return null;
 
