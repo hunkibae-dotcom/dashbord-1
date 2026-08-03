@@ -2564,6 +2564,7 @@
             const vid = document.getElementById('scanVideo');
             vid.srcObject = stream;
             await vid.play();
+            _setupScanTorch(stream);
 
             if (!('BarcodeDetector' in window)) {
                 document.getElementById('scanStatus').textContent = '이 기기는 자동 스캔을 지원하지 않습니다';
