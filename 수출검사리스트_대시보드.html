@@ -3248,7 +3248,11 @@ function confirmScanResult() {
 function resumeScan() {
   document.getElementById('scanResultBar').classList.add('hidden');
   document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+  document.getElementById('scanFrame')?.classList.remove('scan-locked');
+  const vid = document.getElementById('scanVideo');
+  if (vid && vid.paused) vid.play().catch(() => {});
   _scanStartedAt = Date.now();
+  _lastDetectAttempt = 0;
   if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
 }
 
