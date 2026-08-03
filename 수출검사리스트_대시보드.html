@@ -2998,7 +2998,7 @@ async function _startScan() {
     let _focusInfo = 'X';
     const focusRow = document.getElementById('scanFocusRow');
     const focusSlider = document.getElementById('scanFocusSlider');
-    if (focusRow) focusRow.classList.add('hidden');
+    if (focusRow) focusRow.style.display = 'none';
     if (_vtrack && typeof _vtrack.getCapabilities === 'function') {
       const _caps = _vtrack.getCapabilities();
       if (_caps.focusMode && _caps.focusMode.includes('continuous')) {
