@@ -2851,7 +2851,12 @@
     function resumeScan() {
         document.getElementById('scanResultBar').style.display = 'none';
         document.getElementById('scanStatus').textContent = '바코드를 프레임 안에 맞추세요';
+        const frame = document.getElementById('scanFrame');
+        if (frame) frame.classList.remove('scan-locked');
+        const vid = document.getElementById('scanVideo');
+        if (vid && vid.paused) vid.play().catch(() => {});
         _scanStartedAt = Date.now();
+        _lastDetectAttempt = 0;
         if (_scanStream && _scanDetector) _scanRaf = requestAnimationFrame(_scanTick);
     }
 
