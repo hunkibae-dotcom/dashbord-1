@@ -183,10 +183,14 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   /* 다크모드: KPI 바텀시트 */
   html.dark .kpiDetailInner { background:var(--panel) !important; }
 
-  html.dark #productSearchModal .tbl-row { border-color: var(--border) !important; }
-  html.dark #productSearchModal .tbl-row:hover { background: var(--input-bg) !important; }
-  html.dark #mTab_home .bg-slate-100, html.dark #mTab_list .bg-slate-100, html.dark #productSearchModal .bg-slate-100,
+  html.dark #productSearchModal .tbl-row, html.dark #specModal .tbl-row { border-color: var(--border) !important; }
+  html.dark #productSearchModal .tbl-row:hover, html.dark #specModal .tbl-row:hover { background: var(--input-bg) !important; }
+  html.dark #mTab_home .bg-slate-100, html.dark #mTab_list .bg-slate-100, html.dark #productSearchModal .bg-slate-100, html.dark #specModal .bg-slate-100,
   html.dark #mTab_list .code-tag { background: var(--input-bg) !important; color: var(--text-sub) !important; }
+
+  /* 다크모드: 상세스펙 모달 헤더 배경/보더, 배지 */
+  html.dark #specModal .border-slate-200 { border-color: var(--border) !important; }
+  html.dark #specModal .bg-indigo-50 { background: rgba(99,102,241,.15) !important; }
 
   /* 인라인 스타일로 박힌 밝은 배경/보더/글자색도 자주 쓰이는 값 위주로 보정 */
   html.dark #mTab_home [style*="border-bottom:1px solid #F1F5F9"],
