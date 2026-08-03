@@ -1939,6 +1939,14 @@ function updatePsDateBtnLabel() {
   label.textContent = (from || to) ? `${short(from) || '~'} - ${short(to) || '~'}` : '날짜 전체';
 }
 
+function resetProductSearchFilters() {
+  ['psName', 'psCode', 'psColor', 'psFrom', 'psTo'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('psFactory').value = '';
+  document.getElementById('psStatus').value = '';
+  updatePsDateBtnLabel();
+  runProductSearch();
+}
+
 function runProductSearch() {
   const code = document.getElementById('psCode').value.trim().toLowerCase();
   const name = document.getElementById('psName').value.trim().toLowerCase();
