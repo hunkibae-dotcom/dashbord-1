@@ -860,15 +860,23 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
 <!-- ===== 바코드 스캐너 뷰 ===== -->
 <div id="viewScan" class="hidden fixed inset-0 z-[110] bg-black flex flex-col overflow-hidden">
-  <div class="absolute top-0 left-0 right-0 z-10 p-3 flex items-center gap-2" style="background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
-    <button onclick="closeScanView()" class="text-white text-xl p-1.5"><i class="fa-solid fa-chevron-left"></i></button>
-    <span class="text-white font-extrabold text-[15px] flex-1">바코드 스캔</span>
-    <!-- 포장재 비닐 반사광 때문에 바코드가 안 읽힐 때 수동으로 켜서 눈부심을 줄이기 위한 손전등 토글
-         (기기가 torch를 지원할 때만 표시됨 — _setupScanTorch에서 hidden 클래스를 뗌) -->
-    <button id="scanTorchBtn" onclick="_toggleScanTorch()" class="hidden text-white text-lg p-1.5">
-      <i class="fa-solid fa-bolt"></i>
-    </button>
-    <span id="scanDebugInfo" class="text-white/60 text-[10px]">CODE128 · CODE39</span>
+  <div class="absolute top-0 left-0 right-0 z-10" style="background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
+    <div class="p-3 flex items-center gap-2" style="padding-bottom:2px;">
+      <button onclick="closeScanView()" class="text-white text-xl p-1.5 shrink-0"><i class="fa-solid fa-chevron-left"></i></button>
+      <span class="text-white font-extrabold text-[15px] flex-1 truncate" style="min-width:0;">바코드 스캔</span>
+      <!-- 포장재 비닐 반사광 때문에 바코드가 안 읽힐 때 수동으로 켜서 눈부심을 줄이기 위한 손전등 토글
+           (기기가 torch를 지원할 때만 표시됨 — _setupScanTorch에서 hidden 클래스를 뗌) -->
+      <button id="scanTorchBtn" onclick="_toggleScanTorch()" class="hidden text-white text-lg p-1.5 shrink-0">
+        <i class="fa-solid fa-bolt"></i>
+      </button>
+    </div>
+    <div id="scanDebugInfo" class="text-white/45 text-[9.5px] truncate" style="padding:0 12px 6px;"></div>
+    <!-- 이 기기는 자동초점이 안 돼서(AF:manual) 수동으로 직접 맞춰야 함 — focusDistance를
+         지원하는 기기에서만 표시됨 (_startScan에서 표시 여부 결정) -->
+    <div id="scanFocusRow" class="hidden items-center gap-2" style="padding:0 12px 10px;">
+      <i class="fa-solid fa-magnifying-glass-plus text-white/60 text-xs shrink-0"></i>
+      <input id="scanFocusSlider" type="range" oninput="_onScanFocusSlide(this.value)" class="flex-1" style="height:20px;">
+    </div>
   </div>
   <video id="scanVideo" autoplay playsinline muted class="flex-1 w-full object-cover"></video>
   <div class="absolute inset-0 z-[5] flex flex-col items-center justify-center pointer-events-none">
