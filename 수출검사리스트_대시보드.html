@@ -2934,6 +2934,7 @@ let _scanStream = null, _scanRaf = null, _scanDetector = null;
 let _zxingReader = null, _zxingLoading = false, _zxingLastTry = 0;
 let _scanStartedAt = 0, _ocrRunning = false, _lastOcrAttempt = 0;
 let _tessLoading = false, _ocrWorkerPromise = null;
+let _lastDetectAttempt = 0;
 
 async function openScanView() {
   document.getElementById('viewScan').classList.remove('hidden');
