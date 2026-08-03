@@ -2994,7 +2994,11 @@ async function _startScan() {
     // capabilities를 직접 확인해서 continuous가 있으면 그걸 켜고, 없고 manual +
     // focusDistance 범위가 있으면 근접(매크로) 쪽 값으로 강제로 맞춘다.
     const _vtrack = stream.getVideoTracks()[0];
+    _scanVideoTrack = _vtrack;
     let _focusInfo = 'X';
+    const focusRow = document.getElementById('scanFocusRow');
+    const focusSlider = document.getElementById('scanFocusSlider');
+    if (focusRow) focusRow.classList.add('hidden');
     if (_vtrack && typeof _vtrack.getCapabilities === 'function') {
       const _caps = _vtrack.getCapabilities();
       if (_caps.focusMode && _caps.focusMode.includes('continuous')) {
@@ -3002,10 +3006,18 @@ async function _startScan() {
         _focusInfo = 'continuous';
       } else if (_caps.focusMode && _caps.focusMode.includes('manual') && _caps.focusDistance) {
         const fd = _caps.focusDistance;
-        // focusDistance는 기기마다 방향이 다를 수 있어(값이 클수록 근접인 경우가 많음)
-        // 우선 최대값(근접 추정)으로 시도 — 결과가 여전히 흐리면 반대로 min을 시도해야 함
-        await _vtrack.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: fd.max }] }).catch(() => {});
-        _focusInfo = 'manual(FD ' + fd.min + '~' + fd.max + ', set=' + fd.max + ')';
+        const startVal = (fd.min + fd.max) / 2;
+        await _vtrack.applyConstraints({ advanced: [{ focusMode: 'manual', focusDistance: startVal }] }).catch(() => {});
+        _focusInfo = 'manual(FD ' + fd.min + '~' + fd.max + ')';
+        // 자동으로는 방향(값이 클수록 근접인지 반대인지)을 알 수 없어서, 슬라이더를
+        // 보여주고 사람이 직접 또렷해지는 지점을 찾게 한다
+        if (focusRow && focusSlider) {
+          focusSlider.min = fd.min;
+          focusSlider.max = fd.max;
+          focusSlider.step = fd.step || ((fd.max - fd.min) / 100) || 1;
+          focusSlider.value = startVal;
+          focusRow.classList.remove('hidden');
+        }
       } else if (_caps.focusMode) {
         _focusInfo = _caps.focusMode.join(',') + '(FD 없음)';
       }
