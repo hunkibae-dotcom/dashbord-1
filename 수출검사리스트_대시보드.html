@@ -2576,8 +2576,7 @@ function _kpiDetailRender() {
         return `<div onclick="openMItemDetail('${mik}')" style="padding:9px 0;border-bottom:1px solid #F8FAFC;cursor:pointer;-webkit-tap-highlight-color:transparent;">
           <div style="display:flex;align-items:flex-start;gap:8px;">
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13.5px;font-weight:700;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
-              <div style="font-size:11.5px;color:#94A3B8;margin-top:2px;">${d.단품코드 || '—'} · ${d.색상 || '—'} · ${d.수량 || 0}개</div>
+              <div style="font-size:13.5px;font-weight:700;color:#1E293B;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.단품코드 || '—'} <span style="font-weight:600;color:#94A3B8;font-family:inherit;">· ${d.색상 || '—'} · ${d.수량 || 0}개</span></div>
               ${dateRow}
             </div>
             <span style="font-size:10.5px;font-weight:700;color:${sc};white-space:nowrap;flex-shrink:0;margin-top:2px;">${status}</span>
