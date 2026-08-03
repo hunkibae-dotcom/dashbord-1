@@ -977,7 +977,7 @@ async function loadData() {
     ARCHIVES.map(f => fetchArchiveData(f).catch(e => { loadErrors.push(`${f.label} 검사완료 리스트(누적 이력): ${e.message}`); return null; }))
   ).then(archives => {
     archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
-    archiveRows = archives.filter(Boolean).flatMap(t => t.items);
+    archiveRows = archives.filter(Boolean).flatMap(t => t.items).map(r => r.source ? r : { ...r, source: 'archive' });
     applyMiOverrides(archiveRows);
     _saveArchiveCache(archiveTotals, archiveRows);
     renderArchiveKPI();
