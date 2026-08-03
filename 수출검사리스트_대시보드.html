@@ -2224,7 +2224,11 @@ function runSpecLookup() {
 
 function renderSpecHistory() {
   const rows = sortByKey(specHistoryRows, specSortKey, specSortDir);
-  document.getElementById('specHistBody').innerHTML = rows.map(d => `<tr class="tbl-row">
+  if (!window._mItemMap) window._mItemMap = {};
+  document.getElementById('specHistBody').innerHTML = rows.map((d, idx) => {
+    const mik = 'msh_' + idx;
+    window._mItemMap[mik] = d;
+    return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;">
     <td class="py-2 pl-3 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
     <td class="py-2 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
     <td class="py-2 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
