@@ -3051,7 +3051,9 @@ function _cropToScanFrame(video) {
   const srcOffsetX = (vw - dispW / scale) / 2;
   const srcOffsetY = (vh - dispH / scale) / 2;
 
-  const padX = fRect.width * 0.15, padY = fRect.height * 0.5;
+  // 코드 뒤에 로트번호까지 붙어 바코드 자체가 긴 라벨은 프레임 폭에 딱 맞춰 대기가
+  // 어렵다 보니 살짝만 삐져나가도 잘려서 인식이 안 됐다 — 좌우 여유를 넉넉히 늘림
+  const padX = fRect.width * 0.35, padY = fRect.height * 0.5;
   const dispX = (fRect.left - vRect.left) - padX;
   const dispY = (fRect.top - vRect.top) - padY;
   const dispCropW = fRect.width + padX * 2;
