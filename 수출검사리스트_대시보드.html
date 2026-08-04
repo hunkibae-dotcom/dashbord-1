@@ -2765,6 +2765,16 @@ function closeMItemDetail() {
   document.getElementById('mItemDetailModal').style.display = 'none';
   _miCurrent = null;
 }
+function saveMItemDetail() {
+  // 각 입력칸은 이미 변경 즉시 자동으로 저장되고 있어서, 이 버튼은 별도로 다시 저장을
+  // 시도하지 않고 "저장됐다"는 확인 피드백만 준 뒤 창을 닫는 확인 버튼 역할을 한다.
+  const btn = document.getElementById('miSaveBtn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장 완료';
+  }
+  setTimeout(closeMItemDetail, 400);
+}
 function setMiField(field, value) {
   if (!_miCurrent) return;
   if (['가로', '세로', '높이', '중량'].includes(field)) {
