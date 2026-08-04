@@ -2911,6 +2911,27 @@
         if (_dbg) _dbg.textContent = _dbg.textContent.replace(/cur=.*/, 'cur=' + v);
     }
 
+    // ── 네이티브 Android ML Kit 결과 수신 (ScanActivity → MainActivity → JS) ──
+    function onNativeScanResult(raw) {
+        const { code, color } = _parseBarcodeRaw(raw);
+        openView('viewSearch');
+        document.getElementById('sf_code').value  = code;
+        document.getElementById('sf_color').value = color;
+        ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(function(id) {
+            document.getElementById(id).value = '';
+        });
+        runSearch();
+    }
+
+    // 스캔 열기 — 네이티브 앱: ML Kit, 웹브라우저: 기존 카메라 스캐너
+    function _openScanSmart() {
+        if (window.Android && typeof window.Android.isNative === 'function' && window.Android.isNative()) {
+            window.Android.startScan();
+        } else {
+            openScanView();
+        }
+    }
+
     function _parseBarcodeRaw(raw) {
         // "CODE - COLOR" or "CODE-COLOR" 형식 파싱
         const m = raw.match(/^(.+?)\s*-\s*([A-Za-z0-9]+)\s*$/);
