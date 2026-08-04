@@ -955,6 +955,11 @@ const FACTORIES = [
   { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1420932673', accent:'f1' },
   { key:'cj2', label:'충주2공장', sheetId:'1Gy1jIbw7j4t2A2B0N3-cwrqwCQMXd1M-S4oROGk-hg8', gid:'0', accent:'f2' },
 ];
+// 모바일 품목 상세(#mItemDetailModal)에서 수정한 값을 실제 시트에 반영할 때 쓰는 웹앱 URL.
+// 충주1/충주2가 서로 다른 스프레드시트라 배포도 별도로 해야 하고 URL도 각각 다르다.
+// localStorage에 'sheet_pub_url_cj1'/'sheet_pub_url_cj2'가 있으면 그걸 우선 사용한다.
+const GAS_URL_CJ1 = localStorage.getItem('sheet_pub_url_cj1') || '';
+const GAS_URL_CJ2 = localStorage.getItem('sheet_pub_url_cj2') || '';
 // 검사완료 후 별도 탭으로 이동되는 누적 이력 시트 (진행중인 검사항목 리스트와는 별도)
 const ARCHIVES = [
   { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1307214033', accent:'f1' },
