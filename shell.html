@@ -1611,6 +1611,9 @@
             t = setTimeout(() => fn.apply(this, args), wait);
         };
     }
+    const runSearchDebounced = debounce(() => runSearch(), 200);
+    const onPalletSearchInputDebounced = debounce(() => onPalletSearchInput(), 200);
+    const runSpecSearchDebounced = debounce(() => runSpecSearch(), 200);
 
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
