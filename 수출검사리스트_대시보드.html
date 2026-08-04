@@ -2896,15 +2896,13 @@ function renderMobileList() {
     const pillCls = isDone ? 'pill-done' : isYangji ? 'pill-yangji' : isReinspect ? 'pill-reinspect' : 'pill-undone';
     const pillIcon = isDone ? 'fa-check' : isYangji ? 'fa-rotate-left' : isReinspect ? 'fa-arrow-rotate-right' : 'fa-xmark';
     const pillText = isArchive && !isDone ? '미검사출고' : d.검사;
-    const dd = ddayInfo(d.납기일);
-    let ddB = '';
-    if (dd !== null && !isDone) {
-      if (dd < 0) ddB = `<span class="pill pill-dday-over" style="font-size:10px;padding:2px 8px;">지연 ${Math.abs(dd)}일</span>`;
-      else if (dd <= 7) ddB = `<span class="pill pill-dday-soon" style="font-size:10px;padding:2px 8px;">D-${dd}</span>`;
-    }
-    const dateLabel = ddB
-      ? ddB
-      : `<span style="font-size:11px;color:#94A3B8;font-weight:600;">${d.납기일 || '납기 미정'}</span>`;
+    // 포장/검사/납기 날짜를 상황별로 D-day 뱃지·원본날짜 등 제각각 표시하던 걸 없애고,
+    // 있는 날짜만 "포장 26.08.05 · 검사 26.08.06 · 납기 26.08.09" 형태로 통일해서 표시
+    const dateParts = [
+      d.포장일 ? '포장 ' + _ymdShort(d.포장일) : '',
+      d.검사일 ? '검사 ' + _ymdShort(d.검사일) : '',
+      d.납기일 ? '납기 ' + _ymdShort(d.납기일) : ''
+    ].filter(Boolean).join(' · ');
     const mik = 'mli_' + idx;
     window._mItemMap[mik] = d;
     return `<div class="bg-white rounded-2xl mb-2.5 overflow-hidden cursor-pointer" onclick="openMItemDetail('${mik}')" style="display:flex;box-shadow:0 2px 12px rgba(0,0,0,.06);-webkit-tap-highlight-color:transparent;">
