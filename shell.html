@@ -1454,7 +1454,7 @@
 
         if (chartInst) { chartInst.destroy(); chartInst=null; }
         const canvas = document.getElementById('mainChart');
-        if (!canvas) { renderProductChart(textClr, gridClr); return; }
+        if (!canvas) return;
 
         const packingBarTopPlugin = {
             id:'packingBarTopM',
