@@ -3591,12 +3591,10 @@ function onNativeScanResult(raw) {
   var parts = raw.split('_');
   var code  = parts[0] || raw;
   var color = parts[1] || '';
-  document.getElementById('sf_code')  && (document.getElementById('sf_code').value  = code);
-  document.getElementById('sf_color') && (document.getElementById('sf_color').value = color);
-  ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(function(id){
-    var el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  var codeEl  = document.getElementById('psCode');
+  var colorEl = document.getElementById('psColor');
+  if (codeEl)  codeEl.value  = code;
+  if (colorEl) colorEl.value = color;
   if (typeof runProductSearch === 'function') runProductSearch();
 }
 </script>
