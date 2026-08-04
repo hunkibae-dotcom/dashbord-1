@@ -1015,7 +1015,12 @@
     }
 
     // ── 렌더링 ────────────────────────────────────────────
-    function renderAll() { renderKPIs(); renderSchedule(); renderWorkLog(); renderInform(); renderManagementStatus(); renderChart(); }
+    function renderAll() {
+        renderKPIs(); renderSchedule(); renderWorkLog(); renderInform(); renderManagementStatus();
+        // 차트 슬라이드는 기본 숨김 상태(display:none)라, 열어본 적도 없는데 데이터 로드/새로고침마다
+        // Chart.js 인스턴스 2개를 destroy+재생성하는 건 낭비다 — 실제로 열려있을 때만 다시 그린다.
+        if (_chartViewActive) { renderChart(); renderProductChart(); }
+    }
 
     function renderKPIs() {
         const pending = stockData.filter(d => {
