@@ -2296,30 +2296,41 @@
             arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
         }
 
+        // 진행 상태 필터는 여러 개를 동시에 켜둘 수 있다 (같은 버튼을 다시 누르면 그 상태만 취소).
+        // "전체"를 누르면 나머지 선택은 모두 지워지고, 특정 상태를 하나라도 고르면 "전체"는 자동으로 해제된다.
         function toggleStatusFilter(value) {
-            activeStatusFilter = value;
-            document.getElementById('statusDropdown').classList.add('hidden');
-            document.getElementById('statusDropdownArrow').style.transform = '';
+            if (value === '전체') {
+                activeStatusFilters = new Set(['전체']);
+            } else {
+                activeStatusFilters.delete('전체');
+                if (activeStatusFilters.has(value)) {
+                    activeStatusFilters.delete(value);
+                } else {
+                    activeStatusFilters.add(value);
+                }
+                if (activeStatusFilters.size === 0) activeStatusFilters = new Set(['전체']);
+            }
 
             // 헤더 레이블 업데이트 (상태별 색상 일치)
             const label = document.getElementById('statusFilterLabel');
             const colorMap = { '출고': 'text-orange-400', '피킹': 'text-purple-400', '포장완료': 'text-accentBlue', '미입고': 'text-slate-400' };
-            label.className = 'font-bold ' + (colorMap[value] || 'text-slate-400');
-            if (value === '전체') {
+            if (activeStatusFilters.has('전체')) {
                 label.classList.add('hidden');
             } else {
-                label.textContent = value;
+                const list = Array.from(activeStatusFilters);
+                label.className = 'font-bold ' + (colorMap[list[0]] || 'text-accentBlue');
+                label.textContent = list.length > 1 ? (list[0] + ' 외 ' + (list.length - 1)) : list[0];
                 label.classList.remove('hidden');
             }
 
-            // 선택된 항목 강조 (헤더 드롭다운)
+            // 선택된 항목 강조 (헤더 드롭다운) — 여러 개 동시에 강조될 수 있음
             ['전체','출고','피킹','포장완료','미입고'].forEach(s => {
                 const btn = document.getElementById('sf-' + s);
-                if (btn) btn.classList.toggle('bg-slate-700/60', s === value);
+                if (btn) btn.classList.toggle('bg-slate-700/60', activeStatusFilters.has(s));
             });
             // 사이드바 버튼 강조
             document.querySelectorAll('.sidebar-sf-btn').forEach(btn => {
-                const active = btn.dataset.sbsv === value;
+                const active = activeStatusFilters.has(btn.dataset.sbsv);
                 btn.style.background  = active ? '#3B82F6'  : 'transparent';
                 btn.style.color       = active ? '#fff'     : '#94A3B8';
                 btn.style.borderColor = active ? '#3B82F6'  : '#334155';
