@@ -958,8 +958,10 @@ const FACTORIES = [
 // 모바일 품목 상세(#mItemDetailModal)에서 수정한 값을 실제 시트에 반영할 때 쓰는 웹앱 URL.
 // 충주1/충주2가 서로 다른 스프레드시트라 배포도 별도로 해야 하고 URL도 각각 다르다.
 // localStorage에 'sheet_pub_url_cj1'/'sheet_pub_url_cj2'가 있으면 그걸 우선 사용한다.
-const GAS_URL_CJ1 = localStorage.getItem('sheet_pub_url_cj1') || '';
-const GAS_URL_CJ2 = localStorage.getItem('sheet_pub_url_cj2') || '';
+const GAS_URL_CJ1 = localStorage.getItem('sheet_pub_url_cj1') ||
+    'https://script.google.com/macros/s/AKfycbwYdh83ZiA0PeJKuFacq7ZOJEBwsg1J-6B1PP0-vUGrI76kYNVypaKRJpcP0zY5mqNL/exec';
+const GAS_URL_CJ2 = localStorage.getItem('sheet_pub_url_cj2') ||
+    'https://script.google.com/macros/s/AKfycbxedh1oqiQsvdbYl7ccKaamWhiDvsCYklEDSYHW7YPyw34t5ASYjH9yOSt1SpH1A0X_/exec';
 // 검사완료 후 별도 탭으로 이동되는 누적 이력 시트 (진행중인 검사항목 리스트와는 별도)
 const ARCHIVES = [
   { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1307214033', accent:'f1' },
@@ -1300,10 +1302,15 @@ function applyFilters() {
 
   const chartData = factoryTab === 'all' ? filtered : filtered.filter(d => d.공장 === factoryTab);
 
-  renderKPIs(filtered);
-  renderFactoryPanels(filtered);
-  renderTable(display);
-  renderCharts(chartData);
+  // 데스크탑 전용 화면(사이드바 테이블·차트 등)은 모바일 오버레이에 가려서 보이지도
+  // 않는데 데이터가 로드될 때마다 매번 다시 그려지고 있었다 — 특히 차트는 destroy 후
+  // new Chart()로 통째로 재생성돼서 비용이 커서, 모바일에서는 건너뛰도록 막는다.
+  if (!isMobile()) {
+    renderKPIs(filtered);
+    renderFactoryPanels(filtered);
+    renderTable(display);
+    renderCharts(chartData);
+  }
   renderMobileAll();
 }
 
