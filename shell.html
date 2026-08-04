@@ -1501,9 +1501,13 @@
             },
             plugins:[packingBarTopPlugin]
         });
-        renderProductChart(textClr, gridClr);
     }
 
+    // "포장 강화 현황"(mainChart)과 별개 슬라이드인 "제품별 실적 비교"는 packingViewMode/
+    // 날짜 탐색과 무관한데도 renderChart() 안에서 매번 같이 재생성되고 있었다 — 일별/주간별
+    // 탭 전환이나 </>` 탐색 버튼을 누를 때마다 안 보이는(또는 무관한) 차트까지 destroy 후
+    // 재생성하는 낭비를 없애려고 분리했다. 데이터가 실제로 바뀌는 시점(renderAll, 테마 토글)
+    // 에만 별도로 호출한다.
     function renderProductChart(textClr, gridClr) {
         if (typeof Chart === 'undefined') return;
         const isDark = document.documentElement.classList.contains('dark');
