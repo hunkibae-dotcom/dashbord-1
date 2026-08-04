@@ -782,7 +782,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </div>
       <div class="px-5 pb-4 pt-3">
         <div class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 클릭하여 다른 제품코드로 검색가능</span></div>
-        <input type="text" id="specCodeInput" oninput="runSpecLookup()" placeholder="단품코드를 입력하세요" class="w-full text-[15px] font-bold text-slate-800 outline-none bg-transparent border-b border-transparent focus:border-accent-500">
+        <input type="text" id="specCodeInput" oninput="runSpecLookupDebounced()" placeholder="단품코드를 입력하세요" class="w-full text-[15px] font-bold text-slate-800 outline-none bg-transparent border-b border-transparent focus:border-accent-500">
       </div>
     </div>
 
