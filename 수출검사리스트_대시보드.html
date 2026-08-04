@@ -1194,6 +1194,14 @@ function ddayInfo(str) {
   return Math.round((d - today) / 86400000);
 }
 
+// "2026. 8. 5" 같은 원본 날짜 문자열을 "26.08.05" 형태로 통일해서 표시
+function _ymdShort(str) {
+  if (!str) return '';
+  const m = str.toString().match(/(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/);
+  if (!m) return str;
+  return m[1].slice(2) + '.' + m[2].padStart(2,'0') + '.' + m[3].padStart(2,'0');
+}
+
 // ===== FILTER OPTIONS =====
 function populateFilterOptions() {}
 
