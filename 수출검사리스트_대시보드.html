@@ -4053,7 +4053,7 @@ function onNativeScanResult(raw) {
     if (p.get('openScan') === '1') {
         history.replaceState(null, '', location.pathname + '?shell=1&theme=' + (p.get('theme') || 'dark'));
         // 데이터 로드 후 스캐너 열기 (loadData는 DOMContentLoaded 이후 실행되므로 약간 지연)
-        setTimeout(function(){ if(typeof openScanView === 'function') openScanView(); }, 400);
+        setTimeout(function(){ if(typeof _openScanSmart === 'function') _openScanSmart(); }, 400);
     }
 })();
 </script>
