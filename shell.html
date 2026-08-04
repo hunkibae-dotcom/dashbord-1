@@ -866,6 +866,7 @@
         document.getElementById('themeCheck').checked = dark;
         localStorage.setItem('shell_theme', dark ? 'dark' : 'light');
         if (chartInst) renderChart();
+        if (productChartInst) renderProductChart();
     }
     function toggleTheme() {
         applyTheme(document.getElementById('themeCheck').checked);
