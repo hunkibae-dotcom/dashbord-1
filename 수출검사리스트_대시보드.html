@@ -4041,7 +4041,7 @@ if ('serviceWorker' in navigator) {
       <div style="display:flex;align-items:center;gap:8px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:7px 12px;">
         <i class="fa-solid fa-magnifying-glass" style="color:var(--label);font-size:12px;flex-shrink:0;"></i>
         <input id="kpiDetailSearchInput" type="text" placeholder="건명 · 코드 · 색상 검색..."
-          oninput="_kpiDetailRender()"
+          oninput="kpiDetailRenderDebounced()"
           style="flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);min-width:0;">
         <button onclick="document.getElementById('kpiDetailSearchInput').value='';_kpiDetailRender()"
           style="-webkit-appearance:none;appearance:none;background:none;border:none;padding:0;color:var(--label);font-size:13px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
