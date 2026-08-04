@@ -1257,7 +1257,7 @@
             if (lbl)  lbl.textContent = '일정';
             if (btn)  btn.style.color = '#00B0FF';
             chart.scrollIntoView({behavior:'smooth'});
-            setTimeout(renderChart, 60);
+            setTimeout(() => { renderChart(); renderProductChart(); }, 60);
             _startChartTimer();
         } else {
             if (chart) chart.style.display = 'none';
@@ -1265,6 +1265,9 @@
             if (icon) icon.className = 'fa-solid fa-chart-simple';
             if (lbl)  lbl.textContent = '차트';
             if (btn)  btn.style.color = 'var(--text-sub)';
+            // 차트탭을 벗어난 뒤에도 5초 슬라이드 자동전환 타이머가 계속 background에서
+            // 돌고 있었다(한 번이라도 차트탭을 연 적이 있으면 그 후로 계속) — 꺼줌
+            if (_chartSlideTimer) { clearInterval(_chartSlideTimer); _chartSlideTimer = null; }
         }
     }
 
