@@ -2484,7 +2484,7 @@
                     const matchesCode = item.code ? item.code.toLowerCase().includes(productCodeQuery) : true;
                     const roundCountry = item.round ? item.round.split('-')[0].trim().toLowerCase() : '';
                     const matchesCountry = countryQuery === '' || roundCountry.includes(countryQuery);
-                    const matchesStatus = activeStatusFilter === '전체' || item.status === activeStatusFilter || item.statusLabel === activeStatusFilter;
+                    const matchesStatus = activeStatusFilters.has('전체') || activeStatusFilters.has(item.status) || activeStatusFilters.has(item.statusLabel);
                     let matchesPallet = true;
                     if (palletQuery) {
                         const _isS = item.status === '출고' || item.status === '피킹';
