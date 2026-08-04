@@ -2497,9 +2497,15 @@
 
                 sortData();
 
+                // 제품 코드를 부분적으로만 입력해도(예: 전체 코드의 일부) 위에서 이미 matchesCode로
+                // 걸러진 목록이 나오도록, 시트에 실제로 존재하는 코드와 "정확히" 일치할 때만
+                // 상세 이력 화면으로 전환한다. 그렇지 않으면 다른 필터(날짜/차수/상태 등)를 무시하고
+                // 무조건 상세 화면으로 넘어가버려서 "검색이 안 된다"고 느껴지는 문제가 있었다.
                 const exactProductCode = document.getElementById('productCodeFilter').value.trim();
-                
-                if (exactProductCode !== "") {
+                const hasExactCodeMatch = exactProductCode !== '' &&
+                    state.data.some(item => item.code && item.code.toLowerCase() === exactProductCode.toLowerCase());
+
+                if (hasExactCodeMatch) {
                     switchToProductDetailView(exactProductCode);
                 } else {
                     switchToGeneralDashboardView();
