@@ -1602,6 +1602,16 @@
         });
     }
 
+    // 검색창에 타이핑할 때마다(그리고 팔레트 검색은 _buildPalletMap()까지 다시 만들면서)
+    // 매 키입력마다 바로 재검색/재렌더링되던 걸 타이핑이 멈춘 뒤 한 번만 실행되도록 지연
+    function debounce(fn, wait) {
+        let t;
+        return function (...args) {
+            clearTimeout(t);
+            t = setTimeout(() => fn.apply(this, args), wait);
+        };
+    }
+
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
     let _sfStatusFilter = '';
