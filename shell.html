@@ -2947,7 +2947,7 @@
 
     // 스캔 열기 — 네이티브 앱: ML Kit, 웹브라우저: 기존 카메라 스캐너
     function _openScanSmart() {
-        if (window.Android && typeof window.Android.isNative === 'function' && window.Android.isNative()) {
+        if (window.Android && window.Android.startScan) {
             window.Android.startScan();
         } else {
             openScanView();
