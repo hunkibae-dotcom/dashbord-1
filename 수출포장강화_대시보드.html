@@ -521,14 +521,14 @@
                             <i class="fa-solid fa-filter text-[11px]"></i> 진행 상태 필터
                         </span>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                            <button onclick="selectStatusFilter('전체')"   data-sbsv="전체"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:#3B82F6;color:#fff;border-color:#3B82F6;">전체</button>
-                            <button onclick="selectStatusFilter('미입고')" data-sbsv="미입고"  class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">미입고</button>
-                            <button onclick="selectStatusFilter('미확인')" data-sbsv="미확인"  class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">미확인</button>
-                            <button onclick="selectStatusFilter('철물')"   data-sbsv="철물"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">철물</button>
-                            <button onclick="selectStatusFilter('포장대기')" data-sbsv="포장대기" class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">포장대기</button>
-                            <button onclick="selectStatusFilter('포장완료')" data-sbsv="포장완료" class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">포장완료</button>
-                            <button onclick="selectStatusFilter('출고')"   data-sbsv="출고"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">출고</button>
-                            <button onclick="selectStatusFilter('피킹')"   data-sbsv="피킹"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">피킹</button>
+                            <button onclick="toggleStatusFilter('전체')"   data-sbsv="전체"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:#3B82F6;color:#fff;border-color:#3B82F6;">전체</button>
+                            <button onclick="toggleStatusFilter('미입고')" data-sbsv="미입고"  class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">미입고</button>
+                            <button onclick="toggleStatusFilter('미확인')" data-sbsv="미확인"  class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">미확인</button>
+                            <button onclick="toggleStatusFilter('철물')"   data-sbsv="철물"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">철물</button>
+                            <button onclick="toggleStatusFilter('포장대기')" data-sbsv="포장대기" class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">포장대기</button>
+                            <button onclick="toggleStatusFilter('포장완료')" data-sbsv="포장완료" class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">포장완료</button>
+                            <button onclick="toggleStatusFilter('출고')"   data-sbsv="출고"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">출고</button>
+                            <button onclick="toggleStatusFilter('피킹')"   data-sbsv="피킹"    class="sidebar-sf-btn text-[12px] font-bold px-3 py-1.5 rounded-full border transition-all" style="background:transparent;color:#94A3B8;border-color:#334155;">피킹</button>
                         </div>
                     </div>
                 </div>
@@ -965,20 +965,20 @@
                                             <i class="fa-solid fa-chevron-down text-[14px] text-slate-500 ml-0.5" id="statusDropdownArrow"></i>
                                         </button>
                                         <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-panelBg border border-borderSlate rounded-lg shadow-xl min-w-[120px] py-1 text-left">
-                                            <button onclick="selectStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
+                                            <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
                                                 <i class="fa-solid fa-list text-[13.5px] text-slate-400"></i> 전체
                                             </button>
                                             <div class="my-1 border-t border-borderSlate/40"></div>
-                                            <button onclick="selectStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
+                                            <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 출고
                                             </button>
-                                            <button onclick="selectStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
+                                            <button onclick="toggleStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 피킹
                                             </button>
-                                            <button onclick="selectStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
+                                            <button onclick="toggleStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 포장완료
                                             </button>
-                                            <button onclick="selectStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
+                                            <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 미입고
                                             </button>
                                         </div>
@@ -2296,7 +2296,7 @@
             arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
         }
 
-        function selectStatusFilter(value) {
+        function toggleStatusFilter(value) {
             activeStatusFilter = value;
             document.getElementById('statusDropdown').classList.add('hidden');
             document.getElementById('statusDropdownArrow').style.transform = '';
@@ -4240,7 +4240,7 @@
             sortConfig.direction = 'desc';
             updateSortHeaders();
             // 상태 드롭다운 초기화
-            selectStatusFilter('전체');
+            toggleStatusFilter('전체');
             autoAdjustDateFilters();
             applyFilters();
         }
