@@ -2920,8 +2920,8 @@ function renderMobileList() {
           <span class="code-tag" style="font-size:11px;">${d.단품코드 || '—'}</span>
           <span style="font-size:11.5px;color:#64748B;">${d.색상 || '—'}</span>
           <span style="font-size:11.5px;color:#334155;font-weight:700;font-variant-numeric:tabular-nums;">${(d.수량||0).toLocaleString()}개</span>
-          <span style="margin-left:auto;">${dateLabel}</span>
         </div>
+        ${dateParts ? `<div style="font-size:10.5px;color:#94A3B8;font-family:monospace;margin-top:6px;">${dateParts}</div>` : ''}
       </div>
     </div>`;
   }).join('');
