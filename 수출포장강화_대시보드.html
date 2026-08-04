@@ -2285,7 +2285,7 @@
         }
 
         // 상태 드롭다운 필터
-        let activeStatusFilter = '전체';
+        let activeStatusFilters = new Set(['전체']);
 
         function toggleStatusDropdown(e) {
             e.stopPropagation();
