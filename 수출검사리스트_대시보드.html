@@ -3894,7 +3894,7 @@ function onNativeScanResult(raw) {
 
   <!-- 제품검색 서브메뉴 (포장강화 shell.html과 동일 UI: 네비 위 팝업) -->
   <div id="mSearchSubMenu" style="position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
-    <button onclick="closeMSearchSub();openScanView()"
+    <button onclick="closeMSearchSub();_openScanSmart()"
         style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
         <i class="fa-solid fa-barcode" style="color:#FF9100;font-size:16px;width:20px;"></i>
         바코드 스캔 검색
