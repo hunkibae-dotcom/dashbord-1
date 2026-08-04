@@ -3580,7 +3580,7 @@ if ('serviceWorker' in navigator) {
 })();
 
 function _openScanSmart() {
-  if (window.Android && typeof window.Android.isNative === 'function' && window.Android.isNative()) {
+  if (window.Android && window.Android.startScan) {
     window.Android.startScan();
   } else {
     openScanView();
