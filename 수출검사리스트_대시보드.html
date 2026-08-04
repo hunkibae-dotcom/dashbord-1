@@ -2773,14 +2773,18 @@ function setMiField(field, value) {
   if (field === '검사') _refreshMiStatusButtons(value);
   _saveMiOverride(_miKey(_miCurrent), { [field]: value });
   _syncMiFieldToSheet(_miCurrent, field, value);
-  // 검사 상태 변경은 KPI·뱃지·리스트 색상에도 영향을 주므로 관련 화면을 함께 갱신
-  renderMobileKPIs();
-  renderMobileFactoryPanels();
-  renderMobileList();
-  // 제품검색 결과·상세스펙·KPI 상세시트가 열려있었다면 그 화면도 함께 갱신
-  if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
-  if (specHistoryRows && specHistoryRows.length) runSpecLookup();
-  if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
+  // 가로/세로/높이/중량은 목록·KPI·뱃지 표시에 영향이 없는데도, 숫자 입력칸에 한 글자
+  // 칠 때마다 리스트 전체(수백 건)를 통째로 다시 그리고 있었다 — 화면에 실제로 영향을
+  // 주는 검사상태·검사일 변경일 때만 무거운 재렌더링을 하도록 제한한다.
+  if (field === '검사' || field === '검사일') {
+    renderMobileKPIs();
+    renderMobileFactoryPanels();
+    renderMobileList();
+    // 제품검색 결과·상세스펙·KPI 상세시트가 열려있었다면 그 화면도 함께 갱신
+    if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
+    if (specHistoryRows && specHistoryRows.length) runSpecLookup();
+    if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
+  }
 }
 
 // ── 품목 상세 수정 → 실제 구글시트 반영 ──────────────────────
