@@ -2764,6 +2764,7 @@ function setMiField(field, value) {
   _miCurrent[field] = value;
   if (field === '검사') _refreshMiStatusButtons(value);
   _saveMiOverride(_miKey(_miCurrent), { [field]: value });
+  _syncMiFieldToSheet(_miCurrent, field, value);
   // 검사 상태 변경은 KPI·뱃지·리스트 색상에도 영향을 주므로 관련 화면을 함께 갱신
   renderMobileKPIs();
   renderMobileFactoryPanels();
@@ -2772,6 +2773,67 @@ function setMiField(field, value) {
   if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
   if (specHistoryRows && specHistoryRows.length) runSpecLookup();
   if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
+}
+
+// ── 품목 상세 수정 → 실제 구글시트 반영 ──────────────────────
+// 충주1/충주2 스프레드시트 스크립트.txt에 추가된 doGet(action=updateStatus/
+// updateInspectDate/updateSpec)을 호출한다. 시트에서 행을 찾는 기준은 로컬
+// 오버라이드와 동일한 키(건명+단품코드+색상+수량, _miKey 참고).
+function _gasUrlForFactory(factoryKey) {
+  if (factoryKey === 'cj1') return GAS_URL_CJ1;
+  if (factoryKey === 'cj2') return GAS_URL_CJ2;
+  return '';
+}
+function _setMiSyncNote(text, isError) {
+  const el = document.getElementById('miSaveNote');
+  if (!el) return;
+  el.innerHTML = '<i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>' + text;
+  el.style.color = isError ? '#F87171' : 'var(--text-sub)';
+}
+async function _postMiSync(item, params) {
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) {
+    _setMiSyncNote('시트 연동 URL이 아직 설정되지 않아 이 기기에만 저장됩니다.', true);
+    return;
+  }
+  _setMiSyncNote('시트에 저장 중...', false);
+  try {
+    const qs = new URLSearchParams(Object.assign({
+      round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: item.수량 || ''
+    }, params));
+    const res = await fetch(url + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
+    const json = await res.json().catch(() => null);
+    if (json && json.status === 'success') {
+      const t = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      _setMiSyncNote('시트에 저장됨 (' + t + ')', false);
+    } else {
+      _setMiSyncNote('시트 저장 실패: ' + (json && json.message ? json.message : '알 수 없는 오류') + ' — 이 기기에는 저장됨', true);
+    }
+  } catch (err) {
+    _setMiSyncNote('네트워크 오류로 시트 저장 실패 — 이 기기에는 저장됨', true);
+  }
+}
+let _miSyncDebounceTimer = null;
+function _syncMiFieldToSheet(item, field, value) {
+  if (field === '검사') {
+    _postMiSync(item, { action: 'updateStatus', status: value });
+    return;
+  }
+  if (field === '검사일') {
+    _postMiSync(item, { action: 'updateInspectDate', date: value });
+    return;
+  }
+  if (['가로', '세로', '높이', '중량'].includes(field)) {
+    // 숫자 입력칸은 타이핑할 때마다 호출되므로, 매 키입력마다 요청을 보내지 않도록
+    // 입력이 잠시 멈췄을 때 한 번만 보낸다
+    clearTimeout(_miSyncDebounceTimer);
+    _miSyncDebounceTimer = setTimeout(() => {
+      _postMiSync(item, {
+        action: 'updateSpec',
+        w: item.가로 ?? '', d: item.세로 ?? '', h: item.높이 ?? '', g: item.중량 ?? ''
+      });
+    }, 700);
+  }
 }
 
 function renderMobileFactoryPanels() {
