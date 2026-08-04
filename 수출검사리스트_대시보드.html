@@ -2748,6 +2748,7 @@ function openMItemDetail(key) {
   document.getElementById('miH').value = d.높이 || '';
   document.getElementById('miG').value = d.중량 || '';
   _updateMiCbm();
+  _setMiSyncNote('변경하면 자동으로 실제 시트에 저장됩니다', false);
   document.getElementById('mItemDetailModal').style.display = 'flex';
   _armBackTrap();
 }
