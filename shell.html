@@ -438,16 +438,16 @@
             <div style="display:flex;flex-direction:column;gap:10px;">
                 <input id="sf_round" type="text" placeholder="건명 / 차수 (예: FAM-110)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
                 <input id="sf_code" type="text" placeholder="제품코드 (예: CAC2083SN)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
                 <input id="sf_color" type="text" placeholder="색상 (예: WW, BK, SN)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearch()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearch()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
                 <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재번호 (예: 1, 2, A-1)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
                     oninput="onPalletSearchInput()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
