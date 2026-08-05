@@ -3591,19 +3591,11 @@ function onNativeScanResult(raw) {
   var parts = raw.split('_');
   var code  = (parts[0] || raw).trim();
   var color = parts[1] || '';
-  // 모바일 뷰
-  var mEl = document.getElementById('mSearch');
-  if (mEl && mEl.offsetParent !== null) {
-    mEl.value = code;
-    if (typeof renderMobileList === 'function') renderMobileList();
-    return;
-  }
-  // 데스크톱 뷰
   var codeEl  = document.getElementById('psCode');
   var colorEl = document.getElementById('psColor');
   if (codeEl)  codeEl.value  = code;
   if (colorEl) colorEl.value = color;
-  if (typeof runProductSearch === 'function') runProductSearch();
+  if (typeof openProductSearch === 'function') openProductSearch();
 }
 </script>
 
