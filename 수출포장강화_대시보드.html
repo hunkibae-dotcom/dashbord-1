@@ -6143,7 +6143,11 @@
     </div>
 <script>
 (function(){
-    /* shell=1 → 대시보드 자체에서 모바일 모드로 처리 (shell.html 리다이렉트 제거) */
+    var p = new URLSearchParams(location.search);
+    if(!p.get('shell')) return;
+
+    /* ?shell=1 → shell.html 로 즉시 이동 (쿼리스트링 그대로 전달) */
+    window.location.replace('shell.html' + location.search);
 })();
 (function(){
     var p = new URLSearchParams(location.search);
