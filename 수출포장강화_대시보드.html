@@ -6528,5 +6528,29 @@
     </div>
 </div>
 
+
+<script>
+/* ── F.WORK 앱 네이티브 스캐너 연동 ── */
+function _openScanSmart() {
+  try { Android.startScan(); return; } catch(e) {}
+  if (typeof openScanView === 'function') openScanView();
+}
+
+function onNativeScanResult(raw) {
+  var parts = raw.split(/[_\-]/);
+  var code = (parts[0] || raw).trim();
+  if (code && typeof switchToProductDetailView === 'function') {
+    switchToProductDetailView(code);
+  }
+}
+
+(function(){
+  var p = new URLSearchParams(location.search);
+  if (p.get('openScan') === '1') {
+    setTimeout(function(){ _openScanSmart(); }, 400);
+  }
+})();
+</script>
+
 </body>
 </html>
