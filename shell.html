@@ -471,10 +471,12 @@
                 <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
                     <button class="sf-sbtn" data-sv=""       onclick="setSfStatus('')"        style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;white-space:nowrap;">전체</button>
                     <button class="sf-sbtn" data-sv="미입고"  onclick="setSfStatus('미입고')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미입고</button>
+                    <button class="sf-sbtn" data-sv="일부입고" onclick="setSfStatus('일부입고')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">일부입고</button>
                     <button class="sf-sbtn" data-sv="미확인"  onclick="setSfStatus('미확인')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미확인</button>
                     <button class="sf-sbtn" data-sv="철물"    onclick="setSfStatus('철물')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">철물</button>
                     <button class="sf-sbtn" data-sv="포장대기" onclick="setSfStatus('포장대기')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장대기</button>
                     <button class="sf-sbtn" data-sv="포장완료" onclick="setSfStatus('포장완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장완료</button>
+                    <button class="sf-sbtn" data-sv="미포장"  onclick="setSfStatus('미포장')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미포장</button>
                     <button class="sf-sbtn" data-sv="출고완료" onclick="setSfStatus('출고완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">출고완료</button>
                     <button class="sf-sbtn" data-sv="피킹"    onclick="setSfStatus('피킹')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">피킹</button>
                 </div>
@@ -837,10 +839,13 @@
         <div class="no-scrollbar" style="display:flex;gap:6px;overflow-x:auto;padding:10px 16px 8px;border-bottom:1px solid var(--border);flex-shrink:0;">
             <button id="mgmtTab_전체"   onclick="setMgmtTab('전체')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">전체</button>
             <button id="mgmtTab_미입고"  onclick="setMgmtTab('미입고')"  style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미입고</button>
+            <button id="mgmtTab_일부입고" onclick="setMgmtTab('일부입고')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">일부입고</button>
             <button id="mgmtTab_미확인" onclick="setMgmtTab('미확인')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미확인</button>
             <button id="mgmtTab_포장대기" onclick="setMgmtTab('포장대기')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장대기</button>
             <button id="mgmtTab_포장완료" onclick="setMgmtTab('포장완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">포장완료</button>
+            <button id="mgmtTab_미포장"  onclick="setMgmtTab('미포장')"  style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">미포장</button>
             <button id="mgmtTab_출고완료" onclick="setMgmtTab('출고완료')" style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">출고완료</button>
+            <button id="mgmtTab_철물"   onclick="setMgmtTab('철물')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">철물</button>
             <button id="mgmtTab_피킹"   onclick="setMgmtTab('피킹')"   style="flex-shrink:0;padding:5px 13px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);">피킹</button>
         </div>
         <div id="mgmtList" class="no-scrollbar" style="flex:1;overflow-y:auto;padding:12px 16px;padding-bottom:88px;">
@@ -1615,12 +1620,26 @@
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
     let _sfStatusFilter = '';
+    let _sfStatusSort = 0; // 0=없음, 1=선택, 2=오름차순, 3=내림차순
+    const _SF_STATUS_COLORS = { '피킹':'#A855F7','일부입고':'#F59E0B','미포장':'#FB923C','철물':'#94A3B8','출고완료':'#00E676' };
+    const _SF_SORT_ICONS = ['','','  ↑','  ↓'];
     function setSfStatus(val) {
-        _sfStatusFilter = val;
+        if (val === '') {
+            _sfStatusFilter = ''; _sfStatusSort = 0;
+        } else if (_sfStatusFilter !== val) {
+            _sfStatusFilter = val; _sfStatusSort = 1;
+        } else {
+            _sfStatusSort++;
+            if (_sfStatusSort > 3) { _sfStatusFilter = ''; _sfStatusSort = 0; }
+        }
+        const ac = _SF_STATUS_COLORS[_sfStatusFilter] || '#00B0FF';
         document.querySelectorAll('.sf-sbtn').forEach(btn => {
-            const active = btn.dataset.sv === val;
-            btn.style.background = active ? '#00B0FF' : 'var(--icon-bg)';
-            btn.style.color      = active ? '#0B0F19'  : 'var(--text-sub)';
+            const sv = btn.dataset.sv;
+            const isActive = sv === _sfStatusFilter;
+            const isAll = sv === '';
+            btn.style.background = (isActive && sv !== '') ? ac : (isAll && _sfStatusFilter === '' ? '#00B0FF' : 'var(--icon-bg)');
+            btn.style.color      = (isActive && sv !== '') || (isAll && _sfStatusFilter === '') ? '#0B0F19' : 'var(--text-sub)';
+            btn.textContent = sv === '' ? '전체' : (sv + (isActive ? _SF_SORT_ICONS[_sfStatusSort] || '' : ''));
         });
         runSearch();
     }
@@ -1691,10 +1710,12 @@
         });
         // 수출 표준품 현황 항목 중 충주공장 재고에 동일 code+round가 있으면 제외 (중복 방지)
         const _stk = new Set((stockData||[]).map(d => (d.code||'').toUpperCase() + '|' + (d.round||'')));
-        const deduped = filtered.filter(d => {
+        let deduped = filtered.filter(d => {
             if (d.source !== 'standard') return true;
             return !_stk.has((d.code||'').toUpperCase() + '|' + (d.round||''));
         });
+        if (_sfStatusSort === 2) deduped = [...deduped].sort((a,b) => (a.code||'').localeCompare(b.code||''));
+        if (_sfStatusSort === 3) deduped = [...deduped].sort((a,b) => (b.code||'').localeCompare(a.code||''));
         document.getElementById('srCount').textContent = deduped.length;
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
@@ -1724,10 +1745,11 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilter = '';
+        _sfStatusFilter = ''; _sfStatusSort = 0;
         document.querySelectorAll('.sf-sbtn').forEach(btn => {
             btn.style.background = btn.dataset.sv === '' ? '#00B0FF' : 'var(--icon-bg)';
             btn.style.color      = btn.dataset.sv === '' ? '#0B0F19'  : 'var(--text-sub)';
+            if (btn.dataset.sv !== '') btn.textContent = btn.dataset.sv;
         });
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
@@ -2080,9 +2102,12 @@
     function renderManagementStatus() {
         const STATUS_DEFS = [
             { key:'미입고',   label:'미입고',    color:'#64748B', icon:'fa-clock'          },
+            { key:'일부입고', label:'일부 입고', color:'#F59E0B', icon:'fa-box-circle-check'},
             { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open'       },
             { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked'  },
+            { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube'           },
             { key:'출고완료', label:'출고 완료', color:'#00E676', icon:'fa-truck-fast'     },
+            { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench'         },
             { key:'피킹',     label:'피킹',      color:'#A855F7', icon:'fa-dolly'          },
         ];
         const groups = {};
@@ -2092,6 +2117,12 @@
             const s = d.status.replace(/\s+/g,'').toLowerCase();
             if (s.includes('피킹')) {
                 groups['피킹'].cnt++;    groups['피킹'].qty+=d.qty;
+            } else if (s === '철물') {
+                groups['철물'].cnt++;    groups['철물'].qty+=d.qty;
+            } else if (s.includes('일부입고')) {
+                groups['일부입고'].cnt++; groups['일부입고'].qty+=d.qty;
+            } else if (s.includes('미포장')) {
+                groups['미포장'].cnt++;  groups['미포장'].qty+=d.qty;
             } else if (s.includes('포장대기') || s.includes('미확인') || (s.includes('입고') && !s.includes('미입고'))) {
                 groups['포장대기'].cnt++; groups['포장대기'].qty+=d.qty;
             } else if (s.includes('포장완료')) {
@@ -3044,35 +3075,52 @@
 
     // ── 수출 포장 관리 현황 상세 모달 ────────────────────
     let _mgmtTab = '전체';
+    let _mgmtSort = 0; // 0=없음, 1=선택, 2=오름차순, 3=내림차순
+    const _MGMT_TAB_COLORS = { '피킹':'#A855F7','일부입고':'#F59E0B','미포장':'#FB923C','철물':'#94A3B8','출고완료':'#00E676' };
     function openMgmtModal() {
-        _mgmtTab = '전체';
+        _mgmtTab = '전체'; _mgmtSort = 0;
         renderMgmtModal();
         openView('viewMgmt');
     }
     function setMgmtTab(tab) {
-        _mgmtTab = tab;
+        if (tab === '전체') {
+            _mgmtTab = '전체'; _mgmtSort = 0;
+        } else if (_mgmtTab !== tab) {
+            _mgmtTab = tab; _mgmtSort = 1;
+        } else {
+            _mgmtSort++;
+            if (_mgmtSort > 3) { _mgmtTab = '전체'; _mgmtSort = 0; }
+        }
         renderMgmtModal();
     }
     function renderMgmtModal() {
-        const tabs = ['전체', '미입고', '미확인', '포장대기', '포장완료', '출고완료', '피킹'];
+        const tabs = ['전체','미입고','일부입고','미확인','포장대기','포장완료','미포장','출고완료','철물','피킹'];
+        const sortIcons = ['','','  ↑','  ↓'];
         tabs.forEach(t => {
             const btn = document.getElementById('mgmtTab_' + t);
             if (!btn) return;
-            const isActive = t === _mgmtTab;
-            btn.style.background = isActive ? (t === '피킹' ? '#A855F7' : '#00B0FF') : 'var(--icon-bg)';
-            btn.style.color      = isActive ? '#fff' : 'var(--text-sub)';
+            const isActive = t === _mgmtTab && _mgmtTab !== '전체';
+            const ac = _MGMT_TAB_COLORS[t] || '#00B0FF';
+            btn.style.background = isActive ? ac : (t === '전체' && _mgmtTab === '전체' ? '#00B0FF' : 'var(--icon-bg)');
+            btn.style.color      = isActive || (t === '전체' && _mgmtTab === '전체') ? '#fff' : 'var(--text-sub)';
+            btn.textContent = t + (isActive ? sortIcons[_mgmtSort] || '' : '');
         });
-        const filtered = allData.filter(d => {
+        let filtered = allData.filter(d => {
             if (_mgmtTab === '전체') return true;
             const s = d.status.replace(/\s+/g,'').toLowerCase();
             if (_mgmtTab === '피킹')     return s.includes('피킹');
-            if (_mgmtTab === '포장대기') return s.includes('포장대기');
+            if (_mgmtTab === '포장대기') return s.includes('포장대기') || s.includes('미확인');
             if (_mgmtTab === '미확인')   return s.includes('미확인');
             if (_mgmtTab === '포장완료') return s.includes('포장완료') && !d.isDone;
-            if (_mgmtTab === '출고완료') return d.isDone && !s.includes('피킹');
-            if (_mgmtTab === '미입고')   return !s.includes('포장대기') && !s.includes('미확인') && !s.includes('포장완료') && !d.isDone && !s.includes('피킹');
+            if (_mgmtTab === '출고완료') return d.isDone && !s.includes('피킹') && !s.includes('미포장');
+            if (_mgmtTab === '미입고')   return s.includes('미입고') && !s.includes('일부입고');
+            if (_mgmtTab === '일부입고') return s.includes('일부입고');
+            if (_mgmtTab === '미포장')   return s.includes('미포장');
+            if (_mgmtTab === '철물')     return s === '철물';
             return true;
         });
+        if (_mgmtSort === 2) filtered = [...filtered].sort((a,b) => (a.code||'').localeCompare(b.code||''));
+        if (_mgmtSort === 3) filtered = [...filtered].sort((a,b) => (b.code||'').localeCompare(a.code||''));
         const el = document.getElementById('mgmtList');
         if (!el) return;
         const totalQty = filtered.reduce((s, d) => s + d.qty, 0);
