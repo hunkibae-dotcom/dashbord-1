@@ -4333,7 +4333,7 @@
         });
 
         // ── 진행 상태 필터 토글 ──────────────────────────────────────
-        var _statusFilterOpen = true;
+        var _statusFilterOpen = false;
         function toggleStatusFilterPanel() {
             _statusFilterOpen = !_statusFilterOpen;
             const panel = document.getElementById('statusFilterPanel');
@@ -4341,6 +4341,12 @@
             if (panel) panel.style.display = _statusFilterOpen ? 'flex' : 'none';
             if (chevron) chevron.style.transform = _statusFilterOpen ? '' : 'rotate(-90deg)';
         }
+        document.addEventListener('DOMContentLoaded', function() {
+            const panel = document.getElementById('statusFilterPanel');
+            const chevron = document.getElementById('statusFilterChevron');
+            if (panel) panel.style.display = 'none';
+            if (chevron) chevron.style.transform = 'rotate(-90deg)';
+        });
 
         function resetFilters() {
             document.getElementById('roundFilter').value = '';
