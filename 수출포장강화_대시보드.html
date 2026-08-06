@@ -3275,16 +3275,24 @@
                         : `<span style="color:#475569">—</span>`);
 
                 let badgeClass = 'bg-slate-800 text-slate-300 border-slate-700';
-                if (item.status === '출고') {
-                    badgeClass = 'bg-orange-500/10 text-orange-400 border-orange-500/20 font-bold';
+                if (item.status === '출고' || item.status === '출고완료') {
+                    badgeClass = 'bg-green-900/20 text-green-400 border-green-700/30 font-bold';
                 } else if (item.status === '포장완료') {
                     badgeClass = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20 font-bold';
                 } else if (item.status === '피킹') {
                     badgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/20 font-bold';
                 } else if (item.status === '포장대기') {
-                    badgeClass = 'bg-amber-900/20 text-amber-700 border-amber-700/30 font-bold';
+                    badgeClass = 'bg-amber-900/20 text-amber-500 border-amber-700/30 font-bold';
                 } else if (item.status === '입고') {
-                    badgeClass = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20';
+                    badgeClass = 'bg-sky-900/20 text-sky-400 border-sky-700/30';
+                } else if (item.status === '일부입고') {
+                    badgeClass = 'bg-yellow-900/20 text-yellow-400 border-yellow-700/30 font-bold';
+                } else if (item.status === '미포장') {
+                    badgeClass = 'bg-orange-900/20 text-orange-400 border-orange-700/30 font-bold';
+                } else if (item.status === '철물') {
+                    badgeClass = 'bg-slate-700/30 text-slate-400 border-slate-600/30 font-bold';
+                } else if (item.status === '미입고') {
+                    badgeClass = 'bg-red-900/20 text-red-400 border-red-700/30';
                 }
 
                 tr.innerHTML = `
