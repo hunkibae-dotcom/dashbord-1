@@ -966,12 +966,12 @@
                                             상태 <span id="statusFilterLabel" class="text-accentBlue font-bold hidden"></span>
                                             <i class="fa-solid fa-chevron-down text-[14px] text-slate-500 ml-0.5" id="statusDropdownArrow"></i>
                                         </button>
-                                        <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-panelBg border border-borderSlate rounded-lg shadow-xl min-w-[120px] py-1 text-left">
+                                        <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-panelBg border border-borderSlate rounded-lg shadow-xl min-w-[130px] py-1 text-left">
                                             <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
                                                 <i class="fa-solid fa-list text-[13.5px] text-slate-400"></i> 전체
                                             </button>
                                             <div class="my-1 border-t border-borderSlate/40"></div>
-                                            <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
+                                            <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-green-400">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 출고
                                             </button>
                                             <button onclick="toggleStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
@@ -980,7 +980,19 @@
                                             <button onclick="toggleStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 포장완료
                                             </button>
-                                            <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
+                                            <button onclick="toggleStatusFilter('미포장')" id="sf-미포장" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
+                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 미포장
+                                            </button>
+                                            <button onclick="toggleStatusFilter('포장대기')" id="sf-포장대기" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-amber-400">
+                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 포장대기
+                                            </button>
+                                            <button onclick="toggleStatusFilter('일부입고')" id="sf-일부입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-yellow-400">
+                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 일부입고
+                                            </button>
+                                            <button onclick="toggleStatusFilter('철물')" id="sf-철물" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
+                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 철물
+                                            </button>
+                                            <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-red-400">
                                                 <i class="fa-solid fa-circle text-[14.5px]"></i> 미입고
                                             </button>
                                         </div>
