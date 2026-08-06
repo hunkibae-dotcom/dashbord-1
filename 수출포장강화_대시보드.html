@@ -4294,12 +4294,59 @@
             if (!isTouch && e) showCard4Tooltip(e);
         }
 
+        // ── 날짜 팝업 ──────────────────────────────────────────────────
+        function toggleDatePopup(e) {
+            if (e) e.stopPropagation();
+            const popup = document.getElementById('datePopup');
+            popup.classList.toggle('hidden');
+        }
+        function updateDateRangeLabel() {
+            const s = document.getElementById('startDateFilter').value;
+            const e = document.getElementById('endDateFilter').value;
+            const label = document.getElementById('dateRangeLabel');
+            if (!s && !e) { label.textContent = '전체 기간'; label.className = 'text-slate-400 truncate'; }
+            else if (s && e) { label.textContent = s + ' ~ ' + e; label.className = 'text-slate-200 truncate'; }
+            else if (s) { label.textContent = s + ' ~'; label.className = 'text-slate-200 truncate'; }
+            else { label.textContent = '~ ' + e; label.className = 'text-slate-200 truncate'; }
+        }
+        function applyDateRangePopup() {
+            updateDateRangeLabel();
+            document.getElementById('datePopup').classList.add('hidden');
+            applyFilters();
+        }
+        function clearDateRangePopup() {
+            document.getElementById('startDateFilter').value = '';
+            document.getElementById('endDateFilter').value = '';
+            updateDateRangeLabel();
+            applyFilters();
+        }
+        document.addEventListener('click', function(ev) {
+            const popup = document.getElementById('datePopup');
+            const btn = document.getElementById('dateRangeBtn');
+            if (popup && !popup.classList.contains('hidden')) {
+                if (!popup.contains(ev.target) && btn && !btn.contains(ev.target)) {
+                    popup.classList.add('hidden');
+                }
+            }
+        });
+
+        // ── 진행 상태 필터 토글 ──────────────────────────────────────
+        var _statusFilterOpen = true;
+        function toggleStatusFilterPanel() {
+            _statusFilterOpen = !_statusFilterOpen;
+            const panel = document.getElementById('statusFilterPanel');
+            const chevron = document.getElementById('statusFilterChevron');
+            if (panel) panel.style.display = _statusFilterOpen ? 'flex' : 'none';
+            if (chevron) chevron.style.transform = _statusFilterOpen ? '' : 'rotate(-90deg)';
+        }
+
         function resetFilters() {
             document.getElementById('roundFilter').value = '';
             document.getElementById('productCodeFilter').value = '';
             document.getElementById('countryFilter').value = '';
             document.getElementById('startDateFilter').value = '';
             document.getElementById('endDateFilter').value = '';
+            updateDateRangeLabel();
             const _pf = document.getElementById('palletFilter'); if (_pf) _pf.value = '';
             sortConfig.key = 'regDate';
             sortConfig.direction = 'desc';
