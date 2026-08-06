@@ -2334,7 +2334,7 @@
 
             // 헤더 레이블 업데이트 (상태별 색상 일치)
             const label = document.getElementById('statusFilterLabel');
-            const colorMap = { '출고': 'text-orange-400', '피킹': 'text-purple-400', '포장완료': 'text-accentBlue', '미입고': 'text-slate-400' };
+            const colorMap = { '출고': 'text-green-400', '피킹': 'text-purple-400', '포장완료': 'text-accentBlue', '포장대기': 'text-amber-400', '미포장': 'text-orange-400', '일부입고': 'text-yellow-400', '철물': 'text-slate-400', '미입고': 'text-red-400' };
             if (activeStatusFilters.has('전체')) {
                 label.classList.add('hidden');
             } else {
