@@ -2155,7 +2155,7 @@
                 const key = `${item.date}|${item.regDate}|${item.round}|${item.code}|${item.color}|${item.qty}`;
                 if (map.has(key)) {
                     const existing = map.get(key);
-                    const statusPriority = { '출고완료': 4, '포장완료': 3, '포장대기': 2, '미입고': 1 };
+                    const statusPriority = { '출고': 5, '출고완료': 5, '피킹': 5, '포장완료': 4, '포장대기': 3, '미포장': 2, '일부입고': 2, '철물': 2, '입고': 1, '미입고': 1 };
                     const pExisting = statusPriority[existing.status] || 0;
                     const pNew = statusPriority[item.status] || 0;
                     
