@@ -3588,13 +3588,11 @@ function _openScanSmart() {
 }
 
 function onNativeScanResult(raw) {
-  var parts = raw.split('_');
-  var code  = (parts[0] || raw).trim();
-  var color = parts[1] || '';
+  var parsed = _parseBarcodeRaw(raw);
   var codeEl  = document.getElementById('psCode');
   var colorEl = document.getElementById('psColor');
-  if (codeEl)  codeEl.value  = code;
-  if (colorEl) colorEl.value = color;
+  if (codeEl)  codeEl.value  = parsed.code;
+  if (colorEl) colorEl.value = parsed.color;
   if (typeof openProductSearch === 'function') openProductSearch();
 }
 </script>
