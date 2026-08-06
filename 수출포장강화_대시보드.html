@@ -2151,11 +2151,13 @@
                 if (allDates.length === 0) {
                     document.getElementById('startDateFilter').value = '';
                     document.getElementById('endDateFilter').value = '';
+                    if (typeof updateDateRangeLabel === 'function') updateDateRangeLabel();
                     return;
                 }
                 allDates.sort();
                 document.getElementById('startDateFilter').value = allDates[0];
                 document.getElementById('endDateFilter').value = allDates[allDates.length - 1];
+                if (typeof updateDateRangeLabel === 'function') updateDateRangeLabel();
             } catch (err) {
                 console.error("autoAdjustDateFilters error:", err);
             }
