@@ -2345,7 +2345,7 @@
             }
 
             // 선택된 항목 강조 (헤더 드롭다운) — 여러 개 동시에 강조될 수 있음
-            ['전체','출고','피킹','포장완료','미입고'].forEach(s => {
+            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고'].forEach(s => {
                 const btn = document.getElementById('sf-' + s);
                 if (btn) btn.classList.toggle('bg-slate-700/60', activeStatusFilters.has(s));
             });
