@@ -2700,14 +2700,20 @@
                 tr.className = 'hover:bg-slate-800/40 transition-colors duration-150 border-b border-borderSlate/30';
 
                 let statusBadge = 'bg-slate-800 text-slate-300 border-slate-700';
-                if (item.status === '출고완료') {
+                if (item.status === '출고' || item.status === '출고완료') {
                     statusBadge = 'bg-accentGreen/10 text-accentGreen border-accentGreen/20 font-bold';
                 } else if (item.status === '포장완료') {
                     statusBadge = 'bg-accentBlue/10 text-accentBlue border-accentBlue/20 font-bold';
                 } else if (item.status === '포장대기') {
                     statusBadge = 'bg-accentOrange/10 text-accentOrange border-accentOrange/20 font-bold';
                 } else if (item.status === '미입고' || item.status === '미입고상태') {
-                    statusBadge = 'bg-accentRed/10 text-accentRed border-accentRed/20 font-bold';
+                    statusBadge = 'bg-red-900/20 text-red-400 border-red-700/30 font-bold';
+                } else if (item.status === '일부입고') {
+                    statusBadge = 'bg-amber-900/20 text-amber-400 border-amber-700/30 font-bold';
+                } else if (item.status === '미포장') {
+                    statusBadge = 'bg-orange-900/20 text-orange-400 border-orange-700/30 font-bold';
+                } else if (item.status === '철물') {
+                    statusBadge = 'bg-slate-700/30 text-slate-400 border-slate-600/30 font-bold';
                 }
 
                 const _dtIsS = item.status === '출고' || item.status === '피킹';
