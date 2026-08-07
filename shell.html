@@ -3491,6 +3491,12 @@
       <div style="margin-bottom:18px;">
         <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">진행상태</div>
         <div id="ieStatusOpts" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+        <div id="iePartialRow" style="display:none;margin-top:8px;">
+          <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px;">원래 수량 중 몇 개(EA)가 입고됐는지 입력하세요</div>
+          <input id="iePartialQty" type="number" placeholder="예: 5" inputmode="numeric"
+            style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#F59E0B'" onblur="this.style.borderColor='var(--border)'">
+        </div>
       </div>
       <div style="margin-bottom:18px;">
         <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">적재번호</div>
