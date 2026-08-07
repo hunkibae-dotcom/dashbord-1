@@ -3258,6 +3258,8 @@
             const active = opt.v === _ieCurStatus;
             return `<button onclick="selectIeStatus('${opt.v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${active?opt.c:'var(--border)'};background:${active?opt.c+'22':'var(--input-bg)'};color:${active?opt.c:'var(--text-sub)'};font-size:11px;font-weight:${active?800:600};cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;">${opt.v}</button>`;
         }).join('');
+        const partialRow = document.getElementById('iePartialRow');
+        if (partialRow) partialRow.style.display = (_ieCurStatus === '일부입고') ? 'block' : 'none';
     }
 
     function selectIeStatus(v) {
