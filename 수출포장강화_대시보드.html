@@ -859,17 +859,20 @@
                                     class="text-[14.5px] rounded px-2 cursor-pointer outline-none font-semibold self-stretch"
                                     style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD;">
                                 </select>
-                                <div class="relative flex rounded-lg p-0.5" style="min-width:182px;background:#EFF6FF;border:1px solid #BAE6FD">
-                                    <div id="packingModeSlider" class="absolute top-0.5 bottom-0.5 rounded-md transition-all duration-200" style="width:33.33%;left:66.66%;background:#38BDF8"></div>
+                                <div class="relative flex rounded-lg p-0.5" style="min-width:232px;background:#EFF6FF;border:1px solid #BAE6FD">
+                                    <div id="packingModeSlider" class="absolute top-0.5 bottom-0.5 rounded-md transition-all duration-200" style="width:25%;left:50%;background:#38BDF8"></div>
                                     <button onclick="setPackingViewMode('daily')" id="packingBtn_daily"
                                         class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
-                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:6px;padding-right:6px">일별</button>
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">일별</button>
                                     <button onclick="setPackingViewMode('weekly')" id="packingBtn_weekly"
                                         class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
-                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:6px;padding-right:6px">주간별</button>
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">주간별</button>
                                     <button onclick="setPackingViewMode('monthly')" id="packingBtn_monthly"
                                         class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
-                                        style="flex:1;color:#ffffff;white-space:nowrap;padding-left:6px;padding-right:6px">월간별</button>
+                                        style="flex:1;color:#ffffff;white-space:nowrap;padding-left:4px;padding-right:4px">월간별</button>
+                                    <button onclick="setPackingViewMode('yearly')" id="packingBtn_yearly"
+                                        class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">년도별</button>
                                 </div>
                                 <button onclick="downloadPackingChartData()"
                                     class="hidden md:flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-lg transition-colors duration-150 shrink-0"
@@ -3638,13 +3641,17 @@
         function updatePackingModeSlider() {
             const slider = document.getElementById('packingModeSlider');
             if (!slider) return;
-            const modes = ['daily', 'weekly', 'monthly'];
+            const modes = ['daily', 'weekly', 'monthly', 'yearly'];
             const idx = modes.indexOf(packingViewMode);
-            slider.style.left = (idx * 33.33) + '%';
+            slider.style.left = (idx * 25) + '%';
+            slider.style.width = '25%';
             modes.forEach(function(m, i) {
                 const btn = document.getElementById('packingBtn_' + m);
                 if (btn) btn.style.color = (i === idx) ? '#ffffff' : '#475569';
             });
+            // 년도별 모드일 때 년도 셀렉트 숨기기
+            const yearSel = document.getElementById('packingYearSelect');
+            if (yearSel) yearSel.style.display = (packingViewMode === 'yearly') ? 'none' : '';
         }
 
         function getISOWeek(dateStr) {
@@ -3771,6 +3778,19 @@
                     if (labels.length > 7) break;
                 }
 
+            } else if (packingViewMode === 'yearly') {
+                // 연도별 집계: 전체 데이터를 연도 단위로 합산
+                const yearTotals = {};
+                Object.keys(_packingDateQtyMap).forEach(function(d) {
+                    const y = d.slice(0, 4);
+                    yearTotals[y] = (yearTotals[y] || 0) + _packingDateQtyMap[d];
+                });
+                Object.keys(yearTotals).sort().forEach(function(y) {
+                    labels.push(y + '년');
+                    dataArr.push(yearTotals[y]);
+                    _packingLabelMeta.push({ label: y + '년', prefix: y });
+                });
+
             } else {
                 // 반기별 표시: 0=현재반기(1~6월 또는 7~12월), -1=이전반기 ...
                 const _today = new Date();
@@ -3891,6 +3911,11 @@
             const lbl  = document.getElementById('packingNavLabel');
             if (!prev || !next || !row) return;
 
+            if (packingViewMode === 'yearly') {
+                row.style.display = 'none';
+                return;
+            }
+
             row.style.display = 'flex';
             const today = new Date();
 
@@ -3995,7 +4020,7 @@
             const chart = trendChartInstance;
             const labels = chart.data.labels || [];
             const data   = chart.data.datasets[0] ? chart.data.datasets[0].data : [];
-            const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : '월간별';
+            const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : packingViewMode === 'yearly' ? '년도별' : '월간별';
             const yearLabel = packingSelectedYear || '';
 
             let csv = '﻿기간,강화수량(BOX)\n';
