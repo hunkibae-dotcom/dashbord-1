@@ -3214,6 +3214,8 @@
             _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
         }
         _ieCurStatus = _ieOrigStatus;
+        const partialQtyInp = document.getElementById('iePartialQty');
+        if (partialQtyInp) partialQtyInp.value = '';
         _renderIeStatus();
         const pm = _buildPalletMap();
         // 시트엔 "적재 99" 형식으로 저장돼있는데, 숫자만 입력하기 편하도록 편집창엔 접두사 빼고 보여줌
