@@ -3273,6 +3273,15 @@
         if (!_ieCode) return;
         const btn = document.getElementById('ieSaveBtn');
         const fb  = document.getElementById('ieFeedback');
+        // 일부입고 선택 시 수량을 안 적으면 시트에 뭘 적어야 할지 알 수 없으니 먼저 확인
+        if (_ieCurStatus === '일부입고') {
+            const q = (document.getElementById('iePartialQty')?.value || '').trim();
+            if (!q || isNaN(q) || Number(q) <= 0) {
+                if (fb) { fb.textContent = '일부입고 수량(EA)을 입력하세요.'; fb.style.color = '#FF4444'; }
+                document.getElementById('iePartialQty')?.focus();
+                return;
+            }
+        }
         if (fb) { fb.textContent = '저장 중...'; fb.style.color = 'var(--text-sub)'; }
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...'; }
         const newPallet = (document.getElementById('iePallet')?.value || '').trim();
@@ -3283,8 +3292,13 @@
         const tasks = [];
         const changed = {};
         if (_ieCurStatus && _ieCurStatus !== _ieOrigStatus) {
+            const statusParams = { action:'updateStatus', code:_ieCode, round:_ieRound, status:_ieCurStatus };
+            if (_ieCurStatus === '일부입고') {
+                const q = (document.getElementById('iePartialQty')?.value || '').trim();
+                statusParams.note = q + ' EA만 입고됨';
+            }
             tasks.push(
-                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateStatus', code:_ieCode, round:_ieRound, status:_ieCurStatus }),
+                fetch(GAS_URL + '?' + new URLSearchParams(statusParams),
                     { signal: AbortSignal.timeout(15000) }).then(r => r.text())
             );
             changed.status = _ieCurStatus;
