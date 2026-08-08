@@ -4657,6 +4657,13 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        // 포장대기 박스 클릭 → 상태 필터를 포장대기로 설정 후 테이블 이동
+        function filterByPendingStatus() {
+            activeStatusFilters = new Set(['전체']); // 기존 필터 초기화 후
+            toggleStatusFilter('포장대기');           // 포장대기 단독 적용 + applyFilters 호출
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function filterByCode(code) {
             document.getElementById('productCodeFilter').value = code;
             applyFilters();
