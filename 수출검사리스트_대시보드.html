@@ -2408,7 +2408,7 @@ function applyMTheme(dark) {
 function toggleMTheme() {
   applyMTheme(document.getElementById('mThemeCheck').checked);
 }
-applyMTheme((localStorage.getItem('shell_theme') || 'light') === 'dark');
+applyMTheme(false);
 
 // ── 설정 (모바일) ──
 function openMSettings() {
