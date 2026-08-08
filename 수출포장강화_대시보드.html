@@ -4638,6 +4638,22 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        // 작업 LOG 카드 클릭 → 해당 건명들의 수출 표준품 현황만 테이블에 표시
+        function filterByWorkLog(rounds) {
+            if (!rounds || !rounds.length) return;
+            const roundSet = new Set(rounds);
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            const baseData = exportKey ? (datasetMap[exportKey] || []) : [];
+            state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
+            sortData();
+            switchToGeneralDashboardView();
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            updateSortHeaders();
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function filterByCode(code) {
             document.getElementById('productCodeFilter').value = code;
             applyFilters();
