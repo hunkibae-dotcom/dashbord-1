@@ -4802,7 +4802,8 @@
                     const colorCell = item.color
                         ? `<span style="color:#A78BFA;font-size:10.5px;background:rgba(167,139,250,0.12);border-radius:4px;padding:1px 5px;white-space:nowrap;">${item.color}</span>`
                         : `<span></span>`;
-                    return `<div style="display:grid;grid-template-columns:10px 1fr 1fr auto auto;align-items:center;column-gap:6px;padding:2.5px 0;font-size:11.5px;">
+                    const _ic2 = (item.code||'').replace(/'/g,"\\'"), _ir2 = (item.round||'').replace(/'/g,"\\'");
+                    return `<div onclick="filterByCode('${_ic2}');event.stopPropagation();" style="display:grid;grid-template-columns:10px 1fr 1fr auto auto;align-items:center;column-gap:6px;padding:2.5px 0;font-size:11.5px;cursor:pointer;border-radius:4px;" onmouseenter="this.style.background='rgba(100,116,139,0.1)'" onmouseleave="this.style.background=''">
                         ${statusDot}
                         <span style="color:rgba(0,0,0,0.9);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${item.round}</span>
                         <span style="color:rgba(0,0,0,0.75);font-weight:600;white-space:nowrap;">${item.code}</span>
@@ -4810,8 +4811,9 @@
                         <span style="color:#2563EB;font-weight:700;white-space:nowrap;text-align:right;">${item.qty.toLocaleString()} BOX</span>
                     </div>`;
                 }).join('');
+                const _pl2 = (p.label||'').replace(/'/g,"\\'");
                 return `<div style="border-radius:8px;overflow:hidden;border:1px solid rgba(100,116,139,0.2);margin-bottom:4px;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:${headerBg};">
+                    <div onclick="filterByPallet('${_pl2}');event.stopPropagation();" style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px;background:${headerBg};cursor:pointer;" onmouseenter="this.style.opacity='0.8'" onmouseleave="this.style.opacity='1'">
                         <span style="font-size:12px;font-weight:800;color:${headerColor};letter-spacing:0.01em;">${p.label}</span>
                         <span style="font-size:10.5px;color:#64748B;">${doneCount}/${p.items.length}건 · <span style="color:#2563EB;font-weight:700;">${totalQty.toLocaleString()} BOX</span></span>
                     </div>
