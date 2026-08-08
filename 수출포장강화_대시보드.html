@@ -434,6 +434,9 @@
             </div>
             <h1 class="text-[20.5px] font-bold tracking-tight text-white truncate">포장강화 대시보드</h1>
         </div>
+        <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);" title="실시간 시트 갱신">
+            <i class="fa-solid fa-arrows-rotate text-[18px]" id="syncIcon"></i>
+        </button>
     </header>
 
     <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="closeFilterDrawer()"></div>
