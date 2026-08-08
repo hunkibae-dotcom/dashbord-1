@@ -4591,12 +4591,18 @@
             const itemsEl = document.getElementById('prevDayItems');
             if (!itemsEl) return;
             if (!items.length) {
+                window._prevDayRoundsCache = [];
+                const allBtnE = document.getElementById('prevDayAllBtn');
+                if (allBtnE) allBtnE.style.display = 'none';
                 itemsEl.innerHTML = '<div style="font-size:12px;color:#475569;text-align:center;padding:12px 0;">전일 포장완료 내역 없음</div>';
                 return;
             }
 
             // 건명별 그룹화
             _prevDayAllItems = items;
+            window._prevDayRoundsCache = [...new Set(items.map(x => x.round).filter(Boolean))];
+            const allBtnEl = document.getElementById('prevDayAllBtn');
+            if (allBtnEl) allBtnEl.style.display = '';
             const roundMap = {};
             items.forEach(item => {
                 const r = item.round || '-';
