@@ -2,7 +2,7 @@
 Set-Location $folder
 
 function Get-LatestWriteTime {
-    Get-ChildItem -Path "$folder\*" -Include *.html,*.js,*.json,*.css -File |
+    Get-ChildItem -Path "$folder\*" -Include *.html,*.js,*.json,*.css,*.apk -File |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1 -ExpandProperty LastWriteTime
 }
