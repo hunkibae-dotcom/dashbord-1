@@ -1039,7 +1039,6 @@ async function loadData() {
   ).then(results => {
     allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
     applyMiOverrides(allData);
-    populateFilterOptions();
     applyFilters();
     renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
   });
