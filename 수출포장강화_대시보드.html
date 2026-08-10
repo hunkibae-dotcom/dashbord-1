@@ -2253,6 +2253,20 @@
             updateSortHeaders();
         }
 
+        // 날짜 기준 필드 (상차일/납기일/포장완료일)
+        let _webDateField = 'date';
+        function setWebDateField(field) {
+            _webDateField = field;
+            ['wdfDate','wdfDue','wdfReg'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; }
+            });
+            const map = { date:'wdfDate', dueDate:'wdfDue', regDate:'wdfReg' };
+            const active = document.getElementById(map[field]);
+            if (active) { active.style.background = '#0ea5e9'; active.style.color = '#fff'; }
+            applyFiltersDebounced();
+        }
+
         // 소스 필터 (전체/미입고/실재고/출고)
         let _activeSourceFilter = 'all';
         let _filterDebounceTimer = null;
@@ -2440,13 +2454,13 @@
         // 필터링 적용 (하이브리드 결합 방식)
         function applyFilters() {
             try {
-                const roundQuery = document.getElementById('roundFilter').value.toLowerCase().trim();
-                const productCodeQuery = document.getElementById('productCodeFilter').value.toLowerCase().trim();
-                const countryQuery = document.getElementById('countryFilter').value.toLowerCase().trim();
+                const roundQuery = (document.getElementById('roundFilter')?.value || '').toLowerCase().trim();
+                const productCodeQuery = (document.getElementById('productCodeFilter')?.value || '').toLowerCase().trim();
+                const colorQuery = (document.getElementById('colorFilter')?.value || '').toLowerCase().trim();
                 const startDate = document.getElementById('startDateFilter').value;
                 const endDate = document.getElementById('endDateFilter').value;
                 const palletQuery = (document.getElementById('palletFilter')?.value || '').toLowerCase().trim();
-                const inlineQuery = (document.getElementById('tableInlineSearch')?.value || '').toLowerCase().trim();
+                const inlineQuery = '';
 
                 const _pfMap = {};
                 if (state.rawStockRows && state.rawStockRows.length > 1) {
