@@ -945,109 +945,126 @@
             </div><!-- /mobile-carousel-box charts -->
         </div>
 
-        <div id="tablePanel" class="bg-panelBg border border-borderSlate rounded-xl shadow-lg flex flex-col overflow-hidden lg:col-start-1 lg:col-span-4 lg:row-start-2">
-                    <div class="px-4 md:px-6 py-4 border-b border-borderSlate flex flex-row items-start md:items-center justify-between gap-3 bg-panelBg">
-                        <div class="min-w-0">
-                            <h3 class="text-[17.5px] font-bold text-white flex items-center gap-1.5">
-                                <i class="fa-solid fa-table-list text-accentBlue"></i> 수출포장 관리현황
-                            </h3>
-                            <p class="text-[15px] md:text-[17.5px] text-slate-400 mt-0.5"> 각 헤더를 클릭하여 실시간으로 정렬이 가능합니다.</p>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button onclick="exportToCSV()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-3 py-2 rounded border border-slate-300 hover:border-slate-400 flex items-center gap-1.5 transition-all active:scale-95">
-                                <i class="fa-solid fa-file-csv"></i> <span class="hidden md:inline">현재 필터 데이터 출력</span>
-                            </button>
-                        </div>
-                    </div>
+        <div id="tablePanel" class="rounded-xl flex flex-col overflow-hidden lg:col-start-1 lg:col-span-4 lg:row-start-2" style="background:#fff;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.07);">
+            <!-- 헤더: 제목 + 소스 필터 탭 -->
+            <div class="px-5 py-4 flex flex-row items-center justify-between gap-3 flex-wrap" style="border-bottom:1px solid #f1f5f9;">
+                <h3 class="text-[15.5px] font-bold flex items-center gap-2" style="color:#1e293b;">
+                    <i class="fa-solid fa-table-list" style="color:#94a3b8;"></i> 수출포장 관리현황
+                    <span id="tableCountBadge" class="text-[12.5px] px-2 py-0.5 rounded-full font-semibold" style="background:#f1f5f9;color:#64748b;">0건</span>
+                </h3>
+                <div class="flex gap-1.5 flex-wrap">
+                    <button onclick="setSourceFilter('all')" id="srcAll" class="tbl-src-btn active">전체</button>
+                    <button onclick="setSourceFilter('active')" id="srcActive" class="tbl-src-btn">미입고</button>
+                    <button onclick="setSourceFilter('stock')" id="srcStock" class="tbl-src-btn">실재고</button>
+                    <button onclick="setSourceFilter('shipped')" id="srcShipped" class="tbl-src-btn">출고</button>
+                </div>
+            </div>
+            <!-- 검색 + 버튼 행 -->
+            <div class="px-5 py-3 grid grid-cols-1 sm:grid-cols-4 gap-2" style="border-bottom:1px solid #f1f5f9;">
+                <div class="relative sm:col-span-2">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[13px]" style="color:#94a3b8;pointer-events:none;"></i>
+                    <input type="text" id="tableInlineSearch" oninput="applyFiltersDebounced()" placeholder="건명, 제품코드 검색"
+                        style="width:100%;padding:8px 12px 8px 34px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
+                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 3px rgba(56,189,248,.15)'"
+                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                </div>
+                <button onclick="resetFilters()" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13.5px;font-weight:600;color:#64748b;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
+                </button>
+                <button onclick="exportToCSV()" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13.5px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                    <i class="fa-solid fa-file-export"></i> 데이터 출력
+                </button>
+            </div>
+            <!-- 테이블 -->
+            <div id="tableScrollWrap" class="mobile-table-wrap overflow-x-auto w-full" style="max-height:560px;overflow-y:auto;">
+                <table class="w-full text-left border-collapse" style="min-width:1080px;">
+                    <thead>
+                        <tr id="mainTableHeadRow" class="text-[12px] uppercase tracking-wider select-none" style="background:#fff;color:#94a3b8;border-bottom:2px solid #f1f5f9;white-space:nowrap;position:sticky;top:0;z-index:10;">
+                            <th class="py-2.5 px-3 font-semibold text-center" style="width:34px;">#</th>
+                            <th onclick="handleSort('regDate')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                등록일자(포장일) <span id="sort-icon-regDate" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('round')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                건명 <span id="sort-icon-round" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('code')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                제품코드 <span id="sort-icon-code" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('color')" class="py-2.5 px-3 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                색상 <span id="sort-icon-color" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('qty')" class="py-2.5 px-3 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                수량 <span id="sort-icon-qty" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('dueDate')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                납기일 <span id="sort-icon-dueDate" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('date')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                상차일 <span id="sort-icon-date" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('strengthenedQty')" class="py-2.5 px-2 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                강화(BOX) <span id="sort-icon-strengthenedQty" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('shippedQty')" class="py-2.5 px-2 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                출고(BOX) <span id="sort-icon-shippedQty" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('_cbm')" class="py-2.5 px-2 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                CBM <span id="sort-icon-_cbm" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th onclick="handleSort('pallet')" class="py-2.5 px-2 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                적재 <span id="sort-icon-pallet" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            </th>
+                            <th class="py-2.5 px-4 text-center relative font-semibold" id="statusDropdownTh">
+                                <button onclick="toggleStatusDropdown(event)" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;margin:0 auto;color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">
+                                    상태 <span id="statusFilterLabel" class="font-bold hidden" style="color:#0ea5e9;"></span>
+                                    <i class="fa-solid fa-chevron-down" style="font-size:9px;margin-left:2px;" id="statusDropdownArrow"></i>
+                                </button>
+                                <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 py-1.5" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.11);min-width:128px;text-align:left;">
+                                    <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#475569;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-list" style="font-size:10px;color:#94a3b8;"></i> 전체
+                                    </button>
+                                    <div style="border-top:1px solid #f1f5f9;margin:2px 0;"></div>
+                                    <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#16a34a;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 출고
+                                    </button>
+                                    <button onclick="toggleStatusFilter('피킹')" id="sf-피킹" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#7c3aed;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#faf5ff'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 피킹
+                                    </button>
+                                    <button onclick="toggleStatusFilter('포장완료')" id="sf-포장완료" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#0284c7;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 포장완료
+                                    </button>
+                                    <button onclick="toggleStatusFilter('미포장')" id="sf-미포장" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#ea580c;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 미포장
+                                    </button>
+                                    <button onclick="toggleStatusFilter('포장대기')" id="sf-포장대기" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#b45309;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 포장대기
+                                    </button>
+                                    <button onclick="toggleStatusFilter('일부입고')" id="sf-일부입고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#ca8a04;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fefce8'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 일부입고
+                                    </button>
+                                    <button onclick="toggleStatusFilter('철물')" id="sf-철물" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#64748b;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 철물
+                                    </button>
+                                    <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#dc2626;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
+                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 미입고
+                                    </button>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="text-[13.5px]" style="border-collapse:collapse;">
+                    </tbody>
+                </table>
+            </div>
 
-                    <div id="tableScrollWrap" class="mobile-table-wrap overflow-x-auto w-full max-h-[640px]">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr id="mainTableHeadRow" class="bg-darkBg text-slate-400 text-[16px] font-semibold uppercase tracking-wider sticky top-0 z-10 border-b border-borderSlate select-none" style="white-space:nowrap;">
-                                    <th onclick="handleSort('regDate')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        등록일자 (포장일) <span id="sort-icon-regDate" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('round')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        건명 <span id="sort-icon-round" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('code')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        제품코드 <span id="sort-icon-code" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('color')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        색상 <span id="sort-icon-color" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('qty')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        수량 <span id="sort-icon-qty" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('dueDate')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        납기일 <span id="sort-icon-dueDate" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('date')" class="py-3 px-4 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        상차일 <span id="sort-icon-date" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('strengthenedQty')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        강화(BOX) <span id="sort-icon-strengthenedQty" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('shippedQty')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        출고(BOX) <span id="sort-icon-shippedQty" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('_cbm')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        CBM <span id="sort-icon-_cbm" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th onclick="handleSort('pallet')" class="py-3 px-2 cursor-pointer hover:bg-slate-800 transition-colors text-center">
-                                        적재 <span id="sort-icon-pallet" class="text-[13.5px] ml-1 text-slate-500"><i class="fa-solid fa-sort"></i></span>
-                                    </th>
-                                    <th class="py-3 px-4 text-center relative" id="statusDropdownTh">
-                                        <button onclick="toggleStatusDropdown(event)" class="flex items-center gap-1 mx-auto text-slate-400 hover:text-white transition-colors text-[16px] font-semibold uppercase tracking-wider">
-                                            상태 <span id="statusFilterLabel" class="text-accentBlue font-bold hidden"></span>
-                                            <i class="fa-solid fa-chevron-down text-[14px] text-slate-500 ml-0.5" id="statusDropdownArrow"></i>
-                                        </button>
-                                        <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-panelBg border border-borderSlate rounded-lg shadow-xl min-w-[130px] py-1 text-left">
-                                            <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-300 font-semibold">
-                                                <i class="fa-solid fa-list text-[13.5px] text-slate-400"></i> 전체
-                                            </button>
-                                            <div class="my-1 border-t border-borderSlate/40"></div>
-                                            <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-green-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 출고
-                                            </button>
-                                            <button onclick="toggleStatusFilter('피킹')" id="sf-피킹" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-purple-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 피킹
-                                            </button>
-                                            <button onclick="toggleStatusFilter('포장완료')" id="sf-포장완료" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-accentBlue">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 포장완료
-                                            </button>
-                                            <button onclick="toggleStatusFilter('미포장')" id="sf-미포장" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-orange-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 미포장
-                                            </button>
-                                            <button onclick="toggleStatusFilter('포장대기')" id="sf-포장대기" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-amber-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 포장대기
-                                            </button>
-                                            <button onclick="toggleStatusFilter('일부입고')" id="sf-일부입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-yellow-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 일부입고
-                                            </button>
-                                            <button onclick="toggleStatusFilter('철물')" id="sf-철물" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-slate-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 철물
-                                            </button>
-                                            <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full px-3 py-2 text-[17.5px] hover:bg-slate-700/60 transition-colors flex items-center gap-2 text-red-400">
-                                                <i class="fa-solid fa-circle text-[14.5px]"></i> 미입고
-                                            </button>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody" class="text-[17.5px] divide-y divide-borderSlate/40">
-                                </tbody>
-                        </table>
-                    </div>
+            <div id="tableCardsMobile" class="mobile-card-list gap-2 p-3 max-h-[640px] overflow-y-auto"></div>
 
-                    <div id="tableCardsMobile" class="mobile-card-list gap-2 p-3 max-h-[640px] overflow-y-auto"></div>
-
-                    <div class="bg-darkBg/30 px-4 md:px-6 py-2.5 md:py-3 border-t border-borderSlate/60 text-[13px] md:text-[17.5px] text-slate-400 flex flex-col md:flex-row gap-1 md:gap-0 justify-between items-center text-center md:text-left">
-                        <div>총 <span id="matchCount" class="text-accentBlue font-bold">0</span>건 중 <span id="totalDisplayCount" class="text-white">0</span>건 표시 중</div>
-                        <div class="flex items-center gap-1">
-                            <span class="h-1.5 w-1.5 rounded-full bg-accentGreen animate-pulse"></span> 누적 가동 수율: <span id="packagingRateAvg" class="text-accentGreen font-bold">100%</span>
-                        </div>
-                    </div>
+            <div class="px-5 py-2.5 flex flex-col md:flex-row gap-1 md:gap-0 justify-between items-center" style="border-top:1px solid #f1f5f9;">
+                <div class="text-[13px]" style="color:#94a3b8;">총 <span id="matchCount" class="font-bold" style="color:#0ea5e9;">0</span>건 중 <span id="totalDisplayCount" class="font-semibold" style="color:#334155;">0</span>건 표시 중</div>
+                <div class="flex items-center gap-1 text-[13px]" style="color:#94a3b8;">
+                    <span class="h-1.5 w-1.5 rounded-full animate-pulse" style="background:#10b981;display:inline-block;"></span> 누적 가동 수율: <span id="packagingRateAvg" class="font-bold" style="color:#10b981;">100%</span>
+                </div>
+            </div>
         </div>
 
         <div id="productDetailBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="exitProductDetailView()"></div>
