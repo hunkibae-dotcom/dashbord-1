@@ -2483,14 +2483,16 @@
                 const _shippedStatuses = new Set(['출고','피킹','출고완료']);
 
                 state.filteredData = state.data.filter(item => {
-                    // 날짜 필터 — 기준 필드 _webDateField
-                    let itemDate = item[_webDateField] || '';
-                    if (!itemDate || itemDate === '-') itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
+                    // 날짜 필터 — _webDateField 없으면(초기/미선택) 날짜 조건 무시
                     let matchesDate = true;
-                    const isValidItemDate = itemDate && itemDate !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(itemDate);
-                    if (isValidItemDate) {
-                        if (startDate) matchesDate = matchesDate && (itemDate >= startDate);
-                        if (endDate) matchesDate = matchesDate && (itemDate <= endDate);
+                    if (_webDateField && (startDate || endDate)) {
+                        let itemDate = item[_webDateField] || '';
+                        if (!itemDate || itemDate === '-') itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
+                        const isValidItemDate = itemDate && itemDate !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(itemDate);
+                        if (isValidItemDate) {
+                            if (startDate) matchesDate = matchesDate && (itemDate >= startDate);
+                            if (endDate)   matchesDate = matchesDate && (itemDate <= endDate);
+                        }
                     }
 
                     // 건명/국가 통합 검색 — round 포함 OR 건명 앞부분(국가코드) 포함
