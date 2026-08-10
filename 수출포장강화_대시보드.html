@@ -2253,17 +2253,21 @@
             updateSortHeaders();
         }
 
-        // 날짜 기준 필드 (상차일/납기일/포장완료일)
-        let _webDateField = 'date';
+        // 날짜 기준 필드 (상차일/납기일/포장완료일) — 초기값 없음(전체 무시)
+        let _webDateField = '';
         function setWebDateField(field) {
+            // 같은 버튼 재클릭 시 해제(토글)
+            if (_webDateField === field) field = '';
             _webDateField = field;
             ['wdfDate','wdfDue','wdfReg'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; }
             });
-            const map = { date:'wdfDate', dueDate:'wdfDue', regDate:'wdfReg' };
-            const active = document.getElementById(map[field]);
-            if (active) { active.style.background = '#0ea5e9'; active.style.color = '#fff'; }
+            if (field) {
+                const map = { date:'wdfDate', dueDate:'wdfDue', regDate:'wdfReg' };
+                const active = document.getElementById(map[field]);
+                if (active) { active.style.background = '#0ea5e9'; active.style.color = '#fff'; }
+            }
             applyFiltersDebounced();
         }
 
