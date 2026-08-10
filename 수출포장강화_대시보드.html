@@ -2324,6 +2324,27 @@
             updateSortHeaders();
         }
 
+        // 소스 필터 (전체/미입고/실재고/출고)
+        let _activeSourceFilter = 'all';
+        let _filterDebounceTimer = null;
+
+        function setSourceFilter(src) {
+            _activeSourceFilter = src;
+            ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            const map = {all:'srcAll',active:'srcActive',stock:'srcStock',shipped:'srcShipped'};
+            const target = document.getElementById(map[src]);
+            if (target) target.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFiltersDebounced() {
+            clearTimeout(_filterDebounceTimer);
+            _filterDebounceTimer = setTimeout(() => applyFilters(), 220);
+        }
+
         // 상태 드롭다운 필터
         let activeStatusFilters = new Set(['전체']);
 
