@@ -4405,11 +4405,20 @@
             document.getElementById('endDateFilter').value = '';
             updateDateRangeLabel();
             const _pf = document.getElementById('palletFilter'); if (_pf) _pf.value = '';
+            const _is = document.getElementById('tableInlineSearch'); if (_is) _is.value = '';
             sortConfig.key = 'regDate';
             sortConfig.direction = 'desc';
             updateSortHeaders();
             // 상태 드롭다운 초기화
             toggleStatusFilter('전체');
+            // 소스 필터 초기화
+            _activeSourceFilter = 'all';
+            ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            const _srcAllBtn = document.getElementById('srcAll');
+            if (_srcAllBtn) _srcAllBtn.classList.add('active');
             autoAdjustDateFilters();
             applyFilters();
         }
