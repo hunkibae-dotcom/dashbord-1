@@ -950,7 +950,22 @@
             <div class="px-5 py-4 flex flex-row items-center justify-between gap-3 flex-wrap" style="border-bottom:1px solid #f1f5f9;">
                 <h3 class="text-[15.5px] font-bold flex items-center gap-2" style="color:#1e293b;">
                     <i class="fa-solid fa-table-list" style="color:#94a3b8;"></i> 수출포장 관리현황
-                    <span id="tableCountBadge" class="text-[12.5px] px-2 py-0.5 rounded-full font-semibold" style="background:#f1f5f9;color:#64748b;">0건</span>
+                    <span id="tableStatsBadge" style="display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;">
+                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                            <i class="fa-solid fa-layer-group" style="color:#94a3b8;font-size:10px;"></i>
+                            <strong id="tableCountBadge" style="color:#0ea5e9;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">항목</span>
+                        </span>
+                        <span style="color:#e2e8f0;font-size:11px;">|</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                            <i class="fa-solid fa-folder-open" style="color:#94a3b8;font-size:10px;"></i>
+                            <strong id="tableRoundCount" style="color:#a78bfa;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">건</span>
+                        </span>
+                        <span style="color:#e2e8f0;font-size:11px;">|</span>
+                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                            <i class="fa-solid fa-boxes-stacked" style="color:#94a3b8;font-size:10px;"></i>
+                            <strong id="tableTotalQty" style="color:#10b981;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">EA</span>
+                        </span>
+                    </span>
                 </h3>
                 <div class="flex gap-1.5 flex-wrap">
                     <button onclick="setSourceFilter('all')" id="srcAll" class="tbl-src-btn active">전체</button>
@@ -3414,9 +3429,13 @@
 
             if (cardsWrap) cardsWrap.innerHTML = cardHtmlParts.join('');
 
-            // tableCountBadge 업데이트
+            // 테이블 통계 배지 업데이트
             const _badge = document.getElementById('tableCountBadge');
-            if (_badge) _badge.textContent = state.filteredData.length + '건';
+            if (_badge) _badge.textContent = state.filteredData.length;
+            const _tblRounds = new Set(state.filteredData.map(d => d.round || '').filter(Boolean));
+            const _tblQty = state.filteredData.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
+            const _rcEl = document.getElementById('tableRoundCount'); if (_rcEl) _rcEl.textContent = _tblRounds.size;
+            const _tqEl = document.getElementById('tableTotalQty');   if (_tqEl) _tqEl.textContent = _tblQty.toLocaleString();
         }
 
         // 차트 가공 렌더러
