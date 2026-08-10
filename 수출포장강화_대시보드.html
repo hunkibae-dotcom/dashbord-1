@@ -5025,12 +5025,6 @@
             body.innerHTML = html;
         }
 
-        function resetTodayWorkers() {
-            const logs = getWorkerLogs().filter(r => r.date !== _todayStr());
-            saveWorkerLogs(logs);
-            renderCard1WorkerDisplay();
-        }
-
         // 작업일지 시트 파싱 헬퍼
         function _parseWorkLogForDate(rows, targetDate) {
             if (!rows || rows.length < 2) return [];
