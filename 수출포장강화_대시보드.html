@@ -4334,15 +4334,19 @@
         }
 
         function onCard4Click(e) {
-            const isTouch = window.matchMedia && !window.matchMedia('(hover: hover)').matches;
-
             const el = document.getElementById('card4RoundName');
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
             if (!roundName || roundName === '-' || roundName === '진행 예정 없음') return;
 
-            if (_card4SameDateRounds.length > 0) {
+            // 건명이 2개 이상이면 선택 팝업 표시
+            if (_card4SameDateRounds.length > 1) {
+                openCard4RoundPicker();
+                return;
+            }
+
+            // 건명 1개 — 바로 필터 적용
+            if (_card4SameDateRounds.length === 1) {
                 const roundSet = new Set(_card4SameDateRounds);
-                // 수출 표준품 현황만 대상 — 출고 완료 시트의 동일 건명 항목 제외
                 const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
                 const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
                 state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
@@ -4359,9 +4363,6 @@
 
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-            // 터치 기기에서는 필터링 후 툴팁 표시 안 함 (hover 없으므로)
-            if (!isTouch && e) showCard4Tooltip(e);
         }
 
         // ── 날짜 팝업 ──────────────────────────────────────────────────
