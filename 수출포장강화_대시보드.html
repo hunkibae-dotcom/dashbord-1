@@ -2517,9 +2517,10 @@
                 const startDate = document.getElementById('startDateFilter').value;
                 const endDate = document.getElementById('endDateFilter').value;
                 const palletQuery = (document.getElementById('palletFilter')?.value || '').toLowerCase().trim();
+                const inlineQuery = (document.getElementById('tableInlineSearch')?.value || '').toLowerCase().trim();
 
                 const _pfMap = {};
-                if (palletQuery && state.rawStockRows && state.rawStockRows.length > 1) {
+                if (state.rawStockRows && state.rawStockRows.length > 1) {
                     const _ph = state.rawStockRows[0].map(h => (h||'').toString().trim());
                     const _piC = _ph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
                     const _piR = _ph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
@@ -2531,6 +2532,8 @@
                         if (_pc && _pv) _pfMap[_pc + '|' + _prnd] = _pv;
                     }
                 }
+
+                const _shippedStatuses = new Set(['출고','피킹','출고완료']);
 
                 state.filteredData = state.data.filter(item => {
                     let itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
@@ -2553,7 +2556,26 @@
                         matchesPallet = _pv.toLowerCase().includes(palletQuery);
                     }
 
-                    return matchesDate && matchesRound && matchesCode && matchesCountry && matchesStatus && matchesPallet;
+                    // 인라인 검색 (건명 + 제품코드)
+                    let matchesInline = true;
+                    if (inlineQuery) {
+                        const roundStr = (item.round || '').toLowerCase();
+                        const codeStr = (item.code || '').toLowerCase();
+                        matchesInline = roundStr.includes(inlineQuery) || codeStr.includes(inlineQuery);
+                    }
+
+                    // 소스 필터
+                    let matchesSource = true;
+                    if (_activeSourceFilter === 'active') {
+                        matchesSource = !_shippedStatuses.has(item.status);
+                    } else if (_activeSourceFilter === 'stock') {
+                        const _hasPallet = !!_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')];
+                        matchesSource = _hasPallet;
+                    } else if (_activeSourceFilter === 'shipped') {
+                        matchesSource = _shippedStatuses.has(item.status);
+                    }
+
+                    return matchesDate && matchesRound && matchesCode && matchesCountry && matchesStatus && matchesPallet && matchesInline && matchesSource;
                 });
 
                 sortData();
