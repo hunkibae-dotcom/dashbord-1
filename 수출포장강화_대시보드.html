@@ -4575,12 +4575,6 @@
 
         let _prevDayAllItems = [];
 
-        function filterByRound(round) {
-            document.getElementById('roundFilter').value = round;
-            applyFilters();
-            const tableEl = document.getElementById('tablePanel');
-            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
         // 작업 LOG 카드 클릭 → 해당 건명들의 수출 표준품 현황만 테이블에 표시
         function filterByWorkLog(rounds) {
             if (!rounds || !rounds.length) return;
