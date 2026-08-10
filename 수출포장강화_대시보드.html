@@ -3413,6 +3413,10 @@
             });
 
             if (cardsWrap) cardsWrap.innerHTML = cardHtmlParts.join('');
+
+            // tableCountBadge 업데이트
+            const _badge = document.getElementById('tableCountBadge');
+            if (_badge) _badge.textContent = state.filteredData.length + '건';
         }
 
         // 차트 가공 렌더러
