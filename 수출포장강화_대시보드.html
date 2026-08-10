@@ -2479,7 +2479,9 @@
                 const _shippedStatuses = new Set(['출고','피킹','출고완료']);
 
                 state.filteredData = state.data.filter(item => {
-                    let itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
+                    // 날짜 필터 — 기준 필드 _webDateField
+                    let itemDate = item[_webDateField] || '';
+                    if (!itemDate || itemDate === '-') itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
                     let matchesDate = true;
                     const isValidItemDate = itemDate && itemDate !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(itemDate);
                     if (isValidItemDate) {
@@ -2487,24 +2489,19 @@
                         if (endDate) matchesDate = matchesDate && (itemDate <= endDate);
                     }
 
-                    const matchesRound = item.round ? item.round.toLowerCase().includes(roundQuery) : true;
-                    const matchesCode = item.code ? item.code.toLowerCase().includes(productCodeQuery) : true;
-                    const roundCountry = item.round ? item.round.split('-')[0].trim().toLowerCase() : '';
-                    const matchesCountry = countryQuery === '' || roundCountry.includes(countryQuery);
+                    // 건명/국가 통합 검색 — round 포함 OR 건명 앞부분(국가코드) 포함
+                    const roundStr = (item.round || '').toLowerCase();
+                    const countryStr = (item.round || '').split('-')[0].trim().toLowerCase();
+                    const matchesRound = !roundQuery || roundStr.includes(roundQuery) || countryStr.includes(roundQuery);
+
+                    const matchesCode = !productCodeQuery || (item.code || '').toLowerCase().includes(productCodeQuery);
+                    const matchesColor = !colorQuery || (item.color || '').toLowerCase().includes(colorQuery);
                     const matchesStatus = activeStatusFilters.has('전체') || activeStatusFilters.has(item.status) || activeStatusFilters.has(item.statusLabel);
                     let matchesPallet = true;
                     if (palletQuery) {
                         const _isS = item.status === '출고' || item.status === '피킹';
                         const _pv = _isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '');
                         matchesPallet = _pv.toLowerCase().includes(palletQuery);
-                    }
-
-                    // 인라인 검색 (건명 + 제품코드)
-                    let matchesInline = true;
-                    if (inlineQuery) {
-                        const roundStr = (item.round || '').toLowerCase();
-                        const codeStr = (item.code || '').toLowerCase();
-                        matchesInline = roundStr.includes(inlineQuery) || codeStr.includes(inlineQuery);
                     }
 
                     // 소스 필터
@@ -2518,7 +2515,7 @@
                         matchesSource = _shippedStatuses.has(item.status);
                     }
 
-                    return matchesDate && matchesRound && matchesCode && matchesCountry && matchesStatus && matchesPallet && matchesInline && matchesSource;
+                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesStatus && matchesPallet && matchesSource;
                 });
 
                 sortData();
