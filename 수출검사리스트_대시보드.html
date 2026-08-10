@@ -1506,8 +1506,7 @@ function renderArchiveKPI() {
 
 // KPI 카드 팝오버의 "상세보기" 버튼: 현재 선택된 공장(currentView) 기준으로 검사상태만 맞춰 테이블로 스크롤
 function viewDetailInTable(inspectValue) {
-  document.getElementById('fInspect').value = inspectValue;
-  applyFilters();
+  setColInspect(inspectValue);
   document.querySelector('.card:has(#tableCount)')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
