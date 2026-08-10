@@ -453,10 +453,9 @@
             <button onclick="closeFilterDrawer()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-[18px]"></i></button>
         </div>
 
-        <div id="sidebarTop" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl flex flex-col flex-1">
-                <h2 class="text-[14.5px] font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-sliders text-accentBlue"></i> 품목검색
-                </h2>
+        <!-- hidden: 스케줄 카드용 spans + 더 이상 사이드바에 없는 필터 입력값 DOM 유지 -->
+        <div id="sidebarTop" style="display:none;">
+                <span id="nearestRoundName_old"></span>
                 
                 <div class="space-y-4">
                     <div class="p-3 bg-darkBg/40 rounded-lg border border-borderSlate/60 relative">
