@@ -1219,7 +1219,6 @@ function _ymdShort(str) {
 }
 
 // ===== FILTER OPTIONS =====
-function populateFilterOptions() {}
 
 // 테이블 컬럼 헤더 클릭 정렬(오름/내림) 공용 유틸
 const DATE_SORT_KEYS = ['납기일', '포장일', '검사일'];
@@ -3589,10 +3588,7 @@ if ('serviceWorker' in navigator) {
 
 function _openScanSmart() {
   try { Android.startScan(); return; } catch(e) {}
-  if (false) {
-  } else {
-    openScanView();
-  }
+  openScanView();
 }
 
 function onNativeScanResult(raw) {
