@@ -2190,41 +2190,6 @@
         }
 
         // 🌟 [중복 방지 결합 알고리즘 리팩토링]: 이종의 여러 파일 로드 시 중복 유실 증발 완벽 해결 🌟
-        function mergeDatasets(existingData, newData) {
-            const map = new Map();
-            existingData.forEach(item => {
-                const key = `${item.date}|${item.regDate}|${item.round}|${item.code}|${item.color}|${item.qty}`;
-                map.set(key, item);
-            });
-            newData.forEach(item => {
-                const key = `${item.date}|${item.regDate}|${item.round}|${item.code}|${item.color}|${item.qty}`;
-                if (map.has(key)) {
-                    const existing = map.get(key);
-                    const statusPriority = { '출고': 5, '출고완료': 5, '피킹': 5, '포장완료': 4, '포장대기': 3, '미포장': 2, '일부입고': 2, '철물': 2, '입고': 1, '미입고': 1 };
-                    const pExisting = statusPriority[existing.status] || 0;
-                    const pNew = statusPriority[item.status] || 0;
-                    
-                    if (pNew >= pExisting) {
-                        const mergedItem = { ...existing, ...item };
-                        if (!item.specW || item.specW === '-') mergedItem.specW = existing.specW;
-                        if (!item.specD || item.specD === '-') mergedItem.specD = existing.specD;
-                        if (!item.specH || item.specH === '-') mergedItem.specH = existing.specH;
-                        if (!item.specG || item.specG === '-') mergedItem.specG = existing.specG;
-                        map.set(key, mergedItem);
-                    } else {
-                        if (!existing.specW || existing.specW === '-') existing.specW = item.specW;
-                        if (!existing.specD || existing.specD === '-') existing.specD = item.specD;
-                        if (!existing.specH || existing.specH === '-') existing.specH = item.specH;
-                        if (!existing.specG || existing.specG === '-') existing.specG = item.specG;
-                        map.set(key, existing);
-                    }
-                } else {
-                    map.set(key, item);
-                }
-            });
-            return Array.from(map.values());
-        }
-
         // 다중 파일 CSV 업로드
         async function handleCsvUpload(event) {
             const files = event.target.files;
