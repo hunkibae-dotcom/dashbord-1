@@ -5879,7 +5879,7 @@
             }
 
             // 상세창(모달/사이드패널)이 열려있는 동안에는 TOP 버튼이 겹쳐 보이지 않도록 숨김
-            const _topBtnModalIds = ['chartDetailModal', 'packingDetailModal', 'workerRegisterModal', 'settingsModal', 'helpModal', 'resetConnectionModal', 'removeDataTabModal', 'prevDayDetailModal', 'noticeDetailModal'];
+            const _topBtnModalIds = ['chartDetailModal', 'packingDetailModal', 'workerRegisterModal', 'settingsModal', 'workLogModal', 'resetConnectionModal', 'removeDataTabModal', 'prevDayDetailModal', 'noticeDetailModal'];
             function isDetailViewOpen() {
                 const modalOpen = _topBtnModalIds.some(function(id) {
                     const el = document.getElementById(id);
