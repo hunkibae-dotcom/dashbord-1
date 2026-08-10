@@ -846,22 +846,64 @@
                     <button onclick="setSourceFilter('shipped')" id="srcShipped" class="tbl-src-btn">출고</button>
                 </div>
             </div>
-            <!-- 검색 + 버튼 행 -->
-            <div class="px-5 py-3 grid grid-cols-1 sm:grid-cols-4 gap-2" style="border-bottom:1px solid #f1f5f9;">
-                <div class="relative sm:col-span-2">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-[13px]" style="color:#94a3b8;pointer-events:none;"></i>
-                    <input type="text" id="tableInlineSearch" oninput="applyFiltersDebounced()" placeholder="건명, 제품코드 검색"
-                        style="width:100%;padding:8px 12px 8px 34px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
-                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 3px rgba(56,189,248,.15)'"
+            <!-- 검색 4칸 행 -->
+            <div style="padding:12px 20px 8px;border-bottom:none;display:grid;grid-template-columns:2fr 1.5fr 0.8fr 0.8fr;gap:8px;">
+                <div style="position:relative;">
+                    <i class="fa-solid fa-folder-open" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                    <input type="text" id="roundFilter" oninput="applyFiltersDebounced()" placeholder="건명 / 국가 (예: FAM-110, FAM)"
+                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
+                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 2px rgba(56,189,248,.12)'"
                         onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
                 </div>
-                <button onclick="resetFilters()" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13.5px;font-weight:600;color:#64748b;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
-                    <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
-                </button>
-                <button onclick="exportToCSV()" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13.5px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
-                    <i class="fa-solid fa-file-export"></i> 데이터 출력
-                </button>
+                <div style="position:relative;">
+                    <i class="fa-solid fa-barcode" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                    <input type="text" id="productCodeFilter" oninput="applyFiltersDebounced()" placeholder="제품코드"
+                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
+                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 2px rgba(56,189,248,.12)'"
+                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                </div>
+                <div style="position:relative;">
+                    <i class="fa-solid fa-palette" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                    <input type="text" id="colorFilter" oninput="applyFiltersDebounced()" placeholder="색상"
+                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
+                        onfocus="this.style.borderColor='#f97316';this.style.boxShadow='0 0 0 2px rgba(249,115,22,.12)'"
+                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                </div>
+                <div style="position:relative;">
+                    <i class="fa-solid fa-pallet" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                    <input type="text" id="palletFilter" oninput="applyFiltersDebounced()" placeholder="적재"
+                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
+                        onfocus="this.style.borderColor='#a78bfa';this.style.boxShadow='0 0 0 2px rgba(167,139,250,.12)'"
+                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                </div>
             </div>
+            <!-- 날짜 필터 행 -->
+            <div style="padding:0 20px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid #f1f5f9;">
+                <!-- 날짜 기준 탭 -->
+                <div style="display:flex;gap:3px;background:#f8fafc;border-radius:8px;padding:3px;flex-shrink:0;">
+                    <button id="wdfDate" onclick="setWebDateField('date')" style="padding:5px 11px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#0ea5e9;color:#fff;transition:all .15s;">상차일</button>
+                    <button id="wdfDue"  onclick="setWebDateField('dueDate')" style="padding:5px 11px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:#64748b;transition:all .15s;">납기일</button>
+                    <button id="wdfReg"  onclick="setWebDateField('regDate')" style="padding:5px 11px;border-radius:6px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:#64748b;transition:all .15s;">포장완료일</button>
+                </div>
+                <input type="date" id="startDateFilter" onchange="applyFiltersDebounced()"
+                    style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:12.5px;color:#334155;background:#fff;outline:none;cursor:pointer;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#e2e8f0'">
+                <span style="color:#94a3b8;font-size:12px;flex-shrink:0;">~</span>
+                <input type="date" id="endDateFilter" onchange="applyFiltersDebounced()"
+                    style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;font-size:12.5px;color:#334155;background:#fff;outline:none;cursor:pointer;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#e2e8f0'">
+                <div style="margin-left:auto;display:flex;gap:8px;">
+                    <button onclick="resetFilters()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#64748b;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
+                    </button>
+                    <button onclick="exportToCSV()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                        <i class="fa-solid fa-file-export"></i> 데이터 출력
+                    </button>
+                </div>
+            </div>
+            <!-- DOM 유지용 hidden 입력 -->
+            <input type="hidden" id="countryFilter" value="">
+            <input type="hidden" id="tableInlineSearch" value="">
             <!-- 테이블 -->
             <div id="tableScrollWrap" class="mobile-table-wrap overflow-x-auto w-full" style="max-height:560px;overflow-y:auto;">
                 <table class="w-full text-left border-collapse" style="min-width:1080px;">
