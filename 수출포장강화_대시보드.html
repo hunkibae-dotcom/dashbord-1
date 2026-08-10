@@ -4343,14 +4343,12 @@
         });
 
         function resetFilters() {
-            document.getElementById('roundFilter').value = '';
-            document.getElementById('productCodeFilter').value = '';
-            document.getElementById('countryFilter').value = '';
-            document.getElementById('startDateFilter').value = '';
-            document.getElementById('endDateFilter').value = '';
-            updateDateRangeLabel();
-            const _pf = document.getElementById('palletFilter'); if (_pf) _pf.value = '';
-            const _is = document.getElementById('tableInlineSearch'); if (_is) _is.value = '';
+            const _clr = id => { const el = document.getElementById(id); if (el) el.value = ''; };
+            _clr('roundFilter'); _clr('productCodeFilter'); _clr('colorFilter'); _clr('palletFilter');
+            _clr('startDateFilter'); _clr('endDateFilter');
+            // 날짜 기준 탭 초기화
+            _webDateField = 'date';
+            setWebDateField('date');
             sortConfig.key = 'regDate';
             sortConfig.direction = 'desc';
             updateSortHeaders();
