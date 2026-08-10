@@ -6025,87 +6025,137 @@
         })();
     </script>
 
-    <!-- 수출 일정 카드 호버 툴팁 -->
-    <div id="card4HoverTooltip" style="
-        display:none;
-        position:fixed;
-        z-index:9999;
-        pointer-events:none;
-        min-width:280px;
-        max-width:340px;
-        background:#FFFFFF;
-        backdrop-filter:blur(20px);
-        -webkit-backdrop-filter:blur(20px);
-        border:1px solid rgba(148,163,184,0.35);
-        border-radius:14px;
-        padding:14px 16px;
-        box-shadow:0 8px 32px rgba(0,0,0,0.14);
-    ">
-        <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;">수출 일정 상세</div>
-        <div id="card4TooltipBody"></div>
+    <!-- 수출 일정 건명 선택 모달 -->
+    <div id="card4RoundPickerModal" onclick="if(event.target===this)closeCard4RoundPicker()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:20px;padding:28px 24px;width:100%;max-width:440px;margin:16px;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:18px;">
+            <!-- 헤더 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-ship" style="color:#f97316;"></i> 수출 일정 조회
+                    </div>
+                    <div id="card4PickerDateLabel" style="font-size:12px;color:#94a3b8;margin-top:3px;"></div>
+                </div>
+                <button onclick="closeCard4RoundPicker()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- 안내 -->
+            <div style="font-size:12.5px;color:#64748b;display:flex;align-items:center;gap:6px;background:#f8fafc;border-radius:10px;padding:10px 12px;">
+                <i class="fa-solid fa-circle-info" style="color:#0ea5e9;"></i>
+                조회할 건명을 선택하세요. 복수 선택 가능합니다.
+            </div>
+            <!-- 전체 선택 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
+                <span style="font-size:12.5px;font-weight:600;color:#475569;">건명 목록</span>
+                <button id="card4PickerSelectAllBtn" onclick="toggleCard4PickerAll()" style="font-size:12px;font-weight:700;color:#0ea5e9;background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='none'">전체 선택</button>
+            </div>
+            <!-- 건명 체크박스 목록 -->
+            <div id="card4RoundChipList" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;"></div>
+            <!-- 버튼 -->
+            <div style="display:flex;gap:10px;margin-top:4px;">
+                <button onclick="closeCard4RoundPicker()" style="flex:1;padding:12px;border-radius:12px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">취소</button>
+                <button onclick="confirmCard4RoundSearch()" style="flex:2;padding:12px;border-radius:12px;border:none;background:#0ea5e9;color:#fff;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:background .15s;" onmouseover="this.style.background='#0284c7'" onmouseout="this.style.background='#0ea5e9'">
+                    <i class="fa-solid fa-magnifying-glass"></i> 선택 조회
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        function showCard4Tooltip(e) {
-            if (!_card4TooltipData || _card4TooltipData.length === 0) return;
+        // ── 수출 일정 건명 선택 피커 ──────────────────────────────
+        let _card4PickerSelected = new Set();
 
-            // 건명별로 그룹핑
-            const roundMap = {};
-            _card4TooltipData.forEach(item => {
-                const r = item.round || '-';
-                if (!roundMap[r]) roundMap[r] = { dueDate: item.dueDate || '-', loadDate: item.date || '-', qty: 0 };
-                roundMap[r].qty += parseInt(item.targetQty) || parseInt(item.qty) || 0;
-            });
-
-            const rows = Object.entries(roundMap).map(([round, d]) => {
-                return `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 0;border-bottom:1px solid rgba(100,116,139,0.2);">
-                    <div style="font-size:13px;font-weight:700;color:#0F172A;">${round}</div>
-                    <div style="display:flex;gap:12px;font-size:11.5px;color:#475569;">
-                        <span>납기 <span style="color:#1E293B;font-weight:600;">${normalizeDate(d.dueDate)}</span></span>
-                        <span>상차 <span style="color:#1E293B;font-weight:600;">${normalizeDate(d.loadDate)}</span></span>
-                        <span style="margin-left:auto;color:#2563EB;font-weight:700;">${d.qty.toLocaleString()} BOX</span>
-                    </div>
-                </div>`;
+        function openCard4RoundPicker() {
+            _card4PickerSelected = new Set(_card4SameDateRounds);
+            const chipList = document.getElementById('card4RoundChipList');
+            chipList.innerHTML = _card4SameDateRounds.map((r, i) => {
+                const roundMap = {};
+                (_card4TooltipData || []).forEach(item => {
+                    const rk = item.round || '-';
+                    if (!roundMap[rk]) roundMap[rk] = { qty: 0, dueDate: item.dueDate || '', loadDate: item.date || '' };
+                    roundMap[rk].qty += parseInt(item.qty) || 0;
+                });
+                const info = roundMap[r] || {};
+                return `<button id="c4Chip_${i}" onclick="toggleCard4Chip(${i},'${r.replace(/'/g,'\\\'')}')"
+                    style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #0ea5e9;background:#f0f9ff;cursor:pointer;text-align:left;width:100%;transition:all .15s;">
+                    <span id="c4ChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid #0ea5e9;background:#0ea5e9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>
+                    </span>
+                    <span style="flex:1;min-width:0;text-align:left;">
+                        <span style="display:block;font-size:13.5px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
+                        ${info.qty ? `<span style="font-size:11.5px;color:#94a3b8;margin-top:1px;display:block;">수량 <strong style="color:#0ea5e9;">${info.qty.toLocaleString()}</strong> BOX · 납기 ${normalizeDate(info.dueDate) || '-'}</span>` : ''}
+                    </span>
+                </button>`;
             }).join('');
-
-            document.getElementById('card4TooltipBody').innerHTML = rows;
-            const tip = document.getElementById('card4HoverTooltip');
-            tip.style.display = 'block';
-            positionCard4Tooltip(e);
+            const el = document.getElementById('card4RoundName');
+            const loadDate = document.getElementById('card4LoadDate')?.textContent || '';
+            const dateEl = document.getElementById('card4PickerDateLabel');
+            if (dateEl) dateEl.textContent = loadDate && loadDate !== '-' ? '상차일 ' + loadDate : '';
+            _updateCard4PickerAllBtn();
+            document.getElementById('card4RoundPickerModal').style.display = 'flex';
         }
 
-        function moveCard4Tooltip(e) {
-            positionCard4Tooltip(e);
+        function closeCard4RoundPicker() {
+            document.getElementById('card4RoundPickerModal').style.display = 'none';
         }
 
-        function positionCard4Tooltip(e) {
-            const tip = document.getElementById('card4HoverTooltip');
-            if (tip.style.display === 'none') return;
-            const margin = 12;
-            const tw = tip.offsetWidth || 300;
-            const th = tip.offsetHeight || 120;
-            let x = e.clientX + margin;
-            let y = e.clientY + margin;
-            if (x + tw > window.innerWidth - 8) x = e.clientX - tw - margin;
-            if (y + th > window.innerHeight - 8) y = e.clientY - th - margin;
-            // 화면이 좁아 위 계산이 음수/초과로 튕겨나가도 항상 뷰포트 안쪽에 보이도록 최종 보정
-            x = Math.max(8, Math.min(x, window.innerWidth - tw - 8));
-            y = Math.max(8, Math.min(y, window.innerHeight - th - 8));
-            tip.style.left = x + 'px';
-            tip.style.top  = y + 'px';
+        function toggleCard4Chip(idx, round) {
+            const chip = document.getElementById('c4Chip_' + idx);
+            const chk  = document.getElementById('c4ChipChk_' + idx);
+            if (_card4PickerSelected.has(round)) {
+                _card4PickerSelected.delete(round);
+                if (chip) { chip.style.borderColor = '#e2e8f0'; chip.style.background = '#fff'; }
+                if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = '#cbd5e1'; chk.innerHTML = ''; }
+            } else {
+                _card4PickerSelected.add(round);
+                if (chip) { chip.style.borderColor = '#0ea5e9'; chip.style.background = '#f0f9ff'; }
+                if (chk)  { chk.style.background = '#0ea5e9'; chk.style.borderColor = '#0ea5e9'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>'; }
+            }
+            _updateCard4PickerAllBtn();
         }
 
-        function hideCard4Tooltip() {
-            document.getElementById('card4HoverTooltip').style.display = 'none';
+        function toggleCard4PickerAll() {
+            const allSelected = _card4PickerSelected.size === _card4SameDateRounds.length;
+            _card4PickerSelected.clear();
+            _card4SameDateRounds.forEach((r, i) => {
+                const chip = document.getElementById('c4Chip_' + i);
+                const chk  = document.getElementById('c4ChipChk_' + i);
+                if (!allSelected) {
+                    _card4PickerSelected.add(r);
+                    if (chip) { chip.style.borderColor = '#0ea5e9'; chip.style.background = '#f0f9ff'; }
+                    if (chk)  { chk.style.background = '#0ea5e9'; chk.style.borderColor = '#0ea5e9'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>'; }
+                } else {
+                    if (chip) { chip.style.borderColor = '#e2e8f0'; chip.style.background = '#fff'; }
+                    if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = '#cbd5e1'; chk.innerHTML = ''; }
+                }
+            });
+            _updateCard4PickerAllBtn();
         }
 
-        // 터치 기기: 카드 밖을 탭하면 상세 팝업 닫기
-        document.addEventListener('click', function(e) {
-            const tip = document.getElementById('card4HoverTooltip');
-            if (!tip || tip.style.display !== 'block') return;
-            const card = document.getElementById('strengthenedStatusCard');
-            if (card && !card.contains(e.target)) hideCard4Tooltip();
-        });
+        function _updateCard4PickerAllBtn() {
+            const btn = document.getElementById('card4PickerSelectAllBtn');
+            if (!btn) return;
+            btn.textContent = _card4PickerSelected.size === _card4SameDateRounds.length ? '전체 해제' : '전체 선택';
+        }
+
+        function confirmCard4RoundSearch() {
+            const selected = _card4SameDateRounds.filter(r => _card4PickerSelected.has(r));
+            if (!selected.length) return;
+            closeCard4RoundPicker();
+            const roundSet = new Set(selected);
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
+            state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
+            sortData();
+            switchToGeneralDashboardView();
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            updateSortHeaders();
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
 
         // PWA: 서비스 워커 등록 + 업데이트 시 자동 새로고침
         if ('serviceWorker' in navigator) {
