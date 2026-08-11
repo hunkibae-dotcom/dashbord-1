@@ -1334,7 +1334,8 @@ function applyFilters() {
     if (search && !d.건명.toLowerCase().includes(search) &&
         !d.단품코드.toLowerCase().includes(search) &&
         !d.단품명칭.toLowerCase().includes(search)) return false;
-    if (colInspectFilter && d.검사 !== colInspectFilter) return false;
+    if (colInspectFilter === '생산중') { if (d.검사 !== '미검사' && d.검사 !== '재투입') return false; }
+    else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     return true;
   }
 
