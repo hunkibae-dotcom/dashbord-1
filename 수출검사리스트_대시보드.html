@@ -3305,9 +3305,17 @@ function renderMobileCharts() {
         c2.fillText('완료율', left+width/2, top+height/2+10); c2.restore();
       }}],
       options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
-        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.label}: ${item.raw}건` } } }
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.label}: ${item.raw}건 — 탭하여 필터` } } },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const status = elements[0].index === 0 ? '출고완료' : '미검사출고';
+          setMFactory(key);
+          setMStatus(status);
+          setMTab('list');
+        }
       }
     });
+    document.getElementById(canvasId).style.cursor = 'pointer';
   });
 }
 
