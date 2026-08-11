@@ -1906,11 +1906,11 @@ function renderQualityChart(key, granularity) {
   if (granularity === 'country' || granularity === 'product') {
     const counts = {};
     allItems.forEach(d => {
-      const label = granularity === 'country' ? extractCountry(d.건명) : (d.단품명칭 || '미정');
+      const label = granularity === 'country' ? extractCountry(d.건명) : extractProductCode(d.단품명칭);
       counts[label] = (counts[label] || 0) + 1;
     });
     const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
-    const labels = sorted.map(([k]) => k.length > 14 ? k.slice(0,14)+'…' : k);
+    const labels = sorted.map(([k]) => k.length > 16 ? k.slice(0,16)+'…' : k);
     const values = sorted.map(([,v]) => v);
     if (totalEl) totalEl.textContent = allItems.length.toLocaleString();
     if (periodEl) periodEl.textContent = '상위 ' + sorted.length + '건';
