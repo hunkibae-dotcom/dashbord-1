@@ -2550,6 +2550,8 @@ function setMStatus(s) {
   document.getElementById('mSDone')?.classList.toggle('active', s === '검사');
   // '진행_미검사'·'금일포장'은 카드 클릭 전용 파생 필터 — 미검사 버튼에 하이라이트
   document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사' || s === '진행_미검사' || s === '금일포장');
+  document.getElementById('mSPreinput')?.classList.toggle('active', s === '미투입');
+  document.getElementById('mSProducing')?.classList.toggle('active', s === '생산중');
   document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
   document.getElementById('mSArchiveUndone')?.classList.toggle('active', s === '미검사출고');
   renderMobileList();
