@@ -1967,39 +1967,18 @@ function updateYearSelectors() {
 }
 
 function extractCountry(건명) {
-  if (!건명) return '기타';
+  if (!건명) return null;
   const s = 건명.trim();
-
-  // 1. 업체명/년도 패턴 (내수건) — 슬래시 앞이 업체명
-  const slashIdx = s.indexOf('/');
-  if (slashIdx > 0) return s.slice(0, slashIdx).trim() || '기타';
-
-  // 2. 수출건: COUNTRY-차수(숫자로 시작하거나 짧은 영문+숫자) 패턴
-  //    e.g. "VIETNAM-26", "INDIA-25A", "UAE-1B"
+  // 한글 포함 = 내수건 → 국가별 차트에서 제외
+  if (/[가-힣]/.test(s)) return null;
+  // 슬래시 포함 = 내수건 패턴 → 제외
+  if (s.indexOf('/') >= 0) return null;
+  // 수출건: 첫 번째 '-' 앞 부분이 국가코드
   const dashIdx = s.indexOf('-');
-  if (dashIdx > 0) {
-    const before = s.slice(0, dashIdx).trim();
-    const after  = s.slice(dashIdx + 1).trim();
-    // before가 영문(공백 포함 가능), after가 숫자로 시작하거나 1~3영문+숫자
-    if (/^[A-Z][A-Z\s]*$/.test(before) && /^[A-Z]{0,3}\d+[A-Za-z]?/.test(after)) {
-      return before;
-    }
-  }
-
-  // 3. (주)업체명 패턴
-  const juMatch = s.match(/^\(주\)([^_\/\(]+)/);
-  if (juMatch) return '(주)' + juMatch[1].trim();
-
-  // 4. 업체명_설치위치 패턴
-  const underIdx = s.indexOf('_');
-  if (underIdx > 0) return s.slice(0, underIdx).trim() || '기타';
-
-  // 5. 업체명(도시이름)PJ 등 — 괄호 앞이 업체명
-  const parenIdx = s.search(/\s*[\(\[]/);
-  if (parenIdx > 0) return s.slice(0, parenIdx).trim() || '기타';
-
-  // 6. 그대로 표시 (14자 제한)
-  return s.length > 14 ? s.slice(0, 14) + '…' : s;
+  if (dashIdx > 0) return s.slice(0, dashIdx).trim() || null;
+  // 대시 없는 순수 영문코드 (예: KK, NY)
+  if (/^[A-Za-z0-9\s]+$/.test(s)) return s.length > 12 ? s.slice(0, 12) : s;
+  return null;
 }
 
 function extractProductCode(단품명칭) {
