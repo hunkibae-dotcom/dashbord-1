@@ -1314,6 +1314,7 @@ document.addEventListener('click', () => {
 
 // ===== FILTERS =====
 let colInspectFilter = '';
+let ddayUrgencyFilter = null; // { factory:'cj1'|'cj2', urgency:'지연'|'D-7이하'|'D-14이하'|'여유'|'미정' }
 
 // 검색창에 타이핑할 때마다 차트 4개 재생성 + 전체 테이블 리렌더가 매 키입력마다 실행되던 것을
 // 타이핑이 멈춘 뒤 한 번만 실행되도록 지연 — PC에서 검색 중 심하게 느려지던 원인 중 하나
