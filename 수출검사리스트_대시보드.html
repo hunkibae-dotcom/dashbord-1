@@ -417,29 +417,55 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           </div>
         </div>
 
+        <!-- 투입전 (미투입) -->
         <div class="relative group">
           <div class="card p-4 cursor-default">
             <div class="flex items-center gap-2 mb-3">
-              <span class="kpi-icon bg-emerald-50 shrink-0"><i class="fa-solid fa-circle-check text-emerald-500 text-[15px]"></i></span>
-              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">검사 완료 품목</span>
+              <span class="kpi-icon bg-slate-100 shrink-0"><i class="fa-solid fa-clock-rotate-left text-slate-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">투입전</span>
             </div>
             <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between" data-factory="cj1">
                 <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
-                <span class="text-[17px] font-extrabold text-emerald-600"><span id="kpiDoneCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+                <span class="text-[17px] font-extrabold text-slate-500"><span id="kpiPreInCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
               </div>
               <div class="flex items-center justify-between" data-factory="cj2">
                 <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
-                <span class="text-[17px] font-extrabold text-emerald-600"><span id="kpiDoneCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+                <span class="text-[17px] font-extrabold text-slate-500"><span id="kpiPreInCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiPreInDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('미투입')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
+        <!-- 생산중 (미검사+재투입) -->
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-orange-50 shrink-0"><i class="fa-solid fa-gears text-orange-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">생산중</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between" data-factory="cj1">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
+                <span class="text-[17px] font-extrabold text-orange-500"><span id="kpiProdCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+              </div>
+              <div class="flex items-center justify-between" data-factory="cj2">
+                <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
+                <span class="text-[17px] font-extrabold text-orange-500"><span id="kpiProdCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
               </div>
             </div>
           </div>
           <div class="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
-            <div id="kpiDoneDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <div id="kpiProdDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('생산중')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
+        <!-- 누적 검사완료 -->
         <div class="relative group">
           <div class="card p-4 cursor-default">
             <div class="flex items-center gap-2 mb-3">
