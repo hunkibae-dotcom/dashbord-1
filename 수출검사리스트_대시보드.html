@@ -1350,6 +1350,7 @@ function applyFilters() {
     if (colInspectFilter === '생산중') { if (d.검사 !== '미검사' && d.검사 !== '재투입') return false; }
     else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     if (ddayUrgencyFilter) {
+      if (d.source === 'archive') return false;
       if (d.공장 !== ddayUrgencyFilter.factory) return false;
       if (d.검사 === '검사') return false;
       const dd = ddayInfo(d.납기일);
