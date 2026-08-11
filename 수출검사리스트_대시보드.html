@@ -2941,54 +2941,119 @@ function renderMobileFactoryPanels() {
 function renderMobileCharts() {
   if (!isMobile()) return;
   const c = _chartThemeColors();
+
+  // 누적 품질검사 차트 (시계열 또는 국가/제품별)
   ['cj1', 'cj2'].forEach(key => {
     const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
     const archive = archiveRows.filter(d => d.공장 === key);
-    const series = computeCumulativeSeries([...activeDone, ...archive], mGranularity, 'all');
-    const cumVal = series.data.length ? series.data[series.data.length - 1] : 0;
-    setMTxt('mCum' + (key === 'cj1' ? 'Cj1' : 'Cj2'), cumVal.toLocaleString());
+    const allItems = [...activeDone, ...archive];
     const color = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
     const cvs = document.getElementById(key === 'cj1' ? 'mQCCj1' : 'mQCCj2');
     if (!cvs) return;
     const ctx = cvs.getContext('2d');
     const ck = 'mqc' + key;
     if (mCharts[ck]) mCharts[ck].destroy();
-    const showPts = series.labels.length <= 20;
-    const pMax = series.periodData.length ? Math.max(...series.periodData) : 1;
-    mCharts[ck] = new Chart(ctx, {
-      data: {
-        labels: series.labels,
-        datasets: [
-          { type:'bar', data:series.periodData, backgroundColor:color+'44', borderRadius:3, yAxisID:'yB', order:2 },
-          { type:'line', data:series.data, borderColor:color, backgroundColor:'transparent', borderWidth:2, tension:0.35, pointRadius:showPts?3:0, pointBackgroundColor:color, yAxisID:'yC', order:1 }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        interaction:{mode:'index',intersect:false},
-        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:8, callbacks:{ label: item => item.datasetIndex===0 ? `기간: ${item.raw}건` : `누적: ${item.raw}건` } } },
+
+    if (mGranularity === 'country' || mGranularity === 'product') {
+      const counts = {};
+      allItems.forEach(d => {
+        const label = mGranularity === 'country' ? extractCountry(d.건명) : (d.단품명칭 || '미정');
+        counts[label] = (counts[label] || 0) + 1;
+      });
+      const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+      const labels = sorted.map(([k]) => k.length>12?k.slice(0,12)+'…':k);
+      const values = sorted.map(([,v]) => v);
+      setMTxt('mCum' + (key === 'cj1' ? 'Cj1' : 'Cj2'), allItems.length.toLocaleString());
+      mCharts[ck] = new Chart(ctx, {
+        type:'bar',
+        data:{ labels, datasets:[{ data:values, backgroundColor:color+'88', borderColor:color, borderWidth:1, borderRadius:3 }] },
+        options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.raw}건` } } },
+          scales:{ x:{ grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5},stepSize:1} }, y:{ grid:{display:false}, ticks:{color:c.tick,font:{size:9.5}} } }
+        }
+      });
+    } else {
+      const series = computeCumulativeSeries(allItems, mGranularity, 'all');
+      const cumVal = series.data.length ? series.data[series.data.length - 1] : 0;
+      setMTxt('mCum' + (key === 'cj1' ? 'Cj1' : 'Cj2'), cumVal.toLocaleString());
+      const showPts = series.labels.length <= 20;
+      const pMax = series.periodData.length ? Math.max(...series.periodData) : 1;
+      mCharts[ck] = new Chart(ctx, {
+        data: {
+          labels: series.labels,
+          datasets: [
+            { type:'bar', data:series.periodData, backgroundColor:color+'44', borderRadius:3, yAxisID:'yB', order:2 },
+            { type:'line', data:series.data, borderColor:color, backgroundColor:'transparent', borderWidth:2, tension:0.35, pointRadius:showPts?3:0, pointBackgroundColor:color, yAxisID:'yC', order:1 }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:8, callbacks:{ label: item => item.datasetIndex===0?`기간: ${item.raw}건`:`누적: ${item.raw}건` } } },
+          scales:{
+            x:{ grid:{display:false}, ticks:{color:c.tickSub,font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
+            yB:{ position:'left', grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5}}, suggestedMax:pMax*3 },
+            yC:{ position:'right', grid:{display:false}, ticks:{color:color+'BB',font:{size:9.5}} }
+          }
+        }
+      });
+    }
+  });
+
+  // 공장별 검사 비율 (stacked horizontal bar)
+  const mCj1 = { done:0, undone:0 }, mCj2 = { done:0, undone:0 };
+  allData.forEach(d => { const t = d.공장==='cj1'?mCj1:mCj2; d.검사==='검사'?t.done++:t.undone++; });
+  const tCtx = document.getElementById('mTopChart')?.getContext('2d');
+  if (tCtx) {
+    if (mCharts.top) mCharts.top.destroy();
+    mCharts.top = new Chart(tCtx, {
+      type:'bar',
+      data:{ labels:['충주1공장','충주2공장'], datasets:[
+        { label:'검사완료', data:[mCj1.done,mCj2.done], backgroundColor:['rgba(59,130,246,.82)','rgba(139,92,246,.82)'], borderRadius:5, borderSkipped:false },
+        { label:'미검사', data:[mCj1.undone,mCj2.undone], backgroundColor:'rgba(239,68,68,.55)', borderRadius:5, borderSkipped:false }
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{ legend:{position:'top',labels:{color:c.tick,font:{size:11},boxWidth:8,padding:8}}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => {
+          const ds = item.chart.data.datasets;
+          const total = (ds[0].data[item.dataIndex]||0)+(ds[1].data[item.dataIndex]||0);
+          const pct = total?Math.round(item.raw/total*100):0;
+          return `${item.dataset.label}: ${item.raw}건 (${pct}%)`;
+        }}}},
         scales:{
-          x:{ grid:{display:false}, ticks:{color:c.tickSub,font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:8} },
-          yB:{ position:'left', grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5}}, suggestedMax:pMax*3 },
-          yC:{ position:'right', grid:{display:false}, ticks:{color:color+'BB',font:{size:9.5}} }
+          x:{ stacked:true, grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:10},stepSize:1} },
+          y:{ stacked:true, grid:{display:false}, ticks:{color:c.tick,font:{size:11}} }
         }
       }
     });
+  }
+
+  // 공장별 검사비율 원형 (donut)
+  if (mCharts.dd) { mCharts.dd.destroy(); mCharts.dd = null; }
+  [['cj1','mDdChart','#3B82F6'], ['cj2','mDdChart2','#8B5CF6']].forEach(([key, canvasId, color]) => {
+    const ck = 'mpie' + key;
+    if (mCharts[ck]) mCharts[ck].destroy();
+    const fd = allData.filter(d => d.공장 === key);
+    const done = fd.filter(d => d.검사 === '검사').length;
+    const undone = fd.filter(d => d.검사 !== '검사').length;
+    const total = done + undone;
+    const pct = total ? Math.round(done/total*100) : 0;
+    const dCtx = document.getElementById(canvasId)?.getContext('2d');
+    if (!dCtx) return;
+    mCharts[ck] = new Chart(dCtx, {
+      type:'doughnut',
+      data:{ labels:['검사완료','미검사'], datasets:[{ data:[done,undone], backgroundColor:[color+'CC','rgba(239,68,68,.5)'], borderColor:[color,'#EF4444'], borderWidth:1.5, hoverOffset:4 }] },
+      plugins:[{ id:'cText'+key, beforeDraw(chart) {
+        const { ctx:c2, chartArea:{width,height,top,left} } = chart;
+        c2.save(); c2.font='bold 14px Inter,sans-serif'; c2.fillStyle=color; c2.textAlign='center'; c2.textBaseline='middle';
+        c2.fillText(pct+'%', left+width/2, top+height/2-5);
+        c2.font='9px Inter,sans-serif'; c2.fillStyle=c.tickSub;
+        c2.fillText('완료율', left+width/2, top+height/2+10); c2.restore();
+      }}],
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
+        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.label}: ${item.raw}건` } } }
+      }
+    });
   });
-  // Top undone
-  const undone = allData.filter(d => d.검사 !== '검사');
-  const cnts = {};
-  undone.forEach(d => { const k = d.건명+'||'+d.공장; cnts[k] = (cnts[k]||0)+1; });
-  const top = Object.entries(cnts).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  const tLabels = top.map(([k]) => { const [n] = k.split('||'); return n.length>14?n.slice(0,14)+'…':n; });
-  const tColors = top.map(([k]) => k.split('||')[1]==='cj1'?'rgba(59,130,246,.75)':'rgba(139,92,246,.75)');
-  const tCtx = document.getElementById('mTopChart')?.getContext('2d');
-  if (tCtx) { if (mCharts.top) mCharts.top.destroy(); mCharts.top = new Chart(tCtx, { type:'bar', data:{labels:tLabels,datasets:[{data:top.map(([,v])=>v),backgroundColor:tColors,borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:lightTooltip()},scales:{x:{grid:{color:c.grid},ticks:{color:c.tickSub,font:{size:10},stepSize:1}},y:{grid:{display:false},ticks:{color:c.tick,font:{size:10.5}}}}}}); }
-  // Dday
-  const bkt = {cj1:[0,0,0,0], cj2:[0,0,0,0]};
-  undone.forEach(d => { const dd=ddayInfo(d.납기일); const idx=dd===null?3:dd<0?0:dd<=7?1:2; bkt[d.공장][idx]++; });
-  const dCtx = document.getElementById('mDdChart')?.getContext('2d');
-  if (dCtx) { if (mCharts.dd) mCharts.dd.destroy(); mCharts.dd = new Chart(dCtx, { type:'bar', data:{ labels:['지연','7일 이내','8일 이상','미정'], datasets:[{label:'충주1',data:bkt.cj1,backgroundColor:'rgba(59,130,246,.75)',borderRadius:5},{label:'충주2',data:bkt.cj2,backgroundColor:'rgba(139,92,246,.75)',borderRadius:5}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{color:c.tick,font:{size:11},boxWidth:8,padding:8}},tooltip:lightTooltip()},scales:{x:{grid:{display:false},ticks:{color:c.tick,font:{size:11}}},y:{grid:{color:c.grid},ticks:{color:c.tickSub,font:{size:10},stepSize:1}}}}}); }
 }
 
 function renderMobileList() {
