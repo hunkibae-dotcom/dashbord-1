@@ -2033,9 +2033,10 @@ function renderQualityChart(key, granularity) {
   const c = _chartThemeColors();
 
   if (granularity === 'country' || granularity === 'product') {
+    const type = granularity;
     const counts = {};
     allItems.forEach(d => {
-      const label = granularity === 'country' ? extractCountry(d.건명) : extractProductCode(d.단품명칭);
+      const label = type === 'country' ? extractCountry(d.건명) : (d.단품코드 || '기타');
       counts[label] = (counts[label] || 0) + 1;
     });
     const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
@@ -2048,13 +2049,38 @@ function renderQualityChart(key, granularity) {
       data: { labels, datasets: [{ data:values, backgroundColor:color+'88', borderColor:color, borderWidth:1, borderRadius:4 }] },
       options: {
         responsive:true, maintainAspectRatio:false, indexAxis:'y',
-        plugins:{ legend:{display:false}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.raw.toLocaleString()}건` } } },
+        plugins:{
+          legend:{display:false},
+          tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.raw.toLocaleString()}건 — 클릭하여 필터` } }
+        },
         scales:{
           x:{ grid:{color:c.grid}, ticks:{color:c.tickSub, font:{size:11}} },
           y:{ grid:{display:false}, ticks:{color:c.tick, font:{size:11}} }
+        },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const rawLabel = sorted[elements[0].index]?.[0];
+          if (!rawLabel) return;
+          if (qualityFilter?.type === type && qualityFilter?.value === rawLabel) {
+            clearQualityFilter(); return;
+          }
+          pieFilter = null; ddayUrgencyFilter = null;
+          document.getElementById('pieFilterChip')?.classList.add('hidden');
+          document.getElementById('ddayFilterChip')?.classList.add('hidden');
+          qualityFilter = { type, value: rawLabel };
+          const chip = document.getElementById('qualityFilterChip');
+          const lbl  = document.getElementById('qualityFilterLabel');
+          if (chip && lbl) {
+            lbl.style.background = color;
+            lbl.textContent = `${type === 'product' ? '제품코드' : '국가/거래처'}: ${rawLabel.length > 15 ? rawLabel.slice(0,15)+'…' : rawLabel}`;
+            chip.classList.remove('hidden');
+          }
+          applyFilters();
+          setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
         }
       }
     });
+    document.getElementById(canvasId).style.cursor = 'pointer';
     return;
   }
 
