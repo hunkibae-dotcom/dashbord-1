@@ -1710,6 +1710,15 @@ function renderCharts(data) {
   renderDdayChart(data);
 }
 
+const DDAY_COLORS = {
+  '지연':   { bg:'rgba(239,68,68,.82)',   hex:'#EF4444' },
+  'D-7이하': { bg:'rgba(249,115,22,.82)',  hex:'#F97316' },
+  'D-14이하':{ bg:'rgba(234,179,8,.82)',   hex:'#EAB308' },
+  '여유':   { bg:'rgba(34,197,94,.75)',   hex:'#22C55E' },
+  '미정':   { bg:'rgba(148,163,184,.65)', hex:'#94A3B8' }
+};
+const DDAY_LABELS = ['지연', 'D-7이하', 'D-14이하', '여유', '미정'];
+
 function renderTopUndoneChart(data) {
   // 미완료 품목을 납기 임박도 구간별 집계: [지연, D-7이하, D-14이하, 여유, 미정]
   const cj1 = [0,0,0,0,0], cj2 = [0,0,0,0,0];
@@ -1721,30 +1730,62 @@ function renderTopUndoneChart(data) {
   const ctx = document.getElementById('topUndoneChart').getContext('2d');
   if (charts.topUndone) charts.topUndone.destroy();
   const c = _chartThemeColors();
+
+  // 선택된 구간의 dataset은 강조, 나머지는 흐리게
+  function bgColor(label) {
+    const base = DDAY_COLORS[label].bg;
+    if (!ddayUrgencyFilter) return base;
+    return ddayUrgencyFilter.urgency === label ? base : base.replace(/[\d.]+\)$/, m => (parseFloat(m) * 0.25).toFixed(2) + ')');
+  }
+
   charts.topUndone = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: ['충주1공장', '충주2공장'],
-      datasets: [
-        { label:'지연',     data:[cj1[0],cj2[0]], backgroundColor:'rgba(239,68,68,.82)',   borderRadius:5, borderSkipped:false },
-        { label:'D-7이하',  data:[cj1[1],cj2[1]], backgroundColor:'rgba(249,115,22,.82)',  borderRadius:5, borderSkipped:false },
-        { label:'D-14이하', data:[cj1[2],cj2[2]], backgroundColor:'rgba(234,179,8,.82)',   borderRadius:5, borderSkipped:false },
-        { label:'여유',     data:[cj1[3],cj2[3]], backgroundColor:'rgba(34,197,94,.75)',   borderRadius:5, borderSkipped:false },
-        { label:'미정',     data:[cj1[4],cj2[4]], backgroundColor:'rgba(148,163,184,.65)', borderRadius:5, borderSkipped:false }
-      ]
+      datasets: DDAY_LABELS.map((label, i) => ({
+        label,
+        data: i === 0 ? [cj1[0],cj2[0]] : i === 1 ? [cj1[1],cj2[1]] : i === 2 ? [cj1[2],cj2[2]] : i === 3 ? [cj1[3],cj2[3]] : [cj1[4],cj2[4]],
+        backgroundColor: bgColor(label),
+        borderRadius: 5, borderSkipped: false
+      }))
     },
     options: {
       responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      cursor: 'pointer',
       plugins:{
         legend:{ position:'top', labels:{ color:c.tick, font:{size:12}, boxWidth:10, padding:10 } },
-        tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.dataset.label}: ${item.raw}건` } }
+        tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.dataset.label}: ${item.raw}건 — 클릭하여 필터` } }
       },
       scales:{
         x:{ stacked:true, grid:{color:c.grid}, ticks:{color:c.tickSub, font:{size:11.5}, stepSize:1, precision:0} },
         y:{ stacked:true, grid:{display:false}, ticks:{color:c.tick, font:{size:13}} }
+      },
+      onClick: (evt, elements) => {
+        if (!elements.length) return;
+        const el = elements[0];
+        const factory = el.index === 0 ? 'cj1' : 'cj2';
+        const urgency = DDAY_LABELS[el.datasetIndex];
+        if (ddayUrgencyFilter?.factory === factory && ddayUrgencyFilter?.urgency === urgency) {
+          clearDdayFilter(); return;
+        }
+        ddayUrgencyFilter = { factory, urgency };
+        // 필터 칩 업데이트
+        const chip = document.getElementById('ddayFilterChip');
+        const lbl  = document.getElementById('ddayFilterLabel');
+        if (chip && lbl) {
+          const facName = factory === 'cj1' ? '충주1공장' : '충주2공장';
+          lbl.style.background = DDAY_COLORS[urgency].hex;
+          lbl.innerHTML = `${facName} · ${urgency}`;
+          chip.classList.remove('hidden');
+        }
+        setFactoryTab(factory);
+        applyFilters();
+        setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
       }
     }
   });
+  // 차트 캔버스에 pointer 커서 적용
+  document.getElementById('topUndoneChart').style.cursor = 'pointer';
 }
 
 function renderDdayChart(data) {
