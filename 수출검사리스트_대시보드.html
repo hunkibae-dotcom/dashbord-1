@@ -3187,7 +3187,7 @@ function renderMobileCharts() {
   [['cj1','mDdChart','#3B82F6'], ['cj2','mDdChart2','#8B5CF6']].forEach(([key, canvasId, color]) => {
     const ck = 'mpie' + key;
     if (mCharts[ck]) mCharts[ck].destroy();
-    const fd = allData.filter(d => d.공장 === key);
+    const fd = archiveRows.filter(d => d.공장 === key);
     const done = fd.filter(d => d.검사 === '검사').length;
     const undone = fd.filter(d => d.검사 !== '검사').length;
     const total = done + undone;
