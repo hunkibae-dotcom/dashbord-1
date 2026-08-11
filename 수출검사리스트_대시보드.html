@@ -3853,26 +3853,35 @@ function onNativeScanResult(raw) {
         </div>
       </div>
 
-      <!-- Top undone -->
+      <!-- Factory ratio -->
       <div class="bg-white rounded-2xl p-4 mb-3" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
         <div class="flex items-center gap-2.5 mb-3">
           <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-v" style="background:#EDE9FE;">
             <i class="fa-solid fa-chart-bar text-violet-500 text-[12px]"></i>
           </span>
-          <span class="text-[15px] font-extrabold text-slate-800">건명별 미검사 TOP 8</span>
+          <span class="text-[15px] font-extrabold text-slate-800">공장별 검사 비율</span>
         </div>
-        <div style="height:200px"><canvas id="mTopChart"></canvas></div>
+        <div style="height:180px"><canvas id="mTopChart"></canvas></div>
       </div>
 
-      <!-- Dday -->
+      <!-- Factory pie -->
       <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
         <div class="flex items-center gap-2.5 mb-3">
-          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-a" style="background:#FEF3C7;">
-            <i class="fa-solid fa-calendar-days text-amber-500 text-[12px]"></i>
+          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
+            <i class="fa-solid fa-chart-pie text-blue-500 text-[12px]"></i>
           </span>
-          <span class="text-[15px] font-extrabold text-slate-800">납기 임박 현황</span>
+          <span class="text-[15px] font-extrabold text-slate-800">공장별 검사비율 원형</span>
         </div>
-        <div style="height:170px"><canvas id="mDdChart"></canvas></div>
+        <div style="height:170px;display:flex;gap:12px;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:11px;font-weight:700;color:#3B82F6;margin-bottom:4px;">충주1공장</div>
+            <div style="flex:1;width:100%;position:relative;"><canvas id="mDdChart"></canvas></div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:4px;">충주2공장</div>
+            <div style="flex:1;width:100%;position:relative;"><canvas id="mDdChart2"></canvas></div>
+          </div>
+        </div>
       </div>
     </div>
 
