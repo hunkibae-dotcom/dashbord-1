@@ -1893,9 +1893,15 @@ function renderQualityCharts() {
 function setChartGranularity(key, granularity) {
   chartGranularity[key] = granularity;
   const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
-  ['day','week','month'].forEach(g => {
-    document.getElementById('qcTab' + suffix + g.charAt(0).toUpperCase() + g.slice(1)).classList.toggle('active', g === granularity);
+  ['day','week','month','year','country','product'].forEach(g => {
+    const btn = document.getElementById('qcTab' + suffix + g.charAt(0).toUpperCase() + g.slice(1));
+    if (btn) btn.classList.toggle('active', g === granularity);
   });
+  const isTimeSeries = !['country','product'].includes(granularity);
+  const legend = document.getElementById('qcLegend' + suffix);
+  if (legend) legend.style.display = isTimeSeries ? '' : 'none';
+  const yearSel = document.getElementById('qcYear' + suffix);
+  if (yearSel) yearSel.style.display = ['country','product','year'].includes(granularity) ? 'none' : '';
   renderQualityChart(key, granularity);
 }
 
