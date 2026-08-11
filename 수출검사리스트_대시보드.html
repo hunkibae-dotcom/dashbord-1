@@ -2578,8 +2578,10 @@ function renderMobileKPIs() {
   setMTxt('mKpiPkd2', s2.packedToday);
   setMTxt('mKpiWt1', s1.undone);
   setMTxt('mKpiWt2', s2.undone);
-  setMTxt('mKpiDn1', (s1.done + arc1).toLocaleString());
-  setMTxt('mKpiDn2', (s2.done + arc2).toLocaleString());
+  setMTxt('mKpiPre1', s1.preinput.toLocaleString());
+  setMTxt('mKpiPre2', s2.preinput.toLocaleString());
+  setMTxt('mKpiPrd1', (s1.undone + s1.reinspect).toLocaleString());
+  setMTxt('mKpiPrd2', (s2.undone + s2.reinspect).toLocaleString());
   setMTxt('mKpiArc1', arc1.toLocaleString());
   setMTxt('mKpiArc2', arc2.toLocaleString());
 }
