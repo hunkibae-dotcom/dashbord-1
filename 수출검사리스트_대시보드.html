@@ -1518,16 +1518,19 @@ function renderKPIs(fullData) {
   document.getElementById('kpiWaitCj2').textContent = cj2.undone.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
-  // 3) 검사 완료 품목: 진행중 리스트에서 이미 완료된 건 + 완료 이력(누적)까지 합산한 전체 누적 완료 건수
-  const cj1DoneActive = cj1Items.filter(d => d.검사 === '검사');
-  const cj2DoneActive = cj2Items.filter(d => d.검사 === '검사');
-  const cj1Archive = archiveRows.filter(d => d.공장 === 'cj1');
-  const cj2Archive = archiveRows.filter(d => d.공장 === 'cj2');
-  const archivedCj1 = archiveTotals.cj1 ? archiveTotals.cj1.cord : 0;
-  const archivedCj2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
-  document.getElementById('kpiDoneCj1').textContent = (cj1.done + archivedCj1).toLocaleString();
-  document.getElementById('kpiDoneCj2').textContent = (cj2.done + archivedCj2).toLocaleString();
-  document.getElementById('kpiDoneDetail').innerHTML = renderDetailList(scopedPool([...cj1DoneActive, ...cj1Archive], [...cj2DoneActive, ...cj2Archive]), '검사일');
+  // 3) 투입전 (미투입)
+  const cj1PreInput = cj1Items.filter(d => d.검사 === '미투입');
+  const cj2PreInput = cj2Items.filter(d => d.검사 === '미투입');
+  document.getElementById('kpiPreInCj1').textContent = cj1.preinput.toLocaleString();
+  document.getElementById('kpiPreInCj2').textContent = cj2.preinput.toLocaleString();
+  document.getElementById('kpiPreInDetail').innerHTML = renderDetailList(scopedPool(cj1PreInput, cj2PreInput), '납기일');
+
+  // 4) 생산중 (미검사 + 재투입)
+  const cj1Producing = cj1Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
+  const cj2Producing = cj2Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
+  document.getElementById('kpiProdCj1').textContent = (cj1.undone + cj1.reinspect).toLocaleString();
+  document.getElementById('kpiProdCj2').textContent = (cj2.undone + cj2.reinspect).toLocaleString();
+  document.getElementById('kpiProdDetail').innerHTML = renderDetailList(scopedPool(cj1Producing, cj2Producing), '납기일');
 }
 
 // ===== ARCHIVE KPI (누적 이력) =====
