@@ -3180,6 +3180,7 @@ function renderMobileCharts() {
       const counts = {};
       allItems.forEach(d => {
         const label = mType === 'country' ? extractCountry(d.건명) : (d.단품코드 || '기타');
+        if (!label) return;
         counts[label] = (counts[label] || 0) + 1;
       });
       const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
