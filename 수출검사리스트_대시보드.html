@@ -1969,15 +1969,20 @@ function updateYearSelectors() {
 function extractCountry(건명) {
   if (!건명) return null;
   const s = 건명.trim();
-  // 한글 포함 = 내수건 → 국가별 차트에서 제외
-  if (/[가-힣]/.test(s)) return null;
-  // 슬래시 포함 = 내수건 패턴 → 제외
+  // 한글로 시작하거나 (주) 패턴 = 내수건 → 제외
+  if (/^[가-힣(]/.test(s)) return null;
+  // 슬래시 포함 = 업체명/연도 내수 패턴 → 제외
   if (s.indexOf('/') >= 0) return null;
-  // 수출건: 첫 번째 '-' 앞 부분이 국가코드
+  // 수출건: 첫 번째 '-' 앞이 국가코드 (뒤에 한글 설명 있어도 무관)
   const dashIdx = s.indexOf('-');
-  if (dashIdx > 0) return s.slice(0, dashIdx).trim() || null;
-  // 대시 없는 순수 영문코드 (예: KK, NY)
-  if (/^[A-Za-z0-9\s]+$/.test(s)) return s.length > 12 ? s.slice(0, 12) : s;
+  if (dashIdx > 0) {
+    const code = s.slice(0, dashIdx).trim();
+    if (code) return code;
+  }
+  // 대시 없는 경우: 첫 공백 앞 영문 토큰 (예: KK, NY, CIFF)
+  const spaceIdx = s.search(/\s/);
+  const token = spaceIdx > 0 ? s.slice(0, spaceIdx).trim() : s;
+  if (/^[A-Za-z][A-Za-z0-9]*$/.test(token)) return token;
   return null;
 }
 
