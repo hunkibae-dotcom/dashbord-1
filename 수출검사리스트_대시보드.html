@@ -1673,7 +1673,7 @@ function renderTable(data) {
       <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.납기일 || '—'}</td>
       <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.포장일 || '—'}</td>
       <td class="py-2.5 text-center">
-        <span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':'pill-undone'}"><i class="fa-solid ${d.검사==='검사'?'fa-check':d.검사==='양지'?'fa-rotate-left':d.검사==='재투입'?'fa-arrow-rotate-right':'fa-xmark'}"></i> ${d.검사}</span>
+        <span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':'pill-undone'}"><i class="fa-solid ${d.검사==='검사'?'fa-check':d.검사==='양지'?'fa-rotate-left':d.검사==='재투입'?'fa-arrow-rotate-right':d.검사==='미투입'?'fa-minus':'fa-xmark'}"></i> ${d.검사}</span>
       </td>
     </tr>`;
   }).join('');
