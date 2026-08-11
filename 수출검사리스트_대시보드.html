@@ -3196,9 +3196,10 @@ function renderMobileCharts() {
     if (mCharts[ck]) mCharts[ck].destroy();
 
     if (mGranularity === 'country' || mGranularity === 'product') {
+      const mType = mGranularity;
       const counts = {};
       allItems.forEach(d => {
-        const label = mGranularity === 'country' ? extractCountry(d.건명) : extractProductCode(d.단품명칭);
+        const label = mType === 'country' ? extractCountry(d.건명) : (d.단품코드 || '기타');
         counts[label] = (counts[label] || 0) + 1;
       });
       const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
@@ -3209,10 +3210,21 @@ function renderMobileCharts() {
         type:'bar',
         data:{ labels, datasets:[{ data:values, backgroundColor:color+'88', borderColor:color, borderWidth:1, borderRadius:3 }] },
         options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
-          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.raw}건` } } },
-          scales:{ x:{ grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5},stepSize:1} }, y:{ grid:{display:false}, ticks:{color:c.tick,font:{size:9.5}} } }
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.raw}건 — 탭하여 필터` } } },
+          scales:{ x:{ grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5},stepSize:1} }, y:{ grid:{display:false}, ticks:{color:c.tick,font:{size:9.5}} } },
+          onClick: (evt, elements) => {
+            if (!elements.length) return;
+            const rawLabel = sorted[elements[0].index]?.[0];
+            if (!rawLabel) return;
+            const mSearchEl = document.getElementById('mSearch');
+            if (mSearchEl) mSearchEl.value = rawLabel;
+            setMFactory('all');
+            setMTab('list');
+            renderMobileList();
+          }
         }
       });
+      cvs.style.cursor = 'pointer';
     } else {
       const series = computeCumulativeSeries(allItems, mGranularity, 'all');
       const cumVal = series.data.length ? series.data[series.data.length - 1] : 0;
