@@ -3826,23 +3826,45 @@ function onNativeScanResult(raw) {
           </div>
         </div>
 
-        <!-- 검사 완료 -->
-        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <!-- 투입전 -->
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('미투입');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-2 mb-3">
-            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-g" style="background:#DCFCE7;">
-              <i class="fa-solid fa-circle-check text-emerald-500 text-[13px]"></i>
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#F1F5F9;">
+              <i class="fa-solid fa-clock-rotate-left text-slate-500 text-[13px]"></i>
             </span>
-            <span class="text-[12px] font-bold text-slate-400 tracking-wide">검사 완료</span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">투입전</span>
             <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center" data-mf="cj1">
-              <div class="text-[22px] font-extrabold text-emerald-500 leading-none" id="mKpiDn1">—</div>
+              <div class="text-[22px] font-extrabold text-slate-500 leading-none" id="mKpiPre1">—</div>
               <div class="text-[10px] font-bold text-slate-400 mt-1">충주1</div>
             </div>
             <div class="w-px bg-slate-100" style="height:28px;margin-bottom:2px;" data-mf-divider></div>
             <div class="text-center" data-mf="cj2">
-              <div class="text-[22px] font-extrabold text-emerald-500 leading-none" id="mKpiDn2">—</div>
+              <div class="text-[22px] font-extrabold text-slate-500 leading-none" id="mKpiPre2">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주2</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 생산중 -->
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('생산중');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#FFF7ED;">
+              <i class="fa-solid fa-gears text-orange-500 text-[13px]"></i>
+            </span>
+            <span class="text-[12px] font-bold text-slate-400 tracking-wide">생산중</span>
+            <i class="fa-solid fa-chevron-right text-[9px] text-slate-300 ml-auto"></i>
+          </div>
+          <div class="flex items-end justify-around">
+            <div class="text-center" data-mf="cj1">
+              <div class="text-[22px] font-extrabold text-orange-500 leading-none" id="mKpiPrd1">—</div>
+              <div class="text-[10px] font-bold text-slate-400 mt-1">충주1</div>
+            </div>
+            <div class="w-px bg-slate-100" style="height:28px;margin-bottom:2px;" data-mf-divider></div>
+            <div class="text-center" data-mf="cj2">
+              <div class="text-[22px] font-extrabold text-orange-500 leading-none" id="mKpiPrd2">—</div>
               <div class="text-[10px] font-bold text-slate-400 mt-1">충주2</div>
             </div>
           </div>
