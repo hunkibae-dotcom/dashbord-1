@@ -1854,9 +1854,35 @@ function renderDdayChart(data) {
       }}],
       options: {
         responsive:true, maintainAspectRatio:false, cutout:'62%',
-        plugins:{ legend:{display:false}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.label}: ${item.raw.toLocaleString()}건` } } }
+        plugins:{
+          legend:{display:false},
+          tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.label}: ${item.raw.toLocaleString()}건 — 클릭하여 필터` } }
+        },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const status = elements[0].index === 0 ? '검사' : '미검사';
+          if (pieFilter?.factory === key && pieFilter?.status === status) {
+            clearPieFilter(); return;
+          }
+          ddayUrgencyFilter = null; qualityFilter = null;
+          document.getElementById('ddayFilterChip')?.classList.add('hidden');
+          document.getElementById('qualityFilterChip')?.classList.add('hidden');
+          pieFilter = { factory: key, status };
+          const chip = document.getElementById('pieFilterChip');
+          const lbl  = document.getElementById('pieFilterLabel');
+          if (chip && lbl) {
+            const facName = key === 'cj1' ? '충주1공장' : '충주2공장';
+            lbl.style.background = status === '검사' ? color : '#EF4444';
+            lbl.textContent = `${facName} · ${status === '검사' ? '검사완료' : '미검사출고'}`;
+            chip.classList.remove('hidden');
+          }
+          setFactoryTab(key);
+          applyFilters();
+          setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+        }
       }
     });
+    document.getElementById(canvasId).style.cursor = 'pointer';
   });
 }
 
