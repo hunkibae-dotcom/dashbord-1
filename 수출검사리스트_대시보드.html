@@ -1408,9 +1408,17 @@ function exportFactory(key) {
   ]);
 }
 
+function clearDdayFilter() {
+  ddayUrgencyFilter = null;
+  document.getElementById('ddayFilterChip')?.classList.add('hidden');
+  applyFilters();
+}
+
 function resetFilters() {
   document.getElementById('fSearch').value = '';
   setColInspect('');
+  ddayUrgencyFilter = null;
+  document.getElementById('ddayFilterChip')?.classList.add('hidden');
   applyFilters();
 }
 
