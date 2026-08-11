@@ -3085,28 +3085,30 @@ function renderMobileCharts() {
     }
   });
 
-  // 공장별 검사 비율 (stacked horizontal bar)
-  const mCj1 = { done:0, undone:0 }, mCj2 = { done:0, undone:0 };
-  allData.forEach(d => { const t = d.공장==='cj1'?mCj1:mCj2; d.검사==='검사'?t.done++:t.undone++; });
+  // 납기 임박도별 분포 (stacked horizontal bar)
+  const mCj1dd = [0,0,0,0,0], mCj2dd = [0,0,0,0,0];
+  allData.filter(d => d.검사 !== '검사').forEach(d => {
+    const dd = ddayInfo(d.납기일);
+    const idx = dd===null?4:dd<0?0:dd<=7?1:dd<=14?2:3;
+    (d.공장==='cj1'?mCj1dd:mCj2dd)[idx]++;
+  });
   const tCtx = document.getElementById('mTopChart')?.getContext('2d');
   if (tCtx) {
     if (mCharts.top) mCharts.top.destroy();
     mCharts.top = new Chart(tCtx, {
       type:'bar',
       data:{ labels:['충주1공장','충주2공장'], datasets:[
-        { label:'검사완료', data:[mCj1.done,mCj2.done], backgroundColor:['rgba(59,130,246,.82)','rgba(139,92,246,.82)'], borderRadius:5, borderSkipped:false },
-        { label:'미검사', data:[mCj1.undone,mCj2.undone], backgroundColor:'rgba(239,68,68,.55)', borderRadius:5, borderSkipped:false }
+        { label:'지연',     data:[mCj1dd[0],mCj2dd[0]], backgroundColor:'rgba(239,68,68,.82)',   borderRadius:4, borderSkipped:false },
+        { label:'D-7이하',  data:[mCj1dd[1],mCj2dd[1]], backgroundColor:'rgba(249,115,22,.82)',  borderRadius:4, borderSkipped:false },
+        { label:'D-14이하', data:[mCj1dd[2],mCj2dd[2]], backgroundColor:'rgba(234,179,8,.82)',   borderRadius:4, borderSkipped:false },
+        { label:'여유',     data:[mCj1dd[3],mCj2dd[3]], backgroundColor:'rgba(34,197,94,.75)',   borderRadius:4, borderSkipped:false },
+        { label:'미정',     data:[mCj1dd[4],mCj2dd[4]], backgroundColor:'rgba(148,163,184,.65)', borderRadius:4, borderSkipped:false }
       ]},
       options:{
         responsive:true, maintainAspectRatio:false, indexAxis:'y',
-        plugins:{ legend:{position:'top',labels:{color:c.tick,font:{size:11},boxWidth:8,padding:8}}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => {
-          const ds = item.chart.data.datasets;
-          const total = (ds[0].data[item.dataIndex]||0)+(ds[1].data[item.dataIndex]||0);
-          const pct = total?Math.round(item.raw/total*100):0;
-          return `${item.dataset.label}: ${item.raw}건 (${pct}%)`;
-        }}}},
+        plugins:{ legend:{position:'top',labels:{color:c.tick,font:{size:10},boxWidth:8,padding:6}}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => `${item.dataset.label}: ${item.raw}건` }}},
         scales:{
-          x:{ stacked:true, grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:10},stepSize:1} },
+          x:{ stacked:true, grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:10},stepSize:1,precision:0} },
           y:{ stacked:true, grid:{display:false}, ticks:{color:c.tick,font:{size:11}} }
         }
       }
