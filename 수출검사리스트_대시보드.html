@@ -2196,7 +2196,7 @@ function renderProductSearchResults(results) {
 
   const renderRow = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
-    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : 'pill-undone';
+    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : 'pill-undone';
     const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
     const cbmText = d.CBM ? d.CBM.toFixed(3) + ' m³' : '—';
     const mik = 'mps_' + idx;
