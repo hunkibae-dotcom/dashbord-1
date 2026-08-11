@@ -861,6 +861,7 @@
                     <button onclick="setSourceFilter('all')" id="srcAll" class="tbl-src-btn active">전체</button>
                     <button onclick="setSourceFilter('active')" id="srcActive" class="tbl-src-btn">입고현황</button>
                     <button onclick="setSourceFilter('stock')" id="srcStock" class="tbl-src-btn">실재고</button>
+                    <button onclick="setSourceFilter('pallet')" id="srcPallet" class="tbl-src-btn">적재</button>
                     <button onclick="setSourceFilter('shipped')" id="srcShipped" class="tbl-src-btn">출고</button>
                 </div>
             </div>
@@ -2295,11 +2296,11 @@
 
         function setSourceFilter(src) {
             _activeSourceFilter = src;
-            ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
+            ['srcAll','srcActive','srcStock','srcPallet','srcShipped'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) btn.classList.remove('active');
             });
-            const map = {all:'srcAll',active:'srcActive',stock:'srcStock',shipped:'srcShipped'};
+            const map = {all:'srcAll',active:'srcActive',stock:'srcStock',pallet:'srcPallet',shipped:'srcShipped'};
             const target = document.getElementById(map[src]);
             if (target) target.classList.add('active');
             applyFilters();
@@ -2535,6 +2536,10 @@
                     } else if (_activeSourceFilter === 'stock') {
                         const _hasPallet = !!_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')];
                         matchesSource = _hasPallet;
+                    } else if (_activeSourceFilter === 'pallet') {
+                        const _pv = _pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '';
+                        // K열 값이 "적재 N" 형태이거나 숫자·영숫자 번호가 포함된 항목만
+                        matchesSource = _pv !== '' && (/적재/.test(_pv) || /\d/.test(_pv));
                     } else if (_activeSourceFilter === 'shipped') {
                         matchesSource = _shippedStatuses.has(item.status);
                     }
