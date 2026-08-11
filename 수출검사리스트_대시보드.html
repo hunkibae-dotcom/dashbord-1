@@ -1340,6 +1340,13 @@ function applyFilters() {
         !d.단품명칭.toLowerCase().includes(search)) return false;
     if (colInspectFilter === '생산중') { if (d.검사 !== '미검사' && d.검사 !== '재투입') return false; }
     else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
+    if (ddayUrgencyFilter) {
+      if (d.공장 !== ddayUrgencyFilter.factory) return false;
+      if (d.검사 === '검사') return false;
+      const dd = ddayInfo(d.납기일);
+      const cat = dd === null ? '미정' : dd < 0 ? '지연' : dd <= 7 ? 'D-7이하' : dd <= 14 ? 'D-14이하' : '여유';
+      if (cat !== ddayUrgencyFilter.urgency) return false;
+    }
     return true;
   }
 
