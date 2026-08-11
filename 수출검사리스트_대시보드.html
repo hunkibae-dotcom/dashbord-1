@@ -1686,32 +1686,37 @@ function renderTopUndoneChart(data) {
 }
 
 function renderDdayChart(data) {
-  const buckets = { cj1:[0,0,0,0], cj2:[0,0,0,0] };
-  data.filter(d => d.검사 !== '검사').forEach(d => {
-    const dd = ddayInfo(d.납기일);
-    const idx = dd === null ? 3 : dd < 0 ? 0 : dd <= 7 ? 1 : 2;
-    buckets[d.공장][idx] += 1;
-  });
-  const labels = ['지연','7일 이내','8일 이상','납기 미정'];
-  const ctx = document.getElementById('ddayChart').getContext('2d');
-  if (charts.dday) charts.dday.destroy();
-  charts.dday = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        { label:'충주1공장', data: buckets.cj1, backgroundColor:'rgba(59,130,246,.75)', borderRadius:6, borderSkipped:false },
-        { label:'충주2공장', data: buckets.cj2, backgroundColor:'rgba(139,92,246,.75)', borderRadius:6, borderSkipped:false },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:'top', labels:{color:'#475569', font:{size:12.5}, boxWidth:10}}, tooltip:lightTooltip() },
-      scales:{
-        x:{ grid:{display:false}, ticks:{color:'#475569', font:{size:12.5}} },
-        y:{ grid:{color:'#F1F5F9'}, ticks:{color:'#94A3B8', font:{size:11.5}, stepSize:1} }
+  if (charts.dday) { charts.dday.destroy(); charts.dday = null; }
+  [['cj1','factoryPieCj1','#3B82F6'], ['cj2','factoryPieCj2','#8B5CF6']].forEach(([key, canvasId, color]) => {
+    const ck = 'pie' + key;
+    if (charts[ck]) charts[ck].destroy();
+    const fd = data.filter(d => d.공장 === key);
+    const done = fd.filter(d => d.검사 === '검사').length;
+    const undone = fd.filter(d => d.검사 !== '검사').length;
+    const total = done + undone;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const ctx = document.getElementById(canvasId)?.getContext('2d');
+    if (!ctx) return;
+    charts[ck] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['검사완료', '미검사'],
+        datasets: [{ data:[done, undone], backgroundColor:[color+'CC','rgba(239,68,68,.5)'], borderColor:[color,'#EF4444'], borderWidth:1.5, hoverOffset:4 }]
+      },
+      plugins: [{ id:'centerText', beforeDraw(chart) {
+        const { ctx:c2, chartArea:{width,height,top,left} } = chart;
+        c2.save();
+        c2.font = 'bold 16px Inter,sans-serif'; c2.fillStyle = color; c2.textAlign = 'center'; c2.textBaseline = 'middle';
+        c2.fillText(pct+'%', left+width/2, top+height/2-6);
+        c2.font = '10px Inter,sans-serif'; c2.fillStyle = '#94A3B8';
+        c2.fillText('완료율', left+width/2, top+height/2+12);
+        c2.restore();
+      }}],
+      options: {
+        responsive:true, maintainAspectRatio:false, cutout:'62%',
+        plugins:{ legend:{display:false}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.label}: ${item.raw.toLocaleString()}건` } } }
       }
-    }
+    });
   });
 }
 
