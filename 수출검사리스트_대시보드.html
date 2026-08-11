@@ -1438,12 +1438,26 @@ function clearDdayFilter() {
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
   applyFilters();
 }
+function clearPieFilter() {
+  pieFilter = null;
+  document.getElementById('pieFilterChip')?.classList.add('hidden');
+  applyFilters();
+}
+function clearQualityFilter() {
+  qualityFilter = null;
+  document.getElementById('qualityFilterChip')?.classList.add('hidden');
+  applyFilters();
+}
 
 function resetFilters() {
   document.getElementById('fSearch').value = '';
   setColInspect('');
   ddayUrgencyFilter = null;
+  pieFilter = null;
+  qualityFilter = null;
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
+  document.getElementById('pieFilterChip')?.classList.add('hidden');
+  document.getElementById('qualityFilterChip')?.classList.add('hidden');
   applyFilters();
 }
 
