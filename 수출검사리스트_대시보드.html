@@ -2483,7 +2483,7 @@ function setMTab(tab) {
 
 function setMGranularity(g) {
   mGranularity = g;
-  [['Day','day'], ['Week','week'], ['Month','month']].forEach(([k, v]) => {
+  [['Day','day'], ['Week','week'], ['Month','month'], ['Year','year'], ['Country','country'], ['Product','product']].forEach(([k, v]) => {
     document.getElementById('mGran' + k)?.classList.toggle('active', v === g);
   });
   renderMobileCharts();
