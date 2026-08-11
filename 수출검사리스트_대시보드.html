@@ -1722,7 +1722,7 @@ const DDAY_LABELS = ['지연', 'D-7이하', 'D-14이하', '여유', '미정'];
 function renderTopUndoneChart(data) {
   // 미완료 품목을 납기 임박도 구간별 집계: [지연, D-7이하, D-14이하, 여유, 미정]
   const cj1 = [0,0,0,0,0], cj2 = [0,0,0,0,0];
-  data.filter(d => d.검사 !== '검사').forEach(d => {
+  allData.filter(d => d.검사 !== '검사').forEach(d => {
     const dd = ddayInfo(d.납기일);
     const idx = dd === null ? 4 : dd < 0 ? 0 : dd <= 7 ? 1 : dd <= 14 ? 2 : 3;
     (d.공장 === 'cj1' ? cj1 : cj2)[idx]++;
