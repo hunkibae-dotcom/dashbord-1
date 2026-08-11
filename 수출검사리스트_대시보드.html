@@ -1755,6 +1755,10 @@ function computeCumulativeSeries(items, granularity, year) {
     } else if (granularity === 'week') {
       sortDate = weekStart(date); rawKey = ymd(sortDate);
       displayLabel = formatChartLabel(sortDate, 'week');
+    } else if (granularity === 'year') {
+      sortDate = new Date(date.getFullYear(), 0, 1);
+      rawKey = String(date.getFullYear());
+      displayLabel = date.getFullYear() + '년';
     } else {
       sortDate = new Date(date.getFullYear(), date.getMonth(), 1);
       rawKey = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0');
