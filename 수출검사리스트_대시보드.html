@@ -3131,9 +3131,10 @@ function renderMobileList() {
     const isArchive = d.source === 'archive';
     const fIsCj1 = d.공장 === 'cj1';
     const fCls = fIsCj1 ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
-    const leftBar = isDone ? '#34D399' : isYangji ? '#F59E0B' : isReinspect ? '#A78BFA' : '#F87171';
-    const pillCls = isDone ? 'pill-done' : isYangji ? 'pill-yangji' : isReinspect ? 'pill-reinspect' : 'pill-undone';
-    const pillIcon = isDone ? 'fa-check' : isYangji ? 'fa-rotate-left' : isReinspect ? 'fa-arrow-rotate-right' : 'fa-xmark';
+    const isPreinput = d.검사 === '미투입';
+    const leftBar = isDone ? '#34D399' : isYangji ? '#F59E0B' : isReinspect ? '#A78BFA' : isPreinput ? '#94A3B8' : '#F87171';
+    const pillCls = isDone ? 'pill-done' : isYangji ? 'pill-yangji' : isReinspect ? 'pill-reinspect' : isPreinput ? 'pill-preinput' : 'pill-undone';
+    const pillIcon = isDone ? 'fa-check' : isYangji ? 'fa-rotate-left' : isReinspect ? 'fa-arrow-rotate-right' : isPreinput ? 'fa-minus' : 'fa-xmark';
     const pillText = isArchive && !isDone ? '미검사출고' : d.검사;
     // 포장/검사/납기 날짜를 상황별로 D-day 뱃지·원본날짜 등 제각각 표시하던 걸 없애고,
     // 있는 날짜만 "포장 26.08.05 · 검사 26.08.06 · 납기 26.08.09" 형태로 통일해서 표시
