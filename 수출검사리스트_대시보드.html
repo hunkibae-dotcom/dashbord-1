@@ -1800,98 +1800,85 @@ function updateYearSelectors() {
   });
 }
 
+function extractCountry(건명) {
+  if (!건명) return '기타';
+  const slash = 건명.indexOf('/');
+  if (slash > 0) return 건명.slice(slash + 1).trim();
+  const m = 건명.match(/(베트남|인도|일본|중국|미국|캐나다|멕시코|독일|브라질|인도네시아|태국|말레이시아|필리핀|싱가포르|호주|UAE|사우디|터키|폴란드|영국|프랑스|이탈리아|스페인|네덜란드|러시아)/i);
+  if (m) return m[1];
+  return 건명.split(' ')[0] || '기타';
+}
+
 function renderQualityChart(key, granularity) {
   const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
   const archive = archiveRows.filter(d => d.공장 === key);
-  const series = computeCumulativeSeries([...activeDone, ...archive], granularity, chartYear[key]);
-  lastQualitySeries[key] = series;
-
+  const allItems = [...activeDone, ...archive];
   const suffix = key === 'cj1' ? 'Cj1' : 'Cj2';
+  const color = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
+  const canvasId = 'qualityChart' + suffix;
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const chartKey = 'quality' + key;
+  if (charts[chartKey]) charts[chartKey].destroy();
   const totalEl = document.getElementById('qcTotal' + suffix);
   const periodEl = document.getElementById('qcPeriod' + suffix);
+  const c = _chartThemeColors();
+
+  if (granularity === 'country' || granularity === 'product') {
+    const counts = {};
+    allItems.forEach(d => {
+      const label = granularity === 'country' ? extractCountry(d.건명) : (d.단품명칭 || '미정');
+      counts[label] = (counts[label] || 0) + 1;
+    });
+    const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
+    const labels = sorted.map(([k]) => k.length > 14 ? k.slice(0,14)+'…' : k);
+    const values = sorted.map(([,v]) => v);
+    if (totalEl) totalEl.textContent = allItems.length.toLocaleString();
+    if (periodEl) periodEl.textContent = '상위 ' + sorted.length + '건';
+    charts[chartKey] = new Chart(ctx, {
+      type: 'bar',
+      data: { labels, datasets: [{ data:values, backgroundColor:color+'88', borderColor:color, borderWidth:1, borderRadius:4 }] },
+      options: {
+        responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{ legend:{display:false}, tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.raw.toLocaleString()}건` } } },
+        scales:{
+          x:{ grid:{color:c.grid}, ticks:{color:c.tickSub, font:{size:11}} },
+          y:{ grid:{display:false}, ticks:{color:c.tick, font:{size:11}} }
+        }
+      }
+    });
+    return;
+  }
+
+  const series = computeCumulativeSeries(allItems, granularity, chartYear[key]);
+  lastQualitySeries[key] = series;
   const cumTotal = series.data.length ? series.data[series.data.length - 1] : 0;
   const periodSum = series.periodData.reduce((a, b) => a + b, 0);
   const periodMax = series.periodData.length ? Math.max(...series.periodData) : 0;
   if (totalEl) totalEl.textContent = cumTotal.toLocaleString();
   if (periodEl) periodEl.textContent = periodSum.toLocaleString();
 
-  const color = key === 'cj1' ? '#3B82F6' : '#8B5CF6';
-  const canvasId = 'qualityChart' + suffix;
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  const chartKey = 'quality' + key;
-  if (charts[chartKey]) charts[chartKey].destroy();
-
   const showPoints = series.labels.length <= 30;
   charts[chartKey] = new Chart(ctx, {
     data: {
       labels: series.labels,
       datasets: [
-        {
-          type: 'bar',
-          label: '기간별 완료',
-          data: series.periodData,
-          backgroundColor: color + '44',
-          borderColor: color + '88',
-          borderWidth: 1,
-          borderRadius: 4,
-          yAxisID: 'yBar',
-          order: 2
-        },
-        {
-          type: 'line',
-          label: '누적 합계',
-          data: series.data,
-          borderColor: color,
-          backgroundColor: 'transparent',
-          borderWidth: 2.5,
-          tension: 0.35,
-          pointRadius: showPoints ? 3 : 0,
-          pointHoverRadius: 5,
-          pointBackgroundColor: color,
-          yAxisID: 'yCum',
-          order: 1
-        }
+        { type:'bar', label:'기간별 완료', data:series.periodData, backgroundColor:color+'44', borderColor:color+'88', borderWidth:1, borderRadius:4, yAxisID:'yBar', order:2 },
+        { type:'line', label:'누적 합계', data:series.data, borderColor:color, backgroundColor:'transparent', borderWidth:2.5, tension:0.35, pointRadius:showPoints?3:0, pointHoverRadius:5, pointBackgroundColor:color, yAxisID:'yCum', order:1 }
       ]
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#fff',
-          titleColor: '#334155',
-          bodyColor: '#475569',
-          borderColor: '#E2E8F0',
-          borderWidth: 1,
-          padding: 10,
-          callbacks: {
-            title: (items) => items[0]?.label || '',
-            label: (item) => {
-              if (item.datasetIndex === 0) return `  기간 완료: ${item.raw.toLocaleString()}건`;
-              return `  누적 합계: ${item.raw.toLocaleString()}건`;
-            }
-          }
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ backgroundColor:'#fff', titleColor:'#334155', bodyColor:'#475569', borderColor:'#E2E8F0', borderWidth:1, padding:10,
+          callbacks:{ title: items => items[0]?.label||'', label: item => item.datasetIndex===0?`  기간 완료: ${item.raw.toLocaleString()}건`:`  누적 합계: ${item.raw.toLocaleString()}건` }
         }
       },
-      scales: {
-        x: {
-          grid: { display: false },
-          ticks: { color: '#94A3B8', font: { size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 12 }
-        },
-        yBar: {
-          position: 'left',
-          grid: { color: '#F1F5F9' },
-          ticks: { color: '#94A3B8', font: { size: 11 }, stepSize: 1 },
-          title: { display: true, text: '기간별', color: '#CBD5E1', font: { size: 10 } },
-          suggestedMax: periodMax * 3
-        },
-        yCum: {
-          position: 'right',
-          grid: { display: false },
-          ticks: { color: color + 'BB', font: { size: 11 } },
-          title: { display: true, text: '누적', color: color + '88', font: { size: 10 } }
-        }
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:c.tickSub, font:{size:11}, maxRotation:0, autoSkip:true, maxTicksLimit:12} },
+        yBar:{ position:'left', grid:{color:c.grid}, ticks:{color:c.tickSub, font:{size:11}, stepSize:1}, title:{display:true,text:'기간별',color:c.tickSub,font:{size:10}}, suggestedMax:periodMax*3 },
+        yCum:{ position:'right', grid:{display:false}, ticks:{color:color+'BB', font:{size:11}}, title:{display:true,text:'누적',color:color+'88',font:{size:10}} }
       }
     }
   });
