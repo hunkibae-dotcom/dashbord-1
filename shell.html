@@ -85,12 +85,12 @@
         .toggle-slider::before {
             content: ''; position: absolute;
             width: 16px; height: 16px; border-radius: 50%;
-            left: 2px; top: 2px;
+            left: 2px; top: 50%;
             background: var(--text-sub);
-            border: 2px solid var(--text-sub);
-            transition: transform .25s, background .25s, border-color .25s;
+            transform: translateY(-50%);
+            transition: transform .25s, background .25s;
         }
-        html.dark .toggle-slider::before { transform: translateX(20px); }
+        html.dark .toggle-slider::before { transform: translateY(-50%) translateX(20px); }
 
         /* 아이콘 투명 배경 */
         .card-icon {
