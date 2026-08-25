@@ -2500,7 +2500,7 @@
     }
     function downloadWorkLogHistoryCsv() {
         if (!_wlhGroups.length) return;
-        const modeLabel = _wlhMode === 'daily' ? '일별' : _wlhMode === 'weekly' ? '주간별' : _wlhMode === 'monthly' ? '월간별' : '년도별';
+        const modeLabel = _wlhMode === 'all' ? '전체' : _wlhMode === 'daily' ? '일별' : _wlhMode === 'weekly' ? '주간별' : _wlhMode === 'monthly' ? '월간별' : '년도별';
         let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
         _wlhGroups.forEach(g => {
             csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
