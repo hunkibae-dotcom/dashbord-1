@@ -2429,11 +2429,21 @@
             if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
             if (r.dept) groups[key].depts.add(r.dept);
         });
-        return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+        return Object.values(groups).sort((a, b) => asc ? a.sortKey.localeCompare(b.sortKey) : b.sortKey.localeCompare(a.sortKey));
     }
 
     let _wlhMode = 'daily';
+    let _wlhSortAsc = false;
     let _wlhGroups = [];
+
+    function toggleWorkLogHistorySort() {
+        _wlhSortAsc = !_wlhSortAsc;
+        const btn = document.getElementById('wlhSortBtn');
+        if (btn) btn.innerHTML = _wlhSortAsc
+            ? '<i class="fa-solid fa-arrow-up-wide-short"></i> 오래된순'
+            : '<i class="fa-solid fa-arrow-down-wide-short"></i> 최신순';
+        renderWorkLogHistoryList();
+    }
 
     function openWorkLogHistoryModal() {
         closeWorkCardActions();
