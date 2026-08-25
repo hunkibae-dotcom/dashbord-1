@@ -735,10 +735,16 @@
                             <div id="workLogSummaryBody" class="flex flex-col items-center justify-center gap-1" style="min-height:64px;">
                                 <div class="text-[12px] text-slate-600 text-center py-3">작업일지 시트 연동 대기 중</div>
                             </div>
-                            <button onclick="openWorkLogModal()" class="mt-2 flex items-center justify-center gap-1.5 text-[12px] font-semibold py-2 rounded-xl transition-colors"
-                                style="background:linear-gradient(90deg,rgba(56,189,248,.15),rgba(129,140,248,.15));border:1px solid rgba(129,140,248,.35);color:#4F46E5;">
-                                <i class="fa-solid fa-calendar-days text-[11px]"></i> 날짜별로 보기
-                            </button>
+                            <div class="mt-2 flex gap-1.5">
+                                <button onclick="openWorkerRegisterModal()" class="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-semibold py-2 rounded-xl transition-colors"
+                                    style="background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.35);color:#0369A1;">
+                                    <i class="fa-solid fa-user-plus text-[11px]"></i> 인원 투입
+                                </button>
+                                <button onclick="openWorkLogModal()" class="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-semibold py-2 rounded-xl transition-colors"
+                                    style="background:linear-gradient(90deg,rgba(56,189,248,.15),rgba(129,140,248,.15));border:1px solid rgba(129,140,248,.35);color:#4F46E5;">
+                                    <i class="fa-solid fa-calendar-days text-[11px]"></i> 날짜별로 보기
+                                </button>
+                            </div>
                         </div>
                     </div>
 
