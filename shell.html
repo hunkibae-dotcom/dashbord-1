@@ -2473,7 +2473,7 @@
         document.getElementById('wlhTotalService').textContent   = totalService + '명';
         document.getElementById('wlhTotalDays').textContent      = days + '일';
 
-        _wlhGroups = _wlmGroupByPeriod(rows, _wlhMode);
+        _wlhGroups = _wlmGroupByPeriod(rows, _wlhMode, _wlhSortAsc);
         const el = document.getElementById('workLogHistoryList');
         if (!_wlhGroups.length) {
             el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">작업일지 데이터가 없습니다</div>';
