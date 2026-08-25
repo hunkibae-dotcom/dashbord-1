@@ -694,11 +694,16 @@
                     <div id="wlhTotalDays" style="font-size:18px;font-weight:800;color:var(--text);">0일</div>
                 </div>
             </div>
-            <div style="display:flex;gap:6px;background:var(--icon-bg);padding:4px;border-radius:12px;margin-bottom:14px;width:fit-content;">
-                <button id="wlhTab_daily" onclick="setWorkLogHistoryMode('daily')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">일별</button>
-                <button id="wlhTab_weekly" onclick="setWorkLogHistoryMode('weekly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">주간별</button>
-                <button id="wlhTab_monthly" onclick="setWorkLogHistoryMode('monthly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">월간별</button>
-                <button id="wlhTab_yearly" onclick="setWorkLogHistoryMode('yearly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">년도별</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;">
+                <div style="display:flex;gap:6px;background:var(--icon-bg);padding:4px;border-radius:12px;width:fit-content;">
+                    <button id="wlhTab_daily" onclick="setWorkLogHistoryMode('daily')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">일별</button>
+                    <button id="wlhTab_weekly" onclick="setWorkLogHistoryMode('weekly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">주간별</button>
+                    <button id="wlhTab_monthly" onclick="setWorkLogHistoryMode('monthly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">월간별</button>
+                    <button id="wlhTab_yearly" onclick="setWorkLogHistoryMode('yearly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">년도별</button>
+                </div>
+                <button id="wlhSortBtn" onclick="toggleWorkLogHistorySort()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:7px 12px;border-radius:9px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;white-space:nowrap;">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i> 최신순
+                </button>
             </div>
             <div id="workLogHistoryList" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
