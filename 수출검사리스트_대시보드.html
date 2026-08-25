@@ -97,6 +97,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .pill-yangji { background:#FEF3C7; color:#92400E; }
   .pill-reinspect { background:#F3E8FF; color:#7C3AED; }
   .pill-preinput  { background:#F1F5F9; color:#475569; }
+  .pill-cancel    { background:#E2E8F0; color:#64748B; }
   .pill-dday-over { background:#FEE2E2; color:#B91C1C; }
   .pill-dday-soon { background:#FFEDD5; color:#C2410C; }
   .pill-dday-ok { background:#F1F5F9; color:#64748B; }
@@ -685,6 +686,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
                     <div onclick="setColInspect('재투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-violet-700 font-medium"><span class="w-2 h-2 rounded-full bg-violet-400 shrink-0"></span> 재투입</div>
                     <div onclick="setColInspect('양지')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-amber-700 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span> 양지(회수)</div>
                     <div onclick="setColInspect('미투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span> 미투입</div>
+                    <div onclick="setColInspect('취소')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-400 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 취소</div>
                     <div onclick="setColInspect('생산중')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-orange-600 font-medium"><span class="w-2 h-2 rounded-full bg-orange-400 shrink-0"></span> 생산중(미검사+재투입)</div>
                   </div>
                 </th>
@@ -767,6 +769,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <option value="재투입">재투입</option>
         <option value="양지">양지(회수)</option>
         <option value="미투입">미투입</option>
+        <option value="취소">취소</option>
       </select>
     </div>
     <button onclick="resetProductSearchFilters()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:9px 0;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
@@ -1185,7 +1188,7 @@ function parseRows(rows, factory) {
     if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
 
     const 검사raw = g(13).trim();
-    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : 검사raw === '미투입' ? '미투입' : '미검사';
+    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : 검사raw === '미투입' ? '미투입' : 검사raw === '취소' ? '취소' : '미검사';
     const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
 
     result.push({
@@ -1312,7 +1315,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '생산중' ? '생산중 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '생산중' ? '생산중 ✓' : '검사상태';
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
@@ -1735,7 +1738,7 @@ function renderTable(data) {
       <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.납기일 || '—'}</td>
       <td class="py-2.5 pr-3 text-slate-500 font-mono text-[13px] whitespace-nowrap">${d.포장일 || '—'}</td>
       <td class="py-2.5 text-center">
-        <span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':'pill-undone'}"><i class="fa-solid ${d.검사==='검사'?'fa-check':d.검사==='양지'?'fa-rotate-left':d.검사==='재투입'?'fa-arrow-rotate-right':d.검사==='미투입'?'fa-minus':'fa-xmark'}"></i> ${d.검사}</span>
+        <span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':d.검사==='취소'?'pill-cancel':'pill-undone'}"><i class="fa-solid ${d.검사==='검사'?'fa-check':d.검사==='양지'?'fa-rotate-left':d.검사==='재투입'?'fa-arrow-rotate-right':d.검사==='미투입'?'fa-minus':d.검사==='취소'?'fa-ban':'fa-xmark'}"></i> ${d.검사}</span>
       </td>
     </tr>`;
   }).join('');
@@ -2379,7 +2382,7 @@ function renderProductSearchResults(results) {
 
   const renderRow = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
-    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : 'pill-undone';
+    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
     const cbmText = d.CBM ? d.CBM.toFixed(3) + ' m³' : '—';
     const mik = 'mps_' + idx;
@@ -2401,7 +2404,7 @@ function renderProductSearchResults(results) {
 
   const renderCard = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
-    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : 'pill-undone';
+    const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     const facColor = d.공장 === 'cj1' ? '#3B82F6' : '#8B5CF6';
     const facBg    = d.공장 === 'cj1' ? '#EFF6FF' : '#F5F3FF';
     const cbm = d.CBM ? d.CBM.toFixed(3) + 'm³' : '';
@@ -2467,6 +2470,7 @@ const STATUS_LABEL = (d) => {
   if (d.검사 === '검사') return '진행중·검사완료';
   if (d.검사 === '양지') return '진행중·양지(회수)';
   if (d.검사 === '재투입') return '진행중·재투입';
+  if (d.검사 === '취소') return '진행중·취소';
   return '진행중·미검사';
 };
 
@@ -2589,7 +2593,7 @@ function renderSpecHistory() {
     <td class="py-2 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
     <td class="py-2 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
     <td class="py-2 pr-3 text-center font-mono">${d.수량 || 0}</td>
-    <td class="py-2 pr-3 text-center"><span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':'pill-undone'}">${d.검사}</span></td>
+    <td class="py-2 pr-3 text-center"><span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':d.검사==='취소'?'pill-cancel':'pill-undone'}">${d.검사}</span></td>
     <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.납기일 || '—'}</td>
     <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.포장일 || '—'}</td>
     <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.검사일 || '—'}</td>
@@ -2870,7 +2874,7 @@ function _kpiDetailRender() {
       <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.05em;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">${label} · ${list.length}건</div>
       ${list.map(d => {
         const status = d.검사 || '미검사';
-        const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : '#EF4444';
+        const sc = status === '검사' ? '#10B981' : status === '양지' ? '#D97706' : status === '재투입' ? '#7C3AED' : status === '취소' ? '#94A3B8' : '#EF4444';
         const dateRow = _kpiDetailType === 'today'
           ? `<div style="display:flex;gap:14px;margin-top:4px;">
                <span style="font-size:10.5px;color:var(--text-sub);"><span style="color:var(--label);">납기</span> ${_kpiFmtDate(d.납기일)}</span>
@@ -3340,9 +3344,10 @@ function renderMobileList() {
     const fIsCj1 = d.공장 === 'cj1';
     const fCls = fIsCj1 ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
     const isPreinput = d.검사 === '미투입';
-    const leftBar = isDone ? '#34D399' : isYangji ? '#F59E0B' : isReinspect ? '#A78BFA' : isPreinput ? '#94A3B8' : '#F87171';
-    const pillCls = isDone ? 'pill-done' : isYangji ? 'pill-yangji' : isReinspect ? 'pill-reinspect' : isPreinput ? 'pill-preinput' : 'pill-undone';
-    const pillIcon = isDone ? 'fa-check' : isYangji ? 'fa-rotate-left' : isReinspect ? 'fa-arrow-rotate-right' : isPreinput ? 'fa-minus' : 'fa-xmark';
+    const isCancel = d.검사 === '취소';
+    const leftBar = isDone ? '#34D399' : isYangji ? '#F59E0B' : isReinspect ? '#A78BFA' : isPreinput ? '#94A3B8' : isCancel ? '#CBD5E1' : '#F87171';
+    const pillCls = isDone ? 'pill-done' : isYangji ? 'pill-yangji' : isReinspect ? 'pill-reinspect' : isPreinput ? 'pill-preinput' : isCancel ? 'pill-cancel' : 'pill-undone';
+    const pillIcon = isDone ? 'fa-check' : isYangji ? 'fa-rotate-left' : isReinspect ? 'fa-arrow-rotate-right' : isPreinput ? 'fa-minus' : isCancel ? 'fa-ban' : 'fa-xmark';
     const pillText = isArchive && !isDone ? '미검사출고' : d.검사;
     // 포장/검사/납기 날짜를 상황별로 D-day 뱃지·원본날짜 등 제각각 표시하던 걸 없애고,
     // 있는 날짜만 "포장 26.08.05 · 검사 26.08.06 · 납기 26.08.09" 형태로 통일해서 표시

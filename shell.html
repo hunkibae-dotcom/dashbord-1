@@ -1012,7 +1012,10 @@
             const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
             const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
             const specG  = iSpecG >= 0 && r[iSpecG] ? r[iSpecG].toString().trim() : '';
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, source: srcTag, specW, specD, specH, specG });
+            // 적재번호는 행 고유값이라 code+round로 다시 찾지 않고 매핑 시점에 그대로 들고 감
+            // — 같은 품목코드가 여러 행에 걸쳐 있으면 code+round 키만으론 구분이 안 돼 마지막 값으로 겹쳐 보이는 문제가 있었음
+            const pallet = srcTag === 'stock' ? (r[10] || '').toString().trim() : '';
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, pallet });
         }
         return result;
     }
@@ -1657,10 +1660,9 @@
         const val = (document.getElementById('sf_pallet').value || '').trim();
         const noticeEl = document.getElementById('sf_palletNotice');
         if (val && noticeEl) {
-            const pm = _buildPalletMap();
             const palNorm = /^\d+$/.test(val) ? '적재 ' + val : val;
             const cnt = allData.filter(d => {
-                const p = pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || '';
+                const p = d.pallet || '';
                 return p === palNorm || p.replace(/^적재\s*/,'') === val;
             }).length;
             if (cnt > 0) {
@@ -1688,7 +1690,6 @@
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
         }
-        const _pm = _buildPalletMap();
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
         const filtered = allData.filter(d => {
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
@@ -1696,7 +1697,7 @@
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
             if (country && !((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
             if (pallet) {
-                const p = _pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || '';
+                const p = d.pallet || '';
                 if (p !== palNorm && p.replace(/^적재\s*/,'') !== pallet) return false;
             }
             if (dateFrom || dateTo) {
@@ -1725,7 +1726,7 @@
             const sc  = d.isDone ? '#00E676' : (d.status.includes('포장대기') ? '#FF9100' : (d.status.includes('포장완료') ? '#3B82F6' : (d.status.includes('입고') ? '#38BDF8' : '#64748B')));
             const _sc = (d.code||'').replace(/'/g,"&#39;");
             const _sr = (d.round||'').replace(/'/g,"&#39;");
-            const _pv = (() => { const raw = _pm[(d.code||'').toUpperCase() + '|' + (d.round||'')] || ''; return raw || ''; })();
+            const _pv = d.pallet || '';
             return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;">
                     <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}${d.color?' <span style="font-weight:500;color:#FF9100;">'+d.color+'</span>':''}</span>
@@ -1793,7 +1794,6 @@
         matches.forEach(d => {
             const k = d.code; if (!groups[k]) groups[k] = []; groups[k].push(d);
         });
-        const _spm = _buildPalletMap();
         // 충주공장 재고에 존재하는 code|round 키 집합 (적재 편집 가능 여부 판단)
         const _ssk = new Set();
         if (rawStockRows && rawStockRows.length > 1) {
@@ -1831,7 +1831,7 @@
             const history = [...items].sort((a,b)=>b.regDate>a.regDate?1:-1).slice(0,10).map(d => {
                 const sc = d.isDone ? '#00E676' : (d.status.includes('포장대기')?'#FF9100':'#64748B');
                 const _isS = d.isDone && (d.status.includes('출고')||d.status.includes('피킹'));
-                const _rawHp = _spm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || null;
+                const _rawHp = d.pallet || null;
                 const _hp  = _isS ? (d.status.includes('피킹')?'피킹':'출고') : _rawHp;
                 const _hpc = _isS ? (d.status.includes('피킹')?'#A78BFA':'#00E676') : '#00B0FF';
                 const _hsc = (d.code||'').replace(/'/g,"&#39;");
@@ -2549,7 +2549,6 @@
             el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">포장 대기 항목 없음</div>';
             return;
         }
-        const _pm = _buildPalletMap();
         el.innerHTML = pending.map((d, i, arr) => {
             const isLast  = i === arr.length - 1;
             const today   = new Date(); today.setHours(0,0,0,0);
@@ -2558,7 +2557,7 @@
             const ddayTxt = diff === null ? '' : diff <= 0 ? '<span style="color:#FF4444;font-weight:800;font-size:10px;margin-left:4px;">D-Day</span>' : '<span style="color:#FF9100;font-weight:800;font-size:10px;margin-left:4px;">D-'+diff+'</span>';
             const _sc = (d.code||'').replace(/'/g,'&#39;');
             const _sr = (d.round||'').replace(/'/g,'&#39;');
-            const _pv = _pm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || '—';
+            const _pv = d.pallet || '—';
             return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="padding:13px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
                     <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
@@ -3130,7 +3129,6 @@
             el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">항목 없음</div>';
             return;
         }
-        const _mm = _buildPalletMap();
         el.innerHTML = filtered.map((d, i, arr) => {
             const s         = d.status.replace(/\s+/g,'').toLowerCase();
             const isWaiting = s.includes('포장대기');
@@ -3144,7 +3142,7 @@
             const _sc = (d.code||'').replace(/'/g,'&#39;');
             const _sr = (d.round||'').replace(/'/g,'&#39;');
             const isShipped = d.isDone && (s.includes('출고') || s.includes('피킹'));
-            const _pv = isShipped ? (s.includes('피킹') ? '피킹' : '출고') : (_mm[(d.code||'').toUpperCase()+'|'+(d.round||'')] || '—');
+            const _pv = isShipped ? (s.includes('피킹') ? '피킹' : '출고') : (d.pallet || '—');
             const _pc = isShipped ? (s.includes('피킹') ? '#A78BFA' : '#00E676') : '#00B0FF';
             return `<div onclick="openItemEdit('${_sc}','${_sr}')" style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
