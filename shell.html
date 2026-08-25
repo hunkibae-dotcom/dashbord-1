@@ -2441,7 +2441,7 @@
     }
     function setWorkLogHistoryMode(mode) {
         _wlhMode = mode;
-        ['daily','weekly','monthly'].forEach(m => {
+        ['daily','weekly','monthly','yearly'].forEach(m => {
             const btn = document.getElementById('wlhTab_' + m);
             if (!btn) return;
             if (m === mode) { btn.style.background = '#00B0FF'; btn.style.color = '#0B0F19'; }
