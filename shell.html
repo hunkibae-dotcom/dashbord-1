@@ -3477,6 +3477,23 @@
         });
         window.addEventListener('appinstalled', _hideBanner);
     })();
+
+    // SW 등록 + 업데이트 시 자동 새로고침
+    // — "포장강화" 앱은 index.html이 아니라 이 shell.html을 start_url로 바로 여는데,
+    // SW 등록 코드가 index.html에만 있어서 이 화면으로 직접 들어오는 경우엔 한 번도
+    // 등록이 안 됐다. 그래서 캐시 우회 로직(fetch 항상 network-first)이 적용되지 않아
+    // 코드를 고쳐 배포해도 앱에서는 계속 예전 화면이 보이는 문제가 있었음.
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' }).catch(function(){});
+        });
+        var _swReloading = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (_swReloading) return;
+            _swReloading = true;
+            window.location.reload();
+        });
+    }
     </script>
 <!-- 품목 통합 수정 바텀시트 -->
 <div id="itemEditSheet" onclick="if(event.target===this)closeItemEdit()"
