@@ -5319,7 +5319,7 @@
 
         function setWorkLogViewMode(mode) {
             _wlmMode = mode;
-            ['daily', 'weekly', 'monthly', 'yearly'].forEach(m => {
+            ['all', 'daily', 'weekly', 'monthly', 'yearly'].forEach(m => {
                 const btn = document.getElementById('wlmTab_' + m);
                 if (!btn) return;
                 if (m === mode) { btn.style.background = '#4F46E5'; btn.style.color = '#fff'; }
