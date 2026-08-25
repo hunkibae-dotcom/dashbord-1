@@ -5333,7 +5333,7 @@
             document.getElementById('wlmTotalService').textContent   = totalService + '명';
             document.getElementById('wlmTotalDays').textContent      = days + '일';
 
-            _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode);
+            _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode, _wlmSortAsc);
             const tbody = document.getElementById('workLogModalBody');
             if (!_wlmGroups.length) {
                 tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500 text-[13px]">작업일지 데이터가 없습니다</td></tr>';
