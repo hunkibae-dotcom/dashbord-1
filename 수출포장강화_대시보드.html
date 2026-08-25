@@ -5252,6 +5252,16 @@
         }
 
         let _wlmMode = 'daily';
+        let _wlmSortAsc = false;
+
+        function toggleWorkLogViewSort() {
+            _wlmSortAsc = !_wlmSortAsc;
+            const btn = document.getElementById('wlmSortBtn');
+            if (btn) btn.innerHTML = _wlmSortAsc
+                ? '<i class="fa-solid fa-arrow-up-wide-short"></i> 오래된순'
+                : '<i class="fa-solid fa-arrow-down-wide-short"></i> 최신순';
+            renderWorkLogModalTable();
+        }
         let _wlmGroups = [];
 
         function openWorkLogModal() {
