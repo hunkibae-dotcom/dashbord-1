@@ -690,12 +690,13 @@
                     <div id="wlhTotalService" style="font-size:18px;font-weight:800;color:#818CF8;">0명</div>
                 </div>
                 <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
-                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">작업일수</div>
+                    <div id="wlhTotalDaysLabel" style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">작업일수</div>
                     <div id="wlhTotalDays" style="font-size:18px;font-weight:800;color:var(--text);">0일</div>
                 </div>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;">
                 <div style="display:flex;gap:6px;background:var(--icon-bg);padding:4px;border-radius:12px;width:fit-content;">
+                    <button id="wlhTab_all" onclick="setWorkLogHistoryMode('all')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">전체</button>
                     <button id="wlhTab_daily" onclick="setWorkLogHistoryMode('daily')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">일별</button>
                     <button id="wlhTab_weekly" onclick="setWorkLogHistoryMode('weekly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">주간별</button>
                     <button id="wlhTab_monthly" onclick="setWorkLogHistoryMode('monthly')" style="font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;border:none;background:transparent;color:var(--text-sub);cursor:pointer;">월간별</button>
