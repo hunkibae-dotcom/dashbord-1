@@ -5423,48 +5423,51 @@
             ).join('');
         }
 
+        // 포장강화 앱(shell.html)의 submitWorkerInput()과 동일한 컬럼 매핑/액션으로 전송해야
+        // 실제 작업일지 시트에 반영된다 — 예전에는 action:'addWorkerLog' + 별도 파라미터로 보내서
+        // 시트에도 안 쓰이고 이 카드(작업일지 시트 데이터 기반)에도 반영이 안 됐음.
         async function submitWorkerRegister() {
             const date  = (document.getElementById('wrm_date')?.value || '').trim();
             const dept  = (document.getElementById('wrm_dept')?.value || '').trim();
             const memo  = (document.getElementById('wrm_memo')?.value || '').trim();
-            const statusEl = document.getElementById('wrm_status');
             const btn   = document.getElementById('wrm_submitBtn');
 
             _wrmCount = parseInt(document.getElementById('wrm_countInput')?.value || '0') || _wrmCount;
             if (!dept) { _wrmShowStatus('부서명을 입력하세요.', '#F59E0B'); return; }
             if (_wrmCount === 0) { _wrmShowStatus('인원 수를 1명 이상으로 입력하세요.', '#F59E0B'); return; }
             if (_wrmCount < _wrmWorkers.length) { _wrmShowStatus('총 인원이 등록된 이름 수보다 적습니다.', '#F59E0B'); return; }
+            if (!date) { _wrmShowStatus('날짜를 선택하세요.', '#F59E0B'); return; }
 
-            // totalCount = 사용자가 입력한 총 인원, extraCount = 총 - 이름 등록 인원 (용역)
-            const _totalCount = _wrmCount;
-            const _extraCount = _totalCount - _wrmWorkers.length;
+            // 작업자(C열): 첫 번째 이름 / 비고(D열): 나머지 이름들 + 외 인원(용역) / 총 인원(E열): 사용자가 입력한 총 인원
+            const firstWorker  = _wrmWorkers[0] || '';
+            const extraWorkers = _wrmWorkers.slice(1);
 
-            // 용역인원 메모 정규화: "2" → "용역2명", "용역2" → "용역2명"
             let memoNorm = memo;
             if (/^\d+$/.test(memo)) {
                 memoNorm = '용역' + memo + '명';
             } else if (/^용역\s*\d+$/.test(memo)) {
                 memoNorm = memo.replace(/용역\s*(\d+)/, '용역$1명');
             }
+            const memoParts = [];
+            if (extraWorkers.length) memoParts.push(extraWorkers.join(', '));
+            if (memoNorm) memoParts.push(memoNorm);
+            const memoStr  = memoParts.join(' · ');
+            const totalStr = _wrmCount + '명';
 
-            // localStorage 저장
+            // localStorage 백업 (시트 미수신 상황을 위한 폴백용 — 카드1 표시에서만 사용)
             const logs = getWorkerLogs();
             const now = new Date();
-            const record = {
+            logs.push({
                 id: now.getTime().toString(),
-                date,
-                dept,
-                count: _totalCount,
-                extraCount: _extraCount,
+                date, dept,
+                count: _wrmCount,
+                extraCount: _wrmCount - _wrmWorkers.length,
                 workers: [..._wrmWorkers],
                 memo: memoNorm,
                 registeredAt: date + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
-            };
-            logs.push(record);
+            });
             saveWorkerLogs(logs);
-            renderCard1WorkerDisplay();
 
-            // 구글 시트 전송 (GET 방식 — Apps Script CORS 호환)
             btn.disabled = true; btn.style.opacity = '0.6';
             _wrmShowStatus('<i class="fa-solid fa-spinner fa-spin"></i> 구글 시트에 전송 중...', '#94A3B8');
 
@@ -5474,19 +5477,24 @@
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             try {
                 const params = new URLSearchParams({
-                    action: 'addWorkerLog',
-                    date,
-                    dept,
-                    totalCount: String(record.count) + '명',
-                    extraCount: String(record.extraCount),
-                    workers: JSON.stringify(record.workers),
-                    memo: memoNorm
+                    action: 'addWorkLog', date, dept,
+                    worker: firstWorker,
+                    memo:   memoStr,
+                    total:  totalStr
                 });
                 const res = await fetch(scriptUrl + '?' + params.toString(), { signal: controller.signal });
                 clearTimeout(timeoutId);
                 const text = await res.text();
                 const ok = text.includes('success') || text.includes('OK') || res.ok;
                 if (ok) {
+                    // 새로 받아오기 전까지 화면에 바로 반영 (shell.html과 동일한 방식)
+                    if (!state.workLogRows || state.workLogRows.length < 1) {
+                        state.workLogRows = [['등록일자','부서','작업자','비고','총 인원']];
+                    }
+                    state.workLogRows.push([date, dept, firstWorker, memoStr, totalStr]);
+                    renderWorkLogSummaryCard();
+                    renderCard1WorkerDisplay();
+                    if (!document.getElementById('workLogModal').classList.contains('hidden')) renderWorkLogModalTable();
                     _wrmShowStatus('<i class="fa-solid fa-check-circle"></i> 등록 완료! 구글 시트에 전송됐습니다.', '#22C55E');
                     btn.disabled = false; btn.style.opacity = '1';
                     setTimeout(() => closeWorkerRegisterModal(), 1800);
