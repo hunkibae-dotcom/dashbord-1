@@ -5287,7 +5287,10 @@
             const DOW = ['일', '월', '화', '수', '목', '금', '토'];
             rows.forEach(r => {
                 let key, label;
-                if (mode === 'daily') {
+                if (mode === 'all') {
+                    key = 'all';
+                    label = '전체 기간';
+                } else if (mode === 'daily') {
                     key = r.date;
                     const [y, m, d] = r.date.split('-').map(Number);
                     label = r.date + ' (' + DOW[new Date(y, m - 1, d).getDay()] + ')';
