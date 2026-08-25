@@ -5300,7 +5300,7 @@
                 if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
                 if (r.dept) groups[key].depts.add(r.dept);
             });
-            return Object.values(groups).sort((a, b) => b.sortKey.localeCompare(a.sortKey));
+            return Object.values(groups).sort((a, b) => asc ? a.sortKey.localeCompare(b.sortKey) : b.sortKey.localeCompare(a.sortKey));
         }
 
         function setWorkLogViewMode(mode) {
