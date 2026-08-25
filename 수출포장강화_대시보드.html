@@ -5337,7 +5337,7 @@
 
         function downloadWorkLogData() {
             if (!_wlmGroups.length) return;
-            const modeLabel = _wlmMode === 'daily' ? '일별' : _wlmMode === 'weekly' ? '주간별' : '월간별';
+            const modeLabel = _wlmMode === 'daily' ? '일별' : _wlmMode === 'weekly' ? '주간별' : _wlmMode === 'monthly' ? '월간별' : '년도별';
             let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
             _wlmGroups.forEach(g => {
                 csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
