@@ -1433,12 +1433,17 @@
                 </div>
             </div>
 
-            <!-- 일별/주별/월별 탭 -->
-            <div class="flex items-center gap-1.5 bg-darkBg/60 p-1 rounded-xl w-fit">
-                <button id="wlmTab_daily" onclick="setWorkLogViewMode('daily')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">일별</button>
-                <button id="wlmTab_weekly" onclick="setWorkLogViewMode('weekly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">주간별</button>
-                <button id="wlmTab_monthly" onclick="setWorkLogViewMode('monthly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">월간별</button>
-                <button id="wlmTab_yearly" onclick="setWorkLogViewMode('yearly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">년도별</button>
+            <!-- 일별/주별/월별/년도별 탭 + 정렬 -->
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5 bg-darkBg/60 p-1 rounded-xl w-fit">
+                    <button id="wlmTab_daily" onclick="setWorkLogViewMode('daily')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">일별</button>
+                    <button id="wlmTab_weekly" onclick="setWorkLogViewMode('weekly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">주간별</button>
+                    <button id="wlmTab_monthly" onclick="setWorkLogViewMode('monthly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">월간별</button>
+                    <button id="wlmTab_yearly" onclick="setWorkLogViewMode('yearly')" class="text-[12.5px] font-semibold px-3.5 py-1.5 rounded-lg transition-colors">년도별</button>
+                </div>
+                <button id="wlmSortBtn" onclick="toggleWorkLogViewSort()" class="flex items-center gap-1.5 text-[12px] font-semibold px-3 py-1.5 rounded-lg border border-borderSlate/60 bg-darkBg/60 text-slate-400 transition-colors shrink-0">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i> 최신순
+                </button>
             </div>
 
             <div id="workLogModalTableWrap" class="mobile-table-wrap max-h-96 overflow-y-auto overflow-x-auto border border-borderSlate/60 rounded-xl">
