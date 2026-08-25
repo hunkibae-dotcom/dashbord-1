@@ -5282,9 +5282,12 @@
                     const endStr = endDt.getFullYear() + '-' + String(endDt.getMonth() + 1).padStart(2, '0') + '-' + String(endDt.getDate()).padStart(2, '0');
                     key = wkStart;
                     label = wkStart + ' ~ ' + endStr;
-                } else {
+                } else if (mode === 'monthly') {
                     key = r.date.slice(0, 7);
                     label = key.replace('-', '년 ') + '월';
+                } else {
+                    key = r.date.slice(0, 4);
+                    label = key + '년';
                 }
                 if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, service: 0, workers: new Set(), depts: new Set() };
                 groups[key].total   += r.total;
@@ -5297,7 +5300,7 @@
 
         function setWorkLogViewMode(mode) {
             _wlmMode = mode;
-            ['daily', 'weekly', 'monthly'].forEach(m => {
+            ['daily', 'weekly', 'monthly', 'yearly'].forEach(m => {
                 const btn = document.getElementById('wlmTab_' + m);
                 if (!btn) return;
                 if (m === mode) { btn.style.background = '#4F46E5'; btn.style.color = '#fff'; }
