@@ -5328,16 +5328,21 @@
             renderWorkLogModalTable();
         }
 
+        // 선택된 탭(전체/일별/주간별/월간별/년도별) 기준으로 요약 3개(총 인원·용역 인원·기간)를 그때그때 계산 —
+        // 탭을 바꿔도 항상 전체 기간 총합만 보여주던 걸, 지금 보고 있는 그룹 목록 기준으로 다시 계산하도록 바꿈
+        const _WLM_PERIOD_LABEL = { all: '전체 등록', daily: '작업일수', weekly: '작업주수', monthly: '작업월수', yearly: '작업연수' };
+        const _WLM_PERIOD_UNIT  = { all: '건', daily: '일', weekly: '주', monthly: '개월', yearly: '년' };
         function renderWorkLogModalTable() {
             const rows = _parseWorkLogRows();
-            const totalHeadcount = rows.reduce((s, r) => s + r.total, 0);
-            const totalService   = rows.reduce((s, r) => s + r.service, 0);
-            const days = new Set(rows.map(r => r.date)).size;
+            _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode, _wlmSortAsc);
+            const totalHeadcount = _wlmGroups.reduce((s, g) => s + g.total, 0);
+            const totalService   = _wlmGroups.reduce((s, g) => s + g.service, 0);
+            const periodCount    = _wlmMode === 'all' ? rows.length : _wlmGroups.length;
             document.getElementById('wlmTotalHeadcount').textContent = totalHeadcount + '명';
             document.getElementById('wlmTotalService').textContent   = totalService + '명';
-            document.getElementById('wlmTotalDays').textContent      = days + '일';
+            document.getElementById('wlmTotalDaysLabel').textContent = _WLM_PERIOD_LABEL[_wlmMode] || '작업일수';
+            document.getElementById('wlmTotalDays').textContent      = periodCount + (_WLM_PERIOD_UNIT[_wlmMode] || '일');
 
-            _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode, _wlmSortAsc);
             const tbody = document.getElementById('workLogModalBody');
             if (!_wlmGroups.length) {
                 tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500 text-[13px]">작업일지 데이터가 없습니다</td></tr>';
