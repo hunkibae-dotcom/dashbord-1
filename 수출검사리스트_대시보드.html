@@ -682,12 +682,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
                   <div id="inspectColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 min-w-[140px] text-left">
                     <div onclick="setColInspect('')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 전체</div>
                     <div onclick="setColInspect('검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span> 검사완료</div>
-                    <div onclick="setColInspect('미검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-rose-600 font-medium"><span class="w-2 h-2 rounded-full bg-rose-400 shrink-0"></span> 미검사</div>
+                    <div onclick="setColInspect('진행_미검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-rose-600 font-medium"><span class="w-2 h-2 rounded-full bg-rose-400 shrink-0"></span> 미검사(진행중)</div>
+                    <div onclick="setColInspect('미검사출고')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-red-700 font-medium"><span class="w-2 h-2 rounded-full bg-red-600 shrink-0"></span> 미검사(출고)</div>
                     <div onclick="setColInspect('재투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-violet-700 font-medium"><span class="w-2 h-2 rounded-full bg-violet-400 shrink-0"></span> 재투입</div>
                     <div onclick="setColInspect('양지')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-amber-700 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span> 양지(회수)</div>
                     <div onclick="setColInspect('미투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span> 미투입</div>
                     <div onclick="setColInspect('취소')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-400 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 취소</div>
-                    <div onclick="setColInspect('생산중')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-orange-600 font-medium"><span class="w-2 h-2 rounded-full bg-orange-400 shrink-0"></span> 생산중(미검사+재투입)</div>
                   </div>
                 </th>
               </tr>
@@ -1315,7 +1315,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '미검사' ? '미검사 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '생산중' ? '생산중 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
@@ -1372,7 +1372,8 @@ function applyFilters() {
       const cat = dd === null ? '미정' : dd < 0 ? '지연' : dd <= 7 ? 'D-7이하' : dd <= 14 ? 'D-14이하' : '여유';
       if (cat !== ddayUrgencyFilter.urgency) return false;
     } else {
-      if (colInspectFilter === '생산중') { if (d.검사 !== '미검사' && d.검사 !== '재투입') return false; }
+      if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
+      else if (colInspectFilter === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
       else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
