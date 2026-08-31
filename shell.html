@@ -668,6 +668,37 @@
         </div>
     </div>
 
+    <!-- ── 수출 일정 건명 선택 (PC 카드4 건명 선택 피커와 동일 기능) ──── -->
+    <div id="scheduleRoundModal" style="position:fixed;inset:0;z-index:51;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeScheduleRoundPicker()">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:80vh;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                    <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                        <i class="fa-solid fa-ship" style="color:#00E676;"></i> 수출 일정 조회
+                    </span>
+                    <span id="scheduleRoundDateLabel" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
+                </div>
+                <button onclick="closeScheduleRoundPicker()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div style="font-size:11.5px;color:var(--text-sub);background:var(--icon-bg);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-circle-info" style="color:#38BDF8;"></i> 조회할 건명을 선택하세요. 복수 선택 가능합니다.
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:12px;font-weight:700;color:var(--text-sub);">건명 목록</span>
+                <button id="scheduleRoundAllBtn" onclick="toggleScheduleRoundAll()" style="font-size:11.5px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;padding:4px 8px;">전체 선택</button>
+            </div>
+            <div id="scheduleRoundChipList" class="no-scrollbar" style="display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;"></div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="closeScheduleRoundPicker()" style="flex:1;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:14px;font-weight:700;cursor:pointer;">취소</button>
+                <button onclick="confirmScheduleRoundSearch()" style="flex:2;padding:12px;border-radius:12px;border:none;background:#00B0FF;color:#0B0F19;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;">
+                    <i class="fa-solid fa-magnifying-glass"></i> 선택 조회
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ── 용역 인원 이력 보기 (PC INFORM 카드3와 동일 데이터) ──── -->
     <div id="workLogHistoryModal" style="position:fixed;inset:0;z-index:51;display:none;flex-direction:column;background:var(--bg);">
         <div style="padding:10px 16px;position:relative;z-index:2;display:flex;align-items:center;gap:8px;background:var(--panel);box-shadow:0 1px 0 var(--border);flex-shrink:0;">
