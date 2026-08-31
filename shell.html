@@ -1159,6 +1159,94 @@
         }
     }
 
+    // ── 수출 일정 건명 선택 피커 (상차일 우선, 없으면 납기일 기준으로 묶인 건명들 중 선택 조회) ──
+    let _schPickerSelected = new Set();
+    let _schRoundFilterSet = null;
+
+    function openScheduleRoundPicker() {
+        if (!_schSameRounds.length) return;
+        _schPickerSelected = new Set(_schSameRounds);
+        const fieldLabel = _schNearestField === 'dueDate' ? '납기일' : '상차일';
+        const dateVal = _schNearestField === 'dueDate'
+            ? document.getElementById('nearestDueDate').textContent
+            : document.getElementById('nearestLoadDate').textContent;
+        const dateEl = document.getElementById('scheduleRoundDateLabel');
+        if (dateEl) dateEl.textContent = dateVal && dateVal !== '—' ? fieldLabel + ' ' + dateVal : '';
+
+        const roundMap = {};
+        _schSameItems.forEach(item => {
+            const rk = item.round || '-';
+            if (!roundMap[rk]) roundMap[rk] = { qty: 0, dueDate: item.dueDate || '' };
+            roundMap[rk].qty += parseInt(item.qty) || 0;
+        });
+        const chipList = document.getElementById('scheduleRoundChipList');
+        chipList.innerHTML = _schSameRounds.map((r, i) => {
+            const info = roundMap[r] || {};
+            return `<button id="schChip_${i}" onclick="toggleScheduleChip(${i},'${r.replace(/'/g,"\\'")}')"
+                style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #00B0FF;background:rgba(0,176,255,.1);cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;">
+                <span id="schChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid #00B0FF;background:#00B0FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>
+                </span>
+                <span style="flex:1;min-width:0;text-align:left;">
+                    <span style="display:block;font-size:13.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
+                    ${info.qty ? `<span style="font-size:11px;color:var(--text-sub);margin-top:1px;display:block;">수량 <strong style="color:#00B0FF;">${info.qty.toLocaleString()}</strong> BOX · 납기 ${fmtKr(info.dueDate) || '—'}</span>` : ''}
+                </span>
+            </button>`;
+        }).join('');
+        _updateScheduleRoundAllBtn();
+        document.getElementById('scheduleRoundModal').style.display = 'flex';
+        _armBackTrap();
+    }
+    function closeScheduleRoundPicker() {
+        document.getElementById('scheduleRoundModal').style.display = 'none';
+    }
+    function toggleScheduleChip(idx, round) {
+        const chip = document.getElementById('schChip_' + idx);
+        const chk  = document.getElementById('schChipChk_' + idx);
+        if (_schPickerSelected.has(round)) {
+            _schPickerSelected.delete(round);
+            if (chip) { chip.style.borderColor = 'var(--border)'; chip.style.background = 'var(--icon-bg)'; }
+            if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = 'var(--border)'; chk.innerHTML = ''; }
+        } else {
+            _schPickerSelected.add(round);
+            if (chip) { chip.style.borderColor = '#00B0FF'; chip.style.background = 'rgba(0,176,255,.1)'; }
+            if (chk)  { chk.style.background = '#00B0FF'; chk.style.borderColor = '#00B0FF'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>'; }
+        }
+        _updateScheduleRoundAllBtn();
+    }
+    function toggleScheduleRoundAll() {
+        const allSelected = _schPickerSelected.size === _schSameRounds.length;
+        _schPickerSelected.clear();
+        _schSameRounds.forEach((r, i) => {
+            const chip = document.getElementById('schChip_' + i);
+            const chk  = document.getElementById('schChipChk_' + i);
+            if (!allSelected) {
+                _schPickerSelected.add(r);
+                if (chip) { chip.style.borderColor = '#00B0FF'; chip.style.background = 'rgba(0,176,255,.1)'; }
+                if (chk)  { chk.style.background = '#00B0FF'; chk.style.borderColor = '#00B0FF'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>'; }
+            } else {
+                if (chip) { chip.style.borderColor = 'var(--border)'; chip.style.background = 'var(--icon-bg)'; }
+                if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = 'var(--border)'; chk.innerHTML = ''; }
+            }
+        });
+        _updateScheduleRoundAllBtn();
+    }
+    function _updateScheduleRoundAllBtn() {
+        const btn = document.getElementById('scheduleRoundAllBtn');
+        if (!btn) return;
+        btn.textContent = _schPickerSelected.size === _schSameRounds.length ? '전체 해제' : '전체 선택';
+    }
+    function confirmScheduleRoundSearch() {
+        const selected = _schSameRounds.filter(r => _schPickerSelected.has(r));
+        if (!selected.length) return;
+        closeScheduleRoundPicker();
+        _schRoundFilterSet = new Set(selected);
+        openView('viewSearch');
+        const inp = document.getElementById('sf_round');
+        if (inp) inp.value = '';
+        runSearch();
+    }
+
     function _nd(raw) {
         if (!raw) return '';
         let s = raw.toString().trim();
