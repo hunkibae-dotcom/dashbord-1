@@ -1143,6 +1143,7 @@
     // ── 수출 일정 건명 선택 피커 (상차일 우선, 없으면 납기일 기준으로 묶인 건명들 중 선택 조회) ──
     let _schPickerSelected = new Set();
     let _schRoundFilterSet = null;
+    let _kpiPendingFilterActive = false;
 
     function openScheduleRoundPicker() {
         if (!_schSameRounds.length) return;
