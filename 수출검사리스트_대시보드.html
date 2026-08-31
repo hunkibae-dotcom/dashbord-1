@@ -3010,7 +3010,7 @@ function openMItemDetail(key) {
   const saveBtn = document.getElementById('miSaveBtn');
   if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
   document.getElementById('miTitle').textContent = d.건명 || '—';
-  document.getElementById('miSub').textContent = `${d.단품코드 || '—'} · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
+  document.getElementById('miSub').innerHTML = `<b style="font-weight:800;color:var(--text);">${d.단품코드 || '—'}</b> · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
   _refreshMiStatusButtons(d.검사);
   document.getElementById('miDateInput').value = _miNormDate(d.검사일);
   document.getElementById('miW').value = d.가로 || '';
