@@ -2844,30 +2844,38 @@
             const now = new Date();
             const todayReset = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+            // 상차일이 납기일보다 우선 — 상차일 있는 항목 중 가장 빠른 걸 먼저 찾고,
+            // 상차일 있는 항목이 하나도 없을 때만 납기일 기준으로 대체한다.
             let nearestItem = null;
             let minDiff = Infinity;
+            let nearestField = 'date';
 
             list.forEach(item => {
-                // 상차일(date)이 있는 항목만 대상
-                if (!item.date || item.date === '-') return;
-                const loadDate = new Date(item.date);
-                if (isNaN(loadDate.getTime())) return;
-
-                const compareDate = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const nd = normalizeDate(item.date);
+                if (nd === '-') return;
+                const compareDate = new Date(nd);
+                if (isNaN(compareDate.getTime())) return;
                 const diff = compareDate.getTime() - todayReset.getTime();
-
-                // 오늘 포함 미래 상차일만 대상
                 if (diff < 0) return;
-
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    nearestItem = item;
-                }
+                if (diff < minDiff) { minDiff = diff; nearestItem = item; }
             });
 
+            if (!nearestItem) {
+                nearestField = 'dueDate';
+                list.forEach(item => {
+                    const nd = normalizeDate(item.dueDate);
+                    if (nd === '-') return;
+                    const compareDate = new Date(nd);
+                    if (isNaN(compareDate.getTime())) return;
+                    const diff = compareDate.getTime() - todayReset.getTime();
+                    if (diff < 0) return;
+                    if (diff < minDiff) { minDiff = diff; nearestItem = item; }
+                });
+            }
+
             if (nearestItem) {
-                // 상차일 기준 D-Day 계산
-                const loadDate = new Date(nearestItem.date);
+                // 기준 날짜(상차일 우선, 없으면 납기일) D-Day 계산
+                const loadDate = new Date(normalizeDate(nearestField === 'date' ? nearestItem.date : nearestItem.dueDate));
                 const loadDateReset = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
                 const diffDays = Math.ceil((loadDateReset.getTime() - todayReset.getTime()) / (1000 * 60 * 60 * 24));
 
