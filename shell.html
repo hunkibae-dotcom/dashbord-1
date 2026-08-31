@@ -1120,6 +1120,18 @@
         let s = raw.toString().trim();
         if (!s || s === '-') return '';
         if (s.includes('T') || s.includes('GMT')) return s.substring(0, 10);
+        // "8/31예정"처럼 연도 없이 월/일 + 안내 문구만 있는 경우 — 연도 없는 M/D로 보고
+        // 현재 기준 가장 가까운 미래(6개월 이상 과거면 내년)로 추정한다.
+        const noYearMatch = s.match(/^(\d{1,2})[.\/](\d{1,2})\s*(?:예정)?$/);
+        if (noYearMatch) {
+            const mm = parseInt(noYearMatch[1], 10), dd = parseInt(noYearMatch[2], 10);
+            const now = new Date();
+            let y = now.getFullYear();
+            const candidate = new Date(y, mm - 1, dd);
+            const cutoff = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+            if (candidate < cutoff) y += 1;
+            return y + '-' + String(mm).padStart(2,'0') + '-' + String(dd).padStart(2,'0');
+        }
         s = s.replace(/[\./]/g, '-').replace(/\s+/g, '');
         if (s.endsWith('-')) s = s.slice(0, -1);
         const p = s.split('-');
