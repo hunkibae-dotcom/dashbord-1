@@ -3159,7 +3159,7 @@ function renderMobileFactoryPanels() {
       window._mItemMap[mik] = d;
       return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 cursor-pointer" onclick="openMItemDetail('${mik}')" style="-webkit-tap-highlight-color:transparent;">
         <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
-        <div class="flex-1 min-w-0">
+        <div class="flex-1 min-w-0" style="text-align:left;">
           <div class="text-[15px] font-bold text-slate-800 truncate">${d.건명}</div>
           <div class="mt-0.5 flex items-center flex-wrap" style="gap:5px;">
             <span class="code-tag" style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span>
