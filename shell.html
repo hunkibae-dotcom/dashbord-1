@@ -1836,13 +1836,18 @@
         const pallet  = (document.getElementById('sf_pallet').value  || '').trim();
         const dateFrom = document.getElementById('sf_dateFrom').value || '';
         const dateTo   = document.getElementById('sf_dateTo').value || '';
-        if (!round && !code && !color && !country && !pallet && !dateFrom && !dateTo && !_sfStatusFilter) {
+        // 수출 일정 카드의 "선택 조회"로 들어온 경우가 아니라면 매번 해제 —
+        // 사용자가 직접 입력창을 건드리는 순간부터는 일반 검색으로 취급한다.
+        const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilter);
+        if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
+        if (!anyManualFilter && !_schRoundFilterSet) {
             document.getElementById('srCount').textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
         }
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
         const filtered = allData.filter(d => {
+            if (_schRoundFilterSet && !_schRoundFilterSet.has(d.round)) return false;
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
