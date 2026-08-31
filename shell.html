@@ -1861,6 +1861,14 @@
         });
         if (_sfStatusSort === 2) deduped = [...deduped].sort((a,b) => (a.code||'').localeCompare(b.code||''));
         if (_sfStatusSort === 3) deduped = [...deduped].sort((a,b) => (b.code||'').localeCompare(a.code||''));
+        if (_kpiPendingFilterActive && _sfStatusSort === 0) {
+            deduped = [...deduped].sort((a,b) => {
+                if (a.date && b.date && a.date !== '-' && b.date !== '-') return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
+                if (a.date && a.date !== '-') return -1;
+                if (b.date && b.date !== '-') return 1;
+                return 0;
+            });
+        }
         document.getElementById('srCount').textContent = deduped.length;
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
