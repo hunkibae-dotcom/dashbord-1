@@ -1048,33 +1048,53 @@
     }
 
     let _schPrimaryRound = '';
+    let _schNearestField = 'date';   // 'date'(상차일) 우선, 상차일이 하나도 없을 때만 'dueDate'(납기일)로 대체
+    let _schSameRounds = [];
+    let _schSameItems = [];
 
     function renderSchedule() {
         const today = new Date(); today.setHours(0,0,0,0);
-        const candidates = allData.filter(d => d.date && d.date !== '-' && !d.isDone);
-        let nearest = null, minDiff = Infinity;
-        candidates.forEach(d => {
+        const notDone = allData.filter(d => !d.isDone);
+
+        // 상차일이 납기일보다 우선 — 상차일 있는 항목 중 가장 빠른 걸 먼저 찾고,
+        // 상차일 있는 항목이 하나도 없을 때만 납기일 기준으로 대체한다.
+        let nearest = null, minDiff = Infinity, field = 'date';
+        notDone.forEach(d => {
             const raw = _nd(d.date); if (!raw) return;
             const dt = new Date(raw); if (isNaN(dt)) return;
             dt.setHours(0,0,0,0);
             const diff = dt - today;
             if (diff >= 0 && diff < minDiff) { minDiff = diff; nearest = d; }
         });
+        if (!nearest) {
+            field = 'dueDate';
+            notDone.forEach(d => {
+                const raw = _nd(d.dueDate); if (!raw) return;
+                const dt = new Date(raw); if (isNaN(dt)) return;
+                dt.setHours(0,0,0,0);
+                const diff = dt - today;
+                if (diff >= 0 && diff < minDiff) { minDiff = diff; nearest = d; }
+            });
+        }
+
         const body  = document.getElementById('schBody');
         const empty = document.getElementById('schEmpty');
         if (nearest) {
+            _schNearestField = field;
             const days = Math.ceil(minDiff / 86400000);
             const ddayTxt   = days === 0 ? 'D-Day' : 'D-' + days;
             const ddayColor = days === 0 ? '#FF4444' : (days <= 3 ? '#F59E0B' : '#00E676');
 
-            // 같은 상차일 전체 항목
-            const nearDate = _nd(nearest.date);
-            const same = allData.filter(d => d.date && d.date !== '-' && _nd(d.date) === nearDate);
+            // 같은 기준일(상차일 우선, 없으면 납기일) 전체 항목
+            const nearDate = _nd(field === 'date' ? nearest.date : nearest.dueDate);
+            const same = notDone.filter(d => _nd(field === 'date' ? d.date : d.dueDate) === nearDate);
+            _schSameItems = same;
 
             // 건명 (중복 제거)
             const rounds = [];
             same.forEach(x => { if (x.round && !rounds.includes(x.round)) rounds.push(x.round); });
             _schPrimaryRound = rounds[0] || nearest.round;
+            _schSameRounds = rounds;
             const displayRound = rounds.length > 1 ? _schPrimaryRound + ' 외 ' + (rounds.length - 1) + '건' : _schPrimaryRound;
 
             // 수량
@@ -1102,17 +1122,10 @@
             if (body)  body.style.display  = 'flex';
             if (empty) empty.style.display = 'none';
         } else {
-            _schPrimaryRound = '';
+            _schPrimaryRound = ''; _schSameRounds = []; _schSameItems = [];
             if (body)  body.style.display  = 'none';
             if (empty) empty.style.display = 'flex';
         }
-    }
-
-    function goToScheduleSearch() {
-        if (!_schPrimaryRound) return;
-        openView('viewSearch');
-        const inp = document.getElementById('sf_round');
-        if (inp) { inp.value = _schPrimaryRound; runSearch(); }
     }
 
     function _nd(raw) {
