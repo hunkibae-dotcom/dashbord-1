@@ -3160,8 +3160,11 @@ function renderMobileFactoryPanels() {
       return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 cursor-pointer" onclick="openMItemDetail('${mik}')" style="-webkit-tap-highlight-color:transparent;">
         <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
         <div class="flex-1 min-w-0">
-          <div class="text-[14px] font-bold text-slate-800 truncate">${d.건명}</div>
-          <div class="text-[11.5px] text-slate-400 mt-0.5">${d.단품코드 || '—'} <span class="text-slate-300">·</span> ${d.색상 || '—'} <span class="text-slate-300">·</span> ${d.수량 || 0}개</div>
+          <div class="text-[15px] font-bold text-slate-800 truncate">${d.건명}</div>
+          <div class="mt-0.5 flex items-center flex-wrap" style="gap:5px;">
+            <span class="code-tag" style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span>
+            <span class="text-[11.5px] text-slate-400">${d.색상 || '—'} · ${d.수량 || 0}개</span>
+          </div>
         </div>
         <div class="shrink-0">${ddB}</div>
       </div>`;
