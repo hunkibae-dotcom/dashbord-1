@@ -6110,9 +6110,10 @@
                 </button>`;
             }).join('');
             const el = document.getElementById('card4RoundName');
-            const loadDate = document.getElementById('card4LoadDate')?.textContent || '';
+            const fieldLabel = _card4NearestField === 'dueDate' ? '납기일' : '상차일';
+            const loadDate = _card4NearestDate ? normalizeDate(_card4NearestDate) : '';
             const dateEl = document.getElementById('card4PickerDateLabel');
-            if (dateEl) dateEl.textContent = loadDate && loadDate !== '-' ? '상차일 ' + loadDate : '';
+            if (dateEl) dateEl.textContent = loadDate && loadDate !== '-' ? fieldLabel + ' ' + loadDate : '';
             _updateCard4PickerAllBtn();
             document.getElementById('card4RoundPickerModal').style.display = 'flex';
         }
