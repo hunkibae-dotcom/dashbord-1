@@ -2884,13 +2884,13 @@
                     ? 'text-[13.5px] bg-red-500/10 text-accentRed border border-red-500/20 px-2 py-0.5 rounded-full font-bold'
                     : 'text-[13.5px] bg-accentOrange/10 text-accentOrange border border-accentOrange/20 px-2 py-0.5 rounded-full font-bold';
 
-                // 동일 상차일인 모든 항목 수집
+                // 동일 기준일(상차일 우선, 없으면 납기일)인 모든 항목 수집
                 const sameDateItems = list.filter(x => {
-                    if (!x.date || x.date === '-') return false;
-                    const d = new Date(x.date);
+                    const nd = normalizeDate(nearestField === 'date' ? x.date : x.dueDate);
+                    if (nd === '-') return false;
+                    const d = new Date(nd);
                     if (isNaN(d.getTime())) return false;
-                    const dr = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-                    return dr.getTime() === loadDateReset.getTime();
+                    return d.getTime() === loadDateReset.getTime();
                 });
 
                 // 고유 건명 추출 (순서 유지)
