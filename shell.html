@@ -577,25 +577,6 @@
         </div>
     </div>
 
-    <!-- ── 포장 대기 상세 모달 ─────────────────────────── -->
-    <div id="pendingModal" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-        <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div>
-                    <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
-                        <i class="fa-solid fa-boxes-stacked" style="color:#FF9100;"></i> 포장 대기 현황
-                    </span>
-                    <span id="pendingCount" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
-                </div>
-                <button onclick="closePendingModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div id="pendingList" class="no-scrollbar" style="overflow-y:auto;flex:1;max-height:68vh;">
-                <div style="text-align:center;padding:32px 0;font-size:13px;color:var(--text-sub);">로딩 중...</div>
-            </div>
-        </div>
-    </div>
 
     <!-- ── 금일 작업 카드: 인원 투입 / 이력 보기 선택 시트 ──────── -->
     <div id="workCardActionSheet" style="position:fixed;inset:0;z-index:50;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeWorkCardActions()">
