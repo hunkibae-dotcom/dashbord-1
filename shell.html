@@ -1898,7 +1898,7 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilter = ''; _sfStatusSort = 0; _schRoundFilterSet = null;
+        _sfStatusFilter = ''; _sfStatusSort = 0; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
         document.querySelectorAll('.sf-sbtn').forEach(btn => {
             btn.style.background = btn.dataset.sv === '' ? '#00B0FF' : 'var(--icon-bg)';
             btn.style.color      = btn.dataset.sv === '' ? '#0B0F19'  : 'var(--text-sub)';
