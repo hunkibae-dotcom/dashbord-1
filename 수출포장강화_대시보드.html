@@ -4686,10 +4686,25 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        // 포장대기 박스 클릭 → 상태 필터를 포장대기로 설정 후 테이블 이동
+        // 포장대기 박스 클릭 → 카드1 집계(_pendingDetailItems)와 정확히 같은 항목을 테이블에 표시
+        // — 예전엔 activeStatusFilters로 state.data를 status==='포장대기' 단독 매칭했는데,
+        // combineDatasets()가 충주공장 재고 시트를 state.data에서 아예 제외해서(포장대기 항목이
+        // 실제로 사는 곳) 필터를 걸어도 항상 결과가 0건이라 클릭해도 반응이 없는 것처럼 보였다.
         function filterByPendingStatus() {
-            activeStatusFilters = new Set(['전체']); // 기존 필터 초기화 후
-            toggleStatusFilter('포장대기');           // 포장대기 단독 적용 + applyFilters 호출
+            if (!_pendingDetailItems || !_pendingDetailItems.length) return;
+            activeStatusFilters = new Set(['전체']);
+            document.getElementById('statusFilterLabel')?.classList.add('hidden');
+            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고'].forEach(s => {
+                const btn = document.getElementById('sf-' + s);
+                if (btn) btn.classList.toggle('bg-slate-700/60', s === '전체');
+            });
+            state.filteredData = _pendingDetailItems.slice();
+            sortData();
+            switchToGeneralDashboardView();
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            updateSortHeaders();
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
