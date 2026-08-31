@@ -2923,7 +2923,7 @@
 
                 // 툴팁 및 클릭 필터용 데이터 저장
                 _card4TooltipData = sameDateItems;
-                _card4NearestDate = nearestItem.date || '';
+                _card4NearestDate = (nearestField === 'date' ? nearestItem.date : nearestItem.dueDate) || '';
                 _card4SameDateRounds = uniqueRounds.slice();
 
                 // 동일 상차일 전체 수량: 총수량 / 포장완료 = 강화완료 / 그외 = 남은수량
