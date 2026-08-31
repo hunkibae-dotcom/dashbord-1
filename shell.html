@@ -1822,7 +1822,8 @@
         // 사용자가 직접 입력창을 건드리는 순간부터는 일반 검색으로 취급한다.
         const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilter);
         if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
-        if (!anyManualFilter && !_schRoundFilterSet) {
+        if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
+        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
             document.getElementById('srCount').textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
@@ -1830,6 +1831,11 @@
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
         const filtered = allData.filter(d => {
             if (_schRoundFilterSet && !_schRoundFilterSet.has(d.round)) return false;
+            if (_kpiPendingFilterActive) {
+                if (d.source !== 'stock') return false;
+                const s = (d.status || '').replace(/\s+/g,'').toLowerCase();
+                if (!(s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고'))) return false;
+            }
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
