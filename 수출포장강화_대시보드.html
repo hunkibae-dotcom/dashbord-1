@@ -2845,6 +2845,19 @@
             const now = new Date();
             const todayReset = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
+            // normalizeDate()의 "YYYY-MM-DD" 문자열을 new Date()로 바로 파싱하면 UTC 자정으로
+            // 해석되는데(스펙상 date-only ISO 문자열은 UTC), todayReset/loadDateReset처럼
+            // new Date(y,m,d)로 만든 로컬 자정 값과는 시간대 오프셋만큼 어긋나서 정확히 같은
+            // 날짜인데도 절대 일치하지 않는다 — 그래서 sameDateItems가 항상 텅 비어서
+            // "9/4 상차 건이 여러 개인데 하나만 표시/검색된다"는 문제가 있었다.
+            // 반드시 getFullYear/getMonth/getDate로 한 번 더 로컬 자정으로 환원해서 비교해야 한다.
+            function _toLocalMidnight(nd) {
+                if (nd === '-') return null;
+                const raw = new Date(nd);
+                if (isNaN(raw.getTime())) return null;
+                return new Date(raw.getFullYear(), raw.getMonth(), raw.getDate());
+            }
+
             // 상차일이 납기일보다 우선 — 상차일 있는 항목 중 가장 빠른 걸 먼저 찾고,
             // 상차일 있는 항목이 하나도 없을 때만 납기일 기준으로 대체한다.
             let nearestItem = null;
@@ -2852,10 +2865,8 @@
             let nearestField = 'date';
 
             list.forEach(item => {
-                const nd = normalizeDate(item.date);
-                if (nd === '-') return;
-                const compareDate = new Date(nd);
-                if (isNaN(compareDate.getTime())) return;
+                const compareDate = _toLocalMidnight(normalizeDate(item.date));
+                if (!compareDate) return;
                 const diff = compareDate.getTime() - todayReset.getTime();
                 if (diff < 0) return;
                 if (diff < minDiff) { minDiff = diff; nearestItem = item; }
@@ -2864,10 +2875,8 @@
             if (!nearestItem) {
                 nearestField = 'dueDate';
                 list.forEach(item => {
-                    const nd = normalizeDate(item.dueDate);
-                    if (nd === '-') return;
-                    const compareDate = new Date(nd);
-                    if (isNaN(compareDate.getTime())) return;
+                    const compareDate = _toLocalMidnight(normalizeDate(item.dueDate));
+                    if (!compareDate) return;
                     const diff = compareDate.getTime() - todayReset.getTime();
                     if (diff < 0) return;
                     if (diff < minDiff) { minDiff = diff; nearestItem = item; }
@@ -2876,8 +2885,7 @@
 
             if (nearestItem) {
                 // 기준 날짜(상차일 우선, 없으면 납기일) D-Day 계산
-                const loadDate = new Date(normalizeDate(nearestField === 'date' ? nearestItem.date : nearestItem.dueDate));
-                const loadDateReset = new Date(loadDate.getFullYear(), loadDate.getMonth(), loadDate.getDate());
+                const loadDateReset = _toLocalMidnight(normalizeDate(nearestField === 'date' ? nearestItem.date : nearestItem.dueDate));
                 const diffDays = Math.ceil((loadDateReset.getTime() - todayReset.getTime()) / (1000 * 60 * 60 * 24));
 
                 const ddayText = diffDays === 0 ? 'D-Day' : `D-${diffDays}`;
@@ -2887,11 +2895,8 @@
 
                 // 동일 기준일(상차일 우선, 없으면 납기일)인 모든 항목 수집
                 const sameDateItems = list.filter(x => {
-                    const nd = normalizeDate(nearestField === 'date' ? x.date : x.dueDate);
-                    if (nd === '-') return false;
-                    const d = new Date(nd);
-                    if (isNaN(d.getTime())) return false;
-                    return d.getTime() === loadDateReset.getTime();
+                    const d = _toLocalMidnight(normalizeDate(nearestField === 'date' ? x.date : x.dueDate));
+                    return d && d.getTime() === loadDateReset.getTime();
                 });
 
                 // 고유 건명 추출 (순서 유지)
