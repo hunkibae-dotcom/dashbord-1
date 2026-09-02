@@ -1356,9 +1356,9 @@ function applyFilters() {
   const search = document.getElementById('fSearch').value.toLowerCase();
 
   function matchRow(d) {
-    if (search && !d.건명.toLowerCase().includes(search) &&
-        !d.단품코드.toLowerCase().includes(search) &&
-        !d.단품명칭.toLowerCase().includes(search)) return false;
+    if (search && !(d.건명||'').toLowerCase().includes(search) &&
+        !(d.단품코드||'').toLowerCase().includes(search) &&
+        !(d.단품명칭||'').toLowerCase().includes(search)) return false;
     if (pieFilter) {
       if (d.source !== 'archive') return false;
       if (d.공장 !== pieFilter.factory) return false;
