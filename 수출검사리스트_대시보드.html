@@ -2320,27 +2320,38 @@ function runProductSearch() {
     return;
   }
 
-  const pool = [...allData, ...archiveRows];
-  const results = pool.filter(d => {
-    if (code && !(d.단품코드||'').toLowerCase().includes(code)) return false;
-    if (name && !(d.건명||'').toLowerCase().includes(name)) return false;
-    if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
-    if (factory && d.공장 !== factory) return false;
-    if (status) {
-      if (status === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
-      else if (status === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
-      else if ((d.검사 || '미검사') !== status) return false;
-    }
-    if (fromDate || toDate) {
-      const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
-      if (!ref) return false;
-      if (fromDate && ref < fromDate) return false;
-      if (toDate && ref > toDate) return false;
-    }
-    return true;
-  });
+  // 필드 하나라도 값이 비정상(undefined 등)이면 filter 콜백에서 예외가 나서 통째로 멈추고,
+  // 그러면 새로 스캔해도 화면엔 이전 검색 결과가 그대로 남아있는 것처럼 보인다 —
+  // (바코드 스캔 직후 재검색이 "안 먹히는" 것처럼 보이던 원인) try/catch로 방어.
+  try {
+    const pool = [...allData, ...archiveRows];
+    const results = pool.filter(d => {
+      if (code && !(d.단품코드||'').toLowerCase().includes(code)) return false;
+      if (name && !(d.건명||'').toLowerCase().includes(name)) return false;
+      if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
+      if (factory && d.공장 !== factory) return false;
+      if (status) {
+        if (status === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
+        else if (status === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
+        else if ((d.검사 || '미검사') !== status) return false;
+      }
+      if (fromDate || toDate) {
+        const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
+        if (!ref) return false;
+        if (fromDate && ref < fromDate) return false;
+        if (toDate && ref > toDate) return false;
+      }
+      return true;
+    });
 
-  renderProductSearchResults(results);
+    renderProductSearchResults(results);
+  } catch (e) {
+    console.error('runProductSearch error:', e);
+    tbody.innerHTML = '';
+    summary.innerHTML = '';
+    noData.style.display = '';
+    lastSearchResults = [];
+  }
 }
 
 function renderProductSearchResults(results) {
