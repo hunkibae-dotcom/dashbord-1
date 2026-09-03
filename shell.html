@@ -1814,6 +1814,8 @@
     }
 
     function runSearch() {
+        const nextPalletEl = document.getElementById('srNextPallet');
+        if (nextPalletEl) nextPalletEl.textContent = '다음적재 - ' + _nextPalletNumber();
         const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
         const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
         const color   = (document.getElementById('sf_color').value   || '').trim().toLowerCase();
