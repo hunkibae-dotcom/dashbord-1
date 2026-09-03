@@ -2173,7 +2173,7 @@
         }
         if (ptBadge) { ptBadge.textContent = pallets.length + ' PALET'; ptBadge.style.display = 'inline-flex'; }
 
-        const MAX_PALLET = 30;
+        const MAX_PALLET = 50;
         const pct = Math.min(Math.round((pallets.length/MAX_PALLET)*100), 100);
         const barClr = pct<=33?'#22C55E':pct<=50?'#84CC16':pct<=75?'#F59E0B':pct<=90?'#B45309':'#DC2626';
 
