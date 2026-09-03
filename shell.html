@@ -3340,6 +3340,7 @@
         _ieOrigPallet = (pm[(code||'').toUpperCase() + '|' + round] || '').replace(/^적재\s*/, '');
         const palInp = document.getElementById('iePallet');
         if (palInp) palInp.value = _ieOrigPallet;
+        _checkIePalletExists();
         const ieW = document.getElementById('ieW');
         const ieD = document.getElementById('ieD');
         const ieH = document.getElementById('ieH');
