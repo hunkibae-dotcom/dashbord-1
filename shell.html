@@ -481,9 +481,12 @@
                     <button class="sf-sbtn" data-sv="피킹"    onclick="setSfStatus('피킹')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">피킹</button>
                 </div>
             </div>
-            <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;">
-                <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
-                <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;">초기화</button>
+            <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;">
+                    <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
+                    <span id="srNextPallet" style="font-size:11px;font-weight:800;color:#00E676;background:rgba(0,230,118,.12);padding:2px 9px;border-radius:10px;white-space:nowrap;"></span>
+                </div>
+                <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;flex-shrink:0;">초기화</button>
             </div>
             <div id="srList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
