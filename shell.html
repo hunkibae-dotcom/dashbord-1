@@ -425,7 +425,7 @@
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
             <span style="font-size:15px;font-weight:800;color:var(--text);flex:1;display:flex;align-items:center;gap:8px;">
-                <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:14px;"></i> 수출 / 제품 상세검색
+                <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:14px;"></i> 제품 검색
             </span>
             <button onclick="_openScanSmart()" style="-webkit-appearance:none;appearance:none;border:none;background:var(--icon-bg);color:#FF9100;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;padding:8px;border-radius:10px;line-height:1;">
                 <i class="fa-solid fa-barcode"></i>
@@ -433,63 +433,90 @@
         </div>
         <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;padding-bottom:88px;">
             <div style="display:flex;flex-direction:column;gap:10px;">
-                <input id="sf_round" type="text" placeholder="건명 / 차수 (예: FAM-110)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-                <input id="sf_code" type="text" placeholder="제품코드 (예: CAC2083SN)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-                <input id="sf_color" type="text" placeholder="색상 (예: WW, BK, SN)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
-                <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-                <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재번호 (예: 1, 2, A-1)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;"
-                    oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input id="sf_round" type="text" placeholder="건명 검색"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                    <input id="sf_code" type="text" placeholder="단품코드 검색"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input id="sf_color" type="text" placeholder="색상"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+                    <button id="sfDateBtn" onclick="openSfDatePicker()"
+                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
+                        <i class="fa-solid fa-calendar-days" style="font-size:12px;color:var(--label);"></i>
+                        <span id="sfDateBtnLabel">날짜 전체</span>
+                    </button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                    <select id="sf_status" onchange="setSfStatus(this.value)"
+                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;font-weight:600;cursor:pointer;outline:none;width:100%;">
+                        <option value="">진행상태 전체</option>
+                        <option value="미입고">미입고</option>
+                        <option value="입고">입고</option>
+                        <option value="일부입고">일부입고</option>
+                        <option value="미확인">미확인</option>
+                        <option value="포장대기">포장대기</option>
+                        <option value="포장완료">포장완료</option>
+                        <option value="철물">철물</option>
+                        <option value="미포장">미포장</option>
+                        <option value="출고완료">출고</option>
+                        <option value="피킹">피킹</option>
+                    </select>
+                </div>
                 <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
-
-                <!-- 날짜 필터: 기준 필드 선택 + 기간 -->
-                <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;">
-                    <button id="sfDateFieldDate" onclick="setSfDateField('date')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">상차일</button>
-                    <button id="sfDateFieldDue" onclick="setSfDateField('dueDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">납기일</button>
-                    <button id="sfDateFieldReg" onclick="setSfDateField('regDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">포장완료일</button>
-                </div>
-                <div style="display:flex;gap:8px;">
-                    <input id="sf_dateFrom" type="date" onchange="runSearch()"
-                        style="flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;">
-                    <input id="sf_dateTo" type="date" onchange="runSearch()"
-                        style="flex:1;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;outline:none;">
-                </div>
-            </div>
-            <!-- 진행 상태 필터 -->
-            <div style="margin-top:2px;">
-                <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:6px;display:flex;align-items:center;gap:5px;">
-                    <i class="fa-solid fa-filter" style="font-size:10px;"></i> 진행 상태
-                </div>
-                <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
-                    <button class="sf-sbtn" data-sv=""       onclick="setSfStatus('')"        style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;white-space:nowrap;">전체</button>
-                    <button class="sf-sbtn" data-sv="미입고"  onclick="setSfStatus('미입고')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미입고</button>
-                    <button class="sf-sbtn" data-sv="일부입고" onclick="setSfStatus('일부입고')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">일부입고</button>
-                    <button class="sf-sbtn" data-sv="미확인"  onclick="setSfStatus('미확인')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미확인</button>
-                    <button class="sf-sbtn" data-sv="철물"    onclick="setSfStatus('철물')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">철물</button>
-                    <button class="sf-sbtn" data-sv="포장대기" onclick="setSfStatus('포장대기')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장대기</button>
-                    <button class="sf-sbtn" data-sv="포장완료" onclick="setSfStatus('포장완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">포장완료</button>
-                    <button class="sf-sbtn" data-sv="미포장"  onclick="setSfStatus('미포장')"  style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">미포장</button>
-                    <button class="sf-sbtn" data-sv="출고완료" onclick="setSfStatus('출고완료')" style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">출고완료</button>
-                    <button class="sf-sbtn" data-sv="피킹"    onclick="setSfStatus('피킹')"    style="flex:0 0 auto;padding:5px 12px;border-radius:20px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);white-space:nowrap;">피킹</button>
-                </div>
+                <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                <button onclick="clearSearch()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:11px 0;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
+                    <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
+                </button>
             </div>
             <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;gap:8px;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;">
                     <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
                     <span id="srNextPallet" style="font-size:11px;font-weight:800;color:#00E676;background:rgba(0,230,118,.12);padding:2px 9px;border-radius:10px;white-space:nowrap;"></span>
                 </div>
-                <button onclick="clearSearch()" style="font-size:11px;color:var(--text-sub);background:none;border:none;cursor:pointer;flex-shrink:0;">초기화</button>
             </div>
             <div id="srList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── 제품 검색: 날짜 필터 팝업 (품질검사 앱과 동일 스타일 + 기준 필드 선택) ──── -->
+    <div id="sfDateModal" style="display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeSfDatePicker()">
+        <div style="background:var(--panel);border-radius:18px;width:100%;max-width:300px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:14px;font-weight:700;color:var(--text);">날짜 필터</div>
+                <button onclick="closeSfDatePicker()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;-webkit-appearance:none;">
+                    <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+                </button>
+            </div>
+            <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;">
+                <button id="sfDateFieldDue" onclick="setSfDateField('dueDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">납기일</button>
+                <button id="sfDateFieldDate" onclick="setSfDateField('date')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">상차일</button>
+                <button id="sfDateFieldReg" onclick="setSfDateField('regDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">포장일</button>
+            </div>
+            <div>
+                <div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">시작일</div>
+                <input type="date" id="sf_dateFrom" onchange="runSearch();updateSfDateBtnLabel()"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">종료일</div>
+                <input type="date" id="sf_dateTo" onchange="runSearch();updateSfDateBtnLabel()"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="clearSfDate()" style="flex:1;background:var(--icon-bg);color:var(--text-sub);border:none;border-radius:10px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;-webkit-appearance:none;">초기화</button>
+                <button onclick="closeSfDatePicker()" style="flex:1;background:#00B0FF;color:#0B0F19;border:none;border-radius:10px;padding:10px;font-size:13.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;">적용</button>
             </div>
         </div>
     </div>
@@ -1759,28 +1786,32 @@
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
     let _sfStatusFilter = '';
-    let _sfStatusSort = 0; // 0=없음, 1=선택, 2=오름차순, 3=내림차순
-    const _SF_STATUS_COLORS = { '피킹':'#A855F7','일부입고':'#F59E0B','미포장':'#FB923C','철물':'#94A3B8','출고완료':'#00E676' };
-    const _SF_SORT_ICONS = ['','','  ↑','  ↓'];
+    let _sfStatusSort = 0; // 코드 정렬(2=오름차순,3=내림차순) — 진행상태는 드롭다운으로 단일 선택만 하므로 더 이상 순환 토글 없음
     function setSfStatus(val) {
-        if (val === '') {
-            _sfStatusFilter = ''; _sfStatusSort = 0;
-        } else if (_sfStatusFilter !== val) {
-            _sfStatusFilter = val; _sfStatusSort = 1;
-        } else {
-            _sfStatusSort++;
-            if (_sfStatusSort > 3) { _sfStatusFilter = ''; _sfStatusSort = 0; }
-        }
-        const ac = _SF_STATUS_COLORS[_sfStatusFilter] || '#00B0FF';
-        document.querySelectorAll('.sf-sbtn').forEach(btn => {
-            const sv = btn.dataset.sv;
-            const isActive = sv === _sfStatusFilter;
-            const isAll = sv === '';
-            btn.style.background = (isActive && sv !== '') ? ac : (isAll && _sfStatusFilter === '' ? '#00B0FF' : 'var(--icon-bg)');
-            btn.style.color      = (isActive && sv !== '') || (isAll && _sfStatusFilter === '') ? '#0B0F19' : 'var(--text-sub)';
-            btn.textContent = sv === '' ? '전체' : (sv + (isActive ? _SF_SORT_ICONS[_sfStatusSort] || '' : ''));
-        });
+        _sfStatusFilter = val;
         runSearch();
+    }
+    function openSfDatePicker() {
+        document.getElementById('sfDateModal').style.display = 'flex';
+        _armBackTrap();
+    }
+    function closeSfDatePicker() {
+        document.getElementById('sfDateModal').style.display = 'none';
+    }
+    function clearSfDate() {
+        document.getElementById('sf_dateFrom').value = '';
+        document.getElementById('sf_dateTo').value = '';
+        updateSfDateBtnLabel();
+        runSearch();
+    }
+    function updateSfDateBtnLabel() {
+        const from = document.getElementById('sf_dateFrom').value;
+        const to = document.getElementById('sf_dateTo').value;
+        const label = document.getElementById('sfDateBtnLabel');
+        if (!label) return;
+        if (!from && !to) { label.textContent = '날짜 전체'; return; }
+        const short = s => s ? s.slice(2).replace(/-/g,'.') : '';
+        label.textContent = (short(from) || '~') + ' - ' + (short(to) || '~');
     }
     function setSfDateField(field) {
         _sfDateField = field;
@@ -1904,14 +1935,12 @@
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
         _sfStatusFilter = ''; _sfStatusSort = 0; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
-        document.querySelectorAll('.sf-sbtn').forEach(btn => {
-            btn.style.background = btn.dataset.sv === '' ? '#00B0FF' : 'var(--icon-bg)';
-            btn.style.color      = btn.dataset.sv === '' ? '#0B0F19'  : 'var(--text-sub)';
-            if (btn.dataset.sv !== '') btn.textContent = btn.dataset.sv;
-        });
+        const statusSel = document.getElementById('sf_status');
+        if (statusSel) statusSel.value = '';
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
         setSfDateField('date');
+        updateSfDateBtnLabel();
         runSearch();
     }
 
@@ -3543,6 +3572,7 @@
         if (isOpen('connModal'))            { closeModal('connModal');      return true; }
         if (isOpen('workerInputModal'))     { closeWorkerInputModal();      return true; }
         if (isOpen('scheduleRoundModal'))   { closeScheduleRoundPicker();   return true; }
+        if (isOpen('sfDateModal'))           { closeSfDatePicker();          return true; }
         if (isOpen('workLogHistoryModal'))  { closeWorkLogHistoryModal();   return true; }
         if (isOpen('workCardActionSheet'))  { closeWorkCardActions();       return true; }
         if (isOpen('settingsModal'))        { closeModal('settingsModal');  return true; }
