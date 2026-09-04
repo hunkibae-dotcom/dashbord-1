@@ -379,7 +379,7 @@
             <i class="fa-solid fa-barcode" style="color:#FF9100;font-size:16px;width:20px;"></i>
             바코드 스캔 검색
         </button>
-        <button onclick="closeSearchSub();_schRoundFilterSet=null;_kpiPendingFilterActive=false;openView('viewSearch')"
+        <button onclick="closeSearchSub();_schRoundFilterSet=null;_kpiPendingFilterActive=false;_sfSourceFilter='';_sfStatusFilter='';_updateSfSourceButtons();openView('viewSearch')"
             style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
             <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
             수출 / 제품 상세검색
@@ -451,26 +451,25 @@
                         <span id="sfDateBtnLabel">날짜 전체</span>
                     </button>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
-                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                        oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
-                    <select id="sf_status" onchange="setSfStatus(this.value)"
-                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;font-weight:600;cursor:pointer;outline:none;width:100%;">
-                        <option value="">진행상태 전체</option>
-                        <option value="미입고">미입고</option>
-                        <option value="입고">입고</option>
-                        <option value="일부입고">일부입고</option>
-                        <option value="미확인">미확인</option>
-                        <option value="포장대기">포장대기</option>
-                        <option value="포장완료">포장완료</option>
-                        <option value="철물">철물</option>
-                        <option value="미포장">미포장</option>
-                        <option value="출고완료">출고</option>
-                        <option value="피킹">피킹</option>
-                    </select>
-                </div>
+                <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                    oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
                 <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
+                <!-- 시트별 진행상태 필터: 수출현황/출고완료/재고 3분류, 각 클릭 시 해당 시트 전용 세부상태 선택 팝업 -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+                    <button id="sfSrcBtn_standard" onclick="openSfSourcePicker('standard')"
+                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
+                        수출현황<br><span id="sfSrcLabel_standard" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                    </button>
+                    <button id="sfSrcBtn_shipped" onclick="openSfSourcePicker('shipped')"
+                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
+                        출고완료<br><span id="sfSrcLabel_shipped" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                    </button>
+                    <button id="sfSrcBtn_stock" onclick="openSfSourcePicker('stock')"
+                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
+                        재고<br><span id="sfSrcLabel_stock" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                    </button>
+                </div>
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
                     style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
                     oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
@@ -518,6 +517,19 @@
                 <button onclick="clearSfDate()" style="flex:1;background:var(--icon-bg);color:var(--text-sub);border:none;border-radius:10px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;-webkit-appearance:none;">초기화</button>
                 <button onclick="closeSfDatePicker()" style="flex:1;background:#00B0FF;color:#0B0F19;border:none;border-radius:10px;padding:10px;font-size:13.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;">적용</button>
             </div>
+        </div>
+    </div>
+
+    <!-- ── 제품 검색: 시트별(수출현황/출고완료/재고) 세부 진행상태 선택 팝업 ──── -->
+    <div id="sfSourceModal" style="display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeSfSourcePicker()">
+        <div style="background:var(--panel);border-radius:18px;width:100%;max-width:300px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div id="sfSourceModalTitle" style="font-size:14px;font-weight:700;color:var(--text);">진행상태</div>
+                <button onclick="closeSfSourcePicker()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;-webkit-appearance:none;">
+                    <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+                </button>
+            </div>
+            <div id="sfSourceModalList" style="display:flex;flex-direction:column;gap:6px;"></div>
         </div>
     </div>
 
@@ -1253,6 +1265,7 @@
         if (!selected.length) return;
         closeScheduleRoundPicker();
         _schRoundFilterSet = new Set(selected);
+        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
         openView('viewSearch');
         const inp = document.getElementById('sf_round');
         if (inp) inp.value = '';
@@ -1786,10 +1799,56 @@
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
     let _sfStatusFilter = '';
-    let _sfStatusSort = 0; // 코드 정렬(2=오름차순,3=내림차순) — 진행상태는 드롭다운으로 단일 선택만 하므로 더 이상 순환 토글 없음
+    let _sfSourceFilter = '';   // 'standard'(수출현황) | 'shipped'(출고완료) | 'stock'(재고)
+    let _sfStatusSort = 0; // 코드 정렬(2=오름차순,3=내림차순)
+    // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
+    // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
+    const _SF_SOURCE_META = {
+        standard: { label: '수출현황', statuses: ['입고','미입고','일부입고','포장완료','출고완료','피킹'] },
+        shipped:  { label: '출고완료', statuses: ['출고완료','피킹','미포장'] },
+        stock:    { label: '재고',     statuses: ['미확인','포장대기','포장완료','철물','미포장'] },
+    };
+    const _SF_STATUS_LABEL = { '출고완료': '출고' };
+    const _sfStatusLabel = v => _SF_STATUS_LABEL[v] || v;
+
     function setSfStatus(val) {
         _sfStatusFilter = val;
         runSearch();
+    }
+    function openSfSourcePicker(source) {
+        const meta = _SF_SOURCE_META[source];
+        if (!meta) return;
+        document.getElementById('sfSourceModalTitle').textContent = meta.label + ' 진행상태';
+        const opts = [{ v: '', label: '전체' }, ...meta.statuses.map(s => ({ v: s, label: _sfStatusLabel(s) }))];
+        document.getElementById('sfSourceModalList').innerHTML = opts.map(o => {
+            const active = _sfSourceFilter === source && _sfStatusFilter === o.v;
+            return `<button onclick="selectSfSource('${source}','${o.v}')" style="text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">${o.label}</button>`;
+        }).join('');
+        document.getElementById('sfSourceModal').style.display = 'flex';
+        _armBackTrap();
+    }
+    function closeSfSourcePicker() {
+        document.getElementById('sfSourceModal').style.display = 'none';
+    }
+    function selectSfSource(source, status) {
+        _sfSourceFilter = source;
+        _sfStatusFilter = status;
+        closeSfSourcePicker();
+        _updateSfSourceButtons();
+        runSearch();
+    }
+    function _updateSfSourceButtons() {
+        ['standard','shipped','stock'].forEach(src => {
+            const btn = document.getElementById('sfSrcBtn_' + src);
+            const lbl = document.getElementById('sfSrcLabel_' + src);
+            if (!btn || !lbl) return;
+            const active = _sfSourceFilter === src;
+            btn.style.borderColor = active ? '#00B0FF' : 'var(--border)';
+            btn.style.background  = active ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
+            btn.style.color       = active ? '#00B0FF' : 'var(--text-sub)';
+            lbl.textContent = active ? (_sfStatusFilter ? _sfStatusLabel(_sfStatusFilter) : '전체') : '전체';
+            lbl.style.color = active ? '#00B0FF' : 'var(--label)';
+        });
     }
     function openSfDatePicker() {
         document.getElementById('sfDateModal').style.display = 'flex';
@@ -1856,7 +1915,7 @@
         const dateTo   = document.getElementById('sf_dateTo').value || '';
         // 수출 일정 카드의 "선택 조회"로 들어온 경우가 아니라면 매번 해제 —
         // 사용자가 직접 입력창을 건드리는 순간부터는 일반 검색으로 취급한다.
-        const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilter);
+        const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilter || _sfSourceFilter);
         if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
         if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
         if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
@@ -1886,6 +1945,7 @@
                 if (dateFrom && dv < dateFrom) return false;
                 if (dateTo   && dv > dateTo)   return false;
             }
+            if (_sfSourceFilter && d.source !== _sfSourceFilter) return false;
             if (_sfStatusFilter && (d.status || '') !== _sfStatusFilter) return false;
             return true;
         });
@@ -1934,9 +1994,8 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilter = ''; _sfStatusSort = 0; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
-        const statusSel = document.getElementById('sf_status');
-        if (statusSel) statusSel.value = '';
+        _sfStatusFilter = ''; _sfStatusSort = 0; _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
+        _updateSfSourceButtons();
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
         setSfDateField('date');
@@ -2765,6 +2824,7 @@
     // 미입고·입고)으로 바로 필터링된 결과를 보여준다 (renderKPIs()의 pending 집계와 동일 기준).
     function openPendingSearch() {
         _kpiPendingFilterActive = true;
+        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
         openView('viewSearch');
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         runSearch();
@@ -3199,6 +3259,7 @@
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
         ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
+        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
         runSearch();
     }
 
@@ -3235,6 +3296,7 @@
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
         ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
+        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
         runSearch();
     }
 
@@ -3573,6 +3635,7 @@
         if (isOpen('workerInputModal'))     { closeWorkerInputModal();      return true; }
         if (isOpen('scheduleRoundModal'))   { closeScheduleRoundPicker();   return true; }
         if (isOpen('sfDateModal'))           { closeSfDatePicker();          return true; }
+        if (isOpen('sfSourceModal'))         { closeSfSourcePicker();        return true; }
         if (isOpen('workLogHistoryModal'))  { closeWorkLogHistoryModal();   return true; }
         if (isOpen('workCardActionSheet'))  { closeWorkCardActions();       return true; }
         if (isOpen('settingsModal'))        { closeModal('settingsModal');  return true; }
