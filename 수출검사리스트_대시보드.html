@@ -765,7 +765,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <option value="">진행상태 전체</option>
         <option value="진행_미검사">미검사 (진행중)</option>
         <option value="미검사출고">미검사 (출고완료)</option>
-        <option value="검사">검사완료</option>
+        <option value="검사_진행중">검사완료 (진행중)</option>
+        <option value="검사출고">검사완료 (출고완료)</option>
         <option value="재투입">재투입</option>
         <option value="양지">양지(회수)</option>
         <option value="미투입">미투입</option>
@@ -2331,8 +2332,13 @@ function runProductSearch() {
       if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
       if (factory && d.공장 !== factory) return false;
       if (status) {
+        // 진행중(활성 시트)/출고완료(archive)를 명확히 구분 — 예전엔 "출고" 쪽이
+        // d.검사 !== '검사'(검사완료가 아니면 전부)로 너무 느슨하게 잡혀서 재투입·양지 등
+        // 다른 상태 항목까지 "미검사(출고완료)"에 섞여 들어갔었다.
         if (status === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
-        else if (status === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
+        else if (status === '미검사출고') { if (!(d.source === 'archive' && (d.검사 || '미검사') === '미검사')) return false; }
+        else if (status === '검사_진행중') { if (d.source === 'archive' || d.검사 !== '검사') return false; }
+        else if (status === '검사출고') { if (!(d.source === 'archive' && d.검사 === '검사')) return false; }
         else if ((d.검사 || '미검사') !== status) return false;
       }
       if (fromDate || toDate) {
