@@ -2407,6 +2407,12 @@ function runProductSearch() {
   }
 }
 
+let _psSortAsc = false; // 검색결과 정렬 — false=최신순(기본), true=오래된순
+function togglePsSort() {
+  _psSortAsc = !_psSortAsc;
+  renderProductSearchResults(lastSearchResults);
+}
+
 function renderProductSearchResults(results) {
   lastSearchResults = results;
   const tbody = document.getElementById('psTableBody');
@@ -2426,6 +2432,9 @@ function renderProductSearchResults(results) {
     <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">단품코드 <strong style="color:var(--text);font-size:12px;">${uniqueCodes.toLocaleString()}</strong>개</span>
     <span style="background:#DCFCE7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검사완료 <strong style="color:#15803D;font-size:12px;">${inspected.toLocaleString()}</strong>건</span>
     <span style="background:#EDE9FE;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">출고이력 <strong style="color:#6D5CE8;font-size:12px;">${shippedQty.toLocaleString()}</strong>개 · <strong style="color:#6D5CE8;">${shipped.length.toLocaleString()}</strong>건</span>
+    <button id="psSortBtn" onclick="togglePsSort()" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;white-space:nowrap;">
+      <i class="fa-solid fa-arrow-${_psSortAsc ? 'up' : 'down'}-wide-short"></i> ${_psSortAsc ? '오래된순' : '최신순'}
+    </button>
   </div>`;
 
   const sorted = [...results].sort((a, b) => {
@@ -2434,7 +2443,7 @@ function renderProductSearchResults(results) {
     if (!da && !db) return 0;
     if (!da) return 1;
     if (!db) return -1;
-    return db - da;
+    return _psSortAsc ? da - db : db - da;
   });
 
   const isMob = window.innerWidth < 768;

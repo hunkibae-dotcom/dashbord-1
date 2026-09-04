@@ -477,11 +477,14 @@
                     <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
                 </button>
             </div>
-            <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;">
-                    <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건</span>
+                    <span>검색 결과 <strong id="srCount" style="color:#00B0FF;">0</strong>건 · <strong id="srQtySum" style="color:#00B0FF;">0</strong> BOX</span>
                     <span id="srNextPallet" style="font-size:11px;font-weight:800;color:#00E676;background:rgba(0,230,118,.12);padding:2px 9px;border-radius:10px;white-space:nowrap;"></span>
                 </div>
+                <button id="srSortBtn" onclick="toggleSrSort()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:9px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;white-space:nowrap;-webkit-appearance:none;">
+                    <i class="fa-solid fa-arrow-up-wide-short"></i> 빠른순
+                </button>
             </div>
             <div id="srList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
@@ -1800,7 +1803,15 @@
     let _sfDateField = 'date';
     let _sfStatusFilter = '';
     let _sfSourceFilter = '';   // 'standard'(수출현황) | 'shipped'(출고완료) | 'stock'(재고)
-    let _sfStatusSort = 0; // 코드 정렬(2=오름차순,3=내림차순)
+    let _srSortAsc = true; // 검색 결과 상차일 정렬 — true=빠른순(오름차순), false=늦은순(내림차순)
+    function toggleSrSort() {
+        _srSortAsc = !_srSortAsc;
+        const btn = document.getElementById('srSortBtn');
+        if (btn) btn.innerHTML = _srSortAsc
+            ? '<i class="fa-solid fa-arrow-up-wide-short"></i> 빠른순'
+            : '<i class="fa-solid fa-arrow-down-wide-short"></i> 늦은순';
+        runSearch();
+    }
     // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
     // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
     const _SF_SOURCE_META = {
@@ -1920,6 +1931,8 @@
         if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
         if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
             document.getElementById('srCount').textContent = '0';
+            const qtyEl0 = document.getElementById('srQtySum');
+            if (qtyEl0) qtyEl0.textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
         }
@@ -1955,17 +1968,20 @@
             if (d.source !== 'standard') return true;
             return !_stk.has((d.code||'').toUpperCase() + '|' + (d.round||''));
         });
-        if (_sfStatusSort === 2) deduped = [...deduped].sort((a,b) => (a.code||'').localeCompare(b.code||''));
-        if (_sfStatusSort === 3) deduped = [...deduped].sort((a,b) => (b.code||'').localeCompare(a.code||''));
-        if (_kpiPendingFilterActive && _sfStatusSort === 0) {
-            deduped = [...deduped].sort((a,b) => {
-                if (a.date && b.date && a.date !== '-' && b.date !== '-') return a.date < b.date ? -1 : a.date > b.date ? 1 : 0;
-                if (a.date && a.date !== '-') return -1;
-                if (b.date && b.date !== '-') return 1;
-                return 0;
-            });
-        }
+        // 상차일 기준 정렬 — 날짜 없는 항목은 항상 맨 뒤로
+        deduped = [...deduped].sort((a,b) => {
+            const av = a.date && a.date !== '-' ? a.date : null;
+            const bv = b.date && b.date !== '-' ? b.date : null;
+            if (av === null && bv === null) return 0;
+            if (av === null) return 1;
+            if (bv === null) return -1;
+            if (av === bv) return 0;
+            const cmp = av < bv ? -1 : 1;
+            return _srSortAsc ? cmp : -cmp;
+        });
         document.getElementById('srCount').textContent = deduped.length;
+        const qtyEl = document.getElementById('srQtySum');
+        if (qtyEl) qtyEl.textContent = deduped.reduce((s,d) => s + (parseInt(d.qty) || 0), 0).toLocaleString();
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
             return;
@@ -1994,7 +2010,7 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilter = ''; _sfStatusSort = 0; _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
+        _sfStatusFilter = ''; _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
         _updateSfSourceButtons();
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
