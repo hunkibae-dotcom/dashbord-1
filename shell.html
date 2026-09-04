@@ -379,7 +379,7 @@
             <i class="fa-solid fa-barcode" style="color:#FF9100;font-size:16px;width:20px;"></i>
             바코드 스캔 검색
         </button>
-        <button onclick="closeSearchSub();_schRoundFilterSet=null;_kpiPendingFilterActive=false;_sfSourceFilter='';_sfStatusFilter='';_updateSfSourceButtons();openView('viewSearch')"
+        <button onclick="closeSearchSub();_schRoundFilterSet=null;_kpiPendingFilterActive=false;_sfSourceFilter='';_sfStatusFilters.clear();_updateSfSourceButtons();openView('viewSearch')"
             style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
             <i class="fa-solid fa-magnifying-glass" style="color:#00B0FF;font-size:16px;width:20px;"></i>
             수출 / 제품 상세검색
@@ -532,7 +532,12 @@
                     <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
                 </button>
             </div>
-            <div id="sfSourceModalList" style="display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;justify-content:space-between;margin-top:-6px;">
+                <span>복수 선택 가능 · 아무것도 선택 안 하면 전체</span>
+                <button id="sfSourceAllBtn" onclick="toggleSfSourceAll()" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0;-webkit-appearance:none;">전체 선택</button>
+            </div>
+            <div id="sfSourceModalList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;"></div>
+            <button onclick="applySfSourcePicker()" style="width:100%;background:#00B0FF;color:#0B0F19;border:none;border-radius:10px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;">적용</button>
         </div>
     </div>
 
@@ -1268,7 +1273,7 @@
         if (!selected.length) return;
         closeScheduleRoundPicker();
         _schRoundFilterSet = new Set(selected);
-        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
+        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
         openView('viewSearch');
         const inp = document.getElementById('sf_round');
         if (inp) inp.value = '';
@@ -1801,8 +1806,10 @@
 
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
-    let _sfStatusFilter = '';
+    let _sfStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 상태들 — 비어있으면 전체
     let _sfSourceFilter = '';   // 'standard'(수출현황) | 'shipped'(출고완료) | 'stock'(재고)
+    let _sfPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
+    let _sfPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
     let _srSortAsc = true; // 검색 결과 상차일 정렬 — true=빠른순(오름차순), false=늦은순(내림차순)
     function toggleSrSort() {
         _srSortAsc = !_srSortAsc;
@@ -1822,28 +1829,52 @@
     const _SF_STATUS_LABEL = { '출고완료': '출고' };
     const _sfStatusLabel = v => _SF_STATUS_LABEL[v] || v;
 
-    function setSfStatus(val) {
-        _sfStatusFilter = val;
-        runSearch();
-    }
     function openSfSourcePicker(source) {
         const meta = _SF_SOURCE_META[source];
         if (!meta) return;
+        _sfPickerSource = source;
+        // 이미 이 카테고리가 적용 중이면 현재 선택을 그대로 불러오고, 다른 카테고리면 빈 상태로 시작
+        _sfPickerStatuses = (_sfSourceFilter === source) ? new Set(_sfStatusFilters) : new Set();
         document.getElementById('sfSourceModalTitle').textContent = meta.label + ' 진행상태';
-        const opts = [{ v: '', label: '전체' }, ...meta.statuses.map(s => ({ v: s, label: _sfStatusLabel(s) }))];
-        document.getElementById('sfSourceModalList').innerHTML = opts.map(o => {
-            const active = _sfSourceFilter === source && _sfStatusFilter === o.v;
-            return `<button onclick="selectSfSource('${source}','${o.v}')" style="text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">${o.label}</button>`;
-        }).join('');
+        _renderSfSourceList();
         document.getElementById('sfSourceModal').style.display = 'flex';
         _armBackTrap();
+    }
+    function _renderSfSourceList() {
+        const meta = _SF_SOURCE_META[_sfPickerSource];
+        if (!meta) return;
+        document.getElementById('sfSourceModalList').innerHTML = meta.statuses.map(s => {
+            const active = _sfPickerStatuses.has(s);
+            return `<button onclick="toggleSfPickerStatus('${s}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
+                <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? '#00B0FF' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#0B0F19;"></i>' : ''}</span>
+                ${_sfStatusLabel(s)}
+            </button>`;
+        }).join('');
+        _updateSfSourceAllBtn();
+    }
+    function toggleSfPickerStatus(s) {
+        if (_sfPickerStatuses.has(s)) _sfPickerStatuses.delete(s); else _sfPickerStatuses.add(s);
+        _renderSfSourceList();
+    }
+    function toggleSfSourceAll() {
+        const meta = _SF_SOURCE_META[_sfPickerSource];
+        if (!meta) return;
+        const allSelected = _sfPickerStatuses.size === meta.statuses.length;
+        _sfPickerStatuses = allSelected ? new Set() : new Set(meta.statuses);
+        _renderSfSourceList();
+    }
+    function _updateSfSourceAllBtn() {
+        const meta = _SF_SOURCE_META[_sfPickerSource];
+        const btn = document.getElementById('sfSourceAllBtn');
+        if (!btn || !meta) return;
+        btn.textContent = _sfPickerStatuses.size === meta.statuses.length ? '전체 해제' : '전체 선택';
     }
     function closeSfSourcePicker() {
         document.getElementById('sfSourceModal').style.display = 'none';
     }
-    function selectSfSource(source, status) {
-        _sfSourceFilter = source;
-        _sfStatusFilter = status;
+    function applySfSourcePicker() {
+        _sfSourceFilter = _sfPickerSource;
+        _sfStatusFilters = new Set(_sfPickerStatuses);
         closeSfSourcePicker();
         _updateSfSourceButtons();
         runSearch();
@@ -1857,7 +1888,12 @@
             btn.style.borderColor = active ? '#00B0FF' : 'var(--border)';
             btn.style.background  = active ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
             btn.style.color       = active ? '#00B0FF' : 'var(--text-sub)';
-            lbl.textContent = active ? (_sfStatusFilter ? _sfStatusLabel(_sfStatusFilter) : '전체') : '전체';
+            let label = '전체';
+            if (active && _sfStatusFilters.size) {
+                const arr = [..._sfStatusFilters];
+                label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
+            }
+            lbl.textContent = label;
             lbl.style.color = active ? '#00B0FF' : 'var(--label)';
         });
     }
@@ -1926,7 +1962,7 @@
         const dateTo   = document.getElementById('sf_dateTo').value || '';
         // 수출 일정 카드의 "선택 조회"로 들어온 경우가 아니라면 매번 해제 —
         // 사용자가 직접 입력창을 건드리는 순간부터는 일반 검색으로 취급한다.
-        const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilter || _sfSourceFilter);
+        const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilters.size || _sfSourceFilter);
         if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
         if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
         if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
@@ -1959,7 +1995,7 @@
                 if (dateTo   && dv > dateTo)   return false;
             }
             if (_sfSourceFilter && d.source !== _sfSourceFilter) return false;
-            if (_sfStatusFilter && (d.status || '') !== _sfStatusFilter) return false;
+            if (_sfStatusFilters.size && !_sfStatusFilters.has(d.status || '')) return false;
             return true;
         });
         // 수출 표준품 현황 항목 중 충주공장 재고에 동일 code+round가 있으면 제외 (중복 방지)
@@ -2010,7 +2046,7 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilter = ''; _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
+        _sfStatusFilters.clear(); _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
         _updateSfSourceButtons();
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
@@ -2840,7 +2876,7 @@
     // 미입고·입고)으로 바로 필터링된 결과를 보여준다 (renderKPIs()의 pending 집계와 동일 기준).
     function openPendingSearch() {
         _kpiPendingFilterActive = true;
-        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
+        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
         openView('viewSearch');
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         runSearch();
@@ -3275,7 +3311,7 @@
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
         ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
-        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
+        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
         runSearch();
     }
 
@@ -3312,7 +3348,7 @@
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
         ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
-        _sfSourceFilter = ''; _sfStatusFilter = ''; _updateSfSourceButtons();
+        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
         runSearch();
     }
 

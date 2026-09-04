@@ -847,7 +847,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
       </button>
     </div>
-    <div id="psSourceModalList" style="display:flex;flex-direction:column;gap:6px;"></div>
+    <div style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;justify-content:space-between;margin-top:-6px;">
+      <span>복수 선택 가능 · 아무것도 선택 안 하면 전체</span>
+      <button id="psSourceAllBtn" onclick="togglePsSourceAll()" style="font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0;-webkit-appearance:none;">전체 선택</button>
+    </div>
+    <div id="psSourceModalList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;"></div>
+    <button onclick="applyPsSourcePicker()" style="width:100%;background:#6D5CE8;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;">적용</button>
   </div>
 </div>
 
@@ -2299,9 +2304,11 @@ function updatePsDateBtnLabel() {
   label.textContent = (from || to) ? `${short(from) || '~'} - ${short(to) || '~'}` : '날짜 전체';
 }
 
-// 진행상태: 실제 시트 기준(진행중=검사항목 리스트 / 출고완료=검사완료 리스트) 2분류 + 세부 검사상태 팝업
+// 진행상태: 실제 시트 기준(진행중=검사항목 리스트 / 출고완료=검사완료 리스트) 2분류 + 세부 검사상태 팝업(복수 선택)
 let _psSourceFilter = ''; // 'active' | 'archive'
-let _psStatusFilter = ''; // d.검사 값
+let _psStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 검사상태들 — 비어있으면 전체
+let _psPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
+let _psPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
 const _PS_SOURCE_META = {
   active:  { label: '진행중',   statuses: ['미투입', '미검사', '검사', '재투입', '양지', '취소'] },
   archive: { label: '출고완료', statuses: ['미검사', '검사'] },
@@ -2309,21 +2316,48 @@ const _PS_SOURCE_META = {
 function openPsSourcePicker(source) {
   const meta = _PS_SOURCE_META[source];
   if (!meta) return;
+  _psPickerSource = source;
+  _psPickerStatuses = (_psSourceFilter === source) ? new Set(_psStatusFilters) : new Set();
   document.getElementById('psSourceModalTitle').textContent = meta.label + ' 진행상태';
-  const opts = [{ v: '', label: '전체' }, ...meta.statuses.map(s => ({ v: s, label: s }))];
-  document.getElementById('psSourceModalList').innerHTML = opts.map(o => {
-    const active = _psSourceFilter === source && _psStatusFilter === o.v;
-    return `<button onclick="selectPsSource('${source}','${o.v}')" style="text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? 'rgba(109,92,232,.12)' : 'var(--icon-bg)'};color:${active ? '#6D5CE8' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">${o.label}</button>`;
-  }).join('');
+  _renderPsSourceList();
   document.getElementById('psSourceModal').style.display = 'flex';
   _armBackTrap();
+}
+function _renderPsSourceList() {
+  const meta = _PS_SOURCE_META[_psPickerSource];
+  if (!meta) return;
+  document.getElementById('psSourceModalList').innerHTML = meta.statuses.map(s => {
+    const active = _psPickerStatuses.has(s);
+    return `<button onclick="togglePsPickerStatus('${s}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? 'rgba(109,92,232,.12)' : 'var(--icon-bg)'};color:${active ? '#6D5CE8' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
+      <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#fff;"></i>' : ''}</span>
+      ${s}
+    </button>`;
+  }).join('');
+  _updatePsSourceAllBtn();
+}
+function togglePsPickerStatus(s) {
+  if (_psPickerStatuses.has(s)) _psPickerStatuses.delete(s); else _psPickerStatuses.add(s);
+  _renderPsSourceList();
+}
+function togglePsSourceAll() {
+  const meta = _PS_SOURCE_META[_psPickerSource];
+  if (!meta) return;
+  const allSelected = _psPickerStatuses.size === meta.statuses.length;
+  _psPickerStatuses = allSelected ? new Set() : new Set(meta.statuses);
+  _renderPsSourceList();
+}
+function _updatePsSourceAllBtn() {
+  const meta = _PS_SOURCE_META[_psPickerSource];
+  const btn = document.getElementById('psSourceAllBtn');
+  if (!btn || !meta) return;
+  btn.textContent = _psPickerStatuses.size === meta.statuses.length ? '전체 해제' : '전체 선택';
 }
 function closePsSourcePicker() {
   document.getElementById('psSourceModal').style.display = 'none';
 }
-function selectPsSource(source, status) {
-  _psSourceFilter = source;
-  _psStatusFilter = status;
+function applyPsSourcePicker() {
+  _psSourceFilter = _psPickerSource;
+  _psStatusFilters = new Set(_psPickerStatuses);
   closePsSourcePicker();
   _updatePsSourceButtons();
   runProductSearch();
@@ -2337,7 +2371,12 @@ function _updatePsSourceButtons() {
     btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
     btn.style.background  = on ? 'rgba(109,92,232,.1)' : 'var(--input-bg)';
     btn.style.color       = on ? '#6D5CE8' : 'var(--text-sub)';
-    lbl.textContent = on ? (_psStatusFilter || '전체') : '전체';
+    let label = '전체';
+    if (on && _psStatusFilters.size) {
+      const arr = [..._psStatusFilters];
+      label = arr.length > 1 ? arr[0] + ' 외 ' + (arr.length - 1) : arr[0];
+    }
+    lbl.textContent = label;
     lbl.style.color = on ? '#6D5CE8' : 'var(--label)';
   });
 }
@@ -2345,7 +2384,7 @@ function _updatePsSourceButtons() {
 function resetProductSearchFilters() {
   ['psName', 'psCode', 'psColor', 'psFrom', 'psTo'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('psFactory').value = '';
-  _psSourceFilter = ''; _psStatusFilter = '';
+  _psSourceFilter = ''; _psStatusFilters.clear();
   _updatePsSourceButtons();
   updatePsDateBtnLabel();
   runProductSearch();
@@ -2387,7 +2426,7 @@ function runProductSearch() {
       // 진행중(검사항목 리스트, source==='active') / 출고완료(검사완료 리스트, source==='archive')를
       // 시트 기준으로 먼저 나누고, 그 안에서 세부 검사상태(d.검사)로 한 번 더 좁힌다.
       if (_psSourceFilter && d.source !== _psSourceFilter) return false;
-      if (_psStatusFilter && (d.검사 || '미검사') !== _psStatusFilter) return false;
+      if (_psStatusFilters.size && !_psStatusFilters.has(d.검사 || '미검사')) return false;
       if (fromDate || toDate) {
         const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
         if (!ref) return false;
@@ -3863,7 +3902,7 @@ function confirmScanResult() {
   closeScanView();
   document.getElementById('psCode').value = code;
   document.getElementById('psColor').value = color;
-  _psSourceFilter = ''; _psStatusFilter = ''; _updatePsSourceButtons();
+  _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
   openProductSearch();
 }
 
@@ -3897,7 +3936,7 @@ function confirmManualCode() {
   closeScanView();
   document.getElementById('psCode').value = code;
   document.getElementById('psColor').value = color;
-  _psSourceFilter = ''; _psStatusFilter = ''; _updatePsSourceButtons();
+  _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
   openProductSearch();
 }
 
