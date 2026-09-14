@@ -2457,9 +2457,15 @@ function renderProductSearchResults(results) {
   const tbody = document.getElementById('psTableBody');
   const noData = document.getElementById('psNoData');
   const summary = document.getElementById('psSummary');
+  const cardContainer0 = document.getElementById('psCardContainer');
 
   noData.style.display = results.length > 0 ? 'none' : '';
-  if (!results.length) { tbody.innerHTML = ''; summary.innerHTML = ''; return; }
+  if (!results.length) { tbody.innerHTML = ''; if (cardContainer0) cardContainer0.innerHTML = ''; summary.innerHTML = ''; return; }
+
+  // 정렬 토글(togglePsSort)은 runProductSearch()의 try/catch 밖에서 이 함수를 직접 부르기 때문에,
+  // 여기서 예외가 나면 아무 보호막 없이 그대로 멈춰서 화면이 이전 상태(엉뚱한 이전 검색 결과)에
+  // 박제된 채로 안 바뀌었다 — 스캔 후 재검색이 "안 먹히는" 것처럼 보이던 또 다른 원인.
+  try {
 
   const inspected = results.filter(d => d.검사 === '검사').length;
   const shipped = results.filter(d => d.source === 'archive');
@@ -2554,6 +2560,13 @@ function renderProductSearchResults(results) {
     cardContainer.innerHTML = sorted.map(renderCard).join('');
   } else {
     tbody.innerHTML = sorted.map(renderRow).join('');
+  }
+  } catch (e) {
+    console.error('renderProductSearchResults error:', e);
+    tbody.innerHTML = '';
+    if (cardContainer0) cardContainer0.innerHTML = '';
+    summary.innerHTML = '';
+    noData.style.display = '';
   }
 }
 
@@ -4056,12 +4069,24 @@ function _openScanSmart() {
 }
 
 function onNativeScanResult(raw) {
-  var parsed = _parseBarcodeRaw(raw);
-  var codeEl  = document.getElementById('psCode');
-  var colorEl = document.getElementById('psColor');
-  if (codeEl)  codeEl.value  = parsed.code;
-  if (colorEl) colorEl.value = parsed.color;
-  if (typeof openProductSearch === 'function') openProductSearch();
+  // 네이티브(Kotlin)에서 evaluateJavascript로 직접 호출하는 콜백이라 여기서 예외가 나면
+  // 아무 에러 표시도 없이 그대로 조용히 멈춘다 — try/catch로 방어.
+  try {
+    var parsed = _parseBarcodeRaw(raw);
+    var codeEl  = document.getElementById('psCode');
+    var colorEl = document.getElementById('psColor');
+    if (codeEl)  codeEl.value  = parsed.code;
+    if (colorEl) colorEl.value = parsed.color;
+    // confirmScanResult()/confirmManualCode()와 달리 여기(실제 안드로이드 네이티브 스캐너 콜백)만
+    // 진행상태 필터(_psSourceFilter/_psStatusFilters)를 초기화하지 않고 있었다 — 그래서 이전에
+    // 수동으로 선택해둔 카테고리 필터가 다음 스캔에도 그대로 남아 결과를 몰래 걸러버리고,
+    // "검색이 안 된다 / 이전 품목만 보인다 / 초기화도 안 먹힌다"처럼 보이는 원인이었다.
+    _psSourceFilter = ''; _psStatusFilters.clear();
+    if (typeof _updatePsSourceButtons === 'function') _updatePsSourceButtons();
+    if (typeof openProductSearch === 'function') openProductSearch();
+  } catch (e) {
+    console.error('onNativeScanResult error:', e);
+  }
 }
 </script>
 
