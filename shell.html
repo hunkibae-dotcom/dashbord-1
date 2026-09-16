@@ -979,7 +979,7 @@
                 rawStockRows = rows;
                 stockData = mapRows(rows, sheet);
                 allData   = allData.concat(stockData);
-            } else if (sheet.includes('수출 표준품 현황')) {
+            } else if (sheet.includes('수출 현황')) {
                 allData = allData.concat(mapRows(rows, sheet));
             } else if (sheet.includes('출고 완료')) {
                 rawShippedRows = rows;
@@ -2006,12 +2006,9 @@
             if (_sfStatusFilters.size && !_sfStatusFilters.has(d.status || '')) return false;
             return true;
         });
-        // 수출 표준품 현황 항목 중 충주공장 재고에 동일 code+round가 있으면 제외 (중복 방지)
-        const _stk = new Set((stockData||[]).map(d => (d.code||'').toUpperCase() + '|' + (d.round||'')));
-        let deduped = filtered.filter(d => {
-            if (d.source !== 'standard') return true;
-            return !_stk.has((d.code||'').toUpperCase() + '|' + (d.round||''));
-        });
+        // 필터에 맞는 항목은 그대로 다 보여준다 — 재고로 넘어간 항목이라도 수출현황
+        // 필터를 걸었으면 수출현황 쪽 결과에 나와야 하므로, source 기준 중복 제거는 하지 않는다.
+        let deduped = filtered;
         // 상차일 기준 정렬 — 날짜 없는 항목은 항상 맨 뒤로
         deduped = [...deduped].sort((a,b) => {
             const av = a.date && a.date !== '-' ? a.date : null;

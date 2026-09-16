@@ -1710,7 +1710,7 @@
 
             const hasRealUploads = keys.some(k => k !== 'default');
 
-            // 수출 표준품 현황 + 출고 완료 행을 그대로 이어붙임 (충주공장 재고는 행으로 추가 안 함)
+            // 수출 현황 + 출고 완료 행을 그대로 이어붙임 (충주공장 재고는 행으로 추가 안 함)
             keys.forEach(k => {
                 if (hasRealUploads && k === 'default') return;
                 if (k.includes('충주공장 재고')) return;
@@ -1872,7 +1872,7 @@
                 if (isJsonMode) {
                     try {
                         const jsonObj = JSON.parse(text);
-                        const ALLOWED_SHEETS = ['수출 표준품 현황', '출고 완료', '충주공장 재고'];
+                        const ALLOWED_SHEETS = ['수출 현황', '출고 완료', '충주공장 재고'];
                         if (jsonObj && typeof jsonObj === 'object' && !Array.isArray(jsonObj)) {
                             Object.keys(datasetMap).forEach(k => {
                                 if (k.startsWith('sheet_')) delete datasetMap[k];
@@ -1892,7 +1892,7 @@
                                         const sheetRows = jsonObj[sheetName];
                                         const parsedSheetData = mapCSVData(sheetRows);
                                         datasetMap['sheet_' + sheetName] = parsedSheetData;
-                                        if (sheetName.includes('수출 표준품 현황')) {
+                                        if (sheetName.includes('수출 현황')) {
                                             state.rawCsvRows = sheetRows;
                                         }
                                         if (sheetName.includes('충주공장 재고')) {
@@ -2034,7 +2034,7 @@
                 cost: ['강화비용', 'cost'], status: ['진행', '진행상태', '상태', 'status'], code: ['품목코드', '제품코드', 'code'], color: ['색상', '컬러', 'color'],
                 // 알파벳 한 글자짜리 별칭(W/D/H/G)은 부분일치라 "TOTAL CODE"처럼 전혀 다른 헤더에
                 // 우연히 그 글자가 들어있으면(CODE→'D') 엉뚱한 컬럼을 세로 등으로 잘못 잡는다.
-                // 실제로 "수출 표준품 현황" 시트에 이것 때문에 세로 평균이 이상하게 나오던 버그가 있었음.
+                // 실제로 "수출 현황" 시트에 이것 때문에 세로 평균이 이상하게 나오던 버그가 있었음.
                 specW: ['가로', '폭', 'WIDTH', 'width', 'specW'],
                 specD: ['세로', '깊이', 'DEPTH', 'depth', 'specD'],
                 specH: ['높이', 'HEIGHT', 'height', 'specH'],
@@ -2835,10 +2835,10 @@
             if (cardsWrap) cardsWrap.innerHTML = cardParts.join('');
         }
 
-        // 수출 표준품 현황 시트에서 상차일 기준 가장 가까운 미래 일정 표출
+        // 수출 현황 시트에서 상차일 기준 가장 가까운 미래 일정 표출
         function updateNearestSchedule() {
-            // 수출 표준품 현황 시트 데이터만 사용
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            // 수출 현황 시트 데이터만 사용
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const list = exportKey ? datasetMap[exportKey] : [];
             if (!list || list.length === 0) {
                 clearNearestScheduleUI();
@@ -3043,8 +3043,8 @@
 
         // 지표 계산기 (1, 2번 카드는 전체 데이터 고정, 입고/포장완료만 엄격 분류)
         function updateKPIs() {
-            // 카드1 상세현황은 "수출 표준품 현황" 시트 단독 데이터 사용
-            const exportSheetKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            // 카드1 상세현황은 "수출 현황" 시트 단독 데이터 사용
+            const exportSheetKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const rawData = exportSheetKey ? datasetMap[exportSheetKey] : state.data;
             const filtered = state.filteredData;
             
@@ -3447,7 +3447,7 @@
 
             const countryMap = {};
 
-            // 1) 수출 표준품 현황 시트: 전체 제품구분 등록 + 포장완료 → 강화완료에 합산
+            // 1) 수출 현황 시트: 전체 제품구분 등록 + 포장완료 → 강화완료에 합산
             (state.data || []).forEach(item => {
                 const label = (item.country || '').replace(/\s+/g, '');
                 if (!label || label === 'DOMESTIC') return;
@@ -4348,7 +4348,7 @@
             // 건명 1개 — 바로 필터 적용
             if (_card4SameDateRounds.length === 1) {
                 const roundSet = new Set(_card4SameDateRounds);
-                const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+                const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
                 const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
                 state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
                 sortData();
@@ -4681,11 +4681,11 @@
 
         let _prevDayAllItems = [];
 
-        // 작업 LOG 카드 클릭 → 해당 건명들의 수출 표준품 현황만 테이블에 표시
+        // 작업 LOG 카드 클릭 → 해당 건명들의 수출 현황만 테이블에 표시
         function filterByWorkLog(rounds) {
             if (!rounds || !rounds.length) return;
             const roundSet = new Set(rounds);
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const baseData = exportKey ? (datasetMap[exportKey] || []) : [];
             state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
             sortData();
@@ -5889,7 +5889,7 @@
             }
 
             if (statusType === '강화완료') {
-                // 수출 표준품 현황: 포장완료 항목 + 출고 완료 시트 전체 (출고된 항목도 강화완료됨)
+                // 수출 현황: 포장완료 항목 + 출고 완료 시트 전체 (출고된 항목도 강화완료됨)
                 (state.data || []).forEach(item => {
                     const cat = (item.country || '').replace(/\s+/g, '');
                     if (cat !== country) return;
@@ -6192,7 +6192,7 @@
             if (!selected.length) return;
             closeCard4RoundPicker();
             const roundSet = new Set(selected);
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 표준품 현황'));
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
             state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
             sortData();
