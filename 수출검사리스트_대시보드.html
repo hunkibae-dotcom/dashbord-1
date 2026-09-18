@@ -144,12 +144,14 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   #productSearchModal select option { background: var(--panel); color: var(--text); }
   /* 모바일에서 슬라이드로 화면을 꽉 채우던 검색 패널이 PC 화면에서도 그대로 inset:0으로
      펼쳐져서, 입력칸/버튼이 브라우저 폭만큼 과도하게 늘어나 모바일 화면을 억지로 키운 것처럼
-     보였다 — 데스크탑에서는 가운데 정렬된 카드형 모달로 폭을 제한한다. 여닫는 슬라이드 애니메이션은
-     JS가 transform(translateX)만 바꿔서 처리하므로, 위치·크기는 inset/margin으로만 잡는다. */
+     보였다 — 데스크탑에서는 오른쪽에 붙는 카드형 패널로 폭을 제한한다. 여닫기는 JS가
+     transform(translateX 100%/0%)만 바꿔서 처리하는데, 폭이 줄어든 만큼 반드시 오른쪽에
+     붙여놔야(가운데 정렬 X) translateX(100%)가 자기 폭만큼만 밀어도 화면 밖으로 완전히
+     나간다 — 가운데 정렬해뒀다가 닫힌 상태에서도 오른쪽 일부가 화면에 걸쳐 보이는 버그가 있었음. */
   @media (min-width: 768px) {
     #productSearchModal {
-      left: 0 !important; right: 0 !important; margin: 0 auto !important;
-      max-width: 1040px !important;
+      left: auto !important; right: 28px !important; margin: 0 !important;
+      width: 1040px !important; max-width: calc(100vw - 56px) !important;
       top: 28px !important; bottom: 28px !important;
       border-radius: 18px !important;
       border: 1px solid var(--border) !important;
