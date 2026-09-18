@@ -1201,7 +1201,10 @@
 
     function openScheduleRoundPicker() {
         if (!_schSameRounds.length) return;
-        _schPickerSelected = new Set(_schSameRounds);
+        // 예전엔 같은 상차일의 차수를 전부 미리 체크해둬서, 카드에 표시된 차수만 보려고
+        // 바로 "확인"을 누르면 나머지 차수까지 같이 검색됐다 — 카드에 실제로 표시된
+        // 차수(_schPrimaryRound) 하나만 기본 선택하고, 나머지는 필요할 때 직접 추가 체크하게 한다.
+        _schPickerSelected = new Set([_schPrimaryRound]);
         const fieldLabel = _schNearestField === 'dueDate' ? '납기일' : '상차일';
         const dateVal = _schNearestField === 'dueDate'
             ? document.getElementById('nearestDueDate').textContent
