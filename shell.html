@@ -1901,7 +1901,10 @@
     // 버튼의 라벨(전체 / 상태명 외 n개)만 갱신한다.
     function _updateSfSourceButtons() {
         const sel = document.getElementById('sfSourceSelect');
-        if (sel) sel.value = _sfSourceFilter;
+        // 일정 카드/스캔처럼 소스를 일부러 안 걸러야 하는 경우엔 _sfSourceFilter가 ''인데,
+        // 드롭다운엔 빈 옵션이 없으니 그대로 넣으면 선택 없이 비어 보인다 — 그럴 땐 화면상
+        // 기본값(입고현황)으로만 보여주고, 실제 필터링은 여전히 _sfSourceFilter(='')를 따른다.
+        if (sel) sel.value = _sfSourceFilter || 'standard';
         const lbl = document.getElementById('sfSrcDetailLabel');
         if (!lbl) return;
         let label = '전체';
