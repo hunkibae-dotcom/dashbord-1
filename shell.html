@@ -1050,13 +1050,16 @@
 
         // 시트명으로 공장 구분 및 소스 태그 보완
         const st = sheetTag || '';
+        // 시트 탭이 "수출 표준품 현황"→"수출 현황"으로 개명된 뒤에도 이 부분만 옛 이름
+        // 부분문자열("표준품 현황")로 매칭하고 있어서, 이후로는 늘 srcTag가 빈 문자열로
+        // 떨어져 수출현황 소스 필터(원래 'standard')가 아무 행도 못 찾는 버그가 있었다.
         const sheetDiv = st.includes('충주1') ? '충주1'
                        : st.includes('충주2') ? '충주2'
-                       : st.includes('표준품 현황') ? '표준품'
+                       : st.includes('수출 현황') ? '표준품'
                        : st.includes('출고 완료') ? '출고완료'
                        : '';
         const srcTag = (st.includes('충주공장 재고') || st.includes('충주1') || st.includes('충주2')) ? 'stock'
-                     : st.includes('표준품 현황') ? 'standard'
+                     : st.includes('수출 현황') ? 'standard'
                      : st.includes('출고 완료') ? 'shipped'
                      : '';
 
