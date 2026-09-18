@@ -751,16 +751,16 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 
   <!-- 필터 입력 -->
-  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+  <div class="ps-filter-panel" style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+    <div class="ps-row ps-row-1" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <input id="psName" type="text" oninput="runProductSearchDebounced()" placeholder="건명 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
         onfocus="this.style.borderColor='#6D5CE8'" onblur="this.style.borderColor='var(--border)'">
       <input id="psCode" type="text" oninput="runProductSearchDebounced()" placeholder="단품코드 검색"
-        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;font-family:monospace;"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+    <div class="ps-row ps-row-2" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
       <input id="psColor" type="text" oninput="runProductSearchDebounced()" placeholder="색상"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
         onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
@@ -770,7 +770,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <span id="psDateBtnLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sub);">날짜 전체</span>
       </button>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+    <div class="ps-row ps-row-3" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
       <select id="psFactory" onchange="runProductSearch()"
         style="background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 6px;font-size:11.5px;font-weight:600;cursor:pointer;outline:none;width:100%;">
         <option value="">공장 전체</option>
@@ -787,7 +787,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         출고완료<br><span id="psSrcLabel_archive" style="font-size:9.5px;font-weight:600;color:var(--label);">미선택</span>
       </button>
     </div>
-    <button onclick="resetProductSearchFilters()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:9px 0;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+    <button class="ps-reset" onclick="resetProductSearchFilters()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:9px 0;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
       <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
     </button>
   </div>
