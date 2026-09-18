@@ -3418,7 +3418,7 @@
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
         ['sf_round','sf_country','sf_dateFrom','sf_dateTo'].forEach(id => { document.getElementById(id).value = ''; });
-        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
+        _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons(); // 스캔과 동일 — confirmScanResult() 참고
         runSearch();
     }
 
