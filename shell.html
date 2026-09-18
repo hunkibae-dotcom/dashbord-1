@@ -1818,7 +1818,7 @@
     // ── 수출/제품 상세검색 ─────────────────────────────────
     let _sfDateField = 'date';
     let _sfStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 상태들 — 비어있으면 전체
-    let _sfSourceFilter = '';   // 'standard'(수출현황) | 'shipped'(출고완료) | 'stock'(재고)
+    let _sfSourceFilter = 'standard';   // 'standard'(입고현황) | 'shipped'(출고) | 'stock'(실재고) — 드롭다운이라 항상 값이 있음
     let _sfPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
     let _sfPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
     let _srSortAsc = true; // 검색 결과 상차일 정렬 — true=빠른순(오름차순), false=늦은순(내림차순)
