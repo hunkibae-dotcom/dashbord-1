@@ -2101,7 +2101,7 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilters.clear(); _sfSourceFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
+        _sfStatusFilters.clear(); _sfSourceFilter = 'standard'; _schRoundFilterSet = null; _kpiPendingFilterActive = false;
         _updateSfSourceButtons();
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
