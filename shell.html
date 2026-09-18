@@ -1998,7 +1998,11 @@
             document.getElementById('srCount').textContent = '0';
             const qtyEl0b = document.getElementById('srQtySum');
             if (qtyEl0b) qtyEl0b.textContent = '0';
-            document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">수출현황 / 출고완료 / 재고 중 하나를 먼저 선택하세요</div>';
+            // 날짜만 먼저 고르고 수출현황/출고완료/재고를 아직 안 고른 상태에서는 결과가 계속
+            // 비어있으니, 날짜를 골라도 "반응이 없다"고 느껴졌다 — 날짜가 실제로 반영됐다는 걸
+            // 이 안내 문구에도 같이 보여줘서, 뭘 더 해야 하는지 바로 알 수 있게 한다.
+            const _dateHint = (dateFrom || dateTo) ? `<div style="font-size:12px;color:#00B0FF;font-weight:700;margin-bottom:4px;">${dateFrom || '~'} ~ ${dateTo || '~'} 선택됨</div>` : '';
+            document.getElementById('srList').innerHTML = `<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">${_dateHint}수출현황 / 출고완료 / 재고 중 하나를 먼저 선택하세요</div>`;
             return;
         }
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
