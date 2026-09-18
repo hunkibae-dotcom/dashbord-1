@@ -158,6 +158,9 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       box-shadow: 0 24px 60px rgba(0,0,0,.35) !important;
       overflow: hidden !important;
     }
+    /* PC 브라우저엔 카메라로 바코드를 찍을 방법이 없다 — 이 버튼은 모바일 앱(네이티브
+       스캐너)에서만 의미가 있으므로 데스크탑에서는 아예 숨긴다. */
+    #productSearchModal #psScanBtn { display: none !important; }
     /* 필터 칸을 전부 똑같은 폭으로 반씩 나눠놓은 모바일 그리드를 그대로 쓰니까 PC에서는
        입력칸이 밋밋하게 대칭으로 쫙 늘어난 느낌만 났다 — 데스크탑에서는 한 줄짜리 툴바로
        풀고, 칸마다 실제 내용 길이에 맞는 비율을 줘서 카드처럼 리듬감 있게 배치한다. */
