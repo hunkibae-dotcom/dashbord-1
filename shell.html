@@ -1893,29 +1893,34 @@
         _updateSfSourceButtons();
         runSearch();
     }
+    // 입고현황/출고/실재고 버튼 3개였던 걸 드롭다운 하나로 합치면서, 소스가 항상 하나는
+    // 선택된 상태라 "미선택" 표시는 더 이상 필요 없다 — 드롭다운 값 동기화 + 세부상태
+    // 버튼의 라벨(전체 / 상태명 외 n개)만 갱신한다.
     function _updateSfSourceButtons() {
-        ['standard','shipped','stock'].forEach(src => {
-            const btn = document.getElementById('sfSrcBtn_' + src);
-            const lbl = document.getElementById('sfSrcLabel_' + src);
-            if (!btn || !lbl) return;
-            const active = _sfSourceFilter === src;
-            btn.style.borderColor = active ? '#00B0FF' : 'var(--border)';
-            btn.style.background  = active ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
-            btn.style.color       = active ? '#00B0FF' : 'var(--text-sub)';
-            // 선택 안 된 소스에 "전체"라고 표시되면 마치 이미 검색에 포함된 것처럼 보여서
-            // 혼동을 줬다 — 실제로 선택된 소스에서만 "전체"(=그 안의 모든 상태)를 쓰고,
-            // 선택 안 된 소스는 "미선택"으로 명확히 구분한다.
-            let label = '미선택';
-            if (active) {
-                label = '전체';
-                if (_sfStatusFilters.size) {
-                    const arr = [..._sfStatusFilters];
-                    label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
-                }
-            }
-            lbl.textContent = label;
-            lbl.style.color = active ? '#00B0FF' : 'var(--label)';
-        });
+        const sel = document.getElementById('sfSourceSelect');
+        if (sel) sel.value = _sfSourceFilter;
+        const lbl = document.getElementById('sfSrcDetailLabel');
+        if (!lbl) return;
+        let label = '전체';
+        if (_sfStatusFilters.size) {
+            const arr = [..._sfStatusFilters];
+            label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
+        }
+        lbl.textContent = label;
+        lbl.style.color = _sfStatusFilters.size ? '#00B0FF' : 'var(--label)';
+        const detailBtn = document.getElementById('sfSrcDetailBtn');
+        if (detailBtn) {
+            detailBtn.style.borderColor = _sfStatusFilters.size ? '#00B0FF' : 'var(--border)';
+            detailBtn.style.background  = _sfStatusFilters.size ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
+        }
+    }
+    // 드롭다운에서 입고현황/출고/실재고를 바꾸면 이전 소스 기준으로 골라둔 세부상태는
+    // 더 이상 의미가 없으므로 같이 초기화한다.
+    function setSfSourceFromDropdown(value) {
+        _sfSourceFilter = value;
+        _sfStatusFilters.clear();
+        _updateSfSourceButtons();
+        runSearch();
     }
     function openSfDatePicker() {
         document.getElementById('sfDateModal').style.display = 'flex';
