@@ -2003,20 +2003,11 @@
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
             return;
         }
-        // 수출현황/출고완료/재고 중 하나를 고르기 전까지는 검색어를 입력해도 결과를 보여주지 않는다.
-        // 예전엔 소스 미선택 = 3개 전부 합쳐서 검색이라, 같은 코드가 여러 소스에 걸쳐 있으면
-        // 한 품목인데 2~3건이 동시에 나와서 헷갈린다는 피드백으로 바꿈.
-        if (!_sfSourceFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
-            document.getElementById('srCount').textContent = '0';
-            const qtyEl0b = document.getElementById('srQtySum');
-            if (qtyEl0b) qtyEl0b.textContent = '0';
-            // 날짜만 먼저 고르고 수출현황/출고완료/재고를 아직 안 고른 상태에서는 결과가 계속
-            // 비어있으니, 날짜를 골라도 "반응이 없다"고 느껴졌다 — 날짜가 실제로 반영됐다는 걸
-            // 이 안내 문구에도 같이 보여줘서, 뭘 더 해야 하는지 바로 알 수 있게 한다.
-            const _dateHint = (dateFrom || dateTo) ? `<div style="font-size:12px;color:#00B0FF;font-weight:700;margin-bottom:4px;">${dateFrom || '~'} ~ ${dateTo || '~'} 선택됨</div>` : '';
-            document.getElementById('srList').innerHTML = `<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">${_dateHint}수출현황 / 출고완료 / 재고 중 하나를 먼저 선택하세요</div>`;
-            return;
-        }
+        // 입고현황/출고/실재고를 버튼 3개(다중 소스 동시 표시 가능)에서 드롭다운(항상 하나만
+        // 선택됨)으로 바꾸면서, "소스를 먼저 고르지 않으면 결과 없음" 게이트는 더 이상 필요
+        // 없다 — 드롭다운 자체가 항상 하나의 소스로 좁혀주기 때문. 이 게이트를 남겨뒀으면
+        // 스캔/일정카드처럼 일부러 소스를 안 좁히는 흐름(_sfSourceFilter='')에서 결과가
+        // 아예 안 나오는 회귀가 생겨서 제거함.
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
         // 필터링/렌더링 중 하나라도 예기치 못한 값(undefined 등)으로 예외가 나면 함수가 그 자리에서
         // 멈춰서, 그 뒤로는 뭘 검색해도 화면(srList)이 이전 상태 그대로 안 바뀌는 "먹통" 증상으로
