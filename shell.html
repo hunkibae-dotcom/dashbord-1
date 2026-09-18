@@ -1828,13 +1828,16 @@
     }
     // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
     // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
+    // 실제 시트의 "진행" 컬럼 값과 정확히 일치해야 한다 — 예전엔 출고완료 시트의 실제 값이
+    // "출고"인데 여기 목록엔 "출고완료"로 적혀 있어서, 그 상태를 체크해서 검색하면(특히
+    // 날짜까지 같이 걸면) 실제 데이터와 절대 안 맞아 매번 0건만 나왔다. 수출현황 시트의
+    // "재고활용" 상태도 목록에 아예 없어서 "전체 선택"을 해도 그 항목들만 빠지고 있었음.
     const _SF_SOURCE_META = {
-        standard: { label: '수출현황', statuses: ['입고','미입고','일부입고','포장완료','출고완료','피킹'] },
-        shipped:  { label: '출고완료', statuses: ['출고완료','피킹','미포장'] },
+        standard: { label: '수출현황', statuses: ['입고','미입고','일부입고','포장완료','출고완료','피킹','재고활용'] },
+        shipped:  { label: '출고완료', statuses: ['출고','피킹','미포장'] },
         stock:    { label: '재고',     statuses: ['미확인','포장대기','포장완료','철물','미포장'] },
     };
-    const _SF_STATUS_LABEL = { '출고완료': '출고' };
-    const _sfStatusLabel = v => _SF_STATUS_LABEL[v] || v;
+    const _sfStatusLabel = v => v;
 
     function openSfSourcePicker(source) {
         const meta = _SF_SOURCE_META[source];
