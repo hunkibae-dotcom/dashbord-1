@@ -2372,15 +2372,15 @@ let _psStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 검사�
 let _psPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
 let _psPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
 const _PS_SOURCE_META = {
-  active:  { label: '진행중',   statuses: ['미투입', '미검사', '검사', '재투입', '양지', '취소'] },
-  archive: { label: '출고완료', statuses: ['미검사', '검사'] },
+  active:  { label: '검사 진행현황', statuses: ['미투입', '미검사', '검사', '재투입', '양지', '취소'] },
+  archive: { label: '검사완료현황', statuses: ['미검사', '검사'] },
 };
 function openPsSourcePicker(source) {
   const meta = _PS_SOURCE_META[source];
   if (!meta) return;
   _psPickerSource = source;
   _psPickerStatuses = (_psSourceFilter === source) ? new Set(_psStatusFilters) : new Set();
-  document.getElementById('psSourceModalTitle').textContent = meta.label + ' 진행상태';
+  document.getElementById('psSourceModalTitle').textContent = meta.label + ' 세부상태';
   _renderPsSourceList();
   document.getElementById('psSourceModal').style.display = 'flex';
   _armBackTrap();
