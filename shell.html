@@ -459,15 +459,15 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
                     <button id="sfSrcBtn_standard" onclick="openSfSourcePicker('standard')"
                         style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
-                        수출현황<br><span id="sfSrcLabel_standard" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                        수출현황<br><span id="sfSrcLabel_standard" style="font-size:10px;font-weight:600;color:var(--label);">미선택</span>
                     </button>
                     <button id="sfSrcBtn_shipped" onclick="openSfSourcePicker('shipped')"
                         style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
-                        출고완료<br><span id="sfSrcLabel_shipped" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                        출고완료<br><span id="sfSrcLabel_shipped" style="font-size:10px;font-weight:600;color:var(--label);">미선택</span>
                     </button>
                     <button id="sfSrcBtn_stock" onclick="openSfSourcePicker('stock')"
                         style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:10px 6px;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;text-align:center;line-height:1.3;">
-                        재고<br><span id="sfSrcLabel_stock" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
+                        재고<br><span id="sfSrcLabel_stock" style="font-size:10px;font-weight:600;color:var(--label);">미선택</span>
                     </button>
                 </div>
                 <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
@@ -1892,10 +1892,16 @@
             btn.style.borderColor = active ? '#00B0FF' : 'var(--border)';
             btn.style.background  = active ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
             btn.style.color       = active ? '#00B0FF' : 'var(--text-sub)';
-            let label = '전체';
-            if (active && _sfStatusFilters.size) {
-                const arr = [..._sfStatusFilters];
-                label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
+            // 선택 안 된 소스에 "전체"라고 표시되면 마치 이미 검색에 포함된 것처럼 보여서
+            // 혼동을 줬다 — 실제로 선택된 소스에서만 "전체"(=그 안의 모든 상태)를 쓰고,
+            // 선택 안 된 소스는 "미선택"으로 명확히 구분한다.
+            let label = '미선택';
+            if (active) {
+                label = '전체';
+                if (_sfStatusFilters.size) {
+                    const arr = [..._sfStatusFilters];
+                    label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
+                }
             }
             lbl.textContent = label;
             lbl.style.color = active ? '#00B0FF' : 'var(--label)';
@@ -1974,6 +1980,16 @@
             const qtyEl0 = document.getElementById('srQtySum');
             if (qtyEl0) qtyEl0.textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>';
+            return;
+        }
+        // 수출현황/출고완료/재고 중 하나를 고르기 전까지는 검색어를 입력해도 결과를 보여주지 않는다.
+        // 예전엔 소스 미선택 = 3개 전부 합쳐서 검색이라, 같은 코드가 여러 소스에 걸쳐 있으면
+        // 한 품목인데 2~3건이 동시에 나와서 헷갈린다는 피드백으로 바꿈.
+        if (!_sfSourceFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
+            document.getElementById('srCount').textContent = '0';
+            const qtyEl0b = document.getElementById('srQtySum');
+            if (qtyEl0b) qtyEl0b.textContent = '0';
+            document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">수출현황 / 출고완료 / 재고 중 하나를 먼저 선택하세요</div>';
             return;
         }
         const palNorm = pallet ? (/^\d+$/.test(pallet) ? '적재 ' + pallet : pallet) : '';
