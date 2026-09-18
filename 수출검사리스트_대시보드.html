@@ -158,6 +158,48 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       box-shadow: 0 24px 60px rgba(0,0,0,.35) !important;
       overflow: hidden !important;
     }
+    /* 필터 칸을 전부 똑같은 폭으로 반씩 나눠놓은 모바일 그리드를 그대로 쓰니까 PC에서는
+       입력칸이 밋밋하게 대칭으로 쫙 늘어난 느낌만 났다 — 데스크탑에서는 한 줄짜리 툴바로
+       풀고, 칸마다 실제 내용 길이에 맞는 비율을 줘서 카드처럼 리듬감 있게 배치한다. */
+    #productSearchModal .ps-filter-panel {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--bg) 100%) !important;
+      padding: 18px 24px !important;
+      gap: 10px !important;
+    }
+    #productSearchModal .ps-row { display: flex !important; gap: 10px !important; }
+    #productSearchModal .ps-row-1 #psName  { flex: 1.7 !important; }
+    #productSearchModal .ps-row-1 #psCode  { flex: 1 !important; }
+    #productSearchModal .ps-row-2 #psColor   { flex: 0.9 !important; }
+    #productSearchModal .ps-row-2 #psDateBtn { flex: 1 !important; justify-content:flex-start !important; padding-left:14px !important; }
+    #productSearchModal .ps-row-3 { align-items: stretch !important; }
+    #productSearchModal .ps-row-3 #psFactory      { flex: 0.8 !important; }
+    #productSearchModal .ps-row-3 #psSrcBtn_active,
+    #productSearchModal .ps-row-3 #psSrcBtn_archive { flex: 0.9 !important; }
+    #productSearchModal .ps-filter-panel input,
+    #productSearchModal .ps-filter-panel select,
+    #productSearchModal #psDateBtn,
+    #productSearchModal #psSrcBtn_active,
+    #productSearchModal #psSrcBtn_archive {
+      transition: border-color .15s, box-shadow .15s, transform .1s;
+    }
+    #productSearchModal .ps-filter-panel input:hover,
+    #productSearchModal #psDateBtn:hover,
+    #productSearchModal #psFactory:hover {
+      border-color: #94A3B8 !important;
+    }
+    #productSearchModal #psSrcBtn_active:hover,
+    #productSearchModal #psSrcBtn_archive:hover {
+      border-color: #6D5CE8 !important;
+      box-shadow: 0 2px 8px rgba(109,92,232,.15) !important;
+    }
+    #productSearchModal .ps-reset {
+      width: auto !important; align-self: flex-end !important;
+      padding: 7px 16px !important; font-size: 11.5px !important;
+      background: transparent !important; border-color: transparent !important;
+    }
+    #productSearchModal .ps-reset:hover {
+      background: var(--icon-bg) !important; border-color: var(--border) !important;
+    }
   }
   /* mobile top button */
   #mToTopBtn { position:absolute; right:16px; bottom:80px; width:40px; height:40px; border-radius:50%; background:var(--panel); border:1px solid var(--border); box-shadow:0 2px 10px rgba(0,0,0,.1); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-sub); opacity:0; pointer-events:none; transition:opacity .2s; z-index:10; }
