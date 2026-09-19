@@ -1008,6 +1008,22 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== "...외N차수" 병합 건명 상세 (시트 셀 메모에서 조회) ===== -->
+<div id="roundMergeModal" style="display:none;position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeRoundMergeModal()">
+  <div style="background:var(--panel);border-radius:18px;width:100%;max-width:360px;max-height:80vh;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+      <div style="min-width:0;">
+        <div style="font-size:11px;font-weight:600;color:var(--label);">포함된 차수</div>
+        <div id="roundMergeModalTitle" style="font-size:14.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+      </div>
+      <button onclick="closeRoundMergeModal()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-appearance:none;">
+        <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+      </button>
+    </div>
+    <div id="roundMergeModalList" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;"></div>
+  </div>
+</div>
+
 <!-- ===== 바코드 스캐너 뷰 ===== -->
 <div id="viewScan" class="hidden fixed inset-0 z-[110] bg-black flex flex-col overflow-hidden">
   <div class="absolute top-0 left-0 right-0 z-10" style="background:linear-gradient(to bottom,rgba(0,0,0,.7) 0%,transparent 100%);">
@@ -1749,7 +1765,7 @@ function renderFactoryPanels(data) {
         <span class="h-8 rounded-full ${barColor} justify-self-center"></span>
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <span class="text-[15px] font-bold text-slate-800 truncate" title="${d.건명}">${d.건명}</span>
+            <span class="text-[15px] font-bold text-slate-800 truncate" title="${d.건명}">${_roundNameHtml(d.건명, d.공장)}</span>
             <span class="code-tag shrink-0" style="font-size:13.5px;font-weight:800;color:var(--text);font-family:'Inter','Noto Sans KR',sans-serif;">${d.단품코드 || '—'}</span>
           </div>
           <div class="text-[12px] text-slate-400 truncate mt-0.5">${d.단품명칭 || '—'}</div>
@@ -1810,7 +1826,7 @@ function renderTable(data) {
       <td class="py-2.5 pr-3">
         <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span>
       </td>
-      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
+      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${_roundNameHtml(d.건명, d.공장)}</td>
       <td class="py-2.5 pr-3 font-mono text-slate-500 text-[13.5px]">${d.단품코드 ? `<span class="cursor-pointer text-accent-600 hover:underline" onclick="openSpecModal('${d.단품코드}')">${d.단품코드}</span>` : '—'}</td>
       <td class="py-2.5 pr-3 text-slate-600 max-w-[220px] truncate text-[12.5px]" title="${d.단품명칭}">${d.단품명칭 || '—'}</td>
       <td class="py-2.5 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
@@ -3279,6 +3295,82 @@ function _gasUrlForFactory(factoryKey) {
   if (factoryKey === 'cj2') return GAS_URL_CJ2;
   return '';
 }
+
+// ── "...외N차수" 병합 건명 상세 ─────────────────────────────
+// 구글시트에서 여러 차수를 하나의 건명으로 병합할 때 그 내역을 셀 메모(포함된
+// 차수: ...)로 남겨두는데, 이 메모는 시트 값이 아니라 메타데이터라서 지금까지
+// 앱/웹 어디에도 노출되지 않고 있었다. doGet에 getMergeNote 액션을 추가해서
+// 클릭 시점에만 조회하고(항상 미리 불러오면 느려짐), 같은 건명은 세션 내에서
+// 캐시해서 다시 클릭해도 재조회하지 않는다.
+function _isMergedRoundName(round) {
+  return !!(round && /외\d+차수$/.test(round.toString().trim()));
+}
+function _roundNameHtml(round, factoryKey) {
+  const r = round || '—';
+  if (!_isMergedRoundName(r)) return r;
+  const esc = r.replace(/'/g, "\\'");
+  return `<span onclick="openRoundMergeDetail('${esc}','${factoryKey}',event)" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">${r}</span>`;
+}
+// 서버(Apps Script)의 _parseMergeNote()와 동일한 규칙으로 파싱한다 —
+// 형식: "포함된 차수:\n건명 | N개 | yyyy-MM-dd"
+function _parseMergeNoteClient(noteText) {
+  if (!noteText || !noteText.startsWith('포함된 차수:')) return null;
+  const lines = noteText.split('\n').slice(1);
+  const items = [];
+  lines.forEach(line => {
+    const parts = line.split(' | ');
+    if (parts.length === 3) {
+      const qty = parseFloat(parts[1].replace('개', '')) || 0;
+      const dateStr = parts[2].trim();
+      items.push({ orderName: parts[0].trim(), qty: qty, deliveryDate: (dateStr && dateStr !== '미정') ? dateStr : '' });
+    }
+  });
+  return items.length > 0 ? items : null;
+}
+const _roundMergeCache = {}; // 'factoryKey|round' → 파싱된 items (세션 내 재조회 방지)
+async function openRoundMergeDetail(round, factoryKey, event) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+  const modal = document.getElementById('roundMergeModal');
+  const titleEl = document.getElementById('roundMergeModalTitle');
+  const listEl = document.getElementById('roundMergeModalList');
+  if (!modal || !titleEl || !listEl) return;
+  titleEl.textContent = round;
+  listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--label);font-size:12.5px;"><i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...</div>';
+  modal.style.display = 'flex';
+  const cacheKey = factoryKey + '|' + round;
+  let items = _roundMergeCache[cacheKey];
+  if (items === undefined) {
+    const url = _gasUrlForFactory(factoryKey);
+    if (!url) {
+      listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">시트 연동 URL이 설정되지 않았습니다.</div>';
+      return;
+    }
+    try {
+      const res = await fetch(url + '?action=getMergeNote&round=' + encodeURIComponent(round), { signal: AbortSignal.timeout(15000) });
+      const json = await res.json();
+      items = (json && json.status === 'success') ? _parseMergeNoteClient(json.note) : null;
+      _roundMergeCache[cacheKey] = items;
+    } catch (e) {
+      listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">불러오기 실패: ' + e.message + '</div>';
+      return;
+    }
+  }
+  if (!items || !items.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--label);font-size:12.5px;">등록된 상세 메모가 없습니다.</div>';
+    return;
+  }
+  listEl.innerHTML = items.map(it => `
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;">
+      <span style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.orderName}</span>
+      <span style="font-size:11.5px;color:var(--text-sub);white-space:nowrap;flex-shrink:0;">${it.qty}개 · ${it.deliveryDate || '납기 미정'}</span>
+    </div>
+  `).join('');
+}
+function closeRoundMergeModal() {
+  const modal = document.getElementById('roundMergeModal');
+  if (modal) modal.style.display = 'none';
+}
+
 function _setMiSyncNote(text, isError) {
   const el = document.getElementById('miSaveNote');
   if (!el) return;
@@ -3370,7 +3462,7 @@ function renderMobileFactoryPanels() {
       return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 cursor-pointer" onclick="openMItemDetail('${mik}')" style="-webkit-tap-highlight-color:transparent;">
         <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
         <div class="flex-1 min-w-0" style="text-align:left;">
-          <div class="text-[15px] font-bold text-slate-800 truncate">${d.건명}</div>
+          <div class="text-[15px] font-bold text-slate-800 truncate">${_roundNameHtml(d.건명, d.공장)}</div>
           <div class="mt-0.5 flex items-center flex-wrap" style="gap:5px;">
             <span class="code-tag" style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span>
             <span class="text-[11.5px] text-slate-400">${d.색상 || '—'} · ${d.수량 || 0}개</span>
@@ -3577,7 +3669,7 @@ function renderMobileList() {
       <div style="flex:1;padding:14px 14px 13px;min-width:0;">
         <div class="flex items-start justify-between mb-2.5">
           <div style="flex:1;min-width:0;margin-right:10px;">
-            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;">${d.건명}</div>
+            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;">${_roundNameHtml(d.건명, d.공장)}</div>
             <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기">${d.단품명칭 || '—'}</div>
           </div>
           <span class="pill ${pillCls} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${pillIcon}" style="font-size:9px;"></i> ${pillText}</span>
