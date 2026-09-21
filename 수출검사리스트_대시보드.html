@@ -1418,7 +1418,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
@@ -1475,8 +1475,13 @@ function applyFilters() {
       const cat = dd === null ? '미정' : dd < 0 ? '지연' : dd <= 7 ? 'D-7이하' : dd <= 14 ? 'D-14이하' : '여유';
       if (cat !== ddayUrgencyFilter.urgency) return false;
     } else {
-      if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || (d.검사 || '미검사') !== '미검사') return false; }
+      if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || !((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d))) return false; }
       else if (colInspectFilter === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
+      // '생산중'은 실제 검사 상태값이 아니라 미검사+재투입을 묶어 보여주는 화면 전용 카테고리라,
+      // 바로 아래 일반 분기(d.검사 !== colInspectFilter)로 걸러지면 그 문자열과 정확히 같은
+      // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
+      // 데스크탑 생산중 카드(viewDetailInTable)에도 똑같이 추가함.
+      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
       else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
@@ -1620,21 +1625,28 @@ function focusFactoryTop(key) {
 function scrollToTop() { window.scrollTo({ top:0, behavior:'smooth' }); }
 
 // ===== KPIs =====
+// 재투입 = 검사 중 부적합이 나와 다시 생산해서 재검사해야 하는 품목이라, 검사일이 아직
+// 없는(=재검사 전) 재투입 건은 미검사와 똑같이 "검사 대기"·"금일 포장" 대상이다.
+// 검사일에 이미 날짜가 있으면(재투입 전 원래 검사 이력 등) 대기 목록에선 뺀다.
+function isReinspectWaiting(d) { return d.검사 === '재투입' && !d.검사일; }
+
 function computeStats(items) {
   const total = items.length;
   const done = items.filter(d => d.검사 === '검사').length;
   const yangji = items.filter(d => d.검사 === '양지').length;
   const reinspect = items.filter(d => d.검사 === '재투입').length;
+  const reinspectWaiting = items.filter(isReinspectWaiting).length;
   const undone = items.filter(d => d.검사 === '미검사').length;
+  const waitInspect = undone + reinspectWaiting;
   const preinput = items.filter(d => d.검사 === '미투입').length;
-  // 금일 포장: 포장일 <= 오늘 AND 아직 미검사 또는 재투입인 항목
+  // 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
   const packedToday = items.filter(d => {
-    if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
+    if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
     if (!d.포장일) return false;
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
   }).length;
-  return { total, done, undone, yangji, reinspect, preinput, packedToday };
+  return { total, done, undone, yangji, reinspect, reinspectWaiting, waitInspect, preinput, packedToday };
 }
 
 // KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
@@ -1676,18 +1688,18 @@ function renderKPIs(fullData) {
   const cj1 = computeStats(cj1Items);
   const cj2 = computeStats(cj2Items);
 
-  // 1) 금일 포장: 포장일 <= 오늘 AND 미검사
-  const cj1Packed = cj1Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
-  const cj2Packed = cj2Items.filter(d => d.검사 === '미검사' && d.포장일 && ddayInfo(d.포장일) <= 0);
+  // 1) 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
+  const cj1Packed = cj1Items.filter(d => (d.검사 === '미검사' || isReinspectWaiting(d)) && d.포장일 && ddayInfo(d.포장일) <= 0);
+  const cj2Packed = cj2Items.filter(d => (d.검사 === '미검사' || isReinspectWaiting(d)) && d.포장일 && ddayInfo(d.포장일) <= 0);
   document.getElementById('kpiPackedCj1').textContent = cj1.packedToday.toLocaleString();
   document.getElementById('kpiPackedCj2').textContent = cj2.packedToday.toLocaleString();
   document.getElementById('kpiPackedDetail').innerHTML = renderDetailList(scopedPool(cj1Packed, cj2Packed), '포장일');
 
-  // 2) 검사 대기 품목 (미검사 전체)
-  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사');
-  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사');
-  document.getElementById('kpiWaitCj1').textContent = cj1.undone.toLocaleString();
-  document.getElementById('kpiWaitCj2').textContent = cj2.undone.toLocaleString();
+  // 2) 검사 대기 품목 (미검사 + 재투입 중 아직 검사일 없는 것)
+  const cj1Wait = cj1Items.filter(d => d.검사 === '미검사' || isReinspectWaiting(d));
+  const cj2Wait = cj2Items.filter(d => d.검사 === '미검사' || isReinspectWaiting(d));
+  document.getElementById('kpiWaitCj1').textContent = cj1.waitInspect.toLocaleString();
+  document.getElementById('kpiWaitCj2').textContent = cj2.waitInspect.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
   // 3) 투입전 (미투입)
@@ -3001,8 +3013,8 @@ function renderMobileKPIs() {
   const arc2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
   setMTxt('mKpiPkd1', s1.packedToday);
   setMTxt('mKpiPkd2', s2.packedToday);
-  setMTxt('mKpiWt1', s1.undone);
-  setMTxt('mKpiWt2', s2.undone);
+  setMTxt('mKpiWt1', s1.waitInspect);
+  setMTxt('mKpiWt2', s2.waitInspect);
   setMTxt('mKpiPre1', s1.preinput.toLocaleString());
   setMTxt('mKpiPre2', s2.preinput.toLocaleString());
   setMTxt('mKpiPrd1', (s1.undone + s1.reinspect).toLocaleString());
@@ -3150,7 +3162,7 @@ function openKpiDetail(type) {
 
   if (type === 'today') {
     _kpiDetailItems = allData.filter(d => {
-      if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
+      if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
@@ -3632,10 +3644,10 @@ function renderMobileList() {
     if (mFactory !== 'all' && d.공장 !== mFactory) return false;
     if (mStatus === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
     else if (mStatus === '출고완료') { if (d.source !== 'archive') return false; }
-    else if (mStatus === '진행_미검사') { if (d.source === 'archive' || d.검사 !== '미검사') return false; }
+    else if (mStatus === '진행_미검사') { if (d.source === 'archive' || !(d.검사 === '미검사' || isReinspectWaiting(d))) return false; }
     else if (mStatus === '금일포장') {
       if (d.source === 'archive') return false;
-      if (d.검사 !== '미검사' && d.검사 !== '재투입') return false;
+      if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
