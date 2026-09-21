@@ -325,6 +325,14 @@
       </div>
       <button class="modal-close" onclick="closeStockDetail()"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <button class="qa-btn" style="align-self:flex-start;" onclick="toggleUsageForm()"><i class="fa-solid fa-arrow-right-from-bracket"></i> 소요</button>
+    <div class="date-panel" id="usageForm" style="flex-wrap:wrap;">
+      <span>수량</span>
+      <input type="number" id="usageQty" inputmode="decimal" placeholder="개수" style="flex:1;">
+      <span>사용처</span>
+      <input type="text" id="usageUse" placeholder="선택 입력" style="flex:1.4;">
+      <button onclick="submitUsage()" style="width:100%;margin-top:4px;">소요 등록</button>
+    </div>
     <div class="modal-body" id="stockDetailBody"></div>
   </div>
 </div>
@@ -385,9 +393,11 @@ async function loadAll() {
       const iDate = fi(h, '발주일자'), iCode = fi(h, '자재 코드'), iName = fi(h, '자재명'),
             iSpec = fi(h, '규격상세'), iQty = fi(h, '수량'), iUnit = fi(h, '단위'),
             iType = fi(h, '유형'), iSite = fi(h, '사업장'), iNote = fi(h, '비고');
+      // qty는 숫자 그대로 두거나(파싱은 표시할 때) 문자열 "소진"일 수 있어 원본 값을 그대로 들고 있는다 —
+      // isUsedUp()이 실제 시트의 판정 규칙(숫자 0 이하 또는 "소진")과 똑같이 나눈다.
       stockRows = stkTable.slice(1).filter(r => r[iCode]).map(r => ({
         row: r[0], date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
-        spec: r[iSpec] || '', qty: r[iQty] || 0, unit: r[iUnit] || '', type: r[iType] || '',
+        spec: r[iSpec] || '', qty: r[iQty], unit: r[iUnit] || '', type: r[iType] || '',
         site: r[iSite] || '', note: (r[iNote] || '').toString().trim()
       }));
     } else stockRows = [];
@@ -415,6 +425,14 @@ async function loadAll() {
 // ── 유형별 아이콘 ──
 const TYPE_ICON = { '일자형': 'fa-bars', '코너형': 'fa-vector-square', '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
 function typeIcon(t) { return TYPE_ICON[t] || 'fa-cube'; }
+
+// 시트의 _peStkIsUsedUp()과 동일한 판정 — 숫자면 0 이하, 문자열이면 정확히 "소진"일 때만 소진.
+// ('1box'처럼 남아있다는 뜻의 글자는 소진이 아니다.)
+function isUsedUp(qty) {
+  if (typeof qty === 'number') return qty <= 0;
+  return String(qty == null ? '' : qty).trim() === '소진';
+}
+function stkQtyNum(qty) { const n = parseFloat(qty); return isNaN(n) ? 0 : n; }
 
 function copyCode(el, code) {
   (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(code) : Promise.reject())
@@ -467,10 +485,10 @@ function renderDashboard() {
 
   // 재고를 자재(코드+규격) 기준으로 묶어서(소진 제외) 남은 총량 계산 — 재고 탭의 필터/검색과 무관하게 전체 기준
   const groups = {};
-  stockRows.filter(r => r.note !== '소진').forEach(r => {
+  stockRows.filter(r => !isUsedUp(r.qty)).forEach(r => {
     const key = r.code + '|' + r.spec;
     if (!groups[key]) groups[key] = { code: r.code, name: r.name, spec: r.spec, unit: r.unit, total: 0 };
-    groups[key].total += parseFloat(r.qty) || 0;
+    groups[key].total += stkQtyNum(r.qty);
   });
   document.getElementById('dkStockKinds').innerHTML = Object.keys(groups).length + '<small>종</small>';
 
@@ -602,8 +620,8 @@ function renderStock() {
   const q = (document.getElementById('stockSearch').value || '').trim().toLowerCase();
   let rows = stockRows;
   if (_stockTypeFilter) rows = rows.filter(r => r.type === _stockTypeFilter);
-  if (_stockShowFilter === 'remain') rows = rows.filter(r => r.note !== '소진');
-  else if (_stockShowFilter === 'used') rows = rows.filter(r => r.note === '소진');
+  if (_stockShowFilter === 'remain') rows = rows.filter(r => !isUsedUp(r.qty));
+  else if (_stockShowFilter === 'used') rows = rows.filter(r => isUsedUp(r.qty));
   if (q) rows = rows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q));
 
   if (!rows.length) {
@@ -621,7 +639,7 @@ function renderStock() {
   const groupArr = Object.entries(_stockGroups).sort((a, b) => a[1].name.localeCompare(b[1].name));
 
   list.innerHTML = groupArr.map(([key, g]) => {
-    const total = g.batches.filter(b => b.note !== '소진').reduce((s, b) => s + (parseFloat(b.qty) || 0), 0);
+    const total = g.batches.filter(b => !isUsedUp(b.qty)).reduce((s, b) => s + stkQtyNum(b.qty), 0);
     return `<div class="stk-card">
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
         <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
@@ -643,37 +661,52 @@ function openStockDetail(key) {
   const codeEl = document.getElementById('stockDetailCode');
   codeEl.dataset.code = g.code;
   codeEl.querySelector('span').textContent = g.code;
+  document.getElementById('stockDetailModal').dataset.key = key;
+  document.getElementById('stockDetailModal').dataset.name = g.name;
+  document.getElementById('stockDetailModal').dataset.unit = g.unit;
+
+  // 소요 입력칸은 매번 새로 열 때 접어둔 상태로 초기화
+  document.getElementById('usageForm').classList.remove('open');
+  document.getElementById('usageQty').value = '';
+  document.getElementById('usageUse').value = '';
+
   document.getElementById('stockDetailBody').innerHTML = g.batches.map(b => `
-    <div class="stk-batch ${b.note === '소진' ? 'used' : ''}">
+    <div class="stk-batch ${isUsedUp(b.qty) ? 'used' : ''}">
       <div class="stk-batch-top">
-        <span class="stk-batch-info">${b.site || '—'} · 입고 ${b.date || '—'}${b.note && b.note !== '소진' ? '<br>' + b.note : ''}</span>
-        <span class="stk-batch-qty">${(b.qty || 0).toLocaleString()} ${b.unit}</span>
+        <span class="stk-batch-info">${b.site || '—'} · 입고 ${b.date || '—'}${b.note ? '<br>' + b.note : ''}</span>
+        <span class="stk-batch-qty">${isUsedUp(b.qty) ? '소진' : stkQtyNum(b.qty).toLocaleString() + ' ' + b.unit}</span>
       </div>
-      ${b.note !== '소진'
-        ? `<span class="used-btn" onclick="markUsed(${b.row},'${key.replace(/'/g, "\\'")}')">소진 처리</span>`
-        : `<span class="used-btn" style="pointer-events:none;">소진됨</span>`}
     </div>`).join('');
   document.getElementById('stockDetailModal').classList.add('open');
-  document.getElementById('stockDetailModal').dataset.key = key;
 }
 function closeStockDetail() { document.getElementById('stockDetailModal').classList.remove('open'); }
 
-async function markUsed(row, groupKey) {
+// ── 소요 기록 ──
+// 재고에서 바로 빼는 게 아니라 "PE폼 소요" 시트에 한 줄 남긴다 — 실제 차감(선입선출)은
+// 시트의 [관리메뉴] → [🧾 소요 반영]을 사람이 직접 실행해야 반영된다(확인창이 필요한
+// 작업이라 앱에서 자동으로 돌릴 수 없음). 그래서 등록해도 재고 숫자는 바로 안 바뀐다.
+function toggleUsageForm() {
+  const form = document.getElementById('usageForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) document.getElementById('usageQty').focus();
+}
+async function submitUsage() {
+  const modal = document.getElementById('stockDetailModal');
+  const name = modal.dataset.name;
+  const unit = modal.dataset.unit;
+  const qty = parseFloat(document.getElementById('usageQty').value);
+  const use = document.getElementById('usageUse').value.trim();
+  if (!qty || qty <= 0) { showToast('소요 수량을 입력하세요'); return; }
+
   try {
-    const qs = new URLSearchParams({ action: 'markStockUsed', row });
+    const qs = new URLSearchParams({ action: 'addUsage', name, qty, use });
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
     const json = await res.json().catch(() => null);
     if (json && json.status === 'success') {
-      const r = stockRows.find(x => x.row === row);
-      if (r) r.note = '소진';
-      showToast('소진 처리됐습니다');
-      renderStock();
-      // 소진 처리 후에도(전체 리스트가 "남은 재고" 필터라면 이 자재가 목록에서 사라질 수 있음)
-      // 모달이 열려있었다면 같은 자재의 최신 상태로 다시 보여준다.
-      if (groupKey && document.getElementById('stockDetailModal').classList.contains('open')) {
-        if (_stockGroups[groupKey]) openStockDetail(groupKey);
-        else closeStockDetail();
-      }
+      showToast('소요 기록됨 (' + qty.toLocaleString() + unit + ') — 재고엔 "소요 반영" 실행 후 반영됩니다');
+      document.getElementById('usageForm').classList.remove('open');
+      document.getElementById('usageQty').value = '';
+      document.getElementById('usageUse').value = '';
     } else {
       showToast('저장 실패: ' + (json && json.message ? json.message : '알 수 없는 오류'));
     }
