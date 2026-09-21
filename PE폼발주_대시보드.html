@@ -209,9 +209,14 @@
   .bar-row-top .bl{font-size:12.5px;font-weight:700;}
   .bar-row-top .bl .spec{color:var(--text-sub);font-weight:600;font-family:'Inter',monospace;font-size:11px;}
   .bar-row-top .bv{font-size:12px;font-weight:800;font-family:'Inter',monospace;color:var(--amber);flex-shrink:0;}
+  .bar-row.clickable{cursor:pointer;}
   .bar-track{height:7px;border-radius:6px;background:var(--icon-bg);overflow:hidden;}
   .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
   .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
+  .sort-btn{width:40px;flex-shrink:0;border-radius:13px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
+  .date-range{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--border);border-radius:13px;padding:11px 14px;flex:1;min-width:0;}
+  .date-range i{color:var(--label);font-size:13px;flex-shrink:0;}
+  .date-range input{border:none;background:none;outline:none;font-size:12.5px;color:var(--text);width:100%;font-family:inherit;min-width:0;}
 </style>
 </head>
 <body>
@@ -241,23 +246,30 @@
     <!-- ══ 대시보드 ══ -->
     <div class="tab-view active" id="tab-dashboard">
       <div class="kpi-grid">
-        <div class="kpi"><div class="kpi-top"><span class="kpi-dot" style="background:var(--wait)"></span><span class="kpi-label">진행중 발주</span></div><div class="kpi-val" id="dkOngoing">–</div></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-dot" style="background:var(--amber)"></span><span class="kpi-label">이번 달 발주</span></div><div class="kpi-val" id="dkMonth">–</div></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-dot" style="background:var(--ok)"></span><span class="kpi-label">남은 재고 자재</span></div><div class="kpi-val" id="dkStockKinds">–</div></div>
-        <div class="kpi"><div class="kpi-top"><span class="kpi-dot" style="background:var(--warn)"></span><span class="kpi-label">평균 리드타임</span></div><div class="kpi-val" id="dkLead">–</div></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-shrink:0;">
-        <button class="qa-btn" style="flex:1;justify-content:center;padding:10px 4px;font-size:11.5px;" onclick="switchTab('orders')"><i class="fa-solid fa-clock-rotate-left"></i> 발주이력</button>
-        <button class="qa-btn muted" style="flex:1;justify-content:center;padding:10px 4px;font-size:11.5px;" onclick="switchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i> 재고 현황</button>
-        <button class="qa-btn muted" style="flex:1;justify-content:center;padding:10px 4px;font-size:11.5px;" onclick="switchTab('master')"><i class="fa-solid fa-tag"></i> 품목마스터</button>
+        <div class="kpi" onclick="openDashKpiDetail('ongoing')" style="cursor:pointer;"><div class="kpi-top"><span class="kpi-dot" style="background:var(--wait)"></span><span class="kpi-label">진행중 발주</span></div><div class="kpi-val" id="dkOngoing">–</div></div>
+        <div class="kpi" onclick="openDashKpiDetail('month')" style="cursor:pointer;"><div class="kpi-top"><span class="kpi-dot" style="background:var(--amber)"></span><span class="kpi-label">이번 달 발주</span></div><div class="kpi-val" id="dkMonth">–</div></div>
+        <div class="kpi" onclick="openDashKpiDetail('stock')" style="cursor:pointer;"><div class="kpi-top"><span class="kpi-dot" style="background:var(--ok)"></span><span class="kpi-label">남은 재고 자재</span></div><div class="kpi-val" id="dkStockKinds">–</div></div>
+        <div class="kpi" onclick="openDashKpiDetail('lead')" style="cursor:pointer;"><div class="kpi-top"><span class="kpi-dot" style="background:var(--warn)"></span><span class="kpi-label">평균 리드타임</span></div><div class="kpi-val" id="dkLead">–</div></div>
       </div>
       <div class="dash-scroll">
         <div>
           <div class="sec-title" style="margin-bottom:8px;">유형/규격별 소요량</div>
+          <div class="chip-row" id="dashUsagePeriodChips" style="margin-bottom:8px;">
+            <span class="chip" data-v="day">일간</span>
+            <span class="chip" data-v="week">주간</span>
+            <span class="chip on" data-v="month">월간</span>
+            <span class="chip" data-v="year">년간</span>
+          </div>
           <div class="bar-panel" id="dashUsageBars"></div>
         </div>
         <div>
           <div class="sec-title" style="margin-bottom:8px;">유형별 발주 누적 수량</div>
+          <div class="chip-row" id="dashOrderPeriodChips" style="margin-bottom:8px;">
+            <span class="chip" data-v="day">일간</span>
+            <span class="chip" data-v="week">주간</span>
+            <span class="chip on" data-v="month">월간</span>
+            <span class="chip" data-v="year">년간</span>
+          </div>
           <div class="bar-panel" id="dashOrderTypeBars"></div>
         </div>
         <div>
@@ -286,12 +298,24 @@
         <span class="chip" data-v="입고완료">입고완료</span>
         <span class="chip" data-v="취소">취소</span>
       </div>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <div class="date-range"><i class="fa-solid fa-calendar"></i><input type="date" id="orderDateFrom" onchange="renderOrders()"></div>
+        <div class="date-range"><i class="fa-solid fa-calendar"></i><input type="date" id="orderDateTo" onchange="renderOrders()"></div>
+        <button class="sort-btn" onclick="toggleOrderSort()" title="정렬 순서 전환">
+          <i class="fa-solid fa-arrow-down-wide-short" id="orderSortIcon"></i>
+        </button>
+      </div>
       <div class="list" id="orderList"></div>
     </div>
 
     <!-- ══ 재고 현황 ══ -->
     <div class="tab-view" id="tab-stock">
-      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="stockSearch" placeholder="규격·자재명으로 바로 찾기" oninput="renderStock()"></div>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <div class="search" style="flex:1;"><i class="fa-solid fa-magnifying-glass"></i><input id="stockSearch" placeholder="규격·자재명으로 바로 찾기" oninput="renderStock()"></div>
+        <button class="sort-btn" onclick="toggleStockSort()" title="수량순 정렬 전환">
+          <i class="fa-solid fa-arrow-down-wide-short" id="stockSortIcon"></i>
+        </button>
+      </div>
       <div class="chip-row" id="stockTypeChips">
         <span class="chip on" data-v="">전체</span>
         <span class="chip" data-v="일자형">일자형</span>
@@ -319,15 +343,10 @@
         <span class="chip" data-v="패드형">패드형</span>
         <span class="chip" data-v="롤형">롤형</span>
       </div>
-      <div class="list" id="mstList"></div>
-    </div>
-
-    <!-- ══ 검색 ══ -->
-    <div class="tab-view" id="tab-search">
-      <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input id="globalSearch" placeholder="자재명·코드로 발주이력 전체 검색" oninput="renderGlobalSearch()"></div>
-      <div class="list" id="globalSearchList">
-        <div class="empty"><i class="fa-solid fa-magnifying-glass"></i><div>검색어를 입력하세요</div></div>
+      <div class="chip-row" id="mstThickChips">
+        <span class="chip on" data-v="">전체 두께</span>
       </div>
+      <div class="list" id="mstList"></div>
     </div>
 
   </div>
@@ -337,7 +356,6 @@
     <button class="pnav-item" data-tab="orders" onclick="switchTab('orders')"><i class="fa-solid fa-clock-rotate-left"></i>발주이력</button>
     <button class="pnav-item" data-tab="stock" onclick="switchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i>재고 현황</button>
     <button class="pnav-item" data-tab="master" onclick="switchTab('master')"><i class="fa-solid fa-tag"></i>품목마스터</button>
-    <button class="pnav-item" data-tab="search" onclick="switchTab('search')"><i class="fa-solid fa-magnifying-glass"></i>검색</button>
   </nav>
 </div>
 
@@ -371,6 +389,34 @@
       <button onclick="submitUsage()" style="width:100%;margin-top:4px;">소요 등록</button>
     </div>
     <div class="modal-body" id="stockDetailBody"></div>
+  </div>
+</div>
+
+<!-- 대시보드 KPI 카드 상세 -->
+<div class="modal-bg" id="dashDetailModal" onclick="if(event.target===this)closeDashDetail()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title" id="dashDetailTitle">상세</div>
+      <button class="modal-close" onclick="closeDashDetail()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="dashDetailBody"></div>
+  </div>
+</div>
+
+<!-- 대시보드 유형별 소요량/발주누적 → 규격별 상세 -->
+<div class="modal-bg" id="dashSpecModal" onclick="if(event.target===this)closeDashSpecModal()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title" id="dashSpecModalTitle">규격별 상세</div>
+      <button class="modal-close" onclick="closeDashSpecModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="chip-row" id="dashSpecPeriodChips">
+      <span class="chip" data-v="day">일간</span>
+      <span class="chip" data-v="week">주간</span>
+      <span class="chip on" data-v="month">월간</span>
+      <span class="chip" data-v="year">년간</span>
+    </div>
+    <div class="modal-body" id="dashSpecModalBody"></div>
   </div>
 </div>
 
@@ -468,6 +514,7 @@ async function loadAll() {
       }));
     } else usageRows = [];
 
+    renderMstThickChips();
     renderOrders(); renderStock(); renderMaster(); renderDashboard();
   } catch (e) {
     document.getElementById('orderList').innerHTML =
@@ -554,74 +601,235 @@ function barRowsHtml(entries, maxN) {
     </div>`).join('');
 }
 
+// 유형별 막대(클릭 시 그 유형의 규격별 상세를 연다)
+function typeBarsHtml(entries, onclickFn) {
+  const max = Math.max(1, ...entries.map(e => e.value));
+  return entries.map(e => `
+    <div class="bar-row clickable" onclick="${onclickFn}('${e.label.replace(/'/g, "\\'")}')">
+      <div class="bar-row-top">
+        <span class="bl"><i class="fa-solid ${typeIcon(e.label)}" style="margin-right:6px;color:var(--text-sub);"></i>${e.label}</span>
+        <span class="bv">${e.value.toLocaleString()} ${e.unit || ''} <i class="fa-solid fa-chevron-right" style="margin-left:3px;color:var(--dim);font-size:10px;"></i></span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, e.value / max * 100)}%;"></div></div>
+    </div>`).join('');
+}
+
+// 일간/주간/월간/년간 기준으로 날짜 문자열(yyyy-MM-dd)이 그 기간에 속하는지 판정
+function inPeriod(dateStr, period) {
+  if (!dateStr) return false;
+  const now = new Date();
+  if (period === 'day') return dateStr === now.toISOString().slice(0, 10);
+  if (period === 'week') {
+    const d = new Date(dateStr + 'T00:00:00');
+    const dow = (now.getDay() + 6) % 7; // 0 = 월요일
+    const monday = new Date(now); monday.setHours(0, 0, 0, 0); monday.setDate(now.getDate() - dow);
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6); sunday.setHours(23, 59, 59, 999);
+    return d >= monday && d <= sunday;
+  }
+  if (period === 'month') return dateStr.slice(0, 7) === now.toISOString().slice(0, 7);
+  if (period === 'year') return dateStr.slice(0, 4) === String(now.getFullYear());
+  return true;
+}
+
+// 재고를 자재(코드+규격) 기준으로 묶어서(소진 제외) 남은 총량 계산 — 재고 탭의 필터/검색과 무관하게 전체 기준
+function remainStockList() {
+  const groups = groupStock(stockRows.filter(r => !isUsedUp(r.qty)));
+  return Object.entries(groups).map(([key, g]) => ({
+    key, code: g.code, name: g.name, spec: g.spec, type: g.type, unit: g.unit,
+    total: g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0)
+  }));
+}
+
+function orderCardHtml(r) {
+  return `<div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
+    <div class="card-top" style="margin-bottom:0;">
+      <div>
+        <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
+        <span class="code-copy" onclick="event.stopPropagation();copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
+      </div>
+      <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
+    </div>
+  </div>`;
+}
+function stockMiniCardHtml(g) {
+  return `<div class="stk-card">
+    <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
+      <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+      <div class="stk-mid">
+        <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+      </div>
+      <div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
+      <i class="fa-solid fa-chevron-right stk-chev"></i>
+    </div>
+  </div>`;
+}
+function leadCardHtml(r) {
+  return `<div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
+    <div class="card-top" style="margin-bottom:0;">
+      <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
+      <span class="card-qty">${r.lead}일</span>
+    </div>
+  </div>`;
+}
+
+let _dashUsagePeriod = 'month';
+let _dashOrderPeriod = 'month';
+
 function renderDashboard() {
   const ongoingOrders = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고');
   document.getElementById('dkOngoing').innerHTML = ongoingOrders.length + '<small>건</small>';
   const thisMonth = new Date().toISOString().slice(0, 7);
   document.getElementById('dkMonth').innerHTML = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '<small>건</small>';
-  const leads = orderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n));
-  const avgLead = leads.length ? (leads.reduce((a, b) => a + b, 0) / leads.length).toFixed(1) : '–';
-  document.getElementById('dkLead').innerHTML = avgLead + (leads.length ? '<small>일</small>' : '');
+  const leadNums = orderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n) && n > 0);
+  const avgLead = leadNums.length ? (leadNums.reduce((a, b) => a + b, 0) / leadNums.length).toFixed(1) : '–';
+  document.getElementById('dkLead').innerHTML = avgLead + (leadNums.length ? '<small>일</small>' : '');
 
-  // 재고를 자재(코드+규격) 기준으로 묶어서(소진 제외) 남은 총량 계산 — 재고 탭의 필터/검색과 무관하게 전체 기준
-  const remainGroups = groupStock(stockRows.filter(r => !isUsedUp(r.qty)));
-  const remainList = Object.entries(remainGroups).map(([key, g]) => ({
-    key, name: g.name, spec: g.spec, type: g.type, unit: g.unit,
-    total: g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0)
-  }));
+  const remainList = remainStockList();
   document.getElementById('dkStockKinds').innerHTML = remainList.length + '<small>종</small>';
 
-  // ── 유형/규격별 소요량 (PE폼 소요 시트 집계) ──
-  const useGroups = {};
-  usageRows.forEach(u => {
-    const key = (u.type || '기타') + '|' + u.spec;
-    if (!useGroups[key]) useGroups[key] = { label: u.type || '기타', sub: u.spec, value: 0, unit: u.unit };
-    useGroups[key].value += u.qty;
-  });
-  const useEntries = Object.values(useGroups).sort((a, b) => b.value - a.value);
-  document.getElementById('dashUsageBars').innerHTML = useEntries.length
-    ? barRowsHtml(useEntries, 6)
-    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>소요 기록이 없습니다</div></div>';
-
-  // ── 유형별 발주 누적 수량 (취소 제외 — 실제로 나간/나갈 물량 기준) ──
-  const typeGroups = {};
-  orderRows.filter(r => r.stat !== '취소').forEach(r => {
-    const key = r.type || '기타';
-    if (!typeGroups[key]) typeGroups[key] = { label: key, sub: '', value: 0, unit: r.unit };
-    typeGroups[key].value += stkQtyNum(r.qty);
-  });
-  const typeEntries = Object.values(typeGroups).sort((a, b) => b.value - a.value);
-  document.getElementById('dashOrderTypeBars').innerHTML = typeEntries.length
-    ? barRowsHtml(typeEntries, 6)
-    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>발주 내역이 없습니다</div></div>';
+  renderDashUsageBars();
+  renderDashOrderTypeBars();
 
   // ── 발주중인 자재 (발주/부분입고 상태 — 클릭 시 발주 상세) ──
   const ongoingSorted = [...ongoingOrders].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 6);
-  document.getElementById('dashOngoingOrders').innerHTML = ongoingSorted.length ? ongoingSorted.map(r => `
-    <div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
-      <div class="card-top" style="margin-bottom:0;">
-        <div>
-          <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
-          <span class="code-copy" onclick="event.stopPropagation();copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
-        </div>
-        <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
-      </div>
-    </div>`).join('') : '<div class="empty"><i class="fa-solid fa-inbox"></i><div>발주중인 자재가 없습니다</div></div>';
+  document.getElementById('dashOngoingOrders').innerHTML = ongoingSorted.length
+    ? ongoingSorted.map(orderCardHtml).join('')
+    : '<div class="empty"><i class="fa-solid fa-inbox"></i><div>발주중인 자재가 없습니다</div></div>';
 
   // ── 재고 적게 남은 자재 (클릭 시 재고 상세 — 재고 탭 필터를 기본값으로 맞춘 뒤 연다) ──
   const low = [...remainList].sort((a, b) => a.total - b.total).slice(0, 6);
-  document.getElementById('dashLowStock').innerHTML = low.length ? low.map(g => `
-    <div class="stk-card">
-      <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
-        <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
-        <div class="stk-mid">
-          <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
-        </div>
-        <div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
-        <i class="fa-solid fa-chevron-right stk-chev"></i>
-      </div>
-    </div>`).join('') : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
+  document.getElementById('dashLowStock').innerHTML = low.length
+    ? low.map(stockMiniCardHtml).join('')
+    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
 }
+
+// ── 유형/규격별 소요량 (기간 필터 적용, 유형별로 쪼갬 — 클릭 시 규격별 상세) ──
+function renderDashUsageBars() {
+  const rows = usageRows.filter(u => inPeriod(u.date, _dashUsagePeriod));
+  const byType = {};
+  rows.forEach(u => {
+    const key = u.type || '기타';
+    if (!byType[key]) byType[key] = { label: key, value: 0, unit: u.unit };
+    byType[key].value += u.qty;
+  });
+  const entries = Object.values(byType).sort((a, b) => b.value - a.value);
+  document.getElementById('dashUsageBars').innerHTML = entries.length
+    ? typeBarsHtml(entries, 'openUsageTypeDetail')
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>해당 기간 소요 기록이 없습니다</div></div>';
+}
+document.getElementById('dashUsagePeriodChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('#dashUsagePeriodChips .chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on');
+  _dashUsagePeriod = chip.dataset.v;
+  renderDashUsageBars();
+  if (document.getElementById('dashSpecModal').classList.contains('open') && _dashSpecModalMode === 'usage') {
+    syncDashSpecPeriodChips(); renderDashSpecModalBody();
+  }
+});
+
+// ── 유형별 발주 누적 수량 (기간 필터 적용, 취소 제외 — 클릭 시 규격별 상세) ──
+function renderDashOrderTypeBars() {
+  const rows = orderRows.filter(r => r.stat !== '취소' && inPeriod(r.date, _dashOrderPeriod));
+  const byType = {};
+  rows.forEach(r => {
+    const key = r.type || '기타';
+    if (!byType[key]) byType[key] = { label: key, value: 0, unit: r.unit };
+    byType[key].value += stkQtyNum(r.qty);
+  });
+  const entries = Object.values(byType).sort((a, b) => b.value - a.value);
+  document.getElementById('dashOrderTypeBars').innerHTML = entries.length
+    ? typeBarsHtml(entries, 'openOrderTypeDetail')
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>해당 기간 발주 내역이 없습니다</div></div>';
+}
+document.getElementById('dashOrderPeriodChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('#dashOrderPeriodChips .chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on');
+  _dashOrderPeriod = chip.dataset.v;
+  renderDashOrderTypeBars();
+  if (document.getElementById('dashSpecModal').classList.contains('open') && _dashSpecModalMode === 'order') {
+    syncDashSpecPeriodChips(); renderDashSpecModalBody();
+  }
+});
+
+// ── 유형 → 규격별 상세 모달 (소요량 / 발주누적 공용) ──
+let _dashSpecModalMode = null; // 'usage' | 'order'
+let _dashSpecModalType = null;
+function openUsageTypeDetail(type) {
+  _dashSpecModalMode = 'usage'; _dashSpecModalType = type;
+  document.getElementById('dashSpecModalTitle').textContent = type + ' 소요량 (규격별)';
+  syncDashSpecPeriodChips();
+  renderDashSpecModalBody();
+  document.getElementById('dashSpecModal').classList.add('open');
+}
+function openOrderTypeDetail(type) {
+  _dashSpecModalMode = 'order'; _dashSpecModalType = type;
+  document.getElementById('dashSpecModalTitle').textContent = type + ' 발주 누적 (규격별)';
+  syncDashSpecPeriodChips();
+  renderDashSpecModalBody();
+  document.getElementById('dashSpecModal').classList.add('open');
+}
+function closeDashSpecModal() { document.getElementById('dashSpecModal').classList.remove('open'); }
+function syncDashSpecPeriodChips() {
+  const period = _dashSpecModalMode === 'usage' ? _dashUsagePeriod : _dashOrderPeriod;
+  document.querySelectorAll('#dashSpecPeriodChips .chip').forEach(c => c.classList.toggle('on', c.dataset.v === period));
+}
+document.getElementById('dashSpecPeriodChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  if (_dashSpecModalMode === 'usage') { _dashUsagePeriod = chip.dataset.v; renderDashUsageBars(); }
+  else if (_dashSpecModalMode === 'order') { _dashOrderPeriod = chip.dataset.v; renderDashOrderTypeBars(); }
+  document.querySelectorAll('#dashSpecPeriodChips .chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on');
+  renderDashSpecModalBody();
+});
+function renderDashSpecModalBody() {
+  const body = document.getElementById('dashSpecModalBody');
+  let rows, valueOf;
+  if (_dashSpecModalMode === 'usage') {
+    rows = usageRows.filter(u => (u.type || '기타') === _dashSpecModalType && inPeriod(u.date, _dashUsagePeriod));
+    valueOf = u => u.qty;
+  } else {
+    rows = orderRows.filter(r => r.stat !== '취소' && (r.type || '기타') === _dashSpecModalType && inPeriod(r.date, _dashOrderPeriod));
+    valueOf = r => stkQtyNum(r.qty);
+  }
+  const bySpec = {};
+  rows.forEach(r => {
+    const key = r.spec || '(규격 없음)';
+    if (!bySpec[key]) bySpec[key] = { label: key, value: 0, unit: r.unit };
+    bySpec[key].value += valueOf(r);
+  });
+  const entries = Object.values(bySpec).sort((a, b) => b.value - a.value);
+  body.innerHTML = entries.length ? barRowsHtml(entries, 30)
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>해당 기간 기록이 없습니다</div></div>';
+}
+
+// ═══ 대시보드 KPI 카드 상세 ═══
+function openDashKpiDetail(kind) {
+  let title = '', rows = [], html = '';
+  if (kind === 'ongoing') {
+    rows = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    title = '진행중 발주 (' + rows.length + '건)';
+    html = rows.map(orderCardHtml).join('');
+  } else if (kind === 'month') {
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    rows = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    title = '이번 달 발주 (' + rows.length + '건)';
+    html = rows.map(orderCardHtml).join('');
+  } else if (kind === 'stock') {
+    const list = remainStockList().sort((a, b) => a.total - b.total);
+    title = '남은 재고 자재 (' + list.length + '종)';
+    html = list.map(stockMiniCardHtml).join('');
+  } else if (kind === 'lead') {
+    rows = orderRows.filter(r => parseFloat(r.lead) > 0).sort((a, b) => parseFloat(b.lead) - parseFloat(a.lead));
+    title = '리드타임 상세 (' + rows.length + '건)';
+    html = rows.map(leadCardHtml).join('');
+  }
+  document.getElementById('dashDetailTitle').textContent = title;
+  document.getElementById('dashDetailBody').innerHTML = html || '<div class="empty"><i class="fa-solid fa-inbox"></i><div>데이터가 없습니다</div></div>';
+  document.getElementById('dashDetailModal').classList.add('open');
+}
+function closeDashDetail() { document.getElementById('dashDetailModal').classList.remove('open'); }
 
 // 대시보드의 재고 카드는 "전체 유형 · 남은 재고 · 검색어 없음" 기준으로 묶은 key를 쓴다.
 // 재고 탭 필터를 그 기본값으로 되돌려 다시 그린 뒤 열어야, 사용자가 재고 탭에서 다른
@@ -635,10 +843,21 @@ function openDashStockDetail(key) {
   openStockDetail(key);
 }
 
+let _orderSortDir = 'desc';
+function toggleOrderSort() {
+  _orderSortDir = _orderSortDir === 'desc' ? 'asc' : 'desc';
+  document.getElementById('orderSortIcon').className = 'fa-solid ' + (_orderSortDir === 'desc' ? 'fa-arrow-down-wide-short' : 'fa-arrow-up-wide-short');
+  renderOrders();
+}
+
 function renderOrders() {
   const list = document.getElementById('orderList');
   let rows = orderRows;
   if (_orderStatusFilter) rows = rows.filter(r => r.stat === _orderStatusFilter);
+  const dFrom = document.getElementById('orderDateFrom').value;
+  const dTo = document.getElementById('orderDateTo').value;
+  if (dFrom) rows = rows.filter(r => (r.date || '') >= dFrom);
+  if (dTo) rows = rows.filter(r => (r.date || '') <= dTo);
 
   // KPI (필터와 무관하게 전체 기준)
   document.getElementById('kpiOrdering').innerHTML = orderRows.filter(r => r.stat === '발주').length + '<small>건</small>';
@@ -653,7 +872,9 @@ function renderOrders() {
     list.innerHTML = '<div class="empty"><i class="fa-solid fa-inbox"></i><div>해당하는 발주 내역이 없습니다</div></div>';
     return;
   }
-  rows = [...rows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  rows = [...rows].sort((a, b) => _orderSortDir === 'desc'
+    ? (b.date || '').localeCompare(a.date || '')
+    : (a.date || '').localeCompare(b.date || ''));
 
   list.innerHTML = rows.map((r, i) => {
     const canReceive = r.stat === '발주' || r.stat === '부분입고';
@@ -740,6 +961,12 @@ document.getElementById('stockShowChips').addEventListener('click', e => {
 });
 
 let _stockGroups = {}; // key(코드|규격) → {code,name,spec,type,unit,batches} — 상세 모달이 참조
+let _stockSortDir = 'desc'; // 수량순 정렬 — 기본은 많이 남은 순
+function toggleStockSort() {
+  _stockSortDir = _stockSortDir === 'desc' ? 'asc' : 'desc';
+  document.getElementById('stockSortIcon').className = 'fa-solid ' + (_stockSortDir === 'desc' ? 'fa-arrow-down-wide-short' : 'fa-arrow-up-wide-short');
+  renderStock();
+}
 
 function renderStock() {
   const list = document.getElementById('stockList');
@@ -757,10 +984,12 @@ function renderStock() {
   }
 
   _stockGroups = groupStock(rows);
-  const groupArr = Object.entries(_stockGroups).sort((a, b) => a[1].name.localeCompare(b[1].name));
-
-  list.innerHTML = groupArr.map(([key, g]) => {
+  const groupArr = Object.entries(_stockGroups).map(([key, g]) => {
     const total = g.batches.filter(b => !isUsedUp(b.qty)).reduce((s, b) => s + stkQtyNum(b.qty), 0);
+    return [key, g, total];
+  }).sort((a, b) => _stockSortDir === 'desc' ? b[2] - a[2] : a[2] - b[2]);
+
+  list.innerHTML = groupArr.map(([key, g, total]) => {
     return `<div class="stk-card">
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
         <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
@@ -844,17 +1073,34 @@ async function submitUsage() {
 
 // ═══ 품목마스터 (조회 전용) ═══
 let _mstTypeFilter = '';
+let _mstThickFilter = '';
 document.getElementById('mstTypeChips').addEventListener('click', e => {
   const chip = e.target.closest('.chip'); if (!chip) return;
   document.querySelectorAll('#mstTypeChips .chip').forEach(c => c.classList.remove('on'));
   chip.classList.add('on'); _mstTypeFilter = chip.dataset.v; renderMaster();
 });
+document.getElementById('mstThickChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('#mstThickChips .chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on'); _mstThickFilter = chip.dataset.v; renderMaster();
+});
+
+// 실제 데이터에 있는 두께(T) 값만 뽑아 필터 칩을 만든다 — 고정된 목록이 아니라 품목마스터에
+// 실제로 쓰인 값 기준이라, 두께 값이 늘어나거나 바뀌어도 코드 수정 없이 그대로 반영된다.
+function renderMstThickChips() {
+  const set = new Set(masterRows.map(r => (r.thick || '').toString().trim()).filter(Boolean));
+  const thicks = Array.from(set).sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0));
+  const chips = ['<span class="chip' + (!_mstThickFilter ? ' on' : '') + '" data-v="">전체 두께</span>']
+    .concat(thicks.map(t => `<span class="chip${_mstThickFilter === t ? ' on' : ''}" data-v="${t}">${t}</span>`));
+  document.getElementById('mstThickChips').innerHTML = chips.join('');
+}
 
 function renderMaster() {
   const list = document.getElementById('mstList');
   const q = (document.getElementById('mstSearch').value || '').trim().toLowerCase();
   let rows = masterRows;
   if (_mstTypeFilter) rows = rows.filter(r => r.type === _mstTypeFilter);
+  if (_mstThickFilter) rows = rows.filter(r => (r.thick || '').toString().trim() === _mstThickFilter);
   if (q) rows = rows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q));
 
   if (!rows.length) {
@@ -870,31 +1116,6 @@ function renderMaster() {
         <div class="mst-name">${r.name} <span class="spec">${r.spec}</span></div>
         <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
         <div class="mst-tags"><span class="tag">${r.thick || '—'}</span><span class="tag">${r.unit || '—'}</span><span class="tag">${r.site || '—'}</span></div>
-      </div>
-    </div>`).join('');
-}
-
-// ═══ 검색 (발주이력 전체) ═══
-function renderGlobalSearch() {
-  const list = document.getElementById('globalSearchList');
-  const q = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
-  if (!q) { list.innerHTML = '<div class="empty"><i class="fa-solid fa-magnifying-glass"></i><div>검색어를 입력하세요</div></div>'; return; }
-  const rows = orderRows.filter(r => (r.name + ' ' + r.code + ' ' + r.spec).toLowerCase().includes(q))
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  if (!rows.length) { list.innerHTML = '<div class="empty"><i class="fa-solid fa-magnifying-glass"></i><div>검색 결과가 없습니다</div></div>'; return; }
-  list.innerHTML = rows.map(r => `
-    <div class="card">
-      <div class="card-top">
-        <div>
-          <div class="card-name">${r.name} <span class="spec">${r.spec}</span></div>
-          <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
-        </div>
-        <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
-      </div>
-      <div class="card-tags"><span class="tag">${r.site || '—'}</span><span class="tag">${r.type || '—'}</span></div>
-      <div class="card-bottom" onclick="openOrderDetail('${r.ordNo}')" style="cursor:pointer;">
-        <span>${r.date || '—'} 발주</span>
-        <span class="card-qty">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</span>
       </div>
     </div>`).join('');
 }
@@ -952,6 +1173,8 @@ function _showExitBackToast() {
 }
 let _backExitArmed = false, _backExitTimer = null;
 function handleBackPress() {
+  if (document.getElementById('dashSpecModal').classList.contains('open')) { closeDashSpecModal(); return; }
+  if (document.getElementById('dashDetailModal').classList.contains('open')) { closeDashDetail(); return; }
   if (document.getElementById('orderDetailModal').classList.contains('open')) { closeOrderDetail(); return; }
   if (document.getElementById('stockDetailModal').classList.contains('open')) { closeStockDetail(); return; }
   if (_backExitArmed) { window.location.href = './index.html'; return; }
