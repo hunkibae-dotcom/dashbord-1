@@ -136,7 +136,12 @@
   .date-panel input{flex:1;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:12.5px;color:var(--text);font-family:inherit;}
   .date-panel button{flex-shrink:0;background:linear-gradient(135deg,var(--amber2),var(--amber));color:#1a0f00;border:none;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;}
 
-  .stk-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;overflow:hidden;box-shadow:var(--shadow);}
+  /* 예전 아코디언(펼침) 구조일 때 안에서 펼쳐지는 내용을 둥근 모서리로 잘라내려고
+     overflow:hidden을 뒀는데, 모달 방식으로 바꾸면서 펼침 구조 자체가 없어져 더 이상
+     필요 없다 — border-radius + overflow:hidden + innerHTML 동적 삽입 조합이 일부
+     안드로이드 웹뷰에서 "박스는 그려지는데 안 텍스트는 그려지다 마는" 리페인트 버그를
+     유발하는 걸로 알려져 있어서, 다른 카드들(.ord/.mst-row)처럼 아예 뺐다. */
+  .stk-card{background:var(--panel);border:1px solid var(--border);border-radius:15px;box-shadow:var(--shadow);}
   .stk-head{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;}
   .stk-ico{width:38px;height:38px;border-radius:11px;background:var(--icon-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-sub);font-size:15px;}
   .stk-mid{flex:1;min-width:0;}
@@ -660,6 +665,8 @@ function renderStock() {
       </div>
     </div>`;
   }).join('');
+  void list.offsetHeight; // 강제 리플로우 — 일부 안드로이드 웹뷰가 innerHTML 대량 갱신 후
+                           // 박스는 그려도 텍스트를 안 그리는 경우가 있어 한 번 더 밀어준다.
   } catch (e) {
     console.error('renderStock error:', e);
     list.innerHTML = '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><div>재고 목록을 그리지 못했습니다: ' + e.message + '</div></div>';
