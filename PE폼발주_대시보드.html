@@ -199,6 +199,19 @@
   .toast i{color:var(--ok);}
 
   .center-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:60px 0;color:var(--label);font-size:13px;font-weight:600;}
+
+  /* ── 대시보드 ── */
+  .dash-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:8px;padding-right:2px;}
+  .sec-title{font-size:12.5px;font-weight:800;color:var(--text-sub);flex-shrink:0;}
+  .bar-panel{background:var(--panel);border:1px solid var(--border);border-radius:15px;padding:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px;}
+  .bar-row{display:flex;flex-direction:column;gap:5px;}
+  .bar-row-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .bar-row-top .bl{font-size:12.5px;font-weight:700;}
+  .bar-row-top .bl .spec{color:var(--text-sub);font-weight:600;font-family:'Inter',monospace;font-size:11px;}
+  .bar-row-top .bv{font-size:12px;font-weight:800;font-family:'Inter',monospace;color:var(--amber);flex-shrink:0;}
+  .bar-track{height:7px;border-radius:6px;background:var(--icon-bg);overflow:hidden;}
+  .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
+  .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
 </style>
 </head>
 <body>
@@ -238,10 +251,24 @@
         <button class="qa-btn muted" style="flex:1;justify-content:center;padding:10px 4px;font-size:11.5px;" onclick="switchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i> 재고 현황</button>
         <button class="qa-btn muted" style="flex:1;justify-content:center;padding:10px 4px;font-size:11.5px;" onclick="switchTab('master')"><i class="fa-solid fa-tag"></i> 품목마스터</button>
       </div>
-      <div style="font-size:12.5px;font-weight:800;color:var(--text-sub);flex-shrink:0;">최근 발주</div>
-      <div class="list" id="dashRecentOrders" style="flex:1;"></div>
-      <div style="font-size:12.5px;font-weight:800;color:var(--text-sub);flex-shrink:0;">재고 적게 남은 자재</div>
-      <div class="list" id="dashLowStock" style="flex:1;"></div>
+      <div class="dash-scroll">
+        <div>
+          <div class="sec-title" style="margin-bottom:8px;">유형/규격별 소요량</div>
+          <div class="bar-panel" id="dashUsageBars"></div>
+        </div>
+        <div>
+          <div class="sec-title" style="margin-bottom:8px;">유형별 발주 누적 수량</div>
+          <div class="bar-panel" id="dashOrderTypeBars"></div>
+        </div>
+        <div>
+          <div class="sec-title" style="margin-bottom:8px;">발주중인 자재</div>
+          <div style="display:flex;flex-direction:column;gap:9px;" id="dashOngoingOrders"></div>
+        </div>
+        <div>
+          <div class="sec-title" style="margin-bottom:8px;">재고 적게 남은 자재</div>
+          <div style="display:flex;flex-direction:column;gap:9px;" id="dashLowStock"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ══ 발주이력 ══ -->
@@ -360,10 +387,12 @@ const GAS_URL_PE = localStorage.getItem('sheet_pub_url_pe') ||
 const SHEET_LOG = 'PE폼 발주이력';
 const SHEET_STK = 'PE폼 재고';
 const SHEET_MST = 'PE폼 품목마스터';
+const SHEET_USE = 'PE폼 소요';
 
 let orderRows = [];   // {ordNo,date,code,name,spec,qty,unit,type,stat,in,user,site,wh,note,lead}
 let stockRows = [];   // {row,date,code,name,spec,qty,unit,type,site,note}
 let masterRows = [];  // {code,name,spec,thick,unit,type,site,note}
+let usageRows = [];   // {date,name,spec,qty,type} — 대시보드 소요량 집계용
 
 function fi(headers, ...aliases) {
   for (const a of aliases) {
@@ -427,6 +456,18 @@ async function loadAll() {
       }));
     } else masterRows = [];
 
+    // ── 소요 (PE폼 소요 시트 — 대시보드 집계 전용) ──
+    const useTable = json[SHEET_USE] || [];
+    if (useTable.length > 1) {
+      const h = useTable[0];
+      const iDate = fi(h, '일자'), iName = fi(h, '자재명'), iSpec = fi(h, '규격상세'),
+            iQty = fi(h, '수량'), iUnit = fi(h, '단위'), iType = fi(h, '유형'), iUse = fi(h, '사용처');
+      usageRows = useTable.slice(1).filter(r => r[iName]).map(r => ({
+        date: r[iDate] || '', name: r[iName] || '', spec: r[iSpec] || '',
+        qty: parseFloat(r[iQty]) || 0, unit: r[iUnit] || '', type: r[iType] || '', use: r[iUse] || ''
+      }));
+    } else usageRows = [];
+
     renderOrders(); renderStock(); renderMaster(); renderDashboard();
   } catch (e) {
     document.getElementById('orderList').innerHTML =
@@ -445,6 +486,19 @@ function isUsedUp(qty) {
   return String(qty == null ? '' : qty).trim() === '소진';
 }
 function stkQtyNum(qty) { const n = parseFloat(qty); return isNaN(n) ? 0 : n; }
+
+// 자재코드+규격 기준으로 재고 행을 묶는다 (코드가 빈 행도 있어 코드 없으면 자재명으로 대신 묶음).
+// 재고 탭(renderStock)과 대시보드(renderDashboard)가 같은 묶음 규칙을 써야 대시보드에서
+// 만든 key로 재고 탭 상세 모달을 그대로 열 수 있다.
+function groupStock(rows) {
+  const g = {};
+  rows.forEach(r => {
+    const key = (r.code || r.name) + '|' + r.spec;
+    if (!g[key]) g[key] = { code: r.code, name: r.name, spec: r.spec, type: r.type, unit: r.unit, batches: [] };
+    g[key].batches.push(r);
+  });
+  return g;
+}
 
 function copyCode(el, code) {
   (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(code) : Promise.reject())
@@ -486,9 +540,23 @@ function pillClass(stat) {
 }
 
 // ═══ 대시보드 (통합 요약) ═══
+function barRowsHtml(entries, maxN) {
+  // entries: [{label, sub, value, unit}], value 내림차순으로 이미 정렬돼 들어온다고 가정
+  const top = entries.slice(0, maxN);
+  const max = Math.max(1, ...top.map(e => e.value));
+  return top.map(e => `
+    <div class="bar-row">
+      <div class="bar-row-top">
+        <span class="bl">${e.label}${e.sub ? ` <span class="spec">${e.sub}</span>` : ''}</span>
+        <span class="bv">${e.value.toLocaleString()} ${e.unit || ''}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, e.value / max * 100)}%;"></div></div>
+    </div>`).join('');
+}
+
 function renderDashboard() {
-  const ongoing = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고').length;
-  document.getElementById('dkOngoing').innerHTML = ongoing + '<small>건</small>';
+  const ongoingOrders = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고');
+  document.getElementById('dkOngoing').innerHTML = ongoingOrders.length + '<small>건</small>';
   const thisMonth = new Date().toISOString().slice(0, 7);
   document.getElementById('dkMonth').innerHTML = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '<small>건</small>';
   const leads = orderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n));
@@ -496,29 +564,75 @@ function renderDashboard() {
   document.getElementById('dkLead').innerHTML = avgLead + (leads.length ? '<small>일</small>' : '');
 
   // 재고를 자재(코드+규격) 기준으로 묶어서(소진 제외) 남은 총량 계산 — 재고 탭의 필터/검색과 무관하게 전체 기준
-  const groups = {};
-  stockRows.filter(r => !isUsedUp(r.qty)).forEach(r => {
-    const key = (r.code || r.name) + '|' + r.spec;
-    if (!groups[key]) groups[key] = { code: r.code, name: r.name, spec: r.spec, unit: r.unit, total: 0 };
-    groups[key].total += stkQtyNum(r.qty);
-  });
-  document.getElementById('dkStockKinds').innerHTML = Object.keys(groups).length + '<small>종</small>';
+  const remainGroups = groupStock(stockRows.filter(r => !isUsedUp(r.qty)));
+  const remainList = Object.entries(remainGroups).map(([key, g]) => ({
+    key, name: g.name, spec: g.spec, type: g.type, unit: g.unit,
+    total: g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0)
+  }));
+  document.getElementById('dkStockKinds').innerHTML = remainList.length + '<small>종</small>';
 
-  const recent = [...orderRows].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
-  document.getElementById('dashRecentOrders').innerHTML = recent.length ? recent.map(r => `
-    <div class="card" onclick="switchTab('orders')" style="cursor:pointer;padding:11px 13px;">
+  // ── 유형/규격별 소요량 (PE폼 소요 시트 집계) ──
+  const useGroups = {};
+  usageRows.forEach(u => {
+    const key = (u.type || '기타') + '|' + u.spec;
+    if (!useGroups[key]) useGroups[key] = { label: u.type || '기타', sub: u.spec, value: 0, unit: u.unit };
+    useGroups[key].value += u.qty;
+  });
+  const useEntries = Object.values(useGroups).sort((a, b) => b.value - a.value);
+  document.getElementById('dashUsageBars').innerHTML = useEntries.length
+    ? barRowsHtml(useEntries, 6)
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>소요 기록이 없습니다</div></div>';
+
+  // ── 유형별 발주 누적 수량 (취소 제외 — 실제로 나간/나갈 물량 기준) ──
+  const typeGroups = {};
+  orderRows.filter(r => r.stat !== '취소').forEach(r => {
+    const key = r.type || '기타';
+    if (!typeGroups[key]) typeGroups[key] = { label: key, sub: '', value: 0, unit: r.unit };
+    typeGroups[key].value += stkQtyNum(r.qty);
+  });
+  const typeEntries = Object.values(typeGroups).sort((a, b) => b.value - a.value);
+  document.getElementById('dashOrderTypeBars').innerHTML = typeEntries.length
+    ? barRowsHtml(typeEntries, 6)
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>발주 내역이 없습니다</div></div>';
+
+  // ── 발주중인 자재 (발주/부분입고 상태 — 클릭 시 발주 상세) ──
+  const ongoingSorted = [...ongoingOrders].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 6);
+  document.getElementById('dashOngoingOrders').innerHTML = ongoingSorted.length ? ongoingSorted.map(r => `
+    <div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
       <div class="card-top" style="margin-bottom:0;">
-        <div class="card-name" style="font-size:13px;">${r.name} <span class="spec">${r.spec}</span></div>
+        <div>
+          <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
+          <span class="code-copy" onclick="event.stopPropagation();copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
+        </div>
         <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
       </div>
-    </div>`).join('') : '<div class="empty"><i class="fa-solid fa-inbox"></i><div>발주 내역이 없습니다</div></div>';
+    </div>`).join('') : '<div class="empty"><i class="fa-solid fa-inbox"></i><div>발주중인 자재가 없습니다</div></div>';
 
-  const low = Object.values(groups).sort((a, b) => a.total - b.total).slice(0, 5);
+  // ── 재고 적게 남은 자재 (클릭 시 재고 상세 — 재고 탭 필터를 기본값으로 맞춘 뒤 연다) ──
+  const low = [...remainList].sort((a, b) => a.total - b.total).slice(0, 6);
   document.getElementById('dashLowStock').innerHTML = low.length ? low.map(g => `
-    <div class="card" onclick="switchTab('stock')" style="cursor:pointer;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-      <div class="card-name" style="font-size:13px;min-width:0;">${g.name} <span class="spec">${g.spec}</span></div>
-      <span class="card-qty">${g.total.toLocaleString()} ${g.unit}</span>
+    <div class="stk-card">
+      <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
+        <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+        <div class="stk-mid">
+          <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+        </div>
+        <div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
+        <i class="fa-solid fa-chevron-right stk-chev"></i>
+      </div>
     </div>`).join('') : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
+}
+
+// 대시보드의 재고 카드는 "전체 유형 · 남은 재고 · 검색어 없음" 기준으로 묶은 key를 쓴다.
+// 재고 탭 필터를 그 기본값으로 되돌려 다시 그린 뒤 열어야, 사용자가 재고 탭에서 다른
+// 필터를 걸어둔 상태여도 _stockGroups에 해당 key가 반드시 존재한다.
+function openDashStockDetail(key) {
+  document.getElementById('stockSearch').value = '';
+  _stockTypeFilter = ''; _stockShowFilter = 'remain';
+  document.querySelectorAll('#stockTypeChips .chip').forEach(c => c.classList.toggle('on', c.dataset.v === ''));
+  document.querySelectorAll('#stockShowChips .chip').forEach(c => c.classList.toggle('on', c.dataset.v === 'remain'));
+  renderStock();
+  openStockDetail(key);
 }
 
 function renderOrders() {
@@ -642,13 +756,7 @@ function renderStock() {
     return;
   }
 
-  // 자재코드+규격 기준으로 묶기 (코드가 빈 행도 있어 코드 없으면 자재명으로 대신 묶음)
-  _stockGroups = {};
-  rows.forEach(r => {
-    const key = (r.code || r.name) + '|' + r.spec;
-    if (!_stockGroups[key]) _stockGroups[key] = { code: r.code, name: r.name, spec: r.spec, type: r.type, unit: r.unit, batches: [] };
-    _stockGroups[key].batches.push(r);
-  });
+  _stockGroups = groupStock(rows);
   const groupArr = Object.entries(_stockGroups).sort((a, b) => a[1].name.localeCompare(b[1].name));
 
   list.innerHTML = groupArr.map(([key, g]) => {
