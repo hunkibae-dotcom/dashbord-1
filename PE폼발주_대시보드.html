@@ -207,10 +207,15 @@
       </div>
       <div class="hdr-t" id="hdrTitle">PE폼 발주</div>
     </div>
-    <label class="theme-toggle">
-      <input type="checkbox" id="themeCheck" onchange="toggleTheme()">
-      <span class="toggle-slider"></span>
-    </label>
+    <div style="display:flex;align-items:center;gap:10px;justify-self:end;">
+      <button id="syncBtn" onclick="manualRefresh()" title="새로고침" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;">
+        <i class="fa-solid fa-arrows-rotate" id="syncIcon"></i>
+      </button>
+      <label class="theme-toggle">
+        <input type="checkbox" id="themeCheck" onchange="toggleTheme()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
   </header>
 
   <div id="tabs">
@@ -395,7 +400,9 @@ async function loadAll() {
             iType = fi(h, '유형'), iSite = fi(h, '사업장'), iNote = fi(h, '비고');
       // qty는 숫자 그대로 두거나(파싱은 표시할 때) 문자열 "소진"일 수 있어 원본 값을 그대로 들고 있는다 —
       // isUsedUp()이 실제 시트의 판정 규칙(숫자 0 이하 또는 "소진")과 똑같이 나눈다.
-      stockRows = stkTable.slice(1).filter(r => r[iCode]).map(r => ({
+      // 자재 코드가 비어있는 실제 재고 행이 있어서(자재명은 있는데 코드만 빈 경우), 코드만
+      // 보고 거르면 그 행이 통째로 사라진다 — 자재명이라도 있으면 살아있는 행으로 본다.
+      stockRows = stkTable.slice(1).filter(r => r[iCode] || r[iName]).map(r => ({
         row: r[0], date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
         spec: r[iSpec] || '', qty: r[iQty], unit: r[iUnit] || '', type: r[iType] || '',
         site: r[iSite] || '', note: (r[iNote] || '').toString().trim()
@@ -486,7 +493,7 @@ function renderDashboard() {
   // 재고를 자재(코드+규격) 기준으로 묶어서(소진 제외) 남은 총량 계산 — 재고 탭의 필터/검색과 무관하게 전체 기준
   const groups = {};
   stockRows.filter(r => !isUsedUp(r.qty)).forEach(r => {
-    const key = r.code + '|' + r.spec;
+    const key = (r.code || r.name) + '|' + r.spec;
     if (!groups[key]) groups[key] = { code: r.code, name: r.name, spec: r.spec, unit: r.unit, total: 0 };
     groups[key].total += stkQtyNum(r.qty);
   });
@@ -617,6 +624,7 @@ let _stockGroups = {}; // key(코드|규격) → {code,name,spec,type,unit,batch
 
 function renderStock() {
   const list = document.getElementById('stockList');
+  try {
   const q = (document.getElementById('stockSearch').value || '').trim().toLowerCase();
   let rows = stockRows;
   if (_stockTypeFilter) rows = rows.filter(r => r.type === _stockTypeFilter);
@@ -629,10 +637,10 @@ function renderStock() {
     return;
   }
 
-  // 자재코드+규격 기준으로 묶기
+  // 자재코드+규격 기준으로 묶기 (코드가 빈 행도 있어 코드 없으면 자재명으로 대신 묶음)
   _stockGroups = {};
   rows.forEach(r => {
-    const key = r.code + '|' + r.spec;
+    const key = (r.code || r.name) + '|' + r.spec;
     if (!_stockGroups[key]) _stockGroups[key] = { code: r.code, name: r.name, spec: r.spec, type: r.type, unit: r.unit, batches: [] };
     _stockGroups[key].batches.push(r);
   });
@@ -644,14 +652,18 @@ function renderStock() {
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
         <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
         <div class="stk-mid">
-          <div class="stk-name">${g.name} <span class="spec">${g.spec}</span></div>
-          <div class="stk-batches">${g.code} · 배치 ${g.batches.length}건</div>
+          <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+          <div class="stk-batches">${g.code || '코드 없음'} · 배치 ${g.batches.length}건</div>
         </div>
         <div class="stk-total"><b>${total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
         <i class="fa-solid fa-chevron-right stk-chev"></i>
       </div>
     </div>`;
   }).join('');
+  } catch (e) {
+    console.error('renderStock error:', e);
+    list.innerHTML = '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><div>재고 목록을 그리지 못했습니다: ' + e.message + '</div></div>';
+  }
 }
 
 function openStockDetail(key) {
@@ -786,6 +798,22 @@ function applyTheme(dark) {
   localStorage.setItem('pe_theme', dark ? 'dark' : 'light');
 }
 function toggleTheme() { applyTheme(document.getElementById('themeCheck').checked); }
+
+// ── 수동 새로고침 ──
+let _refreshing = false;
+async function manualRefresh() {
+  if (_refreshing) return;
+  _refreshing = true;
+  const icon = document.getElementById('syncIcon');
+  icon.classList.add('fa-spin');
+  try {
+    await loadAll();
+    showToast('새로고침 완료');
+  } finally {
+    icon.classList.remove('fa-spin');
+    _refreshing = false;
+  }
+}
 (function () {
   const saved = localStorage.getItem('pe_theme');
   const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
