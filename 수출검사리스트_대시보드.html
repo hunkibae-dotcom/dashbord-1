@@ -524,19 +524,19 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           </div>
         </div>
 
-        <!-- 누적 검사완료 -->
+        <!-- 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) -->
         <div class="relative group">
           <div class="card p-4 cursor-default">
             <div class="flex items-center gap-2 mb-3">
-              <span class="kpi-icon bg-slate-100 shrink-0"><i class="fa-solid fa-box-archive text-slate-500 text-[15px]"></i></span>
-              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">누적 검사완료</span>
+              <span class="kpi-icon bg-emerald-50 shrink-0"><i class="fa-solid fa-circle-check text-emerald-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">생산완료</span>
             </div>
-            <div class="text-[25px] font-extrabold text-slate-900" id="kpiArchive">—</div>
-            <div class="text-[11.5px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100" id="kpiArchiveBreak">충주1 — · 충주2 —</div>
+            <div class="text-[25px] font-extrabold text-slate-900" id="kpiProdDone">—</div>
+            <div class="text-[11.5px] text-slate-400 mt-1.5 pt-1.5 border-t border-slate-100" id="kpiProdDoneBreak">충주1 — · 충주2 —</div>
           </div>
           <div class="absolute right-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
-            <div id="kpiArchiveDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <div id="kpiProdDoneDetail" class="space-y-0.5"></div>
+            <button onclick="viewDetailInTable('생산완료')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
@@ -1192,15 +1192,23 @@ async function loadData() {
     archiveTotals = cached.totals;
     archiveRows = cached.rows;
     applyMiOverrides(archiveRows);
-    renderArchiveKPI();
     renderQualityCharts();
   }
 
   // 진행중 리스트(작고 빠름)와 누적 이력(크고 느림)을 서로 기다리지 않고 각자 도착하는 대로 반영
   const activePromise = Promise.all(
-    FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
+    FACTORIES.map(f => Promise.all([
+      fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }),
+      fetchYellowKeys(f.key).catch(e => { loadErrors.push(`${f.label} 생산완료 표시: ${e.message}`); return new Set(); })
+    ]))
   ).then(results => {
-    allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
+    allData = [];
+    results.forEach(([rows, yellowKeys]) => {
+      rows.map(r => r.source ? r : { ...r, source: 'active' }).forEach(item => {
+        if ((item.검사 === '미검사' || item.검사 === '재투입') && yellowKeys.has(_miKey(item))) item.공정완료 = true;
+        allData.push(item);
+      });
+    });
     applyMiOverrides(allData);
     applyFilters();
     renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
@@ -1213,7 +1221,6 @@ async function loadData() {
     archiveRows = archives.filter(Boolean).flatMap(t => t.items).map(r => r.source ? r : { ...r, source: 'archive' });
     applyMiOverrides(archiveRows);
     _saveArchiveCache(archiveTotals, archiveRows);
-    renderArchiveKPI();
     renderQualityCharts();
     applyFilters(); // 이력 데이터가 검색결과 카운트에도 반영되므로 갱신 후 다시 그림
   });
@@ -1250,6 +1257,19 @@ async function fetchFactory(f) {
   const jsonStr = text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1);
   const data = JSON.parse(jsonStr);
   return parseRows(data.table.rows, f);
+}
+
+// gviz(공개 CSV/JSON) 조회는 셀 배경색을 안 주기 때문에, "생산완료"(검사 셀이 노란색으로
+// 표시된, 즉 공정진행률 95%↑) 판정만은 doGet(action=getYellowKeys)을 따로 불러와야 한다.
+// 반환된 키(건명|단품코드|색상|수량, _miKey와 동일 형식)를 Set으로 돌려주고, 실패하면
+// 빈 Set을 던져서(에러 메시지와 함께 호출부 catch에서) 이 카드만 0건으로 보이게 한다.
+async function fetchYellowKeys(factoryKey) {
+  const url = _gasUrlForFactory(factoryKey);
+  if (!url) return new Set();
+  const res = await fetch(url + '?action=getYellowKeys', { signal: AbortSignal.timeout(15000) });
+  const json = await res.json();
+  if (json && json.status === 'success' && Array.isArray(json.keys)) return new Set(json.keys);
+  throw new Error(json && json.message ? json.message : '조회 실패');
 }
 
 // 완료 이력 시트: 상단 헤더 행(O:TOTAL CORD, P:TOTAL)의 집계값 + 개별 출고 이력 행을 함께 읽어온다
@@ -1418,7 +1438,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사' ? '검사완료 ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '생산완료 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
@@ -1482,6 +1502,9 @@ function applyFilters() {
       // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
       // 데스크탑 생산중 카드(viewDetailInTable)에도 똑같이 추가함.
       else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+      // '생산완료'도 '생산중'과 마찬가지로 실제 검사 상태값이 아니라 화면 전용 파생
+      // 카테고리(미검사/재투입 중 검사 셀이 노란색인 것)라 같은 이유로 별도 분기가 필요하다.
+      else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
       else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
@@ -1639,6 +1662,8 @@ function computeStats(items) {
   const undone = items.filter(d => d.검사 === '미검사').length;
   const waitInspect = undone + reinspectWaiting;
   const preinput = items.filter(d => d.검사 === '미투입').length;
+  // 생산완료: 미검사/재투입인데 시트에서 검사 셀이 노란색(공정진행률 95%↑)으로 표시된 항목
+  const prodDone = items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료).length;
   // 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
   const packedToday = items.filter(d => {
     if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
@@ -1646,7 +1671,7 @@ function computeStats(items) {
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
   }).length;
-  return { total, done, undone, yangji, reinspect, reinspectWaiting, waitInspect, preinput, packedToday };
+  return { total, done, undone, yangji, reinspect, reinspectWaiting, waitInspect, preinput, packedToday, prodDone };
 }
 
 // KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
@@ -1715,18 +1740,15 @@ function renderKPIs(fullData) {
   document.getElementById('kpiProdCj1').textContent = (cj1.undone + cj1.reinspect).toLocaleString();
   document.getElementById('kpiProdCj2').textContent = (cj2.undone + cj2.reinspect).toLocaleString();
   document.getElementById('kpiProdDetail').innerHTML = renderDetailList(scopedPool(cj1Producing, cj2Producing), '납기일');
-}
 
-// ===== ARCHIVE KPI (누적 이력) =====
-function renderArchiveKPI() {
-  const cj1 = archiveTotals.cj1, cj2 = archiveTotals.cj2;
-  const c1 = cj1 ? cj1.cord : 0;
-  const c2 = cj2 ? cj2.cord : 0;
-  document.getElementById('kpiArchive').textContent = (cj1 && cj2) ? (c1 + c2).toLocaleString() : '오류';
-  document.getElementById('kpiArchiveBreak').textContent = `충주1 ${c1.toLocaleString()}건 · 충주2 ${c2.toLocaleString()}건`;
-  const cj1Archive = archiveRows.filter(d => d.공장 === 'cj1');
-  const cj2Archive = archiveRows.filter(d => d.공장 === 'cj2');
-  document.getElementById('kpiArchiveDetail').innerHTML = renderDetailList(scopedPool(cj1Archive, cj2Archive), '포장일');
+  // 5) 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) — 예전엔 이 카드 자리에
+  // "누적 검사완료"(별도 출고 이력 시트 합계, archiveTotals)를 보여줬는데, 실시간 생산 현황과
+  // 무관한 수치라 요청에 따라 실시간 데이터(allData) 기준 생산완료 건수로 바꿨다.
+  const cj1Done = cj1Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료);
+  const cj2Done = cj2Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료);
+  document.getElementById('kpiProdDone').textContent = (cj1.prodDone + cj2.prodDone).toLocaleString();
+  document.getElementById('kpiProdDoneBreak').textContent = `충주1 ${cj1.prodDone.toLocaleString()}건 · 충주2 ${cj2.prodDone.toLocaleString()}건`;
+  document.getElementById('kpiProdDoneDetail').innerHTML = renderDetailList(scopedPool(cj1Done, cj2Done), '납기일');
 }
 
 // KPI 카드 팝오버의 "상세보기" 버튼: 현재 선택된 공장(currentView) 기준으로 검사상태만 맞춰 테이블로 스크롤
@@ -3009,8 +3031,6 @@ function renderMobileKPIs() {
   const cj1 = allData.filter(d => d.공장 === 'cj1');
   const cj2 = allData.filter(d => d.공장 === 'cj2');
   const s1 = computeStats(cj1), s2 = computeStats(cj2);
-  const arc1 = archiveTotals.cj1 ? archiveTotals.cj1.cord : 0;
-  const arc2 = archiveTotals.cj2 ? archiveTotals.cj2.cord : 0;
   setMTxt('mKpiPkd1', s1.packedToday);
   setMTxt('mKpiPkd2', s2.packedToday);
   setMTxt('mKpiWt1', s1.waitInspect);
@@ -3019,8 +3039,8 @@ function renderMobileKPIs() {
   setMTxt('mKpiPre2', s2.preinput.toLocaleString());
   setMTxt('mKpiPrd1', (s1.undone + s1.reinspect).toLocaleString());
   setMTxt('mKpiPrd2', (s2.undone + s2.reinspect).toLocaleString());
-  setMTxt('mKpiArc1', arc1.toLocaleString());
-  setMTxt('mKpiArc2', arc2.toLocaleString());
+  setMTxt('mKpiDone1', s1.prodDone.toLocaleString());
+  setMTxt('mKpiDone2', s2.prodDone.toLocaleString());
 }
 
 // ── KPI 상세 바텀시트 상태 ──────────────────────────────────────
@@ -3653,6 +3673,7 @@ function renderMobileList() {
       if (dd === null || dd > 0) return false;
     }
     else if (mStatus === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+    else if (mStatus === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
     else if (mStatus === '미투입') { if (d.source === 'archive' || d.검사 !== '미투입') return false; }
     else if (mStatus) { if (d.검사 !== mStatus) return false; }
     if (search && !(d.건명||'').toLowerCase().includes(search) && !(d.단품코드||'').toLowerCase().includes(search) && !(d.단품명칭||'').toLowerCase().includes(search)) return false;
@@ -4390,7 +4411,7 @@ function onNativeScanResult(raw) {
 
       </div>
 
-      <!-- KPI 하단 3열 (투입전 · 생산중 · 누적완료) -->
+      <!-- KPI 하단 3열 (투입전 · 생산중 · 생산완료) -->
       <div class="grid grid-cols-3 gap-3 mb-6">
 
         <!-- 투입전 -->
@@ -4435,22 +4456,22 @@ function onNativeScanResult(raw) {
           </div>
         </div>
 
-        <!-- 누적 완료 -->
-        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('출고완료');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <!-- 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) -->
+        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('생산완료');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-1.5 mb-2.5">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 m-kpi-v" style="background:#EDE9FE;">
-              <i class="fa-solid fa-box-archive text-violet-500 text-[10px]"></i>
+            <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 m-kpi-g" style="background:#DCFCE7;">
+              <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i>
             </span>
-            <span class="text-[10px] font-bold text-slate-400 truncate">누적완료</span>
+            <span class="text-[10px] font-bold text-slate-400 truncate">생산완료</span>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center" data-mf="cj1">
-              <div class="text-[17px] font-extrabold text-violet-500 leading-none" id="mKpiArc1">—</div>
+              <div class="text-[17px] font-extrabold text-emerald-500 leading-none" id="mKpiDone1">—</div>
               <div class="text-[9px] font-bold text-slate-400 mt-1">충1</div>
             </div>
             <div class="w-px bg-slate-100" style="height:20px;margin-bottom:1px;" data-mf-divider></div>
             <div class="text-center" data-mf="cj2">
-              <div class="text-[17px] font-extrabold text-violet-500 leading-none" id="mKpiArc2">—</div>
+              <div class="text-[17px] font-extrabold text-emerald-500 leading-none" id="mKpiDone2">—</div>
               <div class="text-[9px] font-bold text-slate-400 mt-1">충2</div>
             </div>
           </div>
