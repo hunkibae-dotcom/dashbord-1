@@ -399,6 +399,13 @@
       <div class="modal-title" id="dashDetailTitle">상세</div>
       <button class="modal-close" onclick="closeDashDetail()"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <div class="chip-row" id="dashDetailTypeChips" style="display:none;">
+      <span class="chip on" data-v="">전체</span>
+      <span class="chip" data-v="일자형">일자형</span>
+      <span class="chip" data-v="코너형">코너형</span>
+      <span class="chip" data-v="패드형">패드형</span>
+      <span class="chip" data-v="롤형">롤형</span>
+    </div>
     <div class="modal-body" id="dashDetailBody"></div>
   </div>
 </div>
@@ -523,7 +530,9 @@ async function loadAll() {
 }
 
 // ── 유형별 아이콘 ──
-const TYPE_ICON = { '일자형': 'fa-bars', '코너형': 'fa-vector-square', '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
+// 일자형은 fa-bars(메뉴 아이콘처럼 보여 오클릭 유발)였던 것을 얇고 긴 사각형으로,
+// 코너형은 모서리 보강재 실제 모양(ㄱ자)과 닮은 크롭 마커 아이콘으로 바꿨다.
+const TYPE_ICON = { '일자형': 'fa-rectangle-wide', '코너형': 'fa-crop-simple', '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
 function typeIcon(t) { return TYPE_ICON[t] || 'fa-cube'; }
 
 // 시트의 _peStkIsUsedUp()과 동일한 판정 — 숫자면 0 이하, 문자열이면 정확히 "소진"일 때만 소진.
@@ -640,6 +649,8 @@ function remainStockList() {
   }));
 }
 
+// 대시보드 본 화면의 "발주중인 자재" 목록용 — 클릭하면 발주 상세를 연다(모달 안이 아니라
+// 대시보드 화면에 바로 떠 있는 목록이라, 다른 모달과 겹쳐서 가려질 일이 없다).
 function orderCardHtml(r) {
   return `<div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
     <div class="card-top" style="margin-bottom:0;">
@@ -649,8 +660,14 @@ function orderCardHtml(r) {
       </div>
       <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
     </div>
+    <div class="card-bottom" style="margin-top:9px;">
+      <span>${r.date || '—'} 발주</span>
+      <span class="card-qty">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</span>
+    </div>
   </div>`;
 }
+// 대시보드 본 화면의 "재고 적게 남은 자재" 목록용 — 클릭하면 재고 상세를 연다(마찬가지로
+// 모달 안이 아니라 대시보드 화면에 바로 떠 있어 다른 모달과 겹치지 않는다).
 function stockMiniCardHtml(g) {
   return `<div class="stk-card">
     <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
@@ -663,11 +680,47 @@ function stockMiniCardHtml(g) {
     </div>
   </div>`;
 }
-function leadCardHtml(r) {
-  return `<div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
+
+// ── KPI 카드(상단 4개) 상세 모달 전용 — 그 위에 발주/재고 상세 모달을 또 열면 먼저 열린
+// 모달(dashDetailModal)이 나중에 열린 모달에 덮여 보이지 않고, 클릭도 항상 맨 위 모달로만
+// 가서 엉뚱한 항목이 열리는 것처럼 보이는 문제가 있었다 — 그래서 이 목록들은 클릭해도
+// 더 깊은 상세로 들어가지 않는, 그 자리에서 정보만 보여주는 읽기 전용 행이다.
+function orderInfoRowHtml(r) {
+  return `<div class="card">
+    <div class="card-top" style="margin-bottom:0;">
+      <div>
+        <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
+        <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
+      </div>
+      <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
+    </div>
+    <div class="card-bottom" style="margin-top:9px;">
+      <span>${r.date || '—'} 발주</span>
+      <span class="card-qty">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</span>
+    </div>
+  </div>`;
+}
+function stockInfoRowHtml(g) {
+  return `<div class="stk-card">
+    <div class="stk-head" style="cursor:default;">
+      <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+      <div class="stk-mid">
+        <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+        <div class="stk-batches">${g.code || '코드 없음'}</div>
+      </div>
+      <div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
+    </div>
+  </div>`;
+}
+function leadInfoRowHtml(r) {
+  return `<div class="card">
     <div class="card-top" style="margin-bottom:0;">
       <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
       <span class="card-qty">${r.lead}일</span>
+    </div>
+    <div class="card-bottom" style="margin-top:9px;">
+      <span>발주번호 ${r.ordNo || '—'}</span>
+      <span>${r.date || '—'} 발주</span>
     </div>
   </div>`;
 }
@@ -805,29 +858,52 @@ function renderDashSpecModalBody() {
 }
 
 // ═══ 대시보드 KPI 카드 상세 ═══
+const DASH_KPI_TITLE = { ongoing: '진행중 발주', month: '이번 달 발주', stock: '남은 재고 자재', lead: '리드타임 상세' };
+let _dashKpiKind = null;
+let _dashKpiStockTypeFilter = '';
+
 function openDashKpiDetail(kind) {
-  let title = '', rows = [], html = '';
+  _dashKpiKind = kind;
+  _dashKpiStockTypeFilter = '';
+  const typeChips = document.getElementById('dashDetailTypeChips');
+  typeChips.style.display = kind === 'stock' ? 'flex' : 'none';
+  typeChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.v === ''));
+  renderDashKpiBody();
+  document.getElementById('dashDetailModal').classList.add('open');
+}
+document.getElementById('dashDetailTypeChips').addEventListener('click', e => {
+  const chip = e.target.closest('.chip'); if (!chip) return;
+  document.querySelectorAll('#dashDetailTypeChips .chip').forEach(c => c.classList.remove('on'));
+  chip.classList.add('on');
+  _dashKpiStockTypeFilter = chip.dataset.v;
+  renderDashKpiBody();
+});
+
+// 상단 KPI 카드의 상세 목록은 일부러 클릭해도 더 깊은 상세로 들어가지 않는다 — 예전엔
+// 발주/재고 상세 모달을 그 위에 또 띄웠는데, 나중에 열린 모달이 항상 먼저 열린 이 모달을
+// 가려버려서 "다른 항목을 눌러도 맨 위 항목 상세만 보이는" 것처럼 보이는 문제가 있었다.
+function renderDashKpiBody() {
+  const kind = _dashKpiKind;
+  let rows = [], html = '';
   if (kind === 'ongoing') {
     rows = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고').sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    title = '진행중 발주 (' + rows.length + '건)';
-    html = rows.map(orderCardHtml).join('');
+    html = rows.map(orderInfoRowHtml).join('');
   } else if (kind === 'month') {
     const thisMonth = new Date().toISOString().slice(0, 7);
     rows = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-    title = '이번 달 발주 (' + rows.length + '건)';
-    html = rows.map(orderCardHtml).join('');
+    html = rows.map(orderInfoRowHtml).join('');
   } else if (kind === 'stock') {
-    const list = remainStockList().sort((a, b) => a.total - b.total);
-    title = '남은 재고 자재 (' + list.length + '종)';
-    html = list.map(stockMiniCardHtml).join('');
+    rows = remainStockList();
+    if (_dashKpiStockTypeFilter) rows = rows.filter(g => g.type === _dashKpiStockTypeFilter);
+    rows.sort((a, b) => a.total - b.total);
+    html = rows.map(stockInfoRowHtml).join('');
   } else if (kind === 'lead') {
     rows = orderRows.filter(r => parseFloat(r.lead) > 0).sort((a, b) => parseFloat(b.lead) - parseFloat(a.lead));
-    title = '리드타임 상세 (' + rows.length + '건)';
-    html = rows.map(leadCardHtml).join('');
+    html = rows.map(leadInfoRowHtml).join('');
   }
-  document.getElementById('dashDetailTitle').textContent = title;
+  const unitLabel = kind === 'stock' ? '종' : '건';
+  document.getElementById('dashDetailTitle').textContent = DASH_KPI_TITLE[kind] + ' (' + rows.length + unitLabel + ')';
   document.getElementById('dashDetailBody').innerHTML = html || '<div class="empty"><i class="fa-solid fa-inbox"></i><div>데이터가 없습니다</div></div>';
-  document.getElementById('dashDetailModal').classList.add('open');
 }
 function closeDashDetail() { document.getElementById('dashDetailModal').classList.remove('open'); }
 
@@ -1085,10 +1161,23 @@ document.getElementById('mstThickChips').addEventListener('click', e => {
   chip.classList.add('on'); _mstThickFilter = chip.dataset.v; renderMaster();
 });
 
+// 두께(T) 컬럼 값이 실제로는 높이 등 다른 치수가 잘못 들어간 경우가 있어(예: 품목의 실제
+// 두께와 무관한 "90"이 그대로 필터에 뜨는 문제) — 대신 자재명·규격에 흔히 같이 적히는
+// "15T"/"15t"/"1000*50*15t" 같은 표기에서 숫자+T를 직접 찾아 두께로 쓴다. 여러 개 있으면
+// 보통 규격의 마지막 자리가 두께라 마지막 매치를 채택한다. 못 찾으면 두께 없음으로 둔다
+// (원본 두께(T) 컬럼은 신뢰할 수 없어 그대로 대체 표시하지 않는다).
+function detectThickness(r) {
+  const text = (r.name || '') + ' ' + (r.spec || '');
+  const re = /(\d+(?:\.\d+)?)\s*[tT](?![a-zA-Z0-9가-힣])/g;
+  let m, last = null;
+  while ((m = re.exec(text))) last = m[1];
+  return last ? last + 'T' : '';
+}
+
 // 실제 데이터에 있는 두께(T) 값만 뽑아 필터 칩을 만든다 — 고정된 목록이 아니라 품목마스터에
 // 실제로 쓰인 값 기준이라, 두께 값이 늘어나거나 바뀌어도 코드 수정 없이 그대로 반영된다.
 function renderMstThickChips() {
-  const set = new Set(masterRows.map(r => (r.thick || '').toString().trim()).filter(Boolean));
+  const set = new Set(masterRows.map(detectThickness).filter(Boolean));
   const thicks = Array.from(set).sort((a, b) => (parseFloat(a) || 0) - (parseFloat(b) || 0));
   const chips = ['<span class="chip' + (!_mstThickFilter ? ' on' : '') + '" data-v="">전체 두께</span>']
     .concat(thicks.map(t => `<span class="chip${_mstThickFilter === t ? ' on' : ''}" data-v="${t}">${t}</span>`));
@@ -1100,7 +1189,7 @@ function renderMaster() {
   const q = (document.getElementById('mstSearch').value || '').trim().toLowerCase();
   let rows = masterRows;
   if (_mstTypeFilter) rows = rows.filter(r => r.type === _mstTypeFilter);
-  if (_mstThickFilter) rows = rows.filter(r => (r.thick || '').toString().trim() === _mstThickFilter);
+  if (_mstThickFilter) rows = rows.filter(r => detectThickness(r) === _mstThickFilter);
   if (q) rows = rows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q));
 
   if (!rows.length) {
@@ -1115,7 +1204,7 @@ function renderMaster() {
       <div class="mst-mid">
         <div class="mst-name">${r.name} <span class="spec">${r.spec}</span></div>
         <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
-        <div class="mst-tags"><span class="tag">${r.thick || '—'}</span><span class="tag">${r.unit || '—'}</span><span class="tag">${r.site || '—'}</span></div>
+        <div class="mst-tags"><span class="tag">${detectThickness(r) || '—'}</span><span class="tag">${r.unit || '—'}</span><span class="tag">${r.site || '—'}</span></div>
       </div>
     </div>`).join('');
 }
