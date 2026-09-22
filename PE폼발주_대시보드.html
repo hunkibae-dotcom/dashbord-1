@@ -213,6 +213,14 @@
   .bar-track{height:7px;border-radius:6px;background:var(--icon-bg);overflow:hidden;}
   .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
   .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
+
+  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(긴 막대 / ㄱ자)을 CSS로 직접 그린다.
+     아이콘 폰트 이름에 기대지 않으니 어떤 환경에서도 확실히 보인다. */
+  .ty-bar{display:inline-block;width:20px;height:6px;border-radius:3px;background:currentColor;}
+  .ty-corner{position:relative;display:inline-block;width:18px;height:18px;}
+  .ty-corner::before,.ty-corner::after{content:'';position:absolute;background:currentColor;border-radius:1.5px;}
+  .ty-corner::before{top:0;right:0;width:18px;height:6px;}
+  .ty-corner::after{top:0;right:0;width:6px;height:18px;}
   .sort-btn{width:40px;flex-shrink:0;border-radius:13px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
   .date-range{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--border);border-radius:13px;padding:11px 14px;flex:1;min-width:0;}
   .date-range i{color:var(--label);font-size:13px;flex-shrink:0;}
@@ -530,10 +538,15 @@ async function loadAll() {
 }
 
 // ── 유형별 아이콘 ──
-// 일자형은 fa-bars(메뉴 아이콘처럼 보여 오클릭 유발)였던 것을 얇고 긴 사각형으로,
-// 코너형은 모서리 보강재 실제 모양(ㄱ자)과 닮은 크롭 마커 아이콘으로 바꿨다.
-const TYPE_ICON = { '일자형': 'fa-rectangle-wide', '코너형': 'fa-crop-simple', '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
+// 패드형/롤형은 폰트어썸 아이콘 그대로 쓰고, 일자형/코너형은 실제 모양(긴 막대 / ㄱ자)을
+// CSS로 직접 그린 도형을 쓴다 — 아이콘 폰트 이름에 기대지 않아 항상 확실히 보인다.
+const TYPE_ICON = { '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
 function typeIcon(t) { return TYPE_ICON[t] || 'fa-cube'; }
+function typeIconHtml(t) {
+  if (t === '일자형') return '<span class="ty-bar"></span>';
+  if (t === '코너형') return '<span class="ty-corner"></span>';
+  return `<i class="fa-solid ${typeIcon(t)}"></i>`;
+}
 
 // 시트의 _peStkIsUsedUp()과 동일한 판정 — 숫자면 0 이하, 문자열이면 정확히 "소진"일 때만 소진.
 // ('1box'처럼 남아있다는 뜻의 글자는 소진이 아니다.)
@@ -616,7 +629,7 @@ function typeBarsHtml(entries, onclickFn) {
   return entries.map(e => `
     <div class="bar-row clickable" onclick="${onclickFn}('${e.label.replace(/'/g, "\\'")}')">
       <div class="bar-row-top">
-        <span class="bl"><i class="fa-solid ${typeIcon(e.label)}" style="margin-right:6px;color:var(--text-sub);"></i>${e.label}</span>
+        <span class="bl"><span style="display:inline-flex;align-items:center;margin-right:6px;color:var(--text-sub);">${typeIconHtml(e.label)}</span>${e.label}</span>
         <span class="bv">${e.value.toLocaleString()} ${e.unit || ''} <i class="fa-solid fa-chevron-right" style="margin-left:3px;color:var(--dim);font-size:10px;"></i></span>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, e.value / max * 100)}%;"></div></div>
@@ -671,7 +684,7 @@ function orderCardHtml(r) {
 function stockMiniCardHtml(g) {
   return `<div class="stk-card">
     <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
-      <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+      <div class="stk-ico">${typeIconHtml(g.type)}</div>
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
       </div>
@@ -703,7 +716,7 @@ function orderInfoRowHtml(r) {
 function stockInfoRowHtml(g) {
   return `<div class="stk-card">
     <div class="stk-head" style="cursor:default;">
-      <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+      <div class="stk-ico">${typeIconHtml(g.type)}</div>
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
         <div class="stk-batches">${g.code || '코드 없음'}</div>
@@ -1068,7 +1081,7 @@ function renderStock() {
   list.innerHTML = groupArr.map(([key, g, total]) => {
     return `<div class="stk-card">
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
-        <div class="stk-ico"><i class="fa-solid ${typeIcon(g.type)}"></i></div>
+        <div class="stk-ico">${typeIconHtml(g.type)}</div>
         <div class="stk-mid">
           <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
           <div class="stk-batches">${g.code || '코드 없음'} · 배치 ${g.batches.length}건</div>
@@ -1200,7 +1213,7 @@ function renderMaster() {
 
   list.innerHTML = rows.map(r => `
     <div class="mst-row">
-      <div class="mst-ico"><i class="fa-solid ${typeIcon(r.type)}"></i></div>
+      <div class="mst-ico">${typeIconHtml(r.type)}</div>
       <div class="mst-mid">
         <div class="mst-name">${r.name} <span class="spec">${r.spec}</span></div>
         <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
