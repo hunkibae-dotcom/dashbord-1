@@ -214,13 +214,15 @@
   .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
   .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
 
-  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(긴 막대 / ㄱ자)을 CSS로 직접 그린다.
-     아이콘 폰트 이름에 기대지 않으니 어떤 환경에서도 확실히 보인다. */
-  .ty-bar{display:inline-block;width:20px;height:6px;border-radius:3px;background:currentColor;}
-  .ty-corner{position:relative;display:inline-block;width:18px;height:18px;}
-  .ty-corner::before,.ty-corner::after{content:'';position:absolute;background:currentColor;border-radius:1.5px;}
-  .ty-corner::before{top:0;right:0;width:18px;height:6px;}
-  .ty-corner::after{top:0;right:0;width:6px;height:18px;}
+  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(둥근 막대 / ㄱ자)을 CSS로 직접
+     그린다. 아이콘 폰트 이름에 기대지 않으니 어떤 환경에서도 확실히 보이고, 패드형(fa-square,
+     15px)과 비슷한 크기로 맞춰 아이콘 세트 전체의 무게감을 통일했다. 코너형은 겹치는 두 막대
+     대신 clip-path로 한 번에 그려서 모서리가 뭉치지 않고 실제 ㄱ자처럼 깔끔하게 떨어진다. */
+  .ty-bar{display:inline-block;width:15px;height:5px;border-radius:999px;background:currentColor;}
+  .ty-corner{
+    display:inline-block;width:15px;height:15px;background:currentColor;
+    clip-path:polygon(0 0,100% 0,100% 100%,calc(100% - 5px) 100%,calc(100% - 5px) 5px,0 5px);
+  }
   .sort-btn{width:40px;flex-shrink:0;border-radius:13px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
   .date-range{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--border);border-radius:13px;padding:11px 14px;flex:1;min-width:0;}
   .date-range i{color:var(--label);font-size:13px;flex-shrink:0;}
