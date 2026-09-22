@@ -1509,7 +1509,7 @@ function applyFilters() {
       // 바로 아래 일반 분기(d.검사 !== colInspectFilter)로 걸러지면 그 문자열과 정확히 같은
       // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
       // 데스크탑 생산중 카드(viewDetailInTable)에도 똑같이 추가함.
-      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입') || d.공정완료) return false; }
       // '생산완료'도 '생산중'과 마찬가지로 실제 검사 상태값이 아니라 화면 전용 파생
       // 카테고리(미검사/재투입 중 검사 셀이 노란색인 것)라 같은 이유로 별도 분기가 필요하다.
       else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
@@ -1672,6 +1672,9 @@ function computeStats(items) {
   const preinput = items.filter(d => d.검사 === '미투입').length;
   // 생산완료: 미검사/재투입인데 시트에서 검사 셀이 노란색(공정진행률 95%↑)으로 표시된 항목
   const prodDone = items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료).length;
+  // 생산중: 미검사/재투입 중 생산완료(위 prodDone)가 아닌 것만 — 두 카드가 겹치지 않도록
+  // 서로 배타적으로 나눈다(생산완료된 항목은 더 이상 "생산중"이 아님).
+  const prodOngoing = items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료).length;
   // 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
   const packedToday = items.filter(d => {
     if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
@@ -1679,7 +1682,7 @@ function computeStats(items) {
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
   }).length;
-  return { total, done, undone, yangji, reinspect, reinspectWaiting, waitInspect, preinput, packedToday, prodDone };
+  return { total, done, undone, yangji, reinspect, reinspectWaiting, waitInspect, preinput, packedToday, prodDone, prodOngoing };
 }
 
 // KPI 카드 호버 팝오버 안에 들어갈 실제 품목 리스트(건명/품목/색상/수량 + 날짜)를 최근순 상위 N개로 렌더
@@ -1743,10 +1746,10 @@ function renderKPIs(fullData) {
   document.getElementById('kpiPreInDetail').innerHTML = renderDetailList(scopedPool(cj1PreInput, cj2PreInput), '납기일');
 
   // 4) 생산중 (미검사 + 재투입)
-  const cj1Producing = cj1Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
-  const cj2Producing = cj2Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
-  document.getElementById('kpiProdCj1').textContent = (cj1.undone + cj1.reinspect).toLocaleString();
-  document.getElementById('kpiProdCj2').textContent = (cj2.undone + cj2.reinspect).toLocaleString();
+  const cj1Producing = cj1Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료);
+  const cj2Producing = cj2Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료);
+  document.getElementById('kpiProdCj1').textContent = cj1.prodOngoing.toLocaleString();
+  document.getElementById('kpiProdCj2').textContent = cj2.prodOngoing.toLocaleString();
   document.getElementById('kpiProdDetail').innerHTML = renderDetailList(scopedPool(cj1Producing, cj2Producing), '납기일');
 
   // 5) 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) — 예전엔 이 카드 자리에
@@ -3017,6 +3020,7 @@ function setMStatus(s) {
   document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사' || s === '진행_미검사' || s === '금일포장');
   document.getElementById('mSPreinput')?.classList.toggle('active', s === '미투입');
   document.getElementById('mSProducing')?.classList.toggle('active', s === '생산중');
+  document.getElementById('mSReinspect')?.classList.toggle('active', s === '재투입');
   document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
   document.getElementById('mSArchiveUndone')?.classList.toggle('active', s === '미검사출고');
   renderMobileList();
@@ -3045,8 +3049,8 @@ function renderMobileKPIs() {
   setMTxt('mKpiWt2', s2.waitInspect);
   setMTxt('mKpiPre1', s1.preinput.toLocaleString());
   setMTxt('mKpiPre2', s2.preinput.toLocaleString());
-  setMTxt('mKpiPrd1', (s1.undone + s1.reinspect).toLocaleString());
-  setMTxt('mKpiPrd2', (s2.undone + s2.reinspect).toLocaleString());
+  setMTxt('mKpiPrd1', s1.prodOngoing.toLocaleString());
+  setMTxt('mKpiPrd2', s2.prodOngoing.toLocaleString());
   setMTxt('mKpiDone1', s1.prodDone.toLocaleString());
   setMTxt('mKpiDone2', s2.prodDone.toLocaleString());
 }
@@ -3680,7 +3684,7 @@ function renderMobileList() {
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
     }
-    else if (mStatus === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+    else if (mStatus === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입') || d.공정완료) return false; }
     else if (mStatus === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
     else if (mStatus === '미투입') { if (d.source === 'archive' || d.검사 !== '미투입') return false; }
     else if (mStatus) { if (d.검사 !== mStatus) return false; }
@@ -4623,6 +4627,7 @@ function onNativeScanResult(raw) {
           <button onclick="setMStatus('진행_미검사')" id="mSUndone" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">미검사</button>
           <button onclick="setMStatus('미투입')" id="mSPreinput" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">미투입</button>
           <button onclick="setMStatus('생산중')" id="mSProducing" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">생산중</button>
+          <button onclick="setMStatus('재투입')" id="mSReinspect" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">재투입</button>
           <button onclick="setMStatus('양지')" id="mSYangji" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">양지</button>
           <button onclick="setMStatus('미검사출고')" id="mSArchiveUndone" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">미검사(출고)</button>
         </div>
