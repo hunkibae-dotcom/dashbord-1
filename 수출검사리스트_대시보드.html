@@ -386,6 +386,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <span class="flex-1">필터 검색</span>
     </div>
 
+    <div class="nav-item w-full" id="navReport" onclick="openReportModal()">
+      <i class="fa-solid fa-file-powerpoint w-4 text-center"></i>
+      <span class="flex-1">보고서 <span style="font-weight:600;color:var(--label);">(제작중)</span></span>
+    </div>
+
     <div class="border-t border-slate-100 my-1"></div>
 
     <button id="syncBtn" onclick="loadData()" class="nav-item w-full">
@@ -888,6 +893,45 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <div style="font-size:13px;font-weight:500;">단품코드, 건명, 날짜, 공장으로 검색해 보세요.</div>
     </div>
   </div>
+</div>
+
+<!-- ===== 보고서 작성 (제작중) — "수출건 검사 세부내역" PPTX 자동 생성 ===== -->
+<div id="reportModal" style="position:fixed;inset:0;z-index:100;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overscroll-behavior:contain;">
+
+  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top));">
+    <button onclick="closeReportModal()" style="width:36px;height:36px;border:none;background:var(--icon-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-sub);cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
+      <i class="fa-solid fa-chevron-left" style="font-size:13px;"></i>
+    </button>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.2;">수출건 검사 세부내역 보고서 <span style="font-weight:600;color:var(--label);font-size:11.5px;">(제작중 — 테스트용)</span></div>
+      <div style="font-size:11px;color:var(--label);">품목 선택 → 사진 등록 → PPTX 생성</div>
+    </div>
+  </div>
+
+  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <select id="rpFactory" onchange="renderReportList()"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;outline:none;width:100%;box-sizing:border-box;">
+        <option value="cj1">충주1공장</option>
+        <option value="cj2">충주2공장</option>
+      </select>
+      <input id="rpDate" type="date" onchange="renderReportList()"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+    </div>
+    <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
+      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;">
+    <div style="font-size:11px;color:var(--label);">날짜는 포장일 기준(비워두면 전체). 보고서에 넣을 품목을 체크한 뒤, 제품·포장완료 사진을 각각 등록하세요.</div>
+  </div>
+
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:10px;">
+    <div style="flex:1;font-size:13px;color:var(--text-sub);"><b id="rpSelCount" style="color:var(--text);">0</b>개 품목 선택됨</div>
+    <button onclick="generateReportPptx()" id="rpGenBtn"
+      style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;-webkit-appearance:none;">
+      <i class="fa-solid fa-file-powerpoint"></i> PPTX 생성
+    </button>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:12px 16px 40px;" id="rpList"></div>
 </div>
 
 <!-- ===== 날짜 필터 팝업 ===== -->
@@ -2408,8 +2452,245 @@ function closeProductSearch() {
   document.body.classList.remove('m-lock');
 }
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); }
+  if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); closeReportModal(); }
 });
+
+// ═══════════════════════════════════════════════════════════════
+// 보고서 작성 (제작중) — "수출건 검사 세부내역" PPTX 자동 생성
+// 실제 쓰고 있는 파워포인트 양식(수출건명/단품코드/색상/단품명칭/수량/포장처/출고일/
+// 검사자/검사사진 2장/CBM·Weight)을 그대로 재현해서 자동으로 채워준다. 사진 2장(제품·
+// 포장완료)만 시트에 없는 데이터라 여기서 직접 등록받는다 — 실제 촬영 기능(카메라 캡처)은
+// 별도 작업이고, 지금은 파일 선택으로 테스트한다.
+// ═══════════════════════════════════════════════════════════════
+let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note }
+
+function openReportModal() {
+  const modal = document.getElementById('reportModal');
+  modal.style.transform = 'translateX(0)';
+  document.body.classList.add('m-lock');
+  renderReportList();
+  _armBackTrap();
+}
+function closeReportModal() {
+  const modal = document.getElementById('reportModal');
+  if (!modal) return;
+  modal.style.transform = 'translateX(100%)';
+  document.body.classList.remove('m-lock');
+}
+
+function _rpFactoryLabel(key) { return key === 'cj1' ? '충주1' : '충주2'; }
+function _rpInspector(key) { return key === 'cj1' ? '정일성' : '배훈기'; }
+
+// 실제 업무 규칙: 출고일 = 납기일 - 2일 (별도 저장된 값이 없어 매번 계산)
+function _rpShipDate(d) {
+  const base = parseKDate(d.납기일);
+  if (!base) return '';
+  const s = new Date(base.getTime());
+  s.setDate(s.getDate() - 2);
+  return (s.getMonth() + 1) + '/' + s.getDate();
+}
+
+function renderReportList() {
+  const factory = document.getElementById('rpFactory').value;
+  const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
+  const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
+
+  let rows = allData.filter(d => d.공장 === factory);
+  if (dateVal) {
+    rows = rows.filter(d => {
+      const pd = parseKDate(d.포장일);
+      if (!pd) return false;
+      const iso = pd.getFullYear() + '-' + String(pd.getMonth() + 1).padStart(2, '0') + '-' + String(pd.getDate()).padStart(2, '0');
+      return iso === dateVal;
+    });
+  }
+  if (q) rows = rows.filter(d => (d.건명 + ' ' + d.단품코드 + ' ' + d.단품명칭).toLowerCase().includes(q));
+
+  const list = document.getElementById('rpList');
+  if (!rows.length) {
+    list.innerHTML = '<div style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></div>';
+    document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
+    return;
+  }
+
+  list.innerHTML = rows.map(d => {
+    const key = _miKey(d);
+    const sel = _reportSelected[key];
+    const checked = !!sel;
+    const safeKey = key.replace(/'/g, "\\'");
+    return `
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:9px;">
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="margin-top:3px;width:16px;height:16px;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:700;color:var(--text);">${d.건명 || '—'} <span style="color:var(--text-sub);font-weight:600;">${d.단품명칭 || ''}</span></div>
+          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;">${d.단품코드 || '—'} · ${d.색상 || '—'} · ${d.수량 || 0}개</div>
+        </div>
+      </label>
+      ${checked ? `
+      <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);">
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">제품 사진</div>
+          ${_rpPhotoBox(safeKey, 'product', sel.productPhoto)}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">포장완료 사진</div>
+          ${_rpPhotoBox(safeKey, 'package', sel.packagePhoto)}
+        </div>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
+}
+
+function _rpPhotoBox(safeKey, side, dataUrl) {
+  const inputId = 'rpPhoto_' + side + '_' + safeKey.replace(/[^a-zA-Z0-9]/g, '_');
+  return `
+    <div onclick="document.getElementById('${inputId}').click()" style="height:74px;border-radius:10px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;">
+      ${dataUrl ? `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:17px;"></i>`}
+    </div>
+    <input type="file" id="${inputId}" accept="image/*" capture="environment" style="display:none;" onchange="handleReportPhoto('${safeKey}','${side}',this)">
+  `;
+}
+
+function toggleReportItem(key) {
+  if (_reportSelected[key]) {
+    delete _reportSelected[key];
+  } else {
+    const d = allData.find(x => _miKey(x) === key);
+    if (!d) return;
+    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '' };
+  }
+  renderReportList();
+}
+
+function handleReportPhoto(key, side, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (!_reportSelected[key]) return;
+    if (side === 'product') _reportSelected[key].productPhoto = e.target.result;
+    else _reportSelected[key].packagePhoto = e.target.result;
+    renderReportList();
+  };
+  reader.readAsDataURL(file);
+}
+
+function _loadPptxGenJS(cb) {
+  if (window.PptxGenJS) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+  s.onload = cb;
+  s.onerror = function() { alert('PPTX 라이브러리 로드 실패 — 네트워크를 확인해주세요.'); _rpResetGenBtn(); };
+  document.head.appendChild(s);
+}
+
+function _rpResetGenBtn() {
+  const btn = document.getElementById('rpGenBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-file-powerpoint"></i> PPTX 생성';
+}
+
+// 실제 "수출건 검사 세부내역" 양식을 표 모양 그대로 도형+텍스트로 재현한다 — pptxgenjs의
+// addTable은 셀 안에 이미지를 못 넣어서, 표처럼 보이도록 테두리 있는 텍스트박스를 좌표
+// 계산해서 늘어놓고, 검사사진 칸에만 addImage로 사진을 얹는 방식을 썼다.
+function _addReportSlide(pptx, d, sel) {
+  const slide = pptx.addSlide();
+  const factoryKey = d.공장;
+  const M = 0.4, top = 0.35, fullW = 12.5, rowH = 0.42;
+  const borderColor = '1F2937', headerFill = 'F1F5F9';
+
+  function cell(x, y, w, h, text, opts) {
+    slide.addText(String(text == null ? '' : text), Object.assign({
+      x: x, y: y, w: w, h: h,
+      align: 'center', valign: 'middle',
+      fontSize: 11, fontFace: '맑은 고딕', color: '1E293B',
+      line: { color: borderColor, width: 0.75 },
+    }, opts || {}));
+  }
+
+  let y = top;
+  const headers = ['수출건명', '단품코드', '색상', '단품명칭', '수량', '포장처', '출고일', '검사자'];
+  const values = [
+    d.건명 || '', d.단품코드 || '', d.색상 || '', d.단품명칭 || '',
+    (d.수량 || 0), _rpFactoryLabel(factoryKey), _rpShipDate(d), _rpInspector(factoryKey)
+  ];
+  const col8 = fullW / 8;
+  headers.forEach((h, i) => cell(M + i * col8, y, col8, rowH, h, { bold: true, fill: { color: headerFill } }));
+  y += rowH;
+  values.forEach((v, i) => cell(M + i * col8, y, col8, rowH, v, {}));
+  y += rowH;
+
+  cell(M, y, col8, rowH, '검사 항목', { bold: true, fill: { color: headerFill } });
+  cell(M + col8, y, col8 * 3, rowH, '치수 및 외관', {});
+  cell(M + col8 * 4, y, col8, rowH, '검사 장비', { bold: true, fill: { color: headerFill } });
+  cell(M + col8 * 5, y, col8 * 3, rowH, '줄자 및 버니어 캘리퍼스', {});
+  y += rowH;
+
+  const photoRowH = 2.6;
+  cell(M, y, col8, photoRowH, '검사 사진', { bold: true, fill: { color: headerFill } });
+  const photoX = M + col8, photoW = fullW - col8;
+  slide.addShape('rect', { x: photoX, y: y, w: photoW, h: photoRowH, line: { color: borderColor, width: 0.75 }, fill: { color: 'FFFFFF' } });
+  const pad = 0.15;
+  const halfW = (photoW - pad * 3) / 2;
+  [sel.productPhoto, sel.packagePhoto].forEach((photo, i) => {
+    const px = photoX + pad + i * (halfW + pad);
+    if (photo) {
+      slide.addImage({ data: photo, x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, sizing: { type: 'contain', w: halfW, h: photoRowH - pad * 2 } });
+    } else {
+      slide.addShape('rect', { x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, line: { color: 'CBD5E1', width: 0.75, dashType: 'dash' }, fill: { color: 'F8FAFC' } });
+      slide.addText(i === 0 ? '제품 사진 없음' : '포장완료 사진 없음', { x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, align: 'center', valign: 'middle', fontSize: 10, color: '94A3B8', fontFace: '맑은 고딕' });
+    }
+  });
+  y += photoRowH;
+
+  const col9 = fullW / 9;
+  cell(M, y, col9, rowH, '검사 내역', { bold: true, fill: { color: headerFill } });
+  ['치수', '외관', '보링', '철물'].forEach((label, i) => {
+    cell(M + col9 + i * 2 * col9, y, col9, rowH, label, {});
+    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, '✓', { bold: true, color: '16A34A' });
+  });
+  y += rowH;
+
+  cell(M, y, col9, rowH, 'CBM / Weight', { bold: true, fill: { color: headerFill } });
+  [['가로(mm)', d.가로], ['세로(mm)', d.세로], ['높이(mm)', d.높이], ['무게(kg)', d.중량]].forEach((pair, i) => {
+    cell(M + col9 + i * 2 * col9, y, col9, rowH, pair[0], {});
+    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, pair[1] || '', {});
+  });
+  y += rowH;
+
+  const noteH = 0.6;
+  cell(M, y, col8, noteH, '검사 특이 사항', { bold: true, fill: { color: headerFill } });
+  cell(M + col8, y, fullW - col8, noteH, sel.note || '-', {});
+}
+
+function generateReportPptx() {
+  const keys = Object.keys(_reportSelected);
+  if (!keys.length) { alert('보고서에 넣을 품목을 먼저 선택해주세요.'); return; }
+  const missing = keys.filter(k => !_reportSelected[k].productPhoto || !_reportSelected[k].packagePhoto);
+  if (missing.length && !confirm(missing.length + '개 품목에 사진이 빠져있습니다. 그래도 계속할까요?')) return;
+
+  const factory = document.getElementById('rpFactory').value;
+  const dateVal = document.getElementById('rpDate').value;
+  const btn = document.getElementById('rpGenBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
+
+  _loadPptxGenJS(function() {
+    try {
+      const pptx = new PptxGenJS();
+      keys.forEach(function(key) { _addReportSlide(pptx, _reportSelected[key].item, _reportSelected[key]); });
+
+      const dateLabel = dateVal ? dateVal.replace(/-/g, '').slice(2) : (new Date().toISOString().slice(2, 10).replace(/-/g, ''));
+      const fname = `수출건 검사 세부내역${dateLabel}(${_rpFactoryLabel(factory)}-${keys.length}품목).pptx`;
+      pptx.writeFile({ fileName: fname }).then(_rpResetGenBtn).catch(function(e) { alert('생성 실패: ' + e.message); _rpResetGenBtn(); });
+    } catch (e) {
+      alert('생성 실패: ' + e.message);
+      _rpResetGenBtn();
+    }
+  });
+}
 
 // ── 날짜 필터 팝업 ──
 function openPsDatePicker() {
