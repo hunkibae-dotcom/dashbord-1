@@ -898,47 +898,54 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 <!-- ===== 보고서 작성 (제작중) — "수출건 검사 세부내역" PPTX 자동 생성 ===== -->
 <div id="reportModal" style="position:fixed;inset:0;z-index:100;background:var(--bg);transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;overscroll-behavior:contain;">
 
-  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;padding-top:max(10px,env(safe-area-inset-top));">
-    <button onclick="closeReportModal()" style="width:36px;height:36px;border:none;background:var(--icon-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-sub);cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
+  <div style="background:linear-gradient(135deg,#7C6FE8,#6D5CE8 55%,#5B4FD1);padding:14px 18px;padding-top:max(14px,env(safe-area-inset-top));display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:0 4px 16px rgba(109,92,222,.3);">
+    <button onclick="closeReportModal()" style="width:36px;height:36px;border:none;background:rgba(255,255,255,.18);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
       <i class="fa-solid fa-chevron-left" style="font-size:13px;"></i>
     </button>
+    <div style="width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <i class="fa-solid fa-file-powerpoint" style="color:#fff;font-size:16px;"></i>
+    </div>
     <div style="flex:1;min-width:0;">
-      <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.2;">수출건 검사 세부내역 보고서 <span style="font-weight:600;color:var(--label);font-size:11.5px;">(제작중 — 테스트용)</span></div>
-      <div style="font-size:11px;color:var(--label);">품목 선택 → 사진 등록 → PPTX 생성</div>
+      <div style="font-size:15.5px;font-weight:800;color:#fff;line-height:1.2;">수출건 검사 세부내역 보고서 <span style="font-weight:600;color:rgba(255,255,255,.65);font-size:11px;">(제작중)</span></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.78);margin-top:2px;">품목 선택 → 사진 등록 → PPTX 생성</div>
     </div>
   </div>
 
-  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
+  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
     <select id="rpFactory" onchange="renderReportList()"
-      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;cursor:pointer;outline:none;width:150px;flex-shrink:0;">
+      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;outline:none;width:150px;flex-shrink:0;">
       <option value="cj1">충주1공장</option>
       <option value="cj2">충주2공장</option>
     </select>
     <input id="rpDate" type="date" onchange="renderReportList()"
-      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;outline:none;width:150px;flex-shrink:0;">
-    <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
-      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;outline:none;flex:1;min-width:200px;">
-    <div style="font-size:11.5px;color:var(--label);flex-shrink:0;">날짜=포장일 기준(비움=전체)</div>
+      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;outline:none;width:160px;flex-shrink:0;">
+    <div style="position:relative;flex:1;min-width:200px;">
+      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
+      <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
+    </div>
+    <div style="font-size:11px;color:var(--label);flex-shrink:0;">날짜=포장일 기준(비움=전체)</div>
     <div style="flex:1;"></div>
-    <div style="font-size:13px;color:var(--text-sub);flex-shrink:0;"><b id="rpSelCount" style="color:var(--text);">0</b>개 선택됨</div>
+    <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;"><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</div>
     <button onclick="generateReportPptx()" id="rpGenBtn"
-      style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;-webkit-appearance:none;flex-shrink:0;">
+      style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-appearance:none;flex-shrink:0;box-shadow:0 4px 12px rgba(109,92,222,.35);">
       <i class="fa-solid fa-file-powerpoint"></i> PPTX 생성
     </button>
   </div>
 
-  <div style="flex:1;overflow-y:auto;padding:0 16px 40px;" id="rpListWrap">
-    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+  <div style="flex:1;overflow-y:auto;padding:0 18px 40px;background:var(--bg);" id="rpListWrap">
+    <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-size:13px;">
       <thead style="position:sticky;top:0;background:var(--bg);z-index:1;">
-        <tr style="border-bottom:1px solid var(--border);">
-          <th style="width:34px;padding:10px 6px;"></th>
-          <th style="text-align:left;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;">건명</th>
-          <th style="text-align:left;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;">단품코드</th>
-          <th style="text-align:left;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;">단품명칭</th>
-          <th style="text-align:center;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;width:70px;">색상</th>
-          <th style="text-align:center;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;width:60px;">수량</th>
-          <th style="text-align:center;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;width:64px;">제품</th>
-          <th style="text-align:center;padding:10px 6px;color:var(--label);font-size:11px;text-transform:uppercase;width:64px;">포장완료</th>
+        <tr>
+          <th style="width:34px;padding:6px;"></th>
+          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">건명</th>
+          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품코드</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:60px;">색상</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:50px;">수량</th>
+          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품명칭</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:58px;">제품</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:58px;">포장완료</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:50px;">철물</th>
         </tr>
       </thead>
       <tbody id="rpList"></tbody>
@@ -2495,6 +2502,16 @@ function _rpShipDate(d) {
   return (s.getMonth() + 1) + '/' + s.getDate();
 }
 
+// 단품명칭이 "코드-분류-부가설명" 식으로 하이픈 3단 이상 이어지는 경우가 많아 보고서
+// 칸에 다 안 들어간다 — 앞의 2단(표준코드-분류, 예: "IT0116K-단종코드등록")만 남기고
+// 나머지 부가설명은 잘라낸다.
+function _rpSummarizeName(name) {
+  if (!name) return '';
+  const parts = name.split('-');
+  if (parts.length <= 2) return name;
+  return parts[0] + '-' + parts[1];
+}
+
 function renderReportList() {
   const factory = document.getElementById('rpFactory').value;
   const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
@@ -2513,35 +2530,39 @@ function renderReportList() {
 
   const list = document.getElementById('rpList');
   if (!rows.length) {
-    list.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
+    list.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
     document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
     return;
   }
 
   // 데스크탑 화면이라 세로로 긴 카드 목록 대신, 표 한 줄에 사진 등록칸까지 같이 두는
-  // 형태로 — 스크롤 없이 훨씬 많은 품목을 한눈에 보고 고를 수 있다.
+  // 카드형 행으로 — 스크롤 없이 훨씬 많은 품목을 한눈에 보고 고를 수 있다.
   list.innerHTML = rows.map(d => {
     const key = _miKey(d);
     const sel = _reportSelected[key];
     const checked = !!sel;
+    const hasHardware = sel ? sel.hasHardware !== false : true;
     const safeKey = key.replace(/'/g, "\\'");
+    const rowBg = 'background:var(--panel);';
     return `
-    <tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:6px;text-align:center;"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:16px;height:16px;cursor:pointer;"></td>
-      <td style="padding:6px;color:var(--text);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.건명 || '').replace(/"/g, '&quot;')}">${d.건명 || '—'}</td>
-      <td style="padding:6px;color:var(--text-sub);font-family:'Inter',monospace;font-size:12px;white-space:nowrap;">${d.단품코드 || '—'}</td>
-      <td style="padding:6px;color:var(--text-sub);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.단품명칭 || '').replace(/"/g, '&quot;')}">${d.단품명칭 || ''}</td>
-      <td style="padding:6px;text-align:center;color:var(--text-sub);white-space:nowrap;">${d.색상 || '—'}</td>
-      <td style="padding:6px;text-align:center;color:var(--text-sub);white-space:nowrap;">${d.수량 || 0}</td>
-      <td style="padding:6px;">${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto)}</td>
-      <td style="padding:6px;">${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto)}</td>
+    <tr>
+      <td style="${rowBg}padding:10px 6px;text-align:center;border-radius:12px 0 0 12px;border:1px solid var(--border);border-right:none;"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;"></td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text);font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);" title="${(d.건명 || '').replace(/"/g, '&quot;')}">${d.건명 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);font-family:'Inter',monospace;font-size:12px;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.단품코드 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.색상 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.수량 || 0}</td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);" title="${(d.단품명칭 || '').replace(/"/g, '&quot;')}">${_rpSummarizeName(d.단품명칭) || ''}</td>
+      <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto)}</td>
+      <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto)}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;border-radius:0 12px 12px 0;border:1px solid var(--border);border-left:none;"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
     </tr>`;
   }).join('');
   document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
 }
 
-function _rpPhotoBox(safeKey, side, dataUrl) {
+function _rpPhotoBox(safeKey, side, photo) {
   const inputId = 'rpPhoto_' + side + '_' + safeKey.replace(/[^a-zA-Z0-9]/g, '_');
+  const dataUrl = photo && photo.dataUrl;
   return `
     <div onclick="document.getElementById('${inputId}').click()" style="width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
       ${dataUrl ? `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:14px;"></i>`}
@@ -2556,30 +2577,47 @@ function toggleReportItem(key) {
   } else {
     const d = allData.find(x => _miKey(x) === key);
     if (!d) return;
-    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '' };
+    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: true };
   }
   renderReportList();
 }
 
-// 사진칸을 누르면 아직 체크 안 된 품목도 자동으로 선택시킨다 — "사진부터 찍고 담는다"는
-// 실제 작업 흐름에 더 자연스럽게 맞는다.
+// 사진칸/철물칸을 누르면 아직 체크 안 된 품목도 자동으로 선택시킨다 — "사진부터 찍고
+// 담는다"는 실제 작업 흐름에 더 자연스럽게 맞는다.
 function _rpEnsureSelected(key) {
   if (_reportSelected[key]) return;
   const d = allData.find(x => _miKey(x) === key);
   if (!d) return;
-  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '' };
+  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: true };
 }
 
+function toggleReportHardware(key, checked) {
+  const wasSelected = !!_reportSelected[key];
+  _rpEnsureSelected(key);
+  if (!_reportSelected[key]) return;
+  _reportSelected[key].hasHardware = checked;
+  if (!wasSelected) renderReportList();
+}
+
+// 사진을 파일로만 받으면 원본 해상도/비율을 몰라서 PPTX에 넣을 때 억지로 늘려찍힌
+// 것처럼 보이는 문제가 있었다 — 이미지를 한 번 실제로 그려서 원본 가로/세로 비율을
+// 미리 알아두고, 슬라이드에 넣을 때 그 비율대로 정확히 맞춘다(아래 _fitRect 참고).
 function handleReportPhoto(key, side, input) {
   const file = input.files && input.files[0];
   if (!file) return;
   _rpEnsureSelected(key);
   const reader = new FileReader();
   reader.onload = function(e) {
-    if (!_reportSelected[key]) return;
-    if (side === 'product') _reportSelected[key].productPhoto = e.target.result;
-    else _reportSelected[key].packagePhoto = e.target.result;
-    renderReportList();
+    const dataUrl = e.target.result;
+    const img = new Image();
+    img.onload = function() {
+      if (!_reportSelected[key]) return;
+      const rec = { dataUrl: dataUrl, w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+      if (side === 'product') _reportSelected[key].productPhoto = rec;
+      else _reportSelected[key].packagePhoto = rec;
+      renderReportList();
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -2599,10 +2637,48 @@ function _rpResetGenBtn() {
   btn.innerHTML = '<i class="fa-solid fa-file-powerpoint"></i> PPTX 생성';
 }
 
+// 사진 원본 비율(imgW/imgH)을 박스(boxW/boxH) 안에 찌그러뜨리지 않고 맞추는 크기를
+// 계산한다 — pptxgenjs의 sizing:{type:'contain'} 옵션이 data URI 이미지에서는 제대로
+// 안 먹어서(그대로 늘려찍힘) 직접 계산한 크기로 addImage에 넘긴다.
+function _fitRect(boxW, boxH, imgW, imgH) {
+  const boxRatio = boxW / boxH, imgRatio = imgW / imgH;
+  let w, h;
+  if (imgRatio > boxRatio) { w = boxW; h = boxW / imgRatio; }
+  else { h = boxH; w = boxH * imgRatio; }
+  return { w: w, h: h };
+}
+
+// 병합된 건명("VAN외2차수" 등)은 실제로는 여러 차수를 하나로 합쳐 표기한 것이라, 보고서에
+// 그대로 넣으면 무슨 건인지 알아보기 어렵다 — 셀 메모(포함된 차수)를 조회해서 그중 대표로
+// 첫 번째 차수명을 보고서에 쓴다. 병합되지 않은 일반 건명은 그대로 쓴다.
+async function _resolveRepresentativeRound(d) {
+  const round = d.건명;
+  if (!_isMergedRoundName(round)) return round;
+  const factoryKey = d.공장;
+  const cacheKey = factoryKey + '|' + round;
+  let items = _roundMergeCache[cacheKey];
+  if (items === undefined) {
+    const url = _gasUrlForFactory(factoryKey);
+    if (!url) return round;
+    try {
+      const res = await fetch(url + '?action=getMergeNote&round=' + encodeURIComponent(round), { signal: AbortSignal.timeout(15000) });
+      const json = await res.json();
+      items = (json && json.status === 'success') ? _parseMergeNoteClient(json.note) : null;
+      _roundMergeCache[cacheKey] = items;
+    } catch (e) { return round; }
+  }
+  return (items && items.length) ? items[0].orderName : round;
+}
+
+function _todayLabel() {
+  const d = new Date();
+  return String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+}
+
 // 실제 "수출건 검사 세부내역" 양식을 표 모양 그대로 도형+텍스트로 재현한다 — pptxgenjs의
 // addTable은 셀 안에 이미지를 못 넣어서, 표처럼 보이도록 테두리 있는 텍스트박스를 좌표
 // 계산해서 늘어놓고, 검사사진 칸에만 addImage로 사진을 얹는 방식을 썼다.
-function _addReportSlide(pptx, d, sel) {
+function _addReportSlide(pptx, d, sel, repRound) {
   const slide = pptx.addSlide();
   const factoryKey = d.공장;
   const M = 0.4, top = 0.35, fullW = 12.5, rowH = 0.42;
@@ -2620,7 +2696,7 @@ function _addReportSlide(pptx, d, sel) {
   let y = top;
   const headers = ['수출건명', '단품코드', '색상', '단품명칭', '수량', '포장처', '출고일', '검사자'];
   const values = [
-    d.건명 || '', d.단품코드 || '', d.색상 || '', d.단품명칭 || '',
+    repRound || d.건명 || '', d.단품코드 || '', d.색상 || '', _rpSummarizeName(d.단품명칭) || '',
     (d.수량 || 0), _rpFactoryLabel(factoryKey), _rpShipDate(d), _rpInspector(factoryKey)
   ];
   const col8 = fullW / 8;
@@ -2641,13 +2717,17 @@ function _addReportSlide(pptx, d, sel) {
   slide.addShape('rect', { x: photoX, y: y, w: photoW, h: photoRowH, line: { color: borderColor, width: 0.75 }, fill: { color: 'FFFFFF' } });
   const pad = 0.15;
   const halfW = (photoW - pad * 3) / 2;
+  const boxH = photoRowH - pad * 2;
   [sel.productPhoto, sel.packagePhoto].forEach((photo, i) => {
-    const px = photoX + pad + i * (halfW + pad);
+    const boxX = photoX + pad + i * (halfW + pad);
     if (photo) {
-      slide.addImage({ data: photo, x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, sizing: { type: 'contain', w: halfW, h: photoRowH - pad * 2 } });
+      const fit = _fitRect(halfW, boxH, photo.w || 1, photo.h || 1);
+      const ix = boxX + (halfW - fit.w) / 2;
+      const iy = y + pad + (boxH - fit.h) / 2;
+      slide.addImage({ data: photo.dataUrl, x: ix, y: iy, w: fit.w, h: fit.h });
     } else {
-      slide.addShape('rect', { x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, line: { color: 'CBD5E1', width: 0.75, dashType: 'dash' }, fill: { color: 'F8FAFC' } });
-      slide.addText(i === 0 ? '제품 사진 없음' : '포장완료 사진 없음', { x: px, y: y + pad, w: halfW, h: photoRowH - pad * 2, align: 'center', valign: 'middle', fontSize: 10, color: '94A3B8', fontFace: '맑은 고딕' });
+      slide.addShape('rect', { x: boxX, y: y + pad, w: halfW, h: boxH, line: { color: 'CBD5E1', width: 0.75, dashType: 'dash' }, fill: { color: 'F8FAFC' } });
+      slide.addText(i === 0 ? '제품 사진 없음' : '포장완료 사진 없음', { x: boxX, y: y + pad, w: halfW, h: boxH, align: 'center', valign: 'middle', fontSize: 10, color: '94A3B8', fontFace: '맑은 고딕' });
     }
   });
   y += photoRowH;
@@ -2655,8 +2735,9 @@ function _addReportSlide(pptx, d, sel) {
   const col9 = fullW / 9;
   cell(M, y, col9, rowH, '검사 내역', { bold: true, fill: { color: headerFill } });
   ['치수', '외관', '보링', '철물'].forEach((label, i) => {
+    const isChecked = label === '철물' ? (sel.hasHardware !== false) : true;
     cell(M + col9 + i * 2 * col9, y, col9, rowH, label, {});
-    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, '✓', { bold: true, color: '16A34A' });
+    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, isChecked ? '✓' : '', { bold: true, color: '16A34A' });
   });
   y += rowH;
 
@@ -2679,21 +2760,26 @@ function generateReportPptx() {
   if (missing.length && !confirm(missing.length + '개 품목에 사진이 빠져있습니다. 그래도 계속할까요?')) return;
 
   const factory = document.getElementById('rpFactory').value;
-  const dateVal = document.getElementById('rpDate').value;
   const btn = document.getElementById('rpGenBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
 
-  _loadPptxGenJS(function() {
+  _loadPptxGenJS(async function() {
     try {
       const pptx = new PptxGenJS();
       // 기본 레이아웃(10 x 5.63in)이 슬라이드 폭 계산(12.5in짜리 표)보다 좁아서 표가
       // 오른쪽으로 잘려나가던 문제 — 실제 양식과 같은 16:9 와이드스크린 크기로 맞춘다.
       pptx.defineLayout({ name: 'WIDE_REPORT', width: 13.33, height: 7.5 });
       pptx.layout = 'WIDE_REPORT';
-      keys.forEach(function(key) { _addReportSlide(pptx, _reportSelected[key].item, _reportSelected[key]); });
+      for (const key of keys) {
+        const sel = _reportSelected[key];
+        const repRound = await _resolveRepresentativeRound(sel.item);
+        _addReportSlide(pptx, sel.item, sel, repRound);
+      }
 
-      const dateLabel = dateVal ? dateVal.replace(/-/g, '').slice(2) : (new Date().toISOString().slice(2, 10).replace(/-/g, ''));
+      // 파일명/제목의 날짜는 조회 필터(포장일)가 아니라 항상 "지금 다운로드하는 날짜" —
+      // 예전엔 필터 날짜나 toISOString()(UTC 기준이라 자정 근처엔 하루 밀림)을 썼었다.
+      const dateLabel = _todayLabel();
       const fname = `수출건 검사 세부내역${dateLabel}(${_rpFactoryLabel(factory)}-${keys.length}품목).pptx`;
       pptx.writeFile({ fileName: fname }).then(_rpResetGenBtn).catch(function(e) { alert('생성 실패: ' + e.message); _rpResetGenBtn(); });
     } catch (e) {
