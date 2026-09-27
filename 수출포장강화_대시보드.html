@@ -6137,7 +6137,7 @@
 
     <!-- 수출 일정 전체 달력 -->
     <div id="scheduleCalendarModal" onclick="if(event.target===this)closeScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:520px;margin:16px;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:14px;overflow:hidden;">
+        <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow:hidden;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
                     <i class="fa-solid fa-calendar-days" style="color:#f97316;"></i> 수출 일정 달력
@@ -6154,13 +6154,14 @@
             </div>
 
             <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;">
-                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>상차일</span>
-                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>납기일</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#0ea5e9;display:inline-block;"></span>상차일</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span>납기일</span>
+                <span style="color:#94a3b8;">— 날짜 칸의 차수를 누르면 상세가 열립니다</span>
             </div>
 
-            <div id="scGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+            <div id="scGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
 
-            <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+            <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
                 <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>
             </div>
         </div>
@@ -6215,6 +6216,22 @@
             return { byDate, roundInfo };
         }
 
+        // 날짜 칸 안에 차수명을 몇 개 직접 보여준다 — 예전엔 점 하나만 찍혀 있어서 매번
+        // 클릭해봐야 무슨 차수인지 알 수 있었는데, 그러지 않고도 대략 어떤 차수들인지
+        // 바로 보이게 해달라는 요청으로 바꿨다. 납기(빨강)를 먼저, 상차(파랑)를 뒤에
+        // 보여주고 칸이 좁아 다 못 보여주면 "+N"으로 나머지 개수만 표시한다.
+        function _scDayChips(ev) {
+            if (!ev) return '';
+            const items = [];
+            ev.due.forEach(r => items.push({ r, type: '납기' }));
+            ev.load.forEach(r => items.push({ r, type: '상차' }));
+            if (!items.length) return '';
+            const shown = items.slice(0, 2);
+            let html = shown.map(x => `<div style="font-size:8.5px;font-weight:700;line-height:1.5;padding:1px 4px;border-radius:4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:${x.type === '납기' ? '#FEE2E2' : '#E0F2FE'};color:${x.type === '납기' ? '#DC2626' : '#0369A1'};">${x.r}</div>`).join('');
+            if (items.length > 2) html += `<div style="font-size:8px;font-weight:700;color:#94a3b8;margin-top:2px;">+${items.length - 2}건</div>`;
+            return html;
+        }
+
         function renderScheduleCalendar() {
             _scEventsCache = _scCollectEvents();
             document.getElementById('scMonthLabel').textContent = _scYear + '년 ' + (_scMonth + 1) + '월';
@@ -6234,14 +6251,11 @@
                 const ev = _scEventsCache.byDate[dateStr];
                 const isToday = dateStr === todayStr;
                 const isSelected = dateStr === _scSelectedDate;
-                html += `<div onclick="scSelectDay('${dateStr}')" style="cursor:pointer;border-radius:10px;padding:6px 2px;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;gap:3px;
-                    background:${isSelected ? '#fff7ed' : (isToday ? '#f0f9ff' : 'transparent')};
-                    border:1px solid ${isSelected ? '#fb923c' : (isToday ? '#bae6fd' : 'transparent')};">
-                    <span style="font-size:12.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
-                    <span style="display:flex;gap:2px;">
-                        ${ev && ev.load.size ? `<span style="width:6px;height:6px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>` : ''}
-                        ${ev && ev.due.size ? `<span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;"></span>` : ''}
-                    </span>
+                html += `<div onclick="scSelectDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+                    background:${isSelected ? '#fff7ed' : (isToday ? '#f0f9ff' : '#fff')};
+                    border:1.5px solid ${isSelected ? '#fb923c' : (isToday ? '#bae6fd' : '#f1f5f9')};">
+                    <span style="font-size:11.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
+                    ${_scDayChips(ev)}
                 </div>`;
             }
             document.getElementById('scGrid').innerHTML = html;

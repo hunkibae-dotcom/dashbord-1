@@ -677,17 +677,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-hourglass-half text-slate-400"></i> 납기 임박도별 분포</h2>
           <div style="height:220px"><canvas id="topUndoneChart"></canvas></div>
         </div>
-        <div class="card p-5">
+        <div class="card p-5" onclick="openQcScheduleCalendar()" style="cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
           <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기/포장 날짜</h2>
-          <div style="height:195px;display:flex;gap:16px;align-items:stretch;">
-            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-              <div class="text-[12px] font-bold text-f1-600 mb-1">충주1공장</div>
-              <div id="factoryScheduleCj1" style="flex:1;overflow-y:auto;min-height:0;"></div>
-            </div>
-            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
-              <div class="text-[12px] font-bold text-f2-600 mb-1">충주2공장</div>
-              <div id="factoryScheduleCj2" style="flex:1;overflow-y:auto;min-height:0;"></div>
-            </div>
+          <div style="height:195px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#94A3B8;">
+            <i class="fa-solid fa-calendar-days" style="font-size:34px;color:#CBD5E1;"></i>
+            <div style="font-size:13px;font-weight:600;">달력에서 차수별 납기/포장 일정 확인</div>
+            <div style="font-size:11.5px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;">달력 열기 ›</div>
           </div>
         </div>
       </div>
@@ -950,6 +945,44 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </thead>
       <tbody id="rpList"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- ===== 공장별 납기/포장 날짜 달력 ===== -->
+<div id="qcScheduleModal" onclick="if(event.target===this)closeQcScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
+        <i class="fa-solid fa-calendar-days" style="color:#6D5CE8;"></i> 납기/포장 날짜 달력
+      </div>
+      <button onclick="closeQcScheduleCalendar()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div style="display:flex;gap:6px;">
+      <button onclick="qcScSetFactory('all')" id="qcScFAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
+      <button onclick="qcScSetFactory('cj1')" id="qcScFCj1" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주1공장</button>
+      <button onclick="qcScSetFactory('cj2')" id="qcScFCj2" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주2공장</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <button onclick="qcScMoveMonth(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">‹</button>
+      <div id="qcScMonthLabel" style="font-size:14.5px;font-weight:800;color:#1e293b;"></div>
+      <button onclick="qcScMoveMonth(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">›</button>
+    </div>
+
+    <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;">
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span>납기일</span>
+      <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#0ea5e9;display:inline-block;"></span>포장일</span>
+      <span style="color:#94a3b8;">— 날짜 칸의 차수를 누르면 상세가 열립니다</span>
+    </div>
+
+    <div id="qcScGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
+
+    <div id="qcScDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+      <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>
+    </div>
   </div>
 </div>
 
@@ -1959,61 +1992,139 @@ function renderTable(data) {
 // ===== CHARTS =====
 function renderCharts(data) {
   renderTopUndoneChart(data);
-  renderFactorySchedule();
 }
 
-// 공장별 납기/포장 날짜 — 예전엔 이 자리에 "공장별 검사비율" 도넛차트가 있었는데, 이미
-// 출고된 이력(archiveRows) 기준 완료율이라 지금 진행중인 차수의 실제 일정 파악에는
-// 도움이 안 됐다. 대신 진행중 목록(allData)에서 차수(건명)별 납기일/포장일을 뽑아
-// 가장 급한 순서로 보여준다.
-function _factoryScheduleList(key) {
-  const byRound = {};
-  allData.filter(d => d.공장 === key).forEach(d => {
-    if (!d.건명 || byRound[d.건명]) return;
-    byRound[d.건명] = { round: d.건명, dueDate: d.납기일, packDate: d.포장일 };
+// 공장별 납기/포장 날짜 달력 — 예전엔 이 자리에 "공장별 검사비율" 도넛차트가 있었는데,
+// 이미 출고된 이력(archiveRows) 기준 완료율이라 지금 진행중인 차수의 실제 일정 파악에는
+// 도움이 안 됐다. 처음엔 날짜순 리스트로 바꿨는데, 포장강화 쪽에 만든 "달력 안에서 바로
+// 어떤 차수인지 보이는" 큰 달력 스타일로 통일해달라는 요청으로 이 형태로 다시 바꿨다.
+let _qcScYear, _qcScMonth, _qcScSelectedDate = null, _qcScFactory = 'all', _qcScEventsCache = { byDate: {}, roundInfo: {} };
+
+function openQcScheduleCalendar() {
+  const now = new Date();
+  _qcScYear = now.getFullYear();
+  _qcScMonth = now.getMonth();
+  _qcScSelectedDate = null;
+  renderQcScheduleCalendar();
+  document.getElementById('qcScheduleModal').style.display = 'flex';
+  _armBackTrap();
+}
+function closeQcScheduleCalendar() {
+  document.getElementById('qcScheduleModal').style.display = 'none';
+}
+function qcScMoveMonth(delta) {
+  _qcScMonth += delta;
+  if (_qcScMonth < 0) { _qcScMonth = 11; _qcScYear--; }
+  if (_qcScMonth > 11) { _qcScMonth = 0; _qcScYear++; }
+  renderQcScheduleCalendar();
+}
+function qcScSetFactory(key) {
+  _qcScFactory = key;
+  ['all', 'cj1', 'cj2'].forEach(k => {
+    const btn = document.getElementById(k === 'all' ? 'qcScFAll' : (k === 'cj1' ? 'qcScFCj1' : 'qcScFCj2'));
+    if (!btn) return;
+    const on = k === key;
+    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
+    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
+    btn.style.color = on ? '#fff' : '#475569';
   });
-  const list = Object.values(byRound);
-  list.sort((a, b) => {
-    const da = parseKDate(a.dueDate), db = parseKDate(b.dueDate);
-    if (!da && !db) return 0;
-    if (!da) return 1;
-    if (!db) return -1;
-    return da - db;
-  });
-  return list;
+  renderQcScheduleCalendar();
 }
 
-function _factoryScheduleRowsHtml(list) {
-  if (!list.length) return '<div style="text-align:center;padding:24px 0;color:#94A3B8;font-size:12px;">일정 없음</div>';
-  return list.map(x => {
-    const dd = ddayInfo(x.dueDate);
-    let badge;
-    if (dd === null) badge = { bg: '#F1F5F9', fg: '#94A3B8', txt: '미정' };
-    else if (dd < 0) badge = { bg: '#FEE2E2', fg: '#EF4444', txt: '지연 ' + Math.abs(dd) + '일' };
-    else if (dd <= 7) badge = { bg: '#FFEDD5', fg: '#F97316', txt: 'D-' + dd };
-    else badge = { bg: '#F1F5F9', fg: '#94A3B8', txt: 'D-' + dd };
-    const roundEsc = (x.round || '').replace(/"/g, '&quot;');
-    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 3px;border-bottom:1px solid #F1F5F9;">
-      <div style="min-width:0;flex:1;">
-        <div style="font-size:12.5px;font-weight:700;color:#1E293B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${roundEsc}">${x.round}</div>
-        <div style="font-size:10.5px;color:#94A3B8;margin-top:1px;">납기 ${_ymdShort(x.dueDate) || '—'} · 포장 ${_ymdShort(x.packDate) || '—'}</div>
+function _qcIsoDate(str) {
+  const d = parseKDate(str);
+  if (!d) return null;
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function _qcScCollectEvents() {
+  const byDate = {};
+  const roundInfo = {};
+  allData.forEach(d => {
+    if (!d.건명) return;
+    if (_qcScFactory !== 'all' && d.공장 !== _qcScFactory) return;
+    if (!roundInfo[d.건명]) roundInfo[d.건명] = { dueDate: d.납기일, packDate: d.포장일, factory: d.공장 };
+    const dueIso = _qcIsoDate(d.납기일);
+    const packIso = _qcIsoDate(d.포장일);
+    if (dueIso) { if (!byDate[dueIso]) byDate[dueIso] = { due: new Set(), pack: new Set() }; byDate[dueIso].due.add(d.건명); }
+    if (packIso) { if (!byDate[packIso]) byDate[packIso] = { due: new Set(), pack: new Set() }; byDate[packIso].pack.add(d.건명); }
+  });
+  return { byDate, roundInfo };
+}
+
+function _qcScDayChips(ev) {
+  if (!ev) return '';
+  const items = [];
+  ev.due.forEach(r => items.push({ r, type: '납기' }));
+  ev.pack.forEach(r => items.push({ r, type: '포장' }));
+  if (!items.length) return '';
+  const shown = items.slice(0, 2);
+  let html = shown.map(x => `<div style="font-size:8.5px;font-weight:700;line-height:1.5;padding:1px 4px;border-radius:4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:${x.type === '납기' ? '#FEE2E2' : '#E0F2FE'};color:${x.type === '납기' ? '#DC2626' : '#0369A1'};">${x.r}</div>`).join('');
+  if (items.length > 2) html += `<div style="font-size:8px;font-weight:700;color:#94a3b8;margin-top:2px;">+${items.length - 2}건</div>`;
+  return html;
+}
+
+function renderQcScheduleCalendar() {
+  _qcScEventsCache = _qcScCollectEvents();
+  document.getElementById('qcScMonthLabel').textContent = _qcScYear + '년 ' + (_qcScMonth + 1) + '월';
+
+  const firstDow = new Date(_qcScYear, _qcScMonth, 1).getDay();
+  const daysInMonth = new Date(_qcScYear, _qcScMonth + 1, 0).getDate();
+  const now = new Date();
+  const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const dowLabels = ['일', '월', '화', '수', '목', '금', '토'];
+
+  let html = dowLabels.map((d, i) =>
+    `<div style="text-align:center;font-size:11px;font-weight:700;color:${i === 0 ? '#ef4444' : i === 6 ? '#0ea5e9' : '#94a3b8'};padding:4px 0;">${d}</div>`
+  ).join('');
+
+  for (let i = 0; i < firstDow; i++) html += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = _qcScYear + '-' + String(_qcScMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const ev = _qcScEventsCache.byDate[dateStr];
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === _qcScSelectedDate;
+    html += `<div onclick="qcScSelectDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+      background:${isSelected ? '#f5f3ff' : (isToday ? '#f0f9ff' : '#fff')};
+      border:1.5px solid ${isSelected ? '#8B7CF0' : (isToday ? '#bae6fd' : '#f1f5f9')};">
+      <span style="font-size:11.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
+      ${_qcScDayChips(ev)}
+    </div>`;
+  }
+  document.getElementById('qcScGrid').innerHTML = html;
+  renderQcScheduleDayList();
+}
+
+function qcScSelectDay(dateStr) {
+  _qcScSelectedDate = (_qcScSelectedDate === dateStr) ? null : dateStr;
+  renderQcScheduleCalendar();
+}
+
+function renderQcScheduleDayList() {
+  const wrap = document.getElementById('qcScDayList');
+  if (!_qcScSelectedDate) {
+    wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>';
+    return;
+  }
+  const ev = _qcScEventsCache.byDate[_qcScSelectedDate];
+  const roundInfo = _qcScEventsCache.roundInfo;
+  if (!ev || (!ev.due.size && !ev.pack.size)) {
+    wrap.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">${_qcScSelectedDate} 일정이 없습니다.</div>`;
+    return;
+  }
+  const rows = [];
+  ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
+  ev.pack.forEach(r => rows.push({ round: r, type: '포장', info: roundInfo[r] }));
+  wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:#64748b;padding:0 2px 2px;">${_qcScSelectedDate}</div>` + rows.map(x => {
+    const facLabel = x.info && x.info.factory === 'cj1' ? '충주1' : x.info && x.info.factory === 'cj2' ? '충주2' : '';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
+      <div style="min-width:0;">
+        <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${facLabel}${facLabel ? ' · ' : ''}납기 ${_ymdShort(x.info ? x.info.dueDate : '') || '—'} · 포장 ${_ymdShort(x.info ? x.info.packDate : '') || '—'}</div>
       </div>
-      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${badge.bg};color:${badge.fg};white-space:nowrap;flex-shrink:0;">${badge.txt}</span>
+      <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
     </div>`;
   }).join('');
-}
-
-function renderFactorySchedule() {
-  ['cj1', 'cj2'].forEach(key => {
-    const wrap = document.getElementById(key === 'cj1' ? 'factoryScheduleCj1' : 'factoryScheduleCj2');
-    if (wrap) wrap.innerHTML = _factoryScheduleRowsHtml(_factoryScheduleList(key).slice(0, 8));
-  });
-}
-function renderMobileFactorySchedule() {
-  ['cj1', 'cj2'].forEach(key => {
-    const wrap = document.getElementById(key === 'cj1' ? 'mFactoryScheduleCj1' : 'mFactoryScheduleCj2');
-    if (wrap) wrap.innerHTML = _factoryScheduleRowsHtml(_factoryScheduleList(key).slice(0, 8));
-  });
 }
 
 const DDAY_COLORS = {
@@ -2464,7 +2575,7 @@ function closeProductSearch() {
   document.body.classList.remove('m-lock');
 }
 window.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); closeReportModal(); }
+  if (e.key === 'Escape') { closeProductSearch(); closeSpecModal(); closeReportModal(); closeQcScheduleCalendar(); }
 });
 
 // ═══════════════════════════════════════════════════════════════
@@ -4009,8 +4120,6 @@ function renderMobileCharts() {
     });
   }
 
-  // 공장별 납기/포장 날짜 (renderFactorySchedule의 모바일 버전 — 데스크탑과 같은 데이터/로직 공유)
-  renderMobileFactorySchedule();
 }
 
 function renderMobileList() {
@@ -4582,6 +4691,8 @@ function _closeTopOverlay() {
   if (hiddenClassOpen('specModal'))     { closeSpecModal();     return true; }
   if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
   if (displayOpen('mSearchSubMenu'))    { closeMSearchSub();    return true; }
+  if (displayOpen('qcScheduleModal'))   { closeQcScheduleCalendar(); return true; }
+  if (transformOpen('reportModal'))     { closeReportModal();   return true; }
   return false;
 }
 function _showExitBackToast() {
@@ -4931,22 +5042,16 @@ function onNativeScanResult(raw) {
       </div>
 
       <!-- 공장별 납기/포장 날짜 -->
-      <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
+      <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);cursor:pointer;" onclick="openQcScheduleCalendar()">
         <div class="flex items-center gap-2.5 mb-3">
           <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
             <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
           </span>
           <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
         </div>
-        <div style="display:flex;gap:12px;">
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:700;color:#3B82F6;margin-bottom:4px;">충주1공장</div>
-            <div id="mFactoryScheduleCj1" style="max-height:190px;overflow-y:auto;"></div>
-          </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:4px;">충주2공장</div>
-            <div id="mFactoryScheduleCj2" style="max-height:190px;overflow-y:auto;"></div>
-          </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 0;color:#94A3B8;">
+          <i class="fa-solid fa-calendar-days" style="font-size:28px;color:#CBD5E1;"></i>
+          <div style="font-size:12.5px;font-weight:600;">차수별 납기/포장 일정 달력 보기</div>
         </div>
       </div>
     </div>
