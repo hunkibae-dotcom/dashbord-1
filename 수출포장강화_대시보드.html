@@ -616,9 +616,9 @@
                     </div>
 
                     <div id="strengthenedStatusCard" onclick="onCard4Click(event)" class="bg-panelBg border border-accentOrange/20 rounded-3xl p-5 shadow-xl relative overflow-hidden cursor-pointer transition-all duration-200 ease-out hover:scale-[1.04] hover:shadow-lg hover:shadow-accentOrange/15 hover:border-accentOrange/50 active:scale-[1.01]">
-                        <div class="absolute right-4 top-4 text-accentOrange opacity-60">
-                            <i class="fa-solid fa-bell text-[25.5px] animate-bounce"></i>
-                        </div>
+                        <button onclick="event.stopPropagation();openScheduleCalendar();" title="전체 일정 달력 보기" class="absolute right-4 top-4 w-8 h-8 rounded-full flex items-center justify-center text-accentOrange bg-accentOrange/10 border border-accentOrange/25 hover:bg-accentOrange/20 transition-colors z-10">
+                            <i class="fa-solid fa-calendar-days text-[14px]"></i>
+                        </button>
                         <p class="text-[17.5px] font-semibold text-slate-200 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <span class="h-2 w-2 rounded-full bg-accentOrange animate-pulse"></span>
                             수출 일정
@@ -6134,6 +6134,150 @@
             </div>
         </div>
     </div>
+
+    <!-- 수출 일정 전체 달력 -->
+    <div id="scheduleCalendarModal" onclick="if(event.target===this)closeScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:520px;margin:16px;max-height:90vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:14px;overflow:hidden;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-calendar-days" style="color:#f97316;"></i> 수출 일정 달력
+                </div>
+                <button onclick="closeScheduleCalendar()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <button onclick="scMoveMonth(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">‹</button>
+                <div id="scMonthLabel" style="font-size:14.5px;font-weight:800;color:#1e293b;"></div>
+                <button onclick="scMoveMonth(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">›</button>
+            </div>
+
+            <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;">
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>상차일</span>
+                <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;"></span>납기일</span>
+            </div>
+
+            <div id="scGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+
+            <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+                <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ── 수출 일정 전체 달력 ────────────────────────────────────
+        // "수출 일정" 카드는 가장 가까운 일정 하나만 보여주는데, 전체 차수의 납기/상차
+        // 일정을 한눈에 보고 싶다는 요청으로 추가 — 카드 자체 클릭(테이블 필터)과는
+        // 별개로 카드 우상단의 달력 아이콘 버튼에서만 연다.
+        let _scYear, _scMonth, _scSelectedDate = null, _scEventsCache = { byDate: {}, roundInfo: {} };
+
+        function openScheduleCalendar() {
+            const now = new Date();
+            _scYear = now.getFullYear();
+            _scMonth = now.getMonth();
+            _scSelectedDate = null;
+            renderScheduleCalendar();
+            document.getElementById('scheduleCalendarModal').style.display = 'flex';
+        }
+        function closeScheduleCalendar() {
+            document.getElementById('scheduleCalendarModal').style.display = 'none';
+        }
+        function scMoveMonth(delta) {
+            _scMonth += delta;
+            if (_scMonth < 0) { _scMonth = 11; _scYear--; }
+            if (_scMonth > 11) { _scMonth = 0; _scYear++; }
+            renderScheduleCalendar();
+        }
+
+        // 수출 현황 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를 뽑는다.
+        function _scCollectEvents() {
+            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
+            const list = exportKey ? (datasetMap[exportKey] || []) : [];
+            const byDate = {};
+            const roundInfo = {};
+            list.forEach(item => {
+                if (!item.round) return;
+                if (!roundInfo[item.round]) roundInfo[item.round] = { date: item.date, dueDate: item.dueDate, qty: 0 };
+                roundInfo[item.round].qty += parseInt(item.qty) || 0;
+                const loadD = normalizeDate(item.date);
+                const dueD = normalizeDate(item.dueDate);
+                if (loadD && loadD !== '-') {
+                    if (!byDate[loadD]) byDate[loadD] = { load: new Set(), due: new Set() };
+                    byDate[loadD].load.add(item.round);
+                }
+                if (dueD && dueD !== '-') {
+                    if (!byDate[dueD]) byDate[dueD] = { load: new Set(), due: new Set() };
+                    byDate[dueD].due.add(item.round);
+                }
+            });
+            return { byDate, roundInfo };
+        }
+
+        function renderScheduleCalendar() {
+            _scEventsCache = _scCollectEvents();
+            document.getElementById('scMonthLabel').textContent = _scYear + '년 ' + (_scMonth + 1) + '월';
+
+            const firstDow = new Date(_scYear, _scMonth, 1).getDay();
+            const daysInMonth = new Date(_scYear, _scMonth + 1, 0).getDate();
+            const todayStr = normalizeDate(new Date());
+            const dowLabels = ['일', '월', '화', '수', '목', '금', '토'];
+
+            let html = dowLabels.map((d, i) =>
+                `<div style="text-align:center;font-size:11px;font-weight:700;color:${i === 0 ? '#ef4444' : i === 6 ? '#0ea5e9' : '#94a3b8'};padding:4px 0;">${d}</div>`
+            ).join('');
+
+            for (let i = 0; i < firstDow; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = _scYear + '-' + String(_scMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                const ev = _scEventsCache.byDate[dateStr];
+                const isToday = dateStr === todayStr;
+                const isSelected = dateStr === _scSelectedDate;
+                html += `<div onclick="scSelectDay('${dateStr}')" style="cursor:pointer;border-radius:10px;padding:6px 2px;text-align:center;min-height:44px;display:flex;flex-direction:column;align-items:center;gap:3px;
+                    background:${isSelected ? '#fff7ed' : (isToday ? '#f0f9ff' : 'transparent')};
+                    border:1px solid ${isSelected ? '#fb923c' : (isToday ? '#bae6fd' : 'transparent')};">
+                    <span style="font-size:12.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
+                    <span style="display:flex;gap:2px;">
+                        ${ev && ev.load.size ? `<span style="width:6px;height:6px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>` : ''}
+                        ${ev && ev.due.size ? `<span style="width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;"></span>` : ''}
+                    </span>
+                </div>`;
+            }
+            document.getElementById('scGrid').innerHTML = html;
+            renderScheduleDayList();
+        }
+
+        function scSelectDay(dateStr) {
+            _scSelectedDate = (_scSelectedDate === dateStr) ? null : dateStr;
+            renderScheduleCalendar();
+        }
+
+        function renderScheduleDayList() {
+            const wrap = document.getElementById('scDayList');
+            if (!_scSelectedDate) {
+                wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>';
+                return;
+            }
+            const ev = _scEventsCache.byDate[_scSelectedDate];
+            const roundInfo = _scEventsCache.roundInfo;
+            if (!ev || (!ev.load.size && !ev.due.size)) {
+                wrap.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">${_scSelectedDate} 일정이 없습니다.</div>`;
+                return;
+            }
+            const rows = [];
+            ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
+            ev.load.forEach(r => rows.push({ round: r, type: '상차', info: roundInfo[r] }));
+            wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:#64748b;padding:0 2px 2px;">${_scSelectedDate}</div>` + rows.map(x => `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
+                    <div style="min-width:0;">
+                        <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
+                        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${x.info ? x.info.qty.toLocaleString() + ' BOX' : ''}</div>
+                    </div>
+                    <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
+                </div>`).join('');
+        }
+    </script>
 
     <script>
         // ── 수출 일정 건명 선택 피커 ──────────────────────────────

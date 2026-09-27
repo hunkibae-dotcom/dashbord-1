@@ -678,15 +678,15 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           <div style="height:220px"><canvas id="topUndoneChart"></canvas></div>
         </div>
         <div class="card p-5">
-          <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-slate-400"></i> 공장별 검사비율</h2>
+          <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기/포장 날짜</h2>
           <div style="height:195px;display:flex;gap:16px;align-items:stretch;">
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
               <div class="text-[12px] font-bold text-f1-600 mb-1">충주1공장</div>
-              <div style="flex:1;width:100%;min-height:0;position:relative;overflow:hidden;"><canvas id="factoryPieCj1" style="max-height:170px;"></canvas></div>
+              <div id="factoryScheduleCj1" style="flex:1;overflow-y:auto;min-height:0;"></div>
             </div>
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div style="flex:1;display:flex;flex-direction:column;min-width:0;">
               <div class="text-[12px] font-bold text-f2-600 mb-1">충주2공장</div>
-              <div style="flex:1;width:100%;min-height:0;position:relative;overflow:hidden;"><canvas id="factoryPieCj2" style="max-height:170px;"></canvas></div>
+              <div id="factoryScheduleCj2" style="flex:1;overflow-y:auto;min-height:0;"></div>
             </div>
           </div>
         </div>
@@ -1952,7 +1952,61 @@ function renderTable(data) {
 // ===== CHARTS =====
 function renderCharts(data) {
   renderTopUndoneChart(data);
-  renderDdayChart(data);
+  renderFactorySchedule();
+}
+
+// 공장별 납기/포장 날짜 — 예전엔 이 자리에 "공장별 검사비율" 도넛차트가 있었는데, 이미
+// 출고된 이력(archiveRows) 기준 완료율이라 지금 진행중인 차수의 실제 일정 파악에는
+// 도움이 안 됐다. 대신 진행중 목록(allData)에서 차수(건명)별 납기일/포장일을 뽑아
+// 가장 급한 순서로 보여준다.
+function _factoryScheduleList(key) {
+  const byRound = {};
+  allData.filter(d => d.공장 === key).forEach(d => {
+    if (!d.건명 || byRound[d.건명]) return;
+    byRound[d.건명] = { round: d.건명, dueDate: d.납기일, packDate: d.포장일 };
+  });
+  const list = Object.values(byRound);
+  list.sort((a, b) => {
+    const da = parseKDate(a.dueDate), db = parseKDate(b.dueDate);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return da - db;
+  });
+  return list;
+}
+
+function _factoryScheduleRowsHtml(list) {
+  if (!list.length) return '<div style="text-align:center;padding:24px 0;color:#94A3B8;font-size:12px;">일정 없음</div>';
+  return list.map(x => {
+    const dd = ddayInfo(x.dueDate);
+    let badge;
+    if (dd === null) badge = { bg: '#F1F5F9', fg: '#94A3B8', txt: '미정' };
+    else if (dd < 0) badge = { bg: '#FEE2E2', fg: '#EF4444', txt: '지연 ' + Math.abs(dd) + '일' };
+    else if (dd <= 7) badge = { bg: '#FFEDD5', fg: '#F97316', txt: 'D-' + dd };
+    else badge = { bg: '#F1F5F9', fg: '#94A3B8', txt: 'D-' + dd };
+    const roundEsc = (x.round || '').replace(/"/g, '&quot;');
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 3px;border-bottom:1px solid #F1F5F9;">
+      <div style="min-width:0;flex:1;">
+        <div style="font-size:12.5px;font-weight:700;color:#1E293B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${roundEsc}">${x.round}</div>
+        <div style="font-size:10.5px;color:#94A3B8;margin-top:1px;">납기 ${_ymdShort(x.dueDate) || '—'} · 포장 ${_ymdShort(x.packDate) || '—'}</div>
+      </div>
+      <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${badge.bg};color:${badge.fg};white-space:nowrap;flex-shrink:0;">${badge.txt}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderFactorySchedule() {
+  ['cj1', 'cj2'].forEach(key => {
+    const wrap = document.getElementById(key === 'cj1' ? 'factoryScheduleCj1' : 'factoryScheduleCj2');
+    if (wrap) wrap.innerHTML = _factoryScheduleRowsHtml(_factoryScheduleList(key).slice(0, 8));
+  });
+}
+function renderMobileFactorySchedule() {
+  ['cj1', 'cj2'].forEach(key => {
+    const wrap = document.getElementById(key === 'cj1' ? 'mFactoryScheduleCj1' : 'mFactoryScheduleCj2');
+    if (wrap) wrap.innerHTML = _factoryScheduleRowsHtml(_factoryScheduleList(key).slice(0, 8));
+  });
 }
 
 const DDAY_COLORS = {
@@ -2031,67 +2085,6 @@ function renderTopUndoneChart(data) {
   });
   // 차트 캔버스에 pointer 커서 적용
   document.getElementById('topUndoneChart').style.cursor = 'pointer';
-}
-
-function renderDdayChart(data) {
-  if (charts.dday) { charts.dday.destroy(); charts.dday = null; }
-  [['cj1','factoryPieCj1','#3B82F6'], ['cj2','factoryPieCj2','#8B5CF6']].forEach(([key, canvasId, color]) => {
-    const ck = 'pie' + key;
-    if (charts[ck]) charts[ck].destroy();
-    const fd = archiveRows.filter(d => d.공장 === key);
-    const done = fd.filter(d => d.검사 === '검사').length;
-    const undone = fd.filter(d => d.검사 !== '검사').length;
-    const total = done + undone;
-    const pct = total ? Math.round(done / total * 100) : 0;
-    const ctx = document.getElementById(canvasId)?.getContext('2d');
-    if (!ctx) return;
-    charts[ck] = new Chart(ctx, {
-      type: 'doughnut',
-      data: {
-        labels: ['검사완료', '미검사'],
-        datasets: [{ data:[done, undone], backgroundColor:[color+'CC','rgba(239,68,68,.5)'], borderColor:[color,'#EF4444'], borderWidth:1.5, hoverOffset:4 }]
-      },
-      plugins: [{ id:'centerText', beforeDraw(chart) {
-        const { ctx:c2, chartArea:{width,height,top,left} } = chart;
-        c2.save();
-        c2.font = 'bold 16px Inter,sans-serif'; c2.fillStyle = color; c2.textAlign = 'center'; c2.textBaseline = 'middle';
-        c2.fillText(pct+'%', left+width/2, top+height/2-6);
-        c2.font = '10px Inter,sans-serif'; c2.fillStyle = '#94A3B8';
-        c2.fillText('완료율', left+width/2, top+height/2+12);
-        c2.restore();
-      }}],
-      options: {
-        responsive:true, maintainAspectRatio:false, cutout:'62%',
-        plugins:{
-          legend:{display:false},
-          tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.label}: ${item.raw.toLocaleString()}건 — 클릭하여 필터` } }
-        },
-        onClick: (evt, elements) => {
-          if (!elements.length) return;
-          const status = elements[0].index === 0 ? '검사' : '미검사';
-          if (pieFilter?.factory === key && pieFilter?.status === status) {
-            clearPieFilter(); return;
-          }
-          ddayUrgencyFilter = null; qualityFilter = null;
-          document.getElementById('ddayFilterChip')?.classList.add('hidden');
-          document.getElementById('qualityFilterChip')?.classList.add('hidden');
-          pieFilter = { factory: key, status };
-          const chip = document.getElementById('pieFilterChip');
-          const lbl  = document.getElementById('pieFilterLabel');
-          if (chip && lbl) {
-            const facName = key === 'cj1' ? '충주1공장' : '충주2공장';
-            lbl.style.background = status === '검사' ? color : '#EF4444';
-            lbl.textContent = `${facName} · ${status === '검사' ? '검사완료' : '미검사출고'}`;
-            chip.classList.remove('hidden');
-          }
-          setFactoryTab(key);
-          applyFilters();
-          setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
-        }
-      }
-    });
-    document.getElementById(canvasId).style.cursor = 'pointer';
-  });
 }
 
 // ===== 누적 품질검사 차트 =====
@@ -3930,41 +3923,8 @@ function renderMobileCharts() {
     });
   }
 
-  // 공장별 검사비율 원형 (donut)
-  if (mCharts.dd) { mCharts.dd.destroy(); mCharts.dd = null; }
-  [['cj1','mDdChart','#3B82F6'], ['cj2','mDdChart2','#8B5CF6']].forEach(([key, canvasId, color]) => {
-    const ck = 'mpie' + key;
-    if (mCharts[ck]) mCharts[ck].destroy();
-    const fd = archiveRows.filter(d => d.공장 === key);
-    const done = fd.filter(d => d.검사 === '검사').length;
-    const undone = fd.filter(d => d.검사 !== '검사').length;
-    const total = done + undone;
-    const pct = total ? Math.round(done/total*100) : 0;
-    const dCtx = document.getElementById(canvasId)?.getContext('2d');
-    if (!dCtx) return;
-    mCharts[ck] = new Chart(dCtx, {
-      type:'doughnut',
-      data:{ labels:['검사완료','미검사'], datasets:[{ data:[done,undone], backgroundColor:[color+'CC','rgba(239,68,68,.5)'], borderColor:[color,'#EF4444'], borderWidth:1.5, hoverOffset:4 }] },
-      plugins:[{ id:'cText'+key, beforeDraw(chart) {
-        const { ctx:c2, chartArea:{width,height,top,left} } = chart;
-        c2.save(); c2.font='bold 14px Inter,sans-serif'; c2.fillStyle=color; c2.textAlign='center'; c2.textBaseline='middle';
-        c2.fillText(pct+'%', left+width/2, top+height/2-5);
-        c2.font='9px Inter,sans-serif'; c2.fillStyle=c.tickSub;
-        c2.fillText('완료율', left+width/2, top+height/2+10); c2.restore();
-      }}],
-      options:{ responsive:true, maintainAspectRatio:false, cutout:'60%',
-        plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.label}: ${item.raw}건 — 탭하여 필터` } } },
-        onClick: (evt, elements) => {
-          if (!elements.length) return;
-          const status = elements[0].index === 0 ? '출고완료' : '미검사출고';
-          setMFactory(key);
-          setMStatus(status);
-          setMTab('list');
-        }
-      }
-    });
-    document.getElementById(canvasId).style.cursor = 'pointer';
-  });
+  // 공장별 납기/포장 날짜 (renderFactorySchedule의 모바일 버전 — 데스크탑과 같은 데이터/로직 공유)
+  renderMobileFactorySchedule();
 }
 
 function renderMobileList() {
@@ -4884,22 +4844,22 @@ function onNativeScanResult(raw) {
         <div style="height:180px"><canvas id="mTopChart"></canvas></div>
       </div>
 
-      <!-- Factory pie -->
+      <!-- 공장별 납기/포장 날짜 -->
       <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);">
         <div class="flex items-center gap-2.5 mb-3">
           <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
-            <i class="fa-solid fa-chart-pie text-blue-500 text-[12px]"></i>
+            <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
           </span>
-          <span class="text-[15px] font-extrabold text-slate-800">공장별 검사비율</span>
+          <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
         </div>
-        <div style="height:170px;display:flex;gap:12px;">
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+        <div style="display:flex;gap:12px;">
+          <div style="flex:1;min-width:0;">
             <div style="font-size:11px;font-weight:700;color:#3B82F6;margin-bottom:4px;">충주1공장</div>
-            <div style="flex:1;width:100%;position:relative;"><canvas id="mDdChart"></canvas></div>
+            <div id="mFactoryScheduleCj1" style="max-height:190px;overflow-y:auto;"></div>
           </div>
-          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+          <div style="flex:1;min-width:0;">
             <div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:4px;">충주2공장</div>
-            <div style="flex:1;width:100%;position:relative;"><canvas id="mDdChart2"></canvas></div>
+            <div id="mFactoryScheduleCj2" style="max-height:190px;overflow-y:auto;"></div>
           </div>
         </div>
       </div>
