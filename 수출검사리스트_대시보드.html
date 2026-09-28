@@ -933,10 +933,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       전체선택
     </button>
 
-    <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;flex-shrink:0;">
-      <button type="button" onclick="setRpSort('asc')" id="rpSortAsc" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);" title="선택한 날짜 기준 오름차순"><i class="fa-solid fa-arrow-up-short-wide"></i></button>
-      <button type="button" onclick="setRpSort('desc')" id="rpSortDesc" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);" title="선택한 날짜 기준 내림차순"><i class="fa-solid fa-arrow-down-wide-short"></i></button>
-    </div>
+    <button type="button" onclick="cycleRpSort()" id="rpSortBtn" class="rp-df-btn" style="padding:10px 14px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);flex-shrink:0;" title="누르면 내림차순 → 오름차순 → 정렬 안 함 순으로 바뀝니다"><i class="fa-solid fa-sort"></i></button>
 
     <div style="flex:1;"></div>
     <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;"><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</div>
@@ -963,7 +960,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </colgroup>
       <thead style="position:sticky;top:0;background:var(--bg);z-index:1;">
         <tr>
-          <th style="padding:6px;"></th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">선택</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">건명</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품코드</th>
           <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">색상</th>
@@ -2752,21 +2749,32 @@ window.addEventListener('keydown', (e) => {
 // 포장완료)만 시트에 없는 데이터라 여기서 직접 등록받는다 — 실제 촬영 기능(카메라 캡처)은
 // 별도 작업이고, 지금은 파일 선택으로 테스트한다.
 // ═══════════════════════════════════════════════════════════════
-let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note, hasHardware }
+let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note, hasHardware } — 등록한 사진·입력값을 담는 저장소, 체크 해제해도 안 지워짐
+let _reportChecked = new Set(); // 지금 PPTX 생성 대상으로 체크된 키만 담는 집합 — 체크박스 해제는 이 집합에서만 빠짐
 
 // 보고서는 하루만에 다 채우기 어려워서, 오늘 등록한 사진을 닫았다 다시 열어도(하루
 // 지나서 다시 접속해도) 그대로 남아있다가 다음번에 이어서 채우고 누적해서 생성할 수
 // 있어야 한다 — localStorage에 저장해서 새로고침/재접속에도 선택·사진이 유지된다.
 const RP_STORAGE_KEY = 'qc_report_selected_v1';
 function _rpSaveToStorage() {
-  try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify(_reportSelected)); }
+  try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: _reportSelected, checked: Array.from(_reportChecked) })); }
   catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
 }
 function _rpLoadFromStorage() {
   try {
     const raw = localStorage.getItem(RP_STORAGE_KEY);
-    if (raw) _reportSelected = JSON.parse(raw) || {};
-  } catch (e) { _reportSelected = {}; }
+    if (!raw) return;
+    const parsed = JSON.parse(raw) || {};
+    if (parsed.selected) {
+      // 새 형식: { selected, checked }
+      _reportSelected = parsed.selected;
+      _reportChecked = new Set(parsed.checked || []);
+    } else {
+      // 예전 형식(순수 {키:값} 저장) 호환 — 저장돼 있던 항목은 전부 체크된 것으로 본다
+      _reportSelected = parsed;
+      _reportChecked = new Set(Object.keys(parsed));
+    }
+  } catch (e) { _reportSelected = {}; _reportChecked = new Set(); }
 }
 _rpLoadFromStorage();
 
@@ -2776,6 +2784,7 @@ function openReportModal() {
   document.body.classList.add('m-lock');
   document.getElementById(RP_DATE_FIELD_BTN[_rpDateField])?.classList.add('active');
   document.getElementById('mNavReport')?.classList.add('active');
+  _updateRpSortBtn();
   renderReportList();
   _armBackTrap();
 }
@@ -2824,11 +2833,21 @@ function setRpDateField(field) {
   renderReportList();
 }
 
-function setRpSort(dir) {
-  _rpSortDir = (_rpSortDir === dir) ? null : dir;
-  document.getElementById('rpSortAsc')?.classList.toggle('active', _rpSortDir === 'asc');
-  document.getElementById('rpSortDesc')?.classList.toggle('active', _rpSortDir === 'desc');
+// 버튼 하나로 내림차순 → 오름차순 → 정렬 안 함 순서로 순환한다.
+function cycleRpSort() {
+  _rpSortDir = _rpSortDir === null ? 'desc' : _rpSortDir === 'desc' ? 'asc' : null;
+  _updateRpSortBtn();
   renderReportList();
+}
+function _updateRpSortBtn() {
+  const btn = document.getElementById('rpSortBtn');
+  if (!btn) return;
+  const icon = _rpSortDir === 'desc' ? 'fa-arrow-down-wide-short' : _rpSortDir === 'asc' ? 'fa-arrow-up-short-wide' : 'fa-sort';
+  btn.innerHTML = '<i class="fa-solid ' + icon + '"></i>';
+  btn.classList.toggle('active', _rpSortDir !== null);
+  btn.title = _rpSortDir === 'desc' ? '내림차순 (누르면 오름차순으로)'
+    : _rpSortDir === 'asc' ? '오름차순 (누르면 정렬 해제)'
+    : '정렬 안 함 (누르면 내림차순으로)';
 }
 
 function _rpFilteredRows() {
@@ -2863,16 +2882,15 @@ function _rpFilteredRows() {
   return rows;
 }
 
-// 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 다 선택한다 — 이미 선택되어
-// 사진이 등록된 품목은 그대로 두고(누적), 아직 선택 안 된 품목만 추가한다.
+// 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 다 체크한다 — 이미 등록된 사진·
+// 입력값은 그대로 두고(누적), 체크 표시만 켠다.
 function selectAllVisibleReportItems() {
   const rows = _rpFilteredRows();
   if (!rows.length) return;
   rows.forEach(d => {
     const key = _miKey(d);
-    if (!_reportSelected[key]) {
-      _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
-    }
+    _rpEnsureSelected(key);
+    _reportChecked.add(key);
   });
   _rpSaveToStorage();
   renderReportList();
@@ -2883,7 +2901,7 @@ function renderReportList() {
   const list = document.getElementById('rpList');
   if (!rows.length) {
     list.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
-    document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
+    document.getElementById('rpSelCount').textContent = _reportChecked.size;
     return;
   }
 
@@ -2892,7 +2910,7 @@ function renderReportList() {
   list.innerHTML = rows.map(d => {
     const key = _miKey(d);
     const sel = _reportSelected[key];
-    const checked = !!sel;
+    const checked = _reportChecked.has(key);
     const hasHardware = sel ? sel.hasHardware === true : false;
     const safeKey = key.replace(/'/g, "\\'");
     const rowBg = 'background:var(--panel);';
@@ -2911,7 +2929,7 @@ function renderReportList() {
       <td style="${rowBg}padding:6px 4px;border-radius:0 12px 12px 0;border:1px solid var(--border);border-left:none;">${_rpNoteCell(safeKey, sel)}</td>
     </tr>`;
   }).join('');
-  document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
+  document.getElementById('rpSelCount').textContent = _reportChecked.size;
 }
 
 // 값이 하나라도 있으면 실제 수치를, 없으면 "입력" 안내를 보여준다 — CBM 값은 사용자가
@@ -2996,25 +3014,28 @@ function _rpFindByKey(key) {
   return allData.find(x => _miKey(x) === key) || archiveRows.find(x => _miKey(x) === key);
 }
 
+// 체크박스는 이번 PPTX 생성에 포함할지만 정한다 — 해제해도 등록해둔 사진/CBM/특이사항은
+// _reportSelected에 그대로 남아있다가, 다시 체크하면 그대로 이어서 쓸 수 있다.
 function toggleReportItem(key) {
-  if (_reportSelected[key]) {
-    delete _reportSelected[key];
+  if (_reportChecked.has(key)) {
+    _reportChecked.delete(key);
   } else {
-    const d = _rpFindByKey(key);
-    if (!d) return;
-    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
+    _rpEnsureSelected(key);
+    if (!_reportSelected[key]) return; // 데이터를 못 찾은 경우(삭제된 행 등)만 무시
+    _reportChecked.add(key);
   }
   _rpSaveToStorage();
   renderReportList();
 }
 
 // 사진칸/철물칸을 누르면 아직 체크 안 된 품목도 자동으로 선택시킨다 — "사진부터 찍고
-// 담는다"는 실제 작업 흐름에 더 자연스럽게 맞는다.
+// 담는다"는 실제 작업 흐름에 더 자연스럽게 맞는다. 이미 기록이 있으면 건드리지 않는다.
 function _rpEnsureSelected(key) {
-  if (_reportSelected[key]) return;
+  if (_reportSelected[key]) { _reportChecked.add(key); return; }
   const d = _rpFindByKey(key);
   if (!d) return;
   _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
+  _reportChecked.add(key);
 }
 
 function toggleReportHardware(key, checked) {
@@ -3299,7 +3320,7 @@ function _addReportSlide(pptx, d, sel, repRound) {
 }
 
 function generateReportPptx() {
-  const keys = Object.keys(_reportSelected);
+  const keys = Array.from(_reportChecked).filter(k => _reportSelected[k]);
   if (!keys.length) { alert('보고서에 넣을 품목을 먼저 선택해주세요.'); return; }
   const missing = keys.filter(k => !_reportSelected[k].productPhoto || !_reportSelected[k].packagePhoto);
   if (missing.length && !confirm(missing.length + '개 품목에 사진이 빠져있습니다. 그래도 계속할까요?')) return;
