@@ -6147,22 +6147,33 @@
                 </button>
             </div>
 
+            <div style="display:flex;gap:6px;">
+                <button onclick="scSetOrderType('all')" id="scTAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #f97316;background:#f97316;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
+                <button onclick="scSetOrderType('export')" id="scTExport" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">수출건</button>
+                <button onclick="scSetOrderType('domestic')" id="scTDomestic" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">내수건</button>
+            </div>
+
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <button onclick="scMoveMonth(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">‹</button>
                 <div id="scMonthLabel" style="font-size:14.5px;font-weight:800;color:#1e293b;"></div>
                 <button onclick="scMoveMonth(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">›</button>
             </div>
 
-            <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;">
+            <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;flex-wrap:wrap;">
                 <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#0ea5e9;display:inline-block;"></span>상차일</span>
                 <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span>납기일</span>
-                <span style="color:#94a3b8;">— 날짜 칸의 차수를 누르면 상세가 열립니다</span>
+                <span style="color:#94a3b8;">— 날짜를 여러 개 고른 뒤 조회를 누르세요</span>
             </div>
 
             <div id="scGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
 
+            <div style="display:flex;gap:8px;">
+                <button onclick="scClearDaySelection()" style="padding:9px 14px;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">선택 해제</button>
+                <button onclick="scRunDayQuery()" style="flex:1;padding:9px 14px;border-radius:9px;border:none;background:#f97316;color:#fff;font-size:13px;font-weight:800;cursor:pointer;">선택한 날짜 조회 (<span id="scSelCount">0</span>)</button>
+            </div>
+
             <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-                <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>
+                <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하고 조회를 눌러주세요.</div>
             </div>
         </div>
     </div>
@@ -6172,13 +6183,33 @@
         // "수출 일정" 카드는 가장 가까운 일정 하나만 보여주는데, 전체 차수의 납기/상차
         // 일정을 한눈에 보고 싶다는 요청으로 추가 — 카드 자체 클릭(테이블 필터)과는
         // 별개로 카드 우상단의 달력 아이콘 버튼에서만 연다.
-        let _scYear, _scMonth, _scSelectedDate = null, _scEventsCache = { byDate: {}, roundInfo: {} };
+        let _scYear, _scMonth, _scEventsCache = { byDate: {}, roundInfo: {} };
+        let _scSelectedDates = new Set(); // 복수 선택 — "조회" 버튼을 눌러야 아래 목록이 갱신된다
+        let _scOrderType = 'all'; // 'all' | 'export' | 'domestic'
+
+        // 건명으로 수출/내수를 구분한다 — 수출건은 "FAM-143"처럼 앞이 영문 국가코드+대시,
+        // 내수건은 보통 한글이지만 간혹 영문일 때도 있어 국가코드 패턴에 안 맞으면 내수로 본다.
+        function extractCountry(건명) {
+            if (!건명) return null;
+            const s = 건명.trim();
+            if (/^[가-힣(]/.test(s)) return null;
+            if (s.indexOf('/') >= 0) return null;
+            const dashIdx = s.indexOf('-');
+            if (dashIdx > 0) {
+                const code = s.slice(0, dashIdx).trim();
+                if (code) return code;
+            }
+            const spaceIdx = s.search(/\s/);
+            const token = spaceIdx > 0 ? s.slice(0, spaceIdx).trim() : s;
+            if (/^[A-Za-z][A-Za-z0-9]*$/.test(token)) return token;
+            return null;
+        }
 
         function openScheduleCalendar() {
             const now = new Date();
             _scYear = now.getFullYear();
             _scMonth = now.getMonth();
-            _scSelectedDate = null;
+            _scSelectedDates = new Set();
             renderScheduleCalendar();
             document.getElementById('scheduleCalendarModal').style.display = 'flex';
         }
@@ -6191,6 +6222,18 @@
             if (_scMonth > 11) { _scMonth = 0; _scYear++; }
             renderScheduleCalendar();
         }
+        function scSetOrderType(type) {
+            _scOrderType = type;
+            ['all', 'export', 'domestic'].forEach(t => {
+                const btn = document.getElementById(t === 'all' ? 'scTAll' : (t === 'export' ? 'scTExport' : 'scTDomestic'));
+                if (!btn) return;
+                const on = t === type;
+                btn.style.background = on ? '#f97316' : '#f8fafc';
+                btn.style.borderColor = on ? '#f97316' : '#e2e8f0';
+                btn.style.color = on ? '#fff' : '#475569';
+            });
+            renderScheduleCalendar();
+        }
 
         // 수출 현황 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를 뽑는다.
         function _scCollectEvents() {
@@ -6200,6 +6243,11 @@
             const roundInfo = {};
             list.forEach(item => {
                 if (!item.round) return;
+                if (_scOrderType !== 'all') {
+                    const isExport = !!extractCountry(item.round);
+                    if (_scOrderType === 'export' && !isExport) return;
+                    if (_scOrderType === 'domestic' && isExport) return;
+                }
                 if (!roundInfo[item.round]) roundInfo[item.round] = { date: item.date, dueDate: item.dueDate, qty: 0 };
                 roundInfo[item.round].qty += parseInt(item.qty) || 0;
                 const loadD = normalizeDate(item.date);
@@ -6250,8 +6298,8 @@
                 const dateStr = _scYear + '-' + String(_scMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
                 const ev = _scEventsCache.byDate[dateStr];
                 const isToday = dateStr === todayStr;
-                const isSelected = dateStr === _scSelectedDate;
-                html += `<div onclick="scSelectDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+                const isSelected = _scSelectedDates.has(dateStr);
+                html += `<div onclick="scToggleDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
                     background:${isSelected ? '#fff7ed' : (isToday ? '#f0f9ff' : '#fff')};
                     border:1.5px solid ${isSelected ? '#fb923c' : (isToday ? '#bae6fd' : '#f1f5f9')};">
                     <span style="font-size:11.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
@@ -6259,37 +6307,52 @@
                 </div>`;
             }
             document.getElementById('scGrid').innerHTML = html;
+            document.getElementById('scSelCount').textContent = _scSelectedDates.size;
+        }
+
+        function scToggleDay(dateStr) {
+            if (_scSelectedDates.has(dateStr)) _scSelectedDates.delete(dateStr);
+            else _scSelectedDates.add(dateStr);
+            renderScheduleCalendar();
+        }
+        function scClearDaySelection() {
+            _scSelectedDates = new Set();
+            renderScheduleCalendar();
             renderScheduleDayList();
         }
 
-        function scSelectDay(dateStr) {
-            _scSelectedDate = (_scSelectedDate === dateStr) ? null : dateStr;
-            renderScheduleCalendar();
+        function scRunDayQuery() {
+            renderScheduleDayList();
         }
 
         function renderScheduleDayList() {
             const wrap = document.getElementById('scDayList');
-            if (!_scSelectedDate) {
-                wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>';
+            if (!_scSelectedDates.size) {
+                wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하고 조회를 눌러주세요.</div>';
                 return;
             }
-            const ev = _scEventsCache.byDate[_scSelectedDate];
             const roundInfo = _scEventsCache.roundInfo;
-            if (!ev || (!ev.load.size && !ev.due.size)) {
-                wrap.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">${_scSelectedDate} 일정이 없습니다.</div>`;
-                return;
-            }
-            const rows = [];
-            ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
-            ev.load.forEach(r => rows.push({ round: r, type: '상차', info: roundInfo[r] }));
-            wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:#64748b;padding:0 2px 2px;">${_scSelectedDate}</div>` + rows.map(x => `
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
-                    <div style="min-width:0;">
-                        <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
-                        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${x.info ? x.info.qty.toLocaleString() + ' BOX' : ''}</div>
-                    </div>
-                    <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
-                </div>`).join('');
+            const dates = Array.from(_scSelectedDates).sort();
+            let anyEvent = false;
+            const sections = dates.map(dateStr => {
+                const ev = _scEventsCache.byDate[dateStr];
+                if (!ev || (!ev.load.size && !ev.due.size)) {
+                    return `<div style="font-size:12px;font-weight:700;color:#64748b;padding:6px 2px 2px;">${dateStr} <span style="color:#94a3b8;font-weight:600;">— 일정 없음</span></div>`;
+                }
+                anyEvent = true;
+                const rows = [];
+                ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
+                ev.load.forEach(r => rows.push({ round: r, type: '상차', info: roundInfo[r] }));
+                return `<div style="font-size:12px;font-weight:700;color:#64748b;padding:6px 2px 2px;">${dateStr}</div>` + rows.map(x => `
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
+                        <div style="min-width:0;">
+                            <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
+                            <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${x.info ? x.info.qty.toLocaleString() + ' BOX' : ''}</div>
+                        </div>
+                        <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
+                    </div>`).join('');
+            });
+            wrap.innerHTML = sections.join('');
         }
     </script>
 

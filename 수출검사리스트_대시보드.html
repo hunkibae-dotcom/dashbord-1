@@ -679,10 +679,9 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         </div>
         <div class="card p-5" onclick="openQcScheduleCalendar()" style="cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
           <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기/포장 날짜</h2>
-          <div style="height:195px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#94A3B8;">
-            <i class="fa-solid fa-calendar-days" style="font-size:34px;color:#CBD5E1;"></i>
-            <div style="font-size:13px;font-weight:600;">달력에서 차수별 납기/포장 일정 확인</div>
-            <div style="font-size:11.5px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;">달력 열기 ›</div>
+          <div style="height:195px;display:flex;flex-direction:column;">
+            <div id="qcMiniCal" style="flex:1;"></div>
+            <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:6px;">크게 보기 ›</div>
           </div>
         </div>
       </div>
@@ -965,6 +964,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <button onclick="qcScSetFactory('cj1')" id="qcScFCj1" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주1공장</button>
       <button onclick="qcScSetFactory('cj2')" id="qcScFCj2" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주2공장</button>
     </div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="qcScSetOrderType('all')" id="qcScTAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
+      <button onclick="qcScSetOrderType('export')" id="qcScTExport" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">수출건</button>
+      <button onclick="qcScSetOrderType('domestic')" id="qcScTDomestic" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">내수건</button>
+    </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <button onclick="qcScMoveMonth(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">‹</button>
@@ -972,16 +976,21 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <button onclick="qcScMoveMonth(1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">›</button>
     </div>
 
-    <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;">
+    <div style="display:flex;gap:14px;font-size:11.5px;color:#64748b;padding:0 2px;flex-wrap:wrap;">
       <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#ef4444;display:inline-block;"></span>납기일</span>
       <span style="display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:2px;background:#0ea5e9;display:inline-block;"></span>포장일</span>
-      <span style="color:#94a3b8;">— 날짜 칸의 차수를 누르면 상세가 열립니다</span>
+      <span style="color:#94a3b8;">— 날짜를 여러 개 고른 뒤 조회를 누르세요</span>
     </div>
 
     <div id="qcScGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:5px;"></div>
 
+    <div style="display:flex;gap:8px;">
+      <button onclick="qcScClearDaySelection()" style="padding:9px 14px;border-radius:9px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">선택 해제</button>
+      <button onclick="qcScRunDayQuery()" style="flex:1;padding:9px 14px;border-radius:9px;border:none;background:#6D5CE8;color:#fff;font-size:13px;font-weight:800;cursor:pointer;">선택한 날짜 조회 (<span id="qcScSelCount">0</span>)</button>
+    </div>
+
     <div id="qcScDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-      <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>
+      <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하고 조회를 눌러주세요.</div>
     </div>
   </div>
 </div>
@@ -1972,19 +1981,21 @@ function renderTable(data) {
 // ===== CHARTS =====
 function renderCharts(data) {
   renderTopUndoneChart(data);
+  renderQcMiniCal();
 }
 
 // 공장별 납기/포장 날짜 달력 — 예전엔 이 자리에 "공장별 검사비율" 도넛차트가 있었는데,
 // 이미 출고된 이력(archiveRows) 기준 완료율이라 지금 진행중인 차수의 실제 일정 파악에는
 // 도움이 안 됐다. 처음엔 날짜순 리스트로 바꿨는데, 포장강화 쪽에 만든 "달력 안에서 바로
 // 어떤 차수인지 보이는" 큰 달력 스타일로 통일해달라는 요청으로 이 형태로 다시 바꿨다.
-let _qcScYear, _qcScMonth, _qcScSelectedDate = null, _qcScFactory = 'all', _qcScEventsCache = { byDate: {}, roundInfo: {} };
+let _qcScYear, _qcScMonth, _qcScFactory = 'all', _qcScOrderType = 'all', _qcScEventsCache = { byDate: {}, roundInfo: {} };
+let _qcScSelectedDates = new Set(); // 복수 선택 — "조회" 버튼을 눌러야 아래 목록이 갱신된다
 
 function openQcScheduleCalendar() {
   const now = new Date();
   _qcScYear = now.getFullYear();
   _qcScMonth = now.getMonth();
-  _qcScSelectedDate = null;
+  _qcScSelectedDates = new Set();
   renderQcScheduleCalendar();
   document.getElementById('qcScheduleModal').style.display = 'flex';
   _armBackTrap();
@@ -2010,6 +2021,18 @@ function qcScSetFactory(key) {
   });
   renderQcScheduleCalendar();
 }
+function qcScSetOrderType(type) {
+  _qcScOrderType = type;
+  ['all', 'export', 'domestic'].forEach(t => {
+    const btn = document.getElementById(t === 'all' ? 'qcScTAll' : (t === 'export' ? 'qcScTExport' : 'qcScTDomestic'));
+    if (!btn) return;
+    const on = t === type;
+    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
+    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
+    btn.style.color = on ? '#fff' : '#475569';
+  });
+  renderQcScheduleCalendar();
+}
 
 function _qcIsoDate(str) {
   const d = parseKDate(str);
@@ -2023,6 +2046,11 @@ function _qcScCollectEvents() {
   allData.forEach(d => {
     if (!d.건명) return;
     if (_qcScFactory !== 'all' && d.공장 !== _qcScFactory) return;
+    if (_qcScOrderType !== 'all') {
+      const isExport = !!extractCountry(d.건명);
+      if (_qcScOrderType === 'export' && !isExport) return;
+      if (_qcScOrderType === 'domestic' && isExport) return;
+    }
     if (!roundInfo[d.건명]) roundInfo[d.건명] = { dueDate: d.납기일, packDate: d.포장일, factory: d.공장 };
     const dueIso = _qcIsoDate(d.납기일);
     const packIso = _qcIsoDate(d.포장일);
@@ -2063,8 +2091,8 @@ function renderQcScheduleCalendar() {
     const dateStr = _qcScYear + '-' + String(_qcScMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const ev = _qcScEventsCache.byDate[dateStr];
     const isToday = dateStr === todayStr;
-    const isSelected = dateStr === _qcScSelectedDate;
-    html += `<div onclick="qcScSelectDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+    const isSelected = _qcScSelectedDates.has(dateStr);
+    html += `<div onclick="qcScToggleDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
       background:${isSelected ? '#f5f3ff' : (isToday ? '#f0f9ff' : '#fff')};
       border:1.5px solid ${isSelected ? '#8B7CF0' : (isToday ? '#bae6fd' : '#f1f5f9')};">
       <span style="font-size:11.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
@@ -2072,39 +2100,88 @@ function renderQcScheduleCalendar() {
     </div>`;
   }
   document.getElementById('qcScGrid').innerHTML = html;
-  renderQcScheduleDayList();
+  document.getElementById('qcScSelCount').textContent = _qcScSelectedDates.size;
 }
 
-function qcScSelectDay(dateStr) {
-  _qcScSelectedDate = (_qcScSelectedDate === dateStr) ? null : dateStr;
+function qcScToggleDay(dateStr) {
+  if (_qcScSelectedDates.has(dateStr)) _qcScSelectedDates.delete(dateStr);
+  else _qcScSelectedDates.add(dateStr);
   renderQcScheduleCalendar();
+}
+function qcScClearDaySelection() {
+  _qcScSelectedDates = new Set();
+  renderQcScheduleCalendar();
+  renderQcScheduleDayList();
+}
+function qcScRunDayQuery() {
+  renderQcScheduleDayList();
 }
 
 function renderQcScheduleDayList() {
   const wrap = document.getElementById('qcScDayList');
-  if (!_qcScSelectedDate) {
-    wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하면 해당일 일정이 표시됩니다.</div>';
+  if (!_qcScSelectedDates.size) {
+    wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하고 조회를 눌러주세요.</div>';
     return;
   }
-  const ev = _qcScEventsCache.byDate[_qcScSelectedDate];
   const roundInfo = _qcScEventsCache.roundInfo;
-  if (!ev || (!ev.due.size && !ev.pack.size)) {
-    wrap.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">${_qcScSelectedDate} 일정이 없습니다.</div>`;
-    return;
-  }
-  const rows = [];
-  ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
-  ev.pack.forEach(r => rows.push({ round: r, type: '포장', info: roundInfo[r] }));
-  wrap.innerHTML = `<div style="font-size:12px;font-weight:700;color:#64748b;padding:0 2px 2px;">${_qcScSelectedDate}</div>` + rows.map(x => {
-    const facLabel = x.info && x.info.factory === 'cj1' ? '충주1' : x.info && x.info.factory === 'cj2' ? '충주2' : '';
-    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
-      <div style="min-width:0;">
-        <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
-        <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${facLabel}${facLabel ? ' · ' : ''}납기 ${_ymdShort(x.info ? x.info.dueDate : '') || '—'} · 포장 ${_ymdShort(x.info ? x.info.packDate : '') || '—'}</div>
-      </div>
-      <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
-    </div>`;
+  const dates = Array.from(_qcScSelectedDates).sort();
+  wrap.innerHTML = dates.map(dateStr => {
+    const ev = _qcScEventsCache.byDate[dateStr];
+    if (!ev || (!ev.due.size && !ev.pack.size)) {
+      return `<div style="font-size:12px;font-weight:700;color:#64748b;padding:6px 2px 2px;">${dateStr} <span style="color:#94a3b8;font-weight:600;">— 일정 없음</span></div>`;
+    }
+    const rows = [];
+    ev.due.forEach(r => rows.push({ round: r, type: '납기', info: roundInfo[r] }));
+    ev.pack.forEach(r => rows.push({ round: r, type: '포장', info: roundInfo[r] }));
+    return `<div style="font-size:12px;font-weight:700;color:#64748b;padding:6px 2px 2px;">${dateStr}</div>` + rows.map(x => {
+      const facLabel = x.info && x.info.factory === 'cj1' ? '충주1' : x.info && x.info.factory === 'cj2' ? '충주2' : '';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
+        <div style="min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${facLabel}${facLabel ? ' · ' : ''}납기 ${_ymdShort(x.info ? x.info.dueDate : '') || '—'} · 포장 ${_ymdShort(x.info ? x.info.packDate : '') || '—'}</div>
+        </div>
+        <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>
+      </div>`;
+    }).join('');
   }).join('');
+}
+
+// 카드 안에 실제 데이터가 하나도 안 보이고 "달력 열기" 버튼만 있어서 허전하다는 지적으로,
+// 이번 달의 아주 작은 미리보기 달력(점만 표시)을 카드 안에 바로 그려준다 — 자세히 보려면
+// 그대로 눌러서 큰 달력을 연다.
+function _qcMiniCalHtml() {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const savedFactory = _qcScFactory, savedType = _qcScOrderType;
+  _qcScFactory = 'all'; _qcScOrderType = 'all';
+  const events = _qcScCollectEvents();
+  _qcScFactory = savedFactory; _qcScOrderType = savedType;
+
+  const firstDow = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const todayStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+
+  let cells = '';
+  for (let i = 0; i < firstDow; i++) cells += '<div></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const ev = events.byDate[dateStr];
+    const isToday = dateStr === todayStr;
+    cells += `<div style="text-align:center;font-size:8.5px;font-weight:${isToday ? '800' : '500'};color:${isToday ? '#6D5CE8' : '#64748B'};padding:2px 0;display:flex;flex-direction:column;align-items:center;gap:1px;">
+      <span style="${isToday ? 'background:#6D5CE8;color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;' : ''}">${d}</span>
+      <span style="display:flex;gap:1px;height:3px;">
+        ${ev && ev.due.size ? '<span style="width:3px;height:3px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' : ''}
+        ${ev && ev.pack.size ? '<span style="width:3px;height:3px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>' : ''}
+      </span>
+    </div>`;
+  }
+  return `<div style="font-size:11px;font-weight:700;color:#94A3B8;margin-bottom:4px;">${year}년 ${month + 1}월</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;">${cells}</div>`;
+}
+function renderQcMiniCal() {
+  const html = _qcMiniCalHtml();
+  const d = document.getElementById('qcMiniCal'); if (d) d.innerHTML = html;
+  const m = document.getElementById('mQcMiniCal'); if (m) m.innerHTML = html;
 }
 
 const DDAY_COLORS = {
@@ -3998,6 +4075,7 @@ function renderMobileFactoryPanels() {
 
 function renderMobileCharts() {
   if (!isMobile()) return;
+  renderQcMiniCal();
   const c = _chartThemeColors();
 
   // 누적 품질검사 차트 (시계열 또는 국가/제품별)
@@ -5029,10 +5107,8 @@ function onNativeScanResult(raw) {
           </span>
           <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
         </div>
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:14px 0;color:#94A3B8;">
-          <i class="fa-solid fa-calendar-days" style="font-size:28px;color:#CBD5E1;"></i>
-          <div style="font-size:12.5px;font-weight:600;">차수별 납기/포장 일정 달력 보기</div>
-        </div>
+        <div id="mQcMiniCal"></div>
+        <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:8px;">크게 보기 ›</div>
       </div>
     </div>
 
