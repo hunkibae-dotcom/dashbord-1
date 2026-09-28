@@ -2162,6 +2162,9 @@ function _qcScCollectEvents() {
 // 폰 화면(좁은 가로폭)에서는 7칸에 글자를 욱여넣으면 2~3글자만 보이다 말아서 오히려 안
 // 읽힌다 — 앱/좁은 화면에서는 점만 찍어 밀집도만 보여주고, 실제 건명은 날짜 선택 후
 // "조회" 결과(가로 폭이 넓은 리스트)에서 읽게 한다. 데스크탑 웹은 그대로 칩 텍스트를 보여준다.
+// 예전엔 앱(좁은 화면)에서는 점만 찍어서, 무슨 차수인지 알려면 무조건 날짜를 눌러
+// "조회"까지 해야 했다 — 데스크탑처럼 건명을 그대로 보여주고, 폭이 더 좁은 만큼 글자만
+// 살짝 줄인다.
 function _qcScDayChips(ev) {
   if (!ev) return '';
   const items = [];
@@ -2169,18 +2172,16 @@ function _qcScDayChips(ev) {
   ev.pack.forEach(r => items.push({ r, type: '포장' }));
   if (!items.length) return '';
 
-  if (isMobile()) {
-    const dueCount = ev.due.size, packCount = ev.pack.size;
-    return `<span style="display:flex;gap:2px;justify-content:center;margin-top:3px;">
-      ${dueCount ? '<span style="width:5px;height:5px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' : ''}
-      ${packCount ? '<span style="width:5px;height:5px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>' : ''}
-    </span>
-    <span style="font-size:7.5px;font-weight:700;color:#94a3b8;">${items.length}건</span>`;
-  }
-
-  const shown = items.slice(0, 2);
-  let html = shown.map(x => `<div style="font-size:8.5px;font-weight:700;line-height:1.5;padding:1px 4px;border-radius:4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:${x.type === '납기' ? '#FEE2E2' : '#E0F2FE'};color:${x.type === '납기' ? '#DC2626' : '#0369A1'};">${x.r}</div>`).join('');
-  if (items.length > 2) html += `<div style="font-size:8px;font-weight:700;color:#94a3b8;margin-top:2px;">+${items.length - 2}건</div>`;
+  const mobile = isMobile();
+  const maxShown = mobile ? 2 : 2;
+  const fontSize = mobile ? '7.5px' : '8.5px';
+  const maxLen = mobile ? 6 : 999;
+  const shown = items.slice(0, maxShown);
+  let html = shown.map(x => {
+    const label = x.r.length > maxLen ? x.r.slice(0, maxLen) + '…' : x.r;
+    return `<div style="font-size:${fontSize};font-weight:700;line-height:1.4;padding:1px 3px;border-radius:4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:${x.type === '납기' ? '#FEE2E2' : '#E0F2FE'};color:${x.type === '납기' ? '#DC2626' : '#0369A1'};" title="${x.type} · ${x.r.replace(/"/g, '&quot;')}">${label}</div>`;
+  }).join('');
+  if (items.length > maxShown) html += `<div style="font-size:${mobile ? '7px' : '8px'};font-weight:700;color:#94a3b8;margin-top:2px;">+${items.length - maxShown}건</div>`;
   return html;
 }
 
