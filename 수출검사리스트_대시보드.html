@@ -2199,7 +2199,7 @@ function renderQcScheduleCalendar() {
     `<div style="text-align:center;font-size:11px;font-weight:700;color:${i === 0 ? '#ef4444' : i === 6 ? '#0ea5e9' : '#94a3b8'};padding:4px 0;">${d}</div>`
   ).join('');
 
-  const cellMinH = isMobile() ? '46px' : '78px';
+  const cellMinH = isMobile() ? '60px' : '78px';
   for (let i = 0; i < firstDow; i++) html += '<div></div>';
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = _qcScYear + '-' + String(_qcScMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
