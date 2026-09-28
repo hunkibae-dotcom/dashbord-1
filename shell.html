@@ -197,6 +197,9 @@
                 <!-- Slide 0: 수출 일정 -->
                 <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;position:relative;overflow:hidden;">
                     <span style="position:absolute;right:12px;top:10px;font-size:40px;opacity:.07;pointer-events:none;color:#00E676;"><i class="fa-solid fa-ship"></i></span>
+                    <button onclick="event.stopPropagation();openScheduleCalendar()" style="position:absolute;right:10px;top:8px;z-index:2;width:28px;height:28px;border-radius:9px;border:none;background:rgba(0,230,118,.12);color:#00E676;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+                        <i class="fa-solid fa-calendar-days"></i>
+                    </button>
                     <div class="label" style="margin-bottom:9px;">수출 일정</div>
                     <!-- 일정 있을 때 -->
                     <div id="schBody" onclick="openScheduleRoundPicker()" style="display:none;flex-direction:column;gap:0;cursor:pointer;">
