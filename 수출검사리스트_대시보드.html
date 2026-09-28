@@ -920,6 +920,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
     </div>
+    <button onclick="selectAllVisibleReportItems()" type="button"
+      style="background:var(--icon-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+      전체선택
+    </button>
     <div style="font-size:11px;color:var(--label);flex-shrink:0;">날짜=포장일 기준(비움=전체)</div>
     <div style="flex:1;"></div>
     <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;"><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</div>
@@ -2664,7 +2668,23 @@ window.addEventListener('keydown', (e) => {
 // 포장완료)만 시트에 없는 데이터라 여기서 직접 등록받는다 — 실제 촬영 기능(카메라 캡처)은
 // 별도 작업이고, 지금은 파일 선택으로 테스트한다.
 // ═══════════════════════════════════════════════════════════════
-let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note }
+let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note, hasHardware }
+
+// 보고서는 하루만에 다 채우기 어려워서, 오늘 등록한 사진을 닫았다 다시 열어도(하루
+// 지나서 다시 접속해도) 그대로 남아있다가 다음번에 이어서 채우고 누적해서 생성할 수
+// 있어야 한다 — localStorage에 저장해서 새로고침/재접속에도 선택·사진이 유지된다.
+const RP_STORAGE_KEY = 'qc_report_selected_v1';
+function _rpSaveToStorage() {
+  try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify(_reportSelected)); }
+  catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
+}
+function _rpLoadFromStorage() {
+  try {
+    const raw = localStorage.getItem(RP_STORAGE_KEY);
+    if (raw) _reportSelected = JSON.parse(raw) || {};
+  } catch (e) { _reportSelected = {}; }
+}
+_rpLoadFromStorage();
 
 function openReportModal() {
   const modal = document.getElementById('reportModal');
@@ -2702,7 +2722,7 @@ function _rpSummarizeName(name) {
   return parts[0] + '-' + parts[1];
 }
 
-function renderReportList() {
+function _rpFilteredRows() {
   const factory = document.getElementById('rpFactory').value;
   const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
@@ -2717,7 +2737,26 @@ function renderReportList() {
     });
   }
   if (q) rows = rows.filter(d => (d.건명 + ' ' + d.단품코드 + ' ' + d.단품명칭).toLowerCase().includes(q));
+  return rows;
+}
 
+// 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 다 선택한다 — 이미 선택되어
+// 사진이 등록된 품목은 그대로 두고(누적), 아직 선택 안 된 품목만 추가한다.
+function selectAllVisibleReportItems() {
+  const rows = _rpFilteredRows();
+  if (!rows.length) return;
+  rows.forEach(d => {
+    const key = _miKey(d);
+    if (!_reportSelected[key]) {
+      _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
+    }
+  });
+  _rpSaveToStorage();
+  renderReportList();
+}
+
+function renderReportList() {
+  const rows = _rpFilteredRows();
   const list = document.getElementById('rpList');
   if (!rows.length) {
     list.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
@@ -2731,7 +2770,7 @@ function renderReportList() {
     const key = _miKey(d);
     const sel = _reportSelected[key];
     const checked = !!sel;
-    const hasHardware = sel ? sel.hasHardware !== false : true;
+    const hasHardware = sel ? sel.hasHardware === true : false;
     const safeKey = key.replace(/'/g, "\\'");
     const rowBg = 'background:var(--panel);';
     return `
@@ -2767,8 +2806,9 @@ function toggleReportItem(key) {
   } else {
     const d = allData.find(x => _miKey(x) === key);
     if (!d) return;
-    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: true };
+    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
   }
+  _rpSaveToStorage();
   renderReportList();
 }
 
@@ -2778,7 +2818,7 @@ function _rpEnsureSelected(key) {
   if (_reportSelected[key]) return;
   const d = allData.find(x => _miKey(x) === key);
   if (!d) return;
-  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: true };
+  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
 }
 
 function toggleReportHardware(key, checked) {
@@ -2786,6 +2826,7 @@ function toggleReportHardware(key, checked) {
   _rpEnsureSelected(key);
   if (!_reportSelected[key]) return;
   _reportSelected[key].hasHardware = checked;
+  _rpSaveToStorage();
   if (!wasSelected) renderReportList();
 }
 
@@ -2802,9 +2843,19 @@ function handleReportPhoto(key, side, input) {
     const img = new Image();
     img.onload = function() {
       if (!_reportSelected[key]) return;
-      const rec = { dataUrl: dataUrl, w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
+      // 카메라 원본 사진은 몇 MB씩이라 그대로 저장하면 localStorage 누적 저장 용량을
+      // 금방 초과한다 — 긴 변 기준 1280px로 줄이고 JPEG로 재인코딩해서 저장한다.
+      const MAX = 1280;
+      const ratio = Math.min(1, MAX / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
+      const w = Math.max(1, Math.round((img.naturalWidth || 1) * ratio));
+      const h = Math.max(1, Math.round((img.naturalHeight || 1) * ratio));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const rec = { dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: w, h: h };
       if (side === 'product') _reportSelected[key].productPhoto = rec;
       else _reportSelected[key].packagePhoto = rec;
+      _rpSaveToStorage();
       renderReportList();
     };
     img.src = dataUrl;
@@ -2925,7 +2976,7 @@ function _addReportSlide(pptx, d, sel, repRound) {
   const col9 = fullW / 9;
   cell(M, y, col9, rowH, '검사 내역', { bold: true, fill: { color: headerFill } });
   ['치수', '외관', '보링', '철물'].forEach((label, i) => {
-    const isChecked = label === '철물' ? (sel.hasHardware !== false) : true;
+    const isChecked = label === '철물' ? (sel.hasHardware === true) : true;
     cell(M + col9 + i * 2 * col9, y, col9, rowH, label, {});
     cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, isChecked ? '✓' : '', { bold: true, color: '16A34A' });
   });
