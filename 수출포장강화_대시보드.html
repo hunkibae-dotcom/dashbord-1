@@ -2949,10 +2949,13 @@
                 _card4SameDateRounds = uniqueRounds.slice();
 
                 // 동일 상차일 전체 수량: 총수량 / 포장완료 = 강화완료 / 그외 = 남은수량
+                // item.status는 이미 '출고완료'/'출고'가 전부 '출고' 카테고리로 정규화돼 있다 —
+                // 포장이 끝나서 이미 출고 단계로 넘어간 품목까지 "아직 포장 안 한 남은 수량"에
+                // 잡히던 문제가 있었다(출고=포장완료보다 더 진행된 상태인데 done 판정에서 빠졌었음).
                 const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
                 const doneQty  = sameDateItems.reduce((s, x) => {
                     const st = (x.status || '').replace(/\s+/g, '');
-                    return s + (st.includes('포장완료') ? (parseInt(x.qty) || 0) : 0);
+                    return s + ((st.includes('포장완료') || st === '출고') ? (parseInt(x.qty) || 0) : 0);
                 }, 0);
                 const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
                 const el4TQ = document.getElementById('card4TotalQty');
