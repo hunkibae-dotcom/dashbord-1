@@ -996,6 +996,21 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== 보고서: 사진 다운로드/변경 선택 ===== -->
+<div id="rpPhotoActionModal" onclick="if(event.target===this)closeRpPhotoAction()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:18px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span id="rpPhotoActionTitle" style="font-size:14.5px;font-weight:800;color:var(--text);"></span>
+      <button onclick="closeRpPhotoAction()" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <img id="rpPhotoActionPreview" style="width:100%;max-height:200px;object-fit:contain;border-radius:10px;background:var(--icon-bg);">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button onclick="rpPhotoActionDownload()" style="padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-download"></i> 다운로드</button>
+      <button onclick="rpPhotoActionChange()" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-camera-rotate"></i> 사진 변경</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 공장별 납기/포장 날짜 달력 ===== -->
 <div id="qcScheduleModal" onclick="if(event.target===this)closeQcScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
@@ -2920,11 +2935,60 @@ function _rpPhotoBox(safeKey, side, photo) {
   const inputId = 'rpPhoto_' + side + '_' + safeKey.replace(/[^a-zA-Z0-9]/g, '_');
   const dataUrl = photo && photo.dataUrl;
   return `
-    <div onclick="document.getElementById('${inputId}').click()" style="width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
+    <div onclick="_rpPhotoBoxClick('${safeKey}','${side}')" style="width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
       ${dataUrl ? `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:14px;"></i>`}
     </div>
     <input type="file" id="${inputId}" accept="image/*" style="display:none;" onchange="handleReportPhoto('${safeKey}','${side}',this)">
   `;
+}
+
+// 이미 사진이 있는 칸을 누르면 바로 새 사진 선택창이 뜨는 게 아니라, 다운로드할지
+// 바꿀지부터 물어본다 — 실수로 눌러서 애써 찍은 사진이 덮어써지는 걸 막기 위함.
+function _rpTriggerPhotoInput(key, side) {
+  const inputId = 'rpPhoto_' + side + '_' + key.replace(/[^a-zA-Z0-9]/g, '_');
+  document.getElementById(inputId)?.click();
+}
+function _rpPhotoBoxClick(key, side) {
+  const sel = _reportSelected[key];
+  const photo = sel && (side === 'product' ? sel.productPhoto : sel.packagePhoto);
+  if (photo && photo.dataUrl) openRpPhotoAction(key, side);
+  else _rpTriggerPhotoInput(key, side);
+}
+
+let _rpPhotoActionKey = null, _rpPhotoActionSide = null;
+function openRpPhotoAction(key, side) {
+  _rpPhotoActionKey = key; _rpPhotoActionSide = side;
+  const sel = _reportSelected[key];
+  const photo = sel && (side === 'product' ? sel.productPhoto : sel.packagePhoto);
+  const titleEl = document.getElementById('rpPhotoActionTitle');
+  if (titleEl) titleEl.textContent = side === 'product' ? '제품 사진' : '포장완료 사진';
+  const previewEl = document.getElementById('rpPhotoActionPreview');
+  if (previewEl) previewEl.src = photo ? photo.dataUrl : '';
+  document.getElementById('rpPhotoActionModal').style.display = 'flex';
+  _armBackTrap();
+}
+function closeRpPhotoAction() {
+  document.getElementById('rpPhotoActionModal').style.display = 'none';
+  _rpPhotoActionKey = null; _rpPhotoActionSide = null;
+}
+function rpPhotoActionDownload() {
+  const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
+  const sel = key && _reportSelected[key];
+  const photo = sel && (side === 'product' ? sel.productPhoto : sel.packagePhoto);
+  if (!photo) { closeRpPhotoAction(); return; }
+  const code = (sel.item && sel.item.단품코드) ? sel.item.단품코드.replace(/[^a-zA-Z0-9가-힣_-]/g, '') : 'photo';
+  const a = document.createElement('a');
+  a.href = photo.dataUrl;
+  a.download = code + '_' + (side === 'product' ? '제품' : '포장완료') + '.jpg';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  closeRpPhotoAction();
+}
+function rpPhotoActionChange() {
+  const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
+  closeRpPhotoAction();
+  if (key) _rpTriggerPhotoInput(key, side);
 }
 
 // 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
@@ -3142,10 +3206,18 @@ function _todayLabel() {
 // 실제 "수출건 검사 세부내역" 양식을 표 모양 그대로 도형+텍스트로 재현한다 — pptxgenjs의
 // addTable은 셀 안에 이미지를 못 넣어서, 표처럼 보이도록 테두리 있는 텍스트박스를 좌표
 // 계산해서 늘어놓고, 검사사진 칸에만 addImage로 사진을 얹는 방식을 썼다.
+// 실제 사용 중인 "수출건 검사 세부내역 양식.pptx"를 직접 열어(표의 gridCol/행높이를
+// EMU 단위로 그대로 추출) 얻은 칼럼 폭·행 높이다 — 예전엔 8칸을 똑같은 폭으로 나눠서
+// 실제 양식과 간격이 달랐고, 검사사진 두 칸도 경계선 없이 하나로 붙어있었다.
 function _addReportSlide(pptx, d, sel, repRound) {
   const slide = pptx.addSlide();
   const factoryKey = d.공장;
-  const M = 0.4, top = 0.35, fullW = 12.5, rowH = 0.42;
+  const M = 0.2157, top = 0.2255;
+  // 수출건명 / 단품코드 / 색상 / 단품명칭 / 수량 / 포장처 / 출고일 / 검사자
+  const colW = [1.6113, 1.6113, 1.6113, 2.2059, 1.0169, 1.6113, 1.6113, 1.6113];
+  const colX = []; { let acc = M; colW.forEach(w => { colX.push(acc); acc += w; }); }
+  const fullW = colW.reduce((a, b) => a + b, 0);
+  const rowH = 0.5198, subRowH = 0.5218, photoRowH = 3.4093, noteH = 1.0236;
   const borderColor = '1F2937', headerFill = 'F1F5F9';
 
   function cell(x, y, w, h, text, opts) {
@@ -3153,7 +3225,7 @@ function _addReportSlide(pptx, d, sel, repRound) {
       x: x, y: y, w: w, h: h,
       align: 'center', valign: 'middle',
       fontSize: 11, fontFace: '맑은 고딕', color: '1E293B',
-      line: { color: borderColor, width: 0.75 },
+      line: { color: borderColor, width: 0.5 },
     }, opts || {}));
   }
 
@@ -3163,59 +3235,67 @@ function _addReportSlide(pptx, d, sel, repRound) {
     repRound || d.건명 || '', d.단품코드 || '', d.색상 || '', _rpSummarizeName(d.단품명칭) || '',
     (d.수량 || 0), _rpFactoryLabel(factoryKey), _rpShipDate(d), _rpInspector(factoryKey)
   ];
-  const col8 = fullW / 8;
-  headers.forEach((h, i) => cell(M + i * col8, y, col8, rowH, h, { bold: true, fill: { color: headerFill } }));
+  headers.forEach((h, i) => cell(colX[i], y, colW[i], rowH, h, { bold: true, fill: { color: headerFill } }));
   y += rowH;
-  values.forEach((v, i) => cell(M + i * col8, y, col8, rowH, v, {}));
-  y += rowH;
-
-  cell(M, y, col8, rowH, '검사 항목', { bold: true, fill: { color: headerFill } });
-  cell(M + col8, y, col8 * 3, rowH, '치수 및 외관', {});
-  cell(M + col8 * 4, y, col8, rowH, '검사 장비', { bold: true, fill: { color: headerFill } });
-  cell(M + col8 * 5, y, col8 * 3, rowH, '줄자 및 버니어 캘리퍼스', {});
+  values.forEach((v, i) => cell(colX[i], y, colW[i], rowH, v, {}));
   y += rowH;
 
-  const photoRowH = 2.6;
-  cell(M, y, col8, photoRowH, '검사 사진', { bold: true, fill: { color: headerFill } });
-  const photoX = M + col8, photoW = fullW - col8;
-  slide.addShape('rect', { x: photoX, y: y, w: photoW, h: photoRowH, line: { color: borderColor, width: 0.75 }, fill: { color: 'FFFFFF' } });
+  // 검사 항목(수출건명+단품코드 폭) / 치수 및 외관(색상+단품명칭 폭) / 검사 장비(수량+포장처 폭) / 줄자...(출고일+검사자 폭)
+  const labelW = colW[0] + colW[1];
+  cell(M, y, labelW, rowH, '검사 항목', { bold: true, fill: { color: headerFill } });
+  cell(colX[2], y, colW[2] + colW[3], rowH, '치수 및 외관', {});
+  cell(colX[4], y, colW[4] + colW[5], rowH, '검사 장비', { bold: true, fill: { color: headerFill } });
+  cell(colX[6], y, colW[6] + colW[7], rowH, '줄자 및 버니어 캘리퍼스', {});
+  y += rowH;
+
+  // 검사 사진: 양식은 제품/포장완료 사진을 하나로 합친 칸이 아니라 서로 다른 두 칸이라,
+  // 각자 테두리가 있는 별개의 네모로 그려야 그 사이에 경계선이 생긴다.
+  cell(M, y, labelW, photoRowH, '검사 사진', { bold: true, fill: { color: headerFill } });
+  const photoBoxes = [
+    { x: colX[2], w: colW[2] + colW[3] + colW[4] },   // 색상+단품명칭+수량 폭
+    { x: colX[5], w: colW[5] + colW[6] + colW[7] },   // 포장처+출고일+검사자 폭
+  ];
   const pad = 0.15;
-  const halfW = (photoW - pad * 3) / 2;
-  const boxH = photoRowH - pad * 2;
   [sel.productPhoto, sel.packagePhoto].forEach((photo, i) => {
-    const boxX = photoX + pad + i * (halfW + pad);
+    const box = photoBoxes[i];
+    slide.addShape('rect', { x: box.x, y: y, w: box.w, h: photoRowH, line: { color: borderColor, width: 0.5 }, fill: { color: 'FFFFFF' } });
+    const innerW = box.w - pad * 2, innerH = photoRowH - pad * 2;
     if (photo) {
-      const fit = _fitRect(halfW, boxH, photo.w || 1, photo.h || 1);
-      const ix = boxX + (halfW - fit.w) / 2;
-      const iy = y + pad + (boxH - fit.h) / 2;
+      const fit = _fitRect(innerW, innerH, photo.w || 1, photo.h || 1);
+      const ix = box.x + pad + (innerW - fit.w) / 2;
+      const iy = y + pad + (innerH - fit.h) / 2;
       slide.addImage({ data: photo.dataUrl, x: ix, y: iy, w: fit.w, h: fit.h });
     } else {
-      slide.addShape('rect', { x: boxX, y: y + pad, w: halfW, h: boxH, line: { color: 'CBD5E1', width: 0.75, dashType: 'dash' }, fill: { color: 'F8FAFC' } });
-      slide.addText(i === 0 ? '제품 사진 없음' : '포장완료 사진 없음', { x: boxX, y: y + pad, w: halfW, h: boxH, align: 'center', valign: 'middle', fontSize: 10, color: '94A3B8', fontFace: '맑은 고딕' });
+      slide.addText(i === 0 ? '제품 사진 없음' : '포장완료 사진 없음', { x: box.x, y: y, w: box.w, h: photoRowH, align: 'center', valign: 'middle', fontSize: 10, color: '94A3B8', fontFace: '맑은 고딕' });
     }
   });
   y += photoRowH;
 
-  const col9 = fullW / 9;
-  cell(M, y, col9, rowH, '검사 내역', { bold: true, fill: { color: headerFill } });
-  ['치수', '외관', '보링', '철물'].forEach((label, i) => {
+  // 검사 내역 / CBM·Weight: 라벨칸(수출건명+단품코드 폭) 뒤로 8등분한 칸에
+  // [항목명][체크] 를 4번 반복 — 양식 실측 결과 이 8칸은 서로 폭이 똑같다.
+  const subUnit = (fullW - labelW) / 8;
+  function subRow(label, pairs, y) {
+    cell(M, y, labelW, subRowH, label, { bold: true, fill: { color: headerFill } });
+    pairs.forEach((p, i) => {
+      const x0 = M + labelW + i * 2 * subUnit;
+      cell(x0, y, subUnit, subRowH, p[0], p[2] || {});
+      cell(x0 + subUnit, y, subUnit, subRowH, p[1], p[3] || {});
+    });
+  }
+  subRow('검사 내역', ['치수', '외관', '보링', '철물'].map(label => {
     const isChecked = label === '철물' ? (sel.hasHardware === true) : true;
-    cell(M + col9 + i * 2 * col9, y, col9, rowH, label, {});
-    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, isChecked ? '✓' : '', { bold: true, color: '16A34A' });
-  });
-  y += rowH;
+    return [label, isChecked ? '✓' : '', {}, { bold: true, color: '16A34A' }];
+  }), y);
+  y += subRowH;
 
-  cell(M, y, col9, rowH, 'CBM / Weight', { bold: true, fill: { color: headerFill } });
   const cbmVals = sel.cbm || { w: d.가로, d: d.세로, h: d.높이, weight: d.중량 };
-  [['가로(mm)', cbmVals.w], ['세로(mm)', cbmVals.d], ['높이(mm)', cbmVals.h], ['무게(kg)', cbmVals.weight]].forEach((pair, i) => {
-    cell(M + col9 + i * 2 * col9, y, col9, rowH, pair[0], {});
-    cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, pair[1] || '', {});
-  });
-  y += rowH;
+  subRow('CBM / Weight', [
+    ['가로(mm)', cbmVals.w], ['세로(mm)', cbmVals.d], ['높이(mm)', cbmVals.h], ['무게(kg)', cbmVals.weight]
+  ].map(p => [p[0], p[1] || '', {}, {}]), y);
+  y += subRowH;
 
-  const noteH = 0.6;
-  cell(M, y, col8, noteH, '검사 특이 사항', { bold: true, fill: { color: headerFill } });
-  cell(M + col8, y, fullW - col8, noteH, sel.note || '-', {});
+  cell(M, y, labelW, noteH, '검사 특이 사항', { bold: true, fill: { color: headerFill } });
+  cell(M + labelW, y, fullW - labelW, noteH, sel.note || '-', {});
 }
 
 function generateReportPptx() {
@@ -5049,6 +5129,7 @@ function _closeTopOverlay() {
   if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
   if (displayOpen('mSearchSubMenu'))    { closeMSearchSub();    return true; }
   if (displayOpen('qcScheduleModal'))   { closeQcScheduleCalendar(); return true; }
+  if (displayOpen('rpPhotoActionModal')) { closeRpPhotoAction(); return true; }
   if (displayOpen('rpEditModal'))       { closeRpEditModal();   return true; }
   if (transformOpen('reportModal'))     { closeReportModal();   return true; }
   return false;
