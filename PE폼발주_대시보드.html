@@ -1009,10 +1009,16 @@ async function confirmReceive(ordNo, status, date, panelId) {
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
     const json = await res.json().catch(() => null);
     if (json && json.status === 'success') {
-      showToast('상태가 "' + status + '"(으)로 변경됐습니다');
-      const row = orderRows.find(r => r.ordNo === ordNo);
-      if (row) { row.stat = status; row.in = date; }
-      renderOrders();
+      // "입고완료"로 바뀌면 서버가 구글시트 메뉴의 [재고 등록]과 동일하게 재고 시트에
+      // 자동으로 한 줄을 추가한다 — 목록을 다시 불러와야 재고현황에 바로 반영된다.
+      if (json.stockRegistered) {
+        showToast('입고완료 처리 및 재고 등록 완료');
+      } else if (status === '입고완료' && json.stockReason === 'already_in_stock') {
+        showToast('상태 변경 완료 (이미 재고에 등록된 건입니다)');
+      } else {
+        showToast('상태가 "' + status + '"(으)로 변경됐습니다');
+      }
+      await loadAll();
     } else {
       showToast('저장 실패: ' + (json && json.message ? json.message : '알 수 없는 오류'));
     }
@@ -1129,9 +1135,10 @@ function openStockDetail(key) {
 function closeStockDetail() { document.getElementById('stockDetailModal').classList.remove('open'); }
 
 // ── 소요 기록 ──
-// 재고에서 바로 빼는 게 아니라 "PE폼 소요" 시트에 한 줄 남긴다 — 실제 차감(선입선출)은
-// 시트의 [관리메뉴] → [🧾 소요 반영]을 사람이 직접 실행해야 반영된다(확인창이 필요한
-// 작업이라 앱에서 자동으로 돌릴 수 없음). 그래서 등록해도 재고 숫자는 바로 안 바뀐다.
+// "PE폼 소요" 시트에 한 줄을 남기고, 서버(doGet)가 그 자리에서 구글시트 메뉴의
+// [🧾 소요 반영]과 동일하게 재고 시트에서 선입선출로 바로 차감한다(확인창 없이 자동
+// 처리 — 사용자 요청, 2026-09-28). 재고가 모자라면 있는 만큼만 빼고 부족분은 안내만
+// 한다. 다 빠져 0이 된 재고 행은 지우지 않고 "소진"으로만 남는다.
 function toggleUsageForm() {
   const form = document.getElementById('usageForm');
   form.classList.toggle('open');
@@ -1139,6 +1146,7 @@ function toggleUsageForm() {
 }
 async function submitUsage() {
   const modal = document.getElementById('stockDetailModal');
+  const key = modal.dataset.key;
   const name = modal.dataset.name;
   const unit = modal.dataset.unit;
   const qty = parseFloat(document.getElementById('usageQty').value);
@@ -1150,10 +1158,21 @@ async function submitUsage() {
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
     const json = await res.json().catch(() => null);
     if (json && json.status === 'success') {
-      showToast('소요 기록됨 (' + qty.toLocaleString() + unit + ') — 재고엔 "소요 반영" 실행 후 반영됩니다');
+      if (json.stockApplied && json.stockShortfall > 0) {
+        showToast('소요 등록 · 재고 ' + (json.stockTaken || 0).toLocaleString() + unit + ' 차감 (재고 부족으로 ' + json.stockShortfall.toLocaleString() + unit + ' 모자람)');
+      } else if (json.stockApplied) {
+        showToast('소요 등록 및 재고 ' + (json.stockTaken || 0).toLocaleString() + unit + ' 차감 완료');
+      } else {
+        showToast('소요는 기록됐지만 재고 차감에는 실패했습니다 (해당 자재 재고 없음)');
+      }
       document.getElementById('usageForm').classList.remove('open');
       document.getElementById('usageQty').value = '';
       document.getElementById('usageUse').value = '';
+      await loadAll();
+      // 상세 모달이 아직 열려있으면 방금 바뀐 배치 수량으로 다시 그려준다
+      if (key && document.getElementById('stockDetailModal').classList.contains('open')) {
+        openStockDetail(key);
+      }
     } else {
       showToast('저장 실패: ' + (json && json.message ? json.message : '알 수 없는 오류'));
     }
