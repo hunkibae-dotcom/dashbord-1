@@ -737,6 +737,48 @@
         </div>
     </div>
 
+    <!-- ── 수출 일정 전체 달력 (PC 수출 일정 달력과 동일 기능) ──── -->
+    <div id="scheduleCalendarModal" onclick="if(event.target===this)closeScheduleCalendar()" style="position:fixed;inset:0;z-index:52;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:18px;width:100%;max-width:460px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
+                    <i class="fa-solid fa-calendar-days" style="color:#00E676;"></i> 수출 일정 달력
+                </span>
+                <button onclick="closeScheduleCalendar()" style="width:30px;height:30px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="display:flex;gap:6px;">
+                <button onclick="scSetStatusType('all')" id="scTAll" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #00E676;background:#00E676;color:#0B0F19;font-size:12px;font-weight:700;cursor:pointer;">전체</button>
+                <button onclick="scSetStatusType('working')" id="scTWorking" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;font-weight:700;cursor:pointer;">작업</button>
+                <button onclick="scSetStatusType('shipped')" id="scTShipped" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;font-weight:700;cursor:pointer;">출고</button>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <button onclick="scMoveMonth(-1)" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;font-size:13px;">‹</button>
+                <div id="scMonthLabel" style="font-size:13.5px;font-weight:800;color:var(--text);"></div>
+                <button onclick="scMoveMonth(1)" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;font-size:13px;">›</button>
+            </div>
+
+            <div style="display:flex;gap:12px;font-size:10.5px;color:var(--text-sub);padding:0 2px;flex-wrap:wrap;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:2px;background:#0ea5e9;display:inline-block;"></span>상차일</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:7px;height:7px;border-radius:2px;background:#ef4444;display:inline-block;"></span>납기일</span>
+            </div>
+
+            <div id="scGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+
+            <div style="display:flex;gap:8px;">
+                <button onclick="scClearDaySelection()" style="padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;font-weight:700;cursor:pointer;">선택 해제</button>
+                <button onclick="scRunDayQuery()" style="flex:1;padding:9px 12px;border-radius:9px;border:none;background:#00E676;color:#0B0F19;font-size:13px;font-weight:800;cursor:pointer;">선택한 날짜 조회 (<span id="scSelCount">0</span>)</button>
+            </div>
+
+            <div id="scDayList" style="border-top:1px solid var(--divider);padding-top:10px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+                <div style="text-align:center;color:var(--label);font-size:12px;padding:12px 0;">날짜를 누르면 바로 아래에 차수가 나옵니다.</div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── 용역 인원 이력 보기 (PC INFORM 카드3와 동일 데이터) ──── -->
     <div id="workLogHistoryModal" style="position:fixed;inset:0;z-index:51;display:none;flex-direction:column;background:var(--bg);">
         <div style="padding:10px 16px;position:relative;z-index:2;display:flex;align-items:center;gap:8px;background:var(--panel);box-shadow:0 1px 0 var(--border);flex-shrink:0;">
