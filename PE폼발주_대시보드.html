@@ -28,6 +28,7 @@
     --wait-bg:   rgba(37,99,235,.12);
     --amber-bg:  rgba(255,159,28,.14);
     --amber-border: rgba(255,159,28,.4);
+    --wait-border: rgba(37,99,235,.35);
   }
   html.dark {
     --bg:        #141E2E;
@@ -48,6 +49,7 @@
     --wait-bg:   rgba(96,165,250,.16);
     --amber-bg:  rgba(255,159,28,.16);
     --amber-border: rgba(255,159,28,.45);
+    --wait-border: rgba(96,165,250,.4);
   }
   *,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;margin:0;}
@@ -129,6 +131,11 @@
   .quick-action{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;flex-wrap:wrap;}
   .qa-btn{font-size:11px;font-weight:800;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-border);padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:5px;cursor:pointer;}
   .qa-btn.muted{color:var(--text-sub);background:var(--icon-bg);border-color:var(--border);}
+  /* "입고완료" 버튼이 브랜드 강조색(amber)+체크표시를 쓰다 보니 "이 카드는 이미
+     입고완료됨"이라는 상태 뱃지처럼 보여서 헷갈린다는 지적 — 상태가 아니라 눌러서
+     처리하는 액션 버튼임을 분명히 하려고 색을 완전히 다른 계열(파랑)로, 아이콘도
+     체크 대신 박스 아이콘으로 바꿨다. */
+  .qa-btn.confirm{color:var(--wait);background:var(--wait-bg);border-color:var(--wait-border);}
 
   .date-panel{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed var(--border);align-items:center;gap:8px;}
   .date-panel.open{display:flex;}
@@ -214,14 +221,22 @@
   .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
   .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
 
-  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(둥근 막대 / ㄱ자)을 CSS로 직접
-     그린다. 아이콘 폰트 이름에 기대지 않으니 어떤 환경에서도 확실히 보이고, 패드형(fa-square,
-     15px)과 비슷한 크기로 맞춰 아이콘 세트 전체의 무게감을 통일했다. 코너형은 겹치는 두 막대
-     대신 clip-path로 한 번에 그려서 모서리가 뭉치지 않고 실제 ㄱ자처럼 깔끔하게 떨어진다. */
-  .ty-bar{display:inline-block;width:15px;height:5px;border-radius:999px;background:currentColor;}
+  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(막대 / ㄱ자)을 CSS로 직접 그린다.
+     아이콘 폰트 이름에 기대지 않고, 패드형(fa-square, 15px)과 비슷한 크기로 맞췄다. */
+  /* 둘 다 아이콘 컨테이너가 display:flex 라서 flex item 이 된다.
+     shrink 로 찌그러지지 않게 flex-shrink:0 을 주고, background 단축속성 대신
+     background-color 를 쓴다(구형 WebView 에서 단축속성+currentColor 가 안 먹는 경우가 있다). */
+  .ty-bar{
+    display:block;width:16px;height:5px;border-radius:3px;
+    background-color:currentColor;flex-shrink:0;
+  }
+  /* 코너형 = 말 그대로 ㄱ자. clip-path 는 구형 WebView 에서 통째로 무시되면
+     네모로 보이므로, 위쪽+오른쪽 테두리만 남긴 상자로 그린다(어디서나 확실히 렌더된다). */
   .ty-corner{
-    display:inline-block;width:12px;height:12px;background:currentColor;
-    clip-path:polygon(0 0,100% 0,100% 100%,calc(100% - 4px) 100%,calc(100% - 4px) 4px,0 4px);
+    display:block;width:14px;height:14px;box-sizing:border-box;
+    border-top:5px solid currentColor;
+    border-right:5px solid currentColor;
+    background:none;flex-shrink:0;
   }
   .sort-btn{width:40px;flex-shrink:0;border-radius:13px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
   .date-range{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--border);border-radius:13px;padding:11px 14px;flex:1;min-width:0;}
@@ -989,7 +1004,7 @@ function renderOrders() {
       ${canReceive ? `
       <div class="quick-action">
         ${r.stat === '발주' ? `<span class="qa-btn muted" onclick="toggleDatePanel('dp_${i}')">부분입고</span>` : ''}
-        <span class="qa-btn" onclick="toggleDatePanel('dp_${i}')"><i class="fa-solid fa-check"></i> 입고완료</span>
+        <span class="qa-btn confirm" onclick="toggleDatePanel('dp_${i}')"><i class="fa-solid fa-box-open"></i> 입고완료</span>
       </div>
       <div class="date-panel" id="dp_${i}">
         <span>입고일</span>
