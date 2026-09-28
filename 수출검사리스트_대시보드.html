@@ -925,10 +925,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
     <div style="position:relative;flex:1;min-width:200px;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
-      <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
+      <input id="rpSearch" type="text" oninput="renderReportListDebounced()" placeholder="건명·단품코드·단품명칭 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
     </div>
-    <button onclick="selectAllVisibleReportItems()" type="button"
+    <button onclick="toggleSelectAllVisibleReportItems()" type="button" id="rpSelectAllBtn"
       style="background:var(--icon-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
       전체선택
     </button>
@@ -976,6 +976,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <tbody id="rpList"></tbody>
     </table>
   </div>
+  <div style="flex:1;overflow-y:auto;padding:12px 14px 40px;background:var(--bg);display:none;" id="rpListMobile"></div>
 </div>
 
 <!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
@@ -1004,6 +1005,39 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     <div style="display:flex;flex-direction:column;gap:8px;">
       <button onclick="rpPhotoActionDownload()" style="padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-download"></i> 다운로드</button>
       <button onclick="rpPhotoActionChange()" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-camera-rotate"></i> 사진 변경</button>
+    </div>
+  </div>
+</div>
+
+<!-- 카메라 촬영/갤러리 선택 공용 히든 인풋 — 행마다 따로 안 두고 이 2개를 그때그때 같이 쓴다 -->
+<input type="file" id="rpCameraInput" accept="image/*" capture="environment" style="display:none;" onchange="_rpOnPhotoFileChosen(this)">
+<input type="file" id="rpGalleryInput" accept="image/*" style="display:none;" onchange="_rpOnPhotoFileChosen(this)">
+
+<!-- ===== 보고서: 카메라/갤러리 고르기 ===== -->
+<div id="rpPhotoPickModal" onclick="if(event.target===this)closeRpPhotoPicker()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;">
+  <div style="background:var(--panel);border-radius:20px 20px 0 0;padding:18px;width:100%;max-width:420px;box-shadow:0 -10px 40px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:12px;padding-bottom:calc(18px + env(safe-area-inset-bottom,0px));">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span id="rpPickTitle" style="font-size:14.5px;font-weight:800;color:var(--text);"></span>
+      <button onclick="closeRpPhotoPicker()" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <button onclick="rpPickCamera()" style="padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;"><i class="fa-solid fa-camera"></i> 카메라로 촬영</button>
+    <button onclick="rpPickGallery()" style="padding:14px;border-radius:12px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;"><i class="fa-solid fa-images"></i> 갤러리에서 선택</button>
+  </div>
+</div>
+
+<!-- ===== 보고서: 촬영/선택한 사진 회전 편집 후 확정 ===== -->
+<div id="rpPhotoEditModal" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:12px;">
+    <div style="width:100%;height:280px;background:#000;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+      <img id="rpPhotoEditImg" style="max-width:100%;max-height:100%;transition:transform .2s;">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;">
+      <button onclick="rpPhotoEditRotate(-90)" style="width:44px;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;"><i class="fa-solid fa-rotate-left"></i></button>
+      <button onclick="rpPhotoEditRotate(90)" style="width:44px;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;"><i class="fa-solid fa-rotate-right"></i></button>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="rpPhotoEditRetake()" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;">다시 선택</button>
+      <button onclick="rpPhotoEditConfirm()" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">사용하기</button>
     </div>
   </div>
 </div>
@@ -1615,6 +1649,7 @@ function debounce(fn, wait) {
 }
 const applyFiltersDebounced = debounce(applyFilters, 300);
 const runProductSearchDebounced = debounce(() => runProductSearch(), 300);
+const renderReportListDebounced = debounce(() => renderReportList(), 300);
 const renderMobileListDebounced = debounce(() => renderMobileList(), 300);
 const runSpecLookupDebounced = debounce(() => runSpecLookup(), 250);
 const kpiDetailRenderDebounced = debounce(() => _kpiDetailRender(), 250);
@@ -2756,9 +2791,17 @@ let _reportChecked = new Set(); // 지금 PPTX 생성 대상으로 체크된 키
 // 지나서 다시 접속해도) 그대로 남아있다가 다음번에 이어서 채우고 누적해서 생성할 수
 // 있어야 한다 — localStorage에 저장해서 새로고침/재접속에도 선택·사진이 유지된다.
 const RP_STORAGE_KEY = 'qc_report_selected_v1';
+// 사진이 누적될수록 저장 용량이 수 MB로 커질 수 있어서, 매 클릭마다 그 전체를
+// JSON.stringify + localStorage.setItem 하면(둘 다 동기 작업이라 메인 스레드를 그대로
+// 막는다) 체크박스 하나 누르는 것도 버벅이게 느껴졌다 — 연달아 누르는 동안은 저장을
+// 한 번으로 묶어서(디바운스) 부담을 줄인다.
+let _rpSaveDebounceTimer = null;
 function _rpSaveToStorage() {
-  try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: _reportSelected, checked: Array.from(_reportChecked) })); }
-  catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
+  clearTimeout(_rpSaveDebounceTimer);
+  _rpSaveDebounceTimer = setTimeout(function() {
+    try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: _reportSelected, checked: Array.from(_reportChecked) })); }
+    catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
+  }, 300);
 }
 function _rpLoadFromStorage() {
   try {
@@ -2776,7 +2819,9 @@ function _rpLoadFromStorage() {
     }
   } catch (e) { _reportSelected = {}; _reportChecked = new Set(); }
 }
-_rpLoadFromStorage();
+// 이 JSON.parse도 누적된 사진 데이터가 크면 수백ms 이상 걸릴 수 있어서, 첫 화면이
+// 그려지는 걸 막지 않도록 한 박자 미뤄서 실행한다(보고서 탭은 어차피 나중에 연다).
+setTimeout(_rpLoadFromStorage, 0);
 
 function openReportModal() {
   const modal = document.getElementById('reportModal');
@@ -2882,15 +2927,21 @@ function _rpFilteredRows() {
   return rows;
 }
 
-// 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 다 체크한다 — 이미 등록된 사진·
-// 입력값은 그대로 두고(누적), 체크 표시만 켠다.
-function selectAllVisibleReportItems() {
+// 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 체크/해제한다 — 이미 등록된 사진·
+// 입력값은 그대로 두고(누적), 체크 표시만 켠다. 지금 보이는 품목이 전부 체크돼 있으면
+// 버튼이 "전체해제"로 바뀌어 눌렀을 때 반대로 전부 해제한다.
+function toggleSelectAllVisibleReportItems() {
   const rows = _rpFilteredRows();
   if (!rows.length) return;
+  const allChecked = rows.every(d => _reportChecked.has(_miKey(d)));
   rows.forEach(d => {
     const key = _miKey(d);
-    _rpEnsureSelected(key);
-    _reportChecked.add(key);
+    if (allChecked) {
+      _reportChecked.delete(key);
+    } else {
+      _rpEnsureSelected(key);
+      _reportChecked.add(key);
+    }
   });
   _rpSaveToStorage();
   renderReportList();
@@ -2898,16 +2949,31 @@ function selectAllVisibleReportItems() {
 
 function renderReportList() {
   const rows = _rpFilteredRows();
-  const list = document.getElementById('rpList');
+  const tableWrap = document.getElementById('rpListWrap');
+  const mobileWrap = document.getElementById('rpListMobile');
+  const mobile = isMobile();
+  if (tableWrap) tableWrap.style.display = mobile ? 'none' : '';
+  if (mobileWrap) mobileWrap.style.display = mobile ? '' : 'none';
+
+  const selectAllBtn = document.getElementById('rpSelectAllBtn');
+  if (selectAllBtn) {
+    const allChecked = rows.length > 0 && rows.every(d => _reportChecked.has(_miKey(d)));
+    selectAllBtn.textContent = allChecked ? '전체해제' : '전체선택';
+  }
+
   if (!rows.length) {
-    list.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
+    const emptyMsg = '<div style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></div>';
+    document.getElementById('rpList').innerHTML = '<tr><td colspan="11">' + emptyMsg + '</td></tr>';
+    if (mobileWrap) mobileWrap.innerHTML = emptyMsg;
     document.getElementById('rpSelCount').textContent = _reportChecked.size;
     return;
   }
 
+  if (mobile) { _renderReportListMobile(rows); document.getElementById('rpSelCount').textContent = _reportChecked.size; return; }
+
   // 데스크탑 화면이라 세로로 긴 카드 목록 대신, 표 한 줄에 사진 등록칸까지 같이 두는
   // 카드형 행으로 — 스크롤 없이 훨씬 많은 품목을 한눈에 보고 고를 수 있다.
-  list.innerHTML = rows.map(d => {
+  document.getElementById('rpList').innerHTML = rows.map(d => {
     const key = _miKey(d);
     const sel = _reportSelected[key];
     const checked = _reportChecked.has(key);
@@ -2932,6 +2998,51 @@ function renderReportList() {
   document.getElementById('rpSelCount').textContent = _reportChecked.size;
 }
 
+// 앱(좁은 화면)에서는 PC 웹의 넓은 표를 그대로 가로 스크롤시키지 않는다 — 표 자체가
+// 스크롤 컨테이너라 사진칸을 탭할 때 스크롤 제스처로 씹혀서 버튼이 안 눌리는 것처럼
+// 느껴졌었다. 대신 세로로 쌓이는 카드형으로, 보고서 브랜드 컬러(보라)를 살려서 PC
+// 표와는 확실히 다른 느낌으로 보여준다.
+function _renderReportListMobile(rows) {
+  const wrap = document.getElementById('rpListMobile');
+  wrap.innerHTML = rows.map(d => {
+    const key = _miKey(d);
+    const sel = _reportSelected[key];
+    const checked = _reportChecked.has(key);
+    const hasHardware = sel ? sel.hasHardware === true : false;
+    const safeKey = key.replace(/'/g, "\\'");
+    return `
+    <div style="background:var(--panel);border:1.5px solid ${checked ? '#8B7CF0' : 'var(--border)'};border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:${checked ? '0 4px 16px rgba(109,92,222,.18)' : '0 1px 6px rgba(0,0,0,.04)'};transition:border-color .15s;">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#6D5CE8;cursor:pointer;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
+          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span style="font-family:'Inter',monospace;">${d.단품코드 || '—'}</span><span>·</span><span>${d.색상 || '—'}</span><span>·</span><span style="font-weight:700;color:#6D5CE8;">${d.수량 || 0}개</span>
+          </div>
+          ${d.단품명칭 ? `<div style="font-size:11px;color:var(--label);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_rpSummarizeName(d.단품명칭)}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;">
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:10.5px;font-weight:700;color:var(--label);margin-bottom:6px;">제품 사진</div>
+          ${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto, 84)}
+        </div>
+        <div style="flex:1;text-align:center;">
+          <div style="font-size:10.5px;font-weight:700;color:var(--label);margin-bottom:6px;">포장완료 사진</div>
+          ${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto, 84)}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+        <div>${_rpCbmCell(safeKey, d, sel)}</div>
+        <div>${_rpNoteCell(safeKey, sel)}</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);padding:8px 2px 0;border-top:1px solid var(--divider,var(--border));">
+        <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
+      </label>
+    </div>`;
+  }).join('');
+}
+
 // 값이 하나라도 있으면 실제 수치를, 없으면 "입력" 안내를 보여준다 — CBM 값은 사용자가
 // 직접 입력한 값(sel.cbm)이 있으면 그걸 우선하고, 없으면 시트 원본값을 보여준다.
 function _rpCbmCell(safeKey, d, sel) {
@@ -2949,31 +3060,29 @@ function _rpNoteCell(safeKey, sel) {
   return `<div onclick="openRpNoteEditor('${safeKey}')" style="cursor:pointer;font-size:11px;font-weight:700;color:${note ? 'var(--text-sub)' : 'var(--label)'};background:var(--icon-bg);border:1px dashed var(--border);border-radius:8px;padding:8px 6px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(note || '').replace(/"/g, '&quot;')}">${label}${hasPhoto ? ' <i class="fa-solid fa-image" style="font-size:9px;color:#0EA5E9;"></i>' : ''}</div>`;
 }
 
-function _rpPhotoBox(safeKey, side, photo) {
-  const inputId = 'rpPhoto_' + side + '_' + safeKey.replace(/[^a-zA-Z0-9]/g, '_');
+function _rpPhotoBox(safeKey, side, photo, size) {
+  size = size || 48;
   const dataUrl = photo && photo.dataUrl;
   return `
-    <div onclick="_rpPhotoBoxClick('${safeKey}','${side}')" style="width:48px;height:48px;border-radius:8px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
-      ${dataUrl ? `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:14px;"></i>`}
+    <div onclick="_rpPhotoBoxClick('${safeKey}','${side}')" style="width:${size}px;height:${size}px;border-radius:${size >= 80 ? 12 : 8}px;border:1.5px dashed var(--border);background:${dataUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
+      ${dataUrl ? `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:${size >= 80 ? 22 : 14}px;"></i>`}
     </div>
-    <input type="file" id="${inputId}" accept="image/*" style="display:none;" onchange="handleReportPhoto('${safeKey}','${side}',this)">
   `;
 }
 
-// 이미 사진이 있는 칸을 누르면 바로 새 사진 선택창이 뜨는 게 아니라, 다운로드할지
-// 바꿀지부터 물어본다 — 실수로 눌러서 애써 찍은 사진이 덮어써지는 걸 막기 위함.
-function _rpTriggerPhotoInput(key, side) {
-  const inputId = 'rpPhoto_' + side + '_' + key.replace(/[^a-zA-Z0-9]/g, '_');
-  document.getElementById(inputId)?.click();
-}
+// 이미 사진이 있으면 다운로드할지 바꿀지부터 물어본다(실수로 덮어쓰기 방지), 없으면
+// 바로 카메라/갤러리 선택창을 연다. 사진 등록 파이프라인은 두 자리(제품/포장완료)에서
+// 공용 히든 인풋 2개(카메라용/갤러리용)를 그때그때 같이 써서, 행마다 별도 인풋을 만들
+// 필요가 없다 — 특히 좁은 화면에서 표 전체가 가로 스크롤될 때 행별 인풋이 스크롤
+// 컨테이너 밑에 깔려 탭이 씹히던(=버튼이 안 눌리는 것처럼 보이던) 문제도 같이 없앤다.
+let _rpPhotoActionKey = null, _rpPhotoActionSide = null;
 function _rpPhotoBoxClick(key, side) {
   const sel = _reportSelected[key];
   const photo = sel && (side === 'product' ? sel.productPhoto : sel.packagePhoto);
   if (photo && photo.dataUrl) openRpPhotoAction(key, side);
-  else _rpTriggerPhotoInput(key, side);
+  else openRpPhotoPicker(key, side);
 }
 
-let _rpPhotoActionKey = null, _rpPhotoActionSide = null;
 function openRpPhotoAction(key, side) {
   _rpPhotoActionKey = key; _rpPhotoActionSide = side;
   const sel = _reportSelected[key];
@@ -3006,7 +3115,90 @@ function rpPhotoActionDownload() {
 function rpPhotoActionChange() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
   closeRpPhotoAction();
-  if (key) _rpTriggerPhotoInput(key, side);
+  if (key) openRpPhotoPicker(key, side);
+}
+
+// ── 카메라 촬영 / 갤러리 선택 고르기 ──────────────────────────────
+function openRpPhotoPicker(key, side) {
+  _rpPhotoActionKey = key; _rpPhotoActionSide = side;
+  const titleEl = document.getElementById('rpPickTitle');
+  if (titleEl) titleEl.textContent = side === 'product' ? '제품 사진' : '포장완료 사진';
+  document.getElementById('rpPhotoPickModal').style.display = 'flex';
+  _armBackTrap();
+}
+function closeRpPhotoPicker() {
+  document.getElementById('rpPhotoPickModal').style.display = 'none';
+}
+function rpPickCamera() { document.getElementById('rpCameraInput').click(); }
+function rpPickGallery() { document.getElementById('rpGalleryInput').click(); }
+
+// 촬영/선택 직후 바로 저장하지 않고, 회전 등 간단히 손볼 수 있는 미리보기 단계를 거친다.
+let _rpPendingPhotoDataUrl = null, _rpPendingPhotoRotation = 0;
+function _rpOnPhotoFileChosen(input) {
+  const file = input.files && input.files[0];
+  input.value = ''; // 같은 파일을 다시 골라도 change 이벤트가 나도록 비워둔다
+  if (!file) return;
+  closeRpPhotoPicker();
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _rpPendingPhotoDataUrl = e.target.result;
+    _rpPendingPhotoRotation = 0;
+    _rpRenderPhotoEditPreview();
+    document.getElementById('rpPhotoEditModal').style.display = 'flex';
+    _armBackTrap();
+  };
+  reader.readAsDataURL(file);
+}
+function _rpRenderPhotoEditPreview() {
+  const img = document.getElementById('rpPhotoEditImg');
+  if (img) { img.style.transform = 'rotate(' + _rpPendingPhotoRotation + 'deg)'; img.src = _rpPendingPhotoDataUrl; }
+}
+function rpPhotoEditRotate(delta) {
+  _rpPendingPhotoRotation = (_rpPendingPhotoRotation + delta + 360) % 360;
+  _rpRenderPhotoEditPreview();
+}
+function closeRpPhotoEdit() {
+  document.getElementById('rpPhotoEditModal').style.display = 'none';
+  _rpPendingPhotoDataUrl = null;
+}
+function rpPhotoEditRetake() {
+  const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
+  closeRpPhotoEdit();
+  openRpPhotoPicker(key, side);
+}
+// 회전값을 실제 픽셀로 구워넣고(rotate 후 리사이즈까지 한 번에), 카메라 원본을 그대로
+// 저장하면 localStorage가 금방 꽉 차므로 여기서 1280px/JPEG로 같이 압축한다.
+function _rpRasterizePhoto(img, rotationDeg) {
+  const MAX = 1280;
+  const swap = rotationDeg === 90 || rotationDeg === 270;
+  const srcW = img.naturalWidth || 1, srcH = img.naturalHeight || 1;
+  const outW0 = swap ? srcH : srcW, outH0 = swap ? srcW : srcH;
+  const ratio = Math.min(1, MAX / Math.max(outW0, outH0));
+  const outW = Math.max(1, Math.round(outW0 * ratio)), outH = Math.max(1, Math.round(outH0 * ratio));
+  const canvas = document.createElement('canvas');
+  canvas.width = outW; canvas.height = outH;
+  const ctx = canvas.getContext('2d');
+  ctx.translate(outW / 2, outH / 2);
+  ctx.rotate(rotationDeg * Math.PI / 180);
+  if (swap) ctx.drawImage(img, -outH / 2, -outW / 2, outH, outW);
+  else ctx.drawImage(img, -outW / 2, -outH / 2, outW, outH);
+  return { dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: outW, h: outH };
+}
+function rpPhotoEditConfirm() {
+  const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
+  if (!key || !_rpPendingPhotoDataUrl) { closeRpPhotoEdit(); return; }
+  _rpEnsureSelected(key);
+  const img = new Image();
+  img.onload = function() {
+    const rec = _rpRasterizePhoto(img, _rpPendingPhotoRotation);
+    if (!_reportSelected[key]) return;
+    if (side === 'product') _reportSelected[key].productPhoto = rec;
+    else _reportSelected[key].packagePhoto = rec;
+    _rpSaveToStorage();
+    closeRpPhotoEdit();
+    renderReportList();
+  };
+  img.src = _rpPendingPhotoDataUrl;
 }
 
 // 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
@@ -3070,19 +3262,6 @@ function _rpCompressImage(file, cb) {
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
-}
-
-function handleReportPhoto(key, side, input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  _rpEnsureSelected(key);
-  _rpCompressImage(file, function(rec) {
-    if (!_reportSelected[key]) return;
-    if (side === 'product') _reportSelected[key].productPhoto = rec;
-    else _reportSelected[key].packagePhoto = rec;
-    _rpSaveToStorage();
-    renderReportList();
-  });
 }
 
 // ── CBM(가로/세로/높이/무게) · 특이사항 입력 모달 ──
@@ -5150,6 +5329,8 @@ function _closeTopOverlay() {
   if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
   if (displayOpen('mSearchSubMenu'))    { closeMSearchSub();    return true; }
   if (displayOpen('qcScheduleModal'))   { closeQcScheduleCalendar(); return true; }
+  if (displayOpen('rpPhotoEditModal')) { closeRpPhotoEdit(); return true; }
+  if (displayOpen('rpPhotoPickModal')) { closeRpPhotoPicker(); return true; }
   if (displayOpen('rpPhotoActionModal')) { closeRpPhotoAction(); return true; }
   if (displayOpen('rpEditModal'))       { closeRpEditModal();   return true; }
   if (transformOpen('reportModal'))     { closeReportModal();   return true; }
