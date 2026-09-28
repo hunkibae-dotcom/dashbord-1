@@ -123,6 +123,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .pulse-dot { animation:pulse-dot 2s infinite; }
 
   /* ===== MOBILE APP ===== */
+  .rp-df-btn.active { background:#6D5CE8 !important; color:#fff !important; }
   .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-sub); font-size:10px; font-weight:600; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
   .mobile-nav-btn.active { color:#6D5CE8; }
   .m-nav-icon { display:flex; align-items:center; justify-content:center; }
@@ -913,8 +914,15 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <option value="cj1">충주1공장</option>
       <option value="cj2">충주2공장</option>
     </select>
+
+    <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;flex-shrink:0;" id="rpDateFieldGroup">
+      <button type="button" onclick="setRpDateField('due')" id="rpDfDue" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">납기일</button>
+      <button type="button" onclick="setRpDateField('pack')" id="rpDfPack" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
+      <button type="button" onclick="setRpDateField('insp')" id="rpDfInsp" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료일</button>
+    </div>
     <input id="rpDate" type="date" onchange="renderReportList()"
       style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;outline:none;width:160px;flex-shrink:0;">
+
     <div style="position:relative;flex:1;min-width:200px;">
       <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
       <input id="rpSearch" type="text" oninput="renderReportList()" placeholder="건명·단품코드·단품명칭 검색"
@@ -924,7 +932,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       style="background:var(--icon-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
       전체선택
     </button>
-    <div style="font-size:11px;color:var(--label);flex-shrink:0;">날짜=포장일 기준(비움=전체)</div>
+
+    <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;flex-shrink:0;">
+      <button type="button" onclick="setRpSort('asc')" id="rpSortAsc" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);" title="선택한 날짜 기준 오름차순"><i class="fa-solid fa-arrow-up-short-wide"></i></button>
+      <button type="button" onclick="setRpSort('desc')" id="rpSortDesc" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);" title="선택한 날짜 기준 내림차순"><i class="fa-solid fa-arrow-down-wide-short"></i></button>
+    </div>
+
     <div style="flex:1;"></div>
     <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;"><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</div>
     <button onclick="generateReportPptx()" id="rpGenBtn"
@@ -933,23 +946,53 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     </button>
   </div>
 
-  <div style="flex:1;overflow-y:auto;padding:0 18px 40px;background:var(--bg);" id="rpListWrap">
-    <table style="width:100%;border-collapse:separate;border-spacing:0 8px;font-size:13px;">
+  <div style="flex:1;overflow:auto;padding:0 18px 40px;background:var(--bg);" id="rpListWrap">
+    <table style="width:100%;min-width:760px;table-layout:fixed;border-collapse:separate;border-spacing:0 8px;font-size:13px;">
+      <colgroup>
+        <col style="width:34px;">
+        <col style="width:17%;">
+        <col style="width:11%;">
+        <col style="width:56px;">
+        <col style="width:50px;">
+        <col style="width:17%;">
+        <col style="width:56px;">
+        <col style="width:56px;">
+        <col style="width:50px;">
+        <col style="width:9%;">
+        <col style="width:13%;">
+      </colgroup>
       <thead style="position:sticky;top:0;background:var(--bg);z-index:1;">
         <tr>
-          <th style="width:34px;padding:6px;"></th>
+          <th style="padding:6px;"></th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">건명</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품코드</th>
-          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:60px;">색상</th>
-          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:50px;">수량</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">색상</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">수량</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품명칭</th>
-          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:58px;">제품</th>
-          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:58px;">포장완료</th>
-          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;width:50px;">철물</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">제품</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">포장완료</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">철물</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">CBM</th>
+          <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">특이사항</th>
         </tr>
       </thead>
       <tbody id="rpList"></tbody>
     </table>
+  </div>
+</div>
+
+<!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
+<div id="rpEditModal" onclick="if(event.target===this)closeRpEditModal()" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span id="rpEditTitle" style="font-size:15.5px;font-weight:800;color:var(--text);"></span>
+      <button onclick="closeRpEditModal()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="rpEditBody"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeRpEditModal()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="_rpSaveEditModal()" style="flex:1;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">저장</button>
+    </div>
   </div>
 </div>
 
@@ -2709,6 +2752,8 @@ function openReportModal() {
   const modal = document.getElementById('reportModal');
   modal.style.transform = 'translateX(0)';
   document.body.classList.add('m-lock');
+  document.getElementById(RP_DATE_FIELD_BTN[_rpDateField])?.classList.add('active');
+  document.getElementById('mNavReport')?.classList.add('active');
   renderReportList();
   _armBackTrap();
 }
@@ -2717,6 +2762,7 @@ function closeReportModal() {
   if (!modal) return;
   modal.style.transform = 'translateX(100%)';
   document.body.classList.remove('m-lock');
+  document.getElementById('mNavReport')?.classList.remove('active');
 }
 
 function _rpFactoryLabel(key) { return key === 'cj1' ? '충주1' : '충주2'; }
@@ -2741,23 +2787,57 @@ function _rpSummarizeName(name) {
   return parts[0] + '-' + parts[1];
 }
 
+// 날짜칸이 뭘 기준으로 거르는지 안 보여서 헷갈린다는 지적 — 납기일/포장일/검사완료일
+// 중 어떤 날짜 필드로 거를지 명시적으로 고르게 한다. 정렬도 같은 필드 기준으로 한다.
+let _rpDateField = 'pack'; // 'due' | 'pack' | 'insp'
+let _rpSortDir = null; // null | 'asc' | 'desc'
+const RP_DATE_FIELD_MAP = { due: '납기일', pack: '포장일', insp: '검사일' };
+const RP_DATE_FIELD_BTN = { due: 'rpDfDue', pack: 'rpDfPack', insp: 'rpDfInsp' };
+
+function setRpDateField(field) {
+  _rpDateField = field;
+  Object.keys(RP_DATE_FIELD_BTN).forEach(f => {
+    document.getElementById(RP_DATE_FIELD_BTN[f])?.classList.toggle('active', f === field);
+  });
+  renderReportList();
+}
+
+function setRpSort(dir) {
+  _rpSortDir = (_rpSortDir === dir) ? null : dir;
+  document.getElementById('rpSortAsc')?.classList.toggle('active', _rpSortDir === 'asc');
+  document.getElementById('rpSortDesc')?.classList.toggle('active', _rpSortDir === 'desc');
+  renderReportList();
+}
+
 function _rpFilteredRows() {
   const factory = document.getElementById('rpFactory').value;
   const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
+  const dateFieldKey = RP_DATE_FIELD_MAP[_rpDateField] || '포장일';
 
   // 검사완료된 품목은 allData에서 빠지고 archiveRows(누적 이력)로 넘어가므로, 둘 다
   // 합쳐야 이전에 검사완료된 품목도 보고서 검색/전체선택에 나타난다.
   let rows = [...allData, ...archiveRows].filter(d => d.공장 === factory);
   if (dateVal) {
     rows = rows.filter(d => {
-      const pd = parseKDate(d.포장일);
+      const pd = parseKDate(d[dateFieldKey]);
       if (!pd) return false;
       const iso = pd.getFullYear() + '-' + String(pd.getMonth() + 1).padStart(2, '0') + '-' + String(pd.getDate()).padStart(2, '0');
       return iso === dateVal;
     });
   }
   if (q) rows = rows.filter(d => (d.건명 + ' ' + d.단품코드 + ' ' + d.단품명칭).toLowerCase().includes(q));
+
+  if (_rpSortDir) {
+    const dir = _rpSortDir === 'asc' ? 1 : -1;
+    rows = [...rows].sort((a, b) => {
+      const da = parseKDate(a[dateFieldKey]), db = parseKDate(b[dateFieldKey]);
+      if (!da && !db) return 0;
+      if (!da) return 1; // 날짜 없는 항목은 정렬 방향과 무관하게 항상 뒤로
+      if (!db) return -1;
+      return (da - db) * dir;
+    });
+  }
   return rows;
 }
 
@@ -2769,7 +2849,7 @@ function selectAllVisibleReportItems() {
   rows.forEach(d => {
     const key = _miKey(d);
     if (!_reportSelected[key]) {
-      _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
+      _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
     }
   });
   _rpSaveToStorage();
@@ -2780,7 +2860,7 @@ function renderReportList() {
   const rows = _rpFilteredRows();
   const list = document.getElementById('rpList');
   if (!rows.length) {
-    list.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
+    list.innerHTML = '<tr><td colspan="11" style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></td></tr>';
     document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
     return;
   }
@@ -2804,10 +2884,29 @@ function renderReportList() {
       <td style="${rowBg}padding:10px 6px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);" title="${(d.단품명칭 || '').replace(/"/g, '&quot;')}">${_rpSummarizeName(d.단품명칭) || ''}</td>
       <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto)}</td>
       <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto)}</td>
-      <td style="${rowBg}padding:10px 6px;text-align:center;border-radius:0 12px 12px 0;border:1px solid var(--border);border-left:none;"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
+      <td style="${rowBg}padding:6px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpCbmCell(safeKey, d, sel)}</td>
+      <td style="${rowBg}padding:6px 4px;border-radius:0 12px 12px 0;border:1px solid var(--border);border-left:none;">${_rpNoteCell(safeKey, sel)}</td>
     </tr>`;
   }).join('');
   document.getElementById('rpSelCount').textContent = Object.keys(_reportSelected).length;
+}
+
+// 값이 하나라도 있으면 실제 수치를, 없으면 "입력" 안내를 보여준다 — CBM 값은 사용자가
+// 직접 입력한 값(sel.cbm)이 있으면 그걸 우선하고, 없으면 시트 원본값을 보여준다.
+function _rpCbmCell(safeKey, d, sel) {
+  const cbm = sel && sel.cbm;
+  const w = cbm ? cbm.w : d.가로, dp = cbm ? cbm.d : d.세로, h = cbm ? cbm.h : d.높이, wt = cbm ? cbm.weight : d.중량;
+  const hasAny = [w, dp, h, wt].some(v => v !== null && v !== undefined && v !== '' && v !== 0);
+  const label = hasAny ? `${w || '-'}×${dp || '-'}×${h || '-'}<br>${wt || '-'}kg` : '입력';
+  return `<div onclick="openRpCbmEditor('${safeKey}')" style="cursor:pointer;font-size:10.5px;line-height:1.4;font-weight:700;color:${hasAny ? 'var(--text-sub)' : 'var(--label)'};background:var(--icon-bg);border:1px dashed var(--border);border-radius:8px;padding:6px 4px;text-align:center;">${label}</div>`;
+}
+
+function _rpNoteCell(safeKey, sel) {
+  const note = sel && sel.note;
+  const hasPhoto = !!(sel && sel.notePhoto);
+  const label = note ? (note.length > 14 ? note.slice(0, 14) + '…' : note) : '입력';
+  return `<div onclick="openRpNoteEditor('${safeKey}')" style="cursor:pointer;font-size:11px;font-weight:700;color:${note ? 'var(--text-sub)' : 'var(--label)'};background:var(--icon-bg);border:1px dashed var(--border);border-radius:8px;padding:8px 6px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(note || '').replace(/"/g, '&quot;')}">${label}${hasPhoto ? ' <i class="fa-solid fa-image" style="font-size:9px;color:#0EA5E9;"></i>' : ''}</div>`;
 }
 
 function _rpPhotoBox(safeKey, side, photo) {
@@ -2832,7 +2931,7 @@ function toggleReportItem(key) {
   } else {
     const d = _rpFindByKey(key);
     if (!d) return;
-    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
+    _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
   }
   _rpSaveToStorage();
   renderReportList();
@@ -2844,7 +2943,7 @@ function _rpEnsureSelected(key) {
   if (_reportSelected[key]) return;
   const d = _rpFindByKey(key);
   if (!d) return;
-  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
+  _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null };
 }
 
 function toggleReportHardware(key, checked) {
@@ -2859,18 +2958,14 @@ function toggleReportHardware(key, checked) {
 // 사진을 파일로만 받으면 원본 해상도/비율을 몰라서 PPTX에 넣을 때 억지로 늘려찍힌
 // 것처럼 보이는 문제가 있었다 — 이미지를 한 번 실제로 그려서 원본 가로/세로 비율을
 // 미리 알아두고, 슬라이드에 넣을 때 그 비율대로 정확히 맞춘다(아래 _fitRect 참고).
-function handleReportPhoto(key, side, input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
-  _rpEnsureSelected(key);
+// 카메라 원본 사진은 몇 MB씩이라 그대로 저장하면 localStorage 누적 저장 용량을 금방
+// 초과한다 — 긴 변 기준 1280px로 줄이고 JPEG로 재인코딩해서 저장한다. 제품/포장완료/
+// 특이사항 사진 등록에서 공통으로 쓴다.
+function _rpCompressImage(file, cb) {
   const reader = new FileReader();
   reader.onload = function(e) {
-    const dataUrl = e.target.result;
     const img = new Image();
     img.onload = function() {
-      if (!_reportSelected[key]) return;
-      // 카메라 원본 사진은 몇 MB씩이라 그대로 저장하면 localStorage 누적 저장 용량을
-      // 금방 초과한다 — 긴 변 기준 1280px로 줄이고 JPEG로 재인코딩해서 저장한다.
       const MAX = 1280;
       const ratio = Math.min(1, MAX / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
       const w = Math.max(1, Math.round((img.naturalWidth || 1) * ratio));
@@ -2878,15 +2973,110 @@ function handleReportPhoto(key, side, input) {
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const rec = { dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: w, h: h };
-      if (side === 'product') _reportSelected[key].productPhoto = rec;
-      else _reportSelected[key].packagePhoto = rec;
-      _rpSaveToStorage();
-      renderReportList();
+      cb({ dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: w, h: h });
     };
-    img.src = dataUrl;
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
+}
+
+function handleReportPhoto(key, side, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  _rpEnsureSelected(key);
+  _rpCompressImage(file, function(rec) {
+    if (!_reportSelected[key]) return;
+    if (side === 'product') _reportSelected[key].productPhoto = rec;
+    else _reportSelected[key].packagePhoto = rec;
+    _rpSaveToStorage();
+    renderReportList();
+  });
+}
+
+// ── CBM(가로/세로/높이/무게) · 특이사항 입력 모달 ──
+let _rpEditKey = null, _rpEditMode = null; // 'cbm' | 'note'
+
+function openRpCbmEditor(key) {
+  _rpEnsureSelected(key);
+  const sel = _reportSelected[key];
+  if (!sel) return;
+  _rpEditKey = key; _rpEditMode = 'cbm';
+  const cbm = sel.cbm;
+  const cur = {
+    w: cbm ? cbm.w : sel.item.가로, d: cbm ? cbm.d : sel.item.세로,
+    h: cbm ? cbm.h : sel.item.높이, weight: cbm ? cbm.weight : sel.item.중량,
+  };
+  document.getElementById('rpEditTitle').textContent = 'CBM / 무게 입력';
+  document.getElementById('rpEditBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      ${[['가로(mm)', 'rpCbmW', cur.w], ['세로(mm)', 'rpCbmD', cur.d], ['높이(mm)', 'rpCbmH', cur.h], ['무게(kg)', 'rpCbmWeight', cur.weight]].map(([label, id, val]) => `
+        <div>
+          <div style="font-size:11.5px;font-weight:700;color:var(--label);margin-bottom:4px;">${label}</div>
+          <input id="${id}" type="number" step="any" value="${val === '' || val == null ? '' : val}" style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:9px;padding:9px 10px;font-size:13.5px;outline:none;">
+        </div>`).join('')}
+    </div>`;
+  document.getElementById('rpEditModal').style.display = 'flex';
+  _armBackTrap();
+}
+
+function openRpNoteEditor(key) {
+  _rpEnsureSelected(key);
+  const sel = _reportSelected[key];
+  if (!sel) return;
+  _rpEditKey = key; _rpEditMode = 'note';
+  const photoUrl = sel.notePhoto && sel.notePhoto.dataUrl;
+  document.getElementById('rpEditTitle').textContent = '검사 특이사항';
+  document.getElementById('rpEditBody').innerHTML = `
+    <textarea id="rpNoteText" rows="4" placeholder="특이사항을 입력하세요 (PPTX에는 이 글자만 들어갑니다)" style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;">${(sel.note || '').replace(/</g, '&lt;')}</textarea>
+    <div style="font-size:11px;color:var(--label);margin:10px 0 4px;">참고 사진 (PPTX에는 포함되지 않음)</div>
+    <div onclick="document.getElementById('rpNotePhotoInput').click()" style="width:100%;height:120px;border-radius:10px;border:1.5px dashed var(--border);background:${photoUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;">
+      ${photoUrl ? `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:22px;"></i>`}
+    </div>
+    <input type="file" id="rpNotePhotoInput" accept="image/*" style="display:none;" onchange="_rpHandleNotePhoto(this)">
+    ${photoUrl ? `<button type="button" onclick="_rpRemoveNotePhoto()" style="margin-top:6px;background:none;border:none;color:#EF4444;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;">사진 삭제</button>` : ''}
+  `;
+  document.getElementById('rpEditModal').style.display = 'flex';
+  _armBackTrap();
+}
+
+function closeRpEditModal() {
+  document.getElementById('rpEditModal').style.display = 'none';
+  _rpEditKey = null; _rpEditMode = null;
+}
+
+function _rpSaveEditModal() {
+  const key = _rpEditKey, mode = _rpEditMode;
+  if (!key || !_reportSelected[key]) { closeRpEditModal(); return; }
+  if (mode === 'cbm') {
+    const num = (id) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
+    const w = num('rpCbmW'), d = num('rpCbmD'), h = num('rpCbmH'), weight = num('rpCbmWeight');
+    _reportSelected[key].cbm = (w == null && d == null && h == null && weight == null) ? null : { w, d, h, weight };
+  } else if (mode === 'note') {
+    _reportSelected[key].note = document.getElementById('rpNoteText').value.trim();
+  }
+  _rpSaveToStorage();
+  closeRpEditModal();
+  renderReportList();
+}
+
+// 사진은 선택 즉시(저장 버튼과 무관하게) 반영한다 — 제품/포장완료 사진칸과 동일한 동작.
+function _rpHandleNotePhoto(input) {
+  const file = input.files && input.files[0];
+  const key = _rpEditKey;
+  if (!file || !key || !_reportSelected[key]) return;
+  _rpCompressImage(file, function(rec) {
+    if (!_reportSelected[key]) return;
+    _reportSelected[key].notePhoto = rec;
+    _rpSaveToStorage();
+    if (_rpEditKey === key) openRpNoteEditor(key); // 미리보기 갱신
+  });
+}
+function _rpRemoveNotePhoto() {
+  const key = _rpEditKey;
+  if (!key || !_reportSelected[key]) return;
+  _reportSelected[key].notePhoto = null;
+  _rpSaveToStorage();
+  openRpNoteEditor(key);
 }
 
 function _loadPptxGenJS(cb) {
@@ -3009,7 +3199,8 @@ function _addReportSlide(pptx, d, sel, repRound) {
   y += rowH;
 
   cell(M, y, col9, rowH, 'CBM / Weight', { bold: true, fill: { color: headerFill } });
-  [['가로(mm)', d.가로], ['세로(mm)', d.세로], ['높이(mm)', d.높이], ['무게(kg)', d.중량]].forEach((pair, i) => {
+  const cbmVals = sel.cbm || { w: d.가로, d: d.세로, h: d.높이, weight: d.중량 };
+  [['가로(mm)', cbmVals.w], ['세로(mm)', cbmVals.d], ['높이(mm)', cbmVals.h], ['무게(kg)', cbmVals.weight]].forEach((pair, i) => {
     cell(M + col9 + i * 2 * col9, y, col9, rowH, pair[0], {});
     cell(M + col9 + i * 2 * col9 + col9, y, col9, rowH, pair[1] || '', {});
   });
@@ -3626,6 +3817,7 @@ function setMTab(tab) {
   document.getElementById('mNav1')?.classList.toggle('active', tab === 'chart');
   document.getElementById('mNav2')?.classList.remove('active');
   document.getElementById('mNav3')?.classList.remove('active');
+  document.getElementById('mNavReport')?.classList.remove('active');
   // hide top button on tab switch
   document.getElementById('mToTopBtn')?.classList.remove('show');
   if (tab === 'chart') setTimeout(renderMobileCharts, 60);
@@ -4850,6 +5042,7 @@ function _closeTopOverlay() {
   if (displayOpen('kpiDetailSheet'))    { closeKpiDetail();     return true; }
   if (displayOpen('mSearchSubMenu'))    { closeMSearchSub();    return true; }
   if (displayOpen('qcScheduleModal'))   { closeQcScheduleCalendar(); return true; }
+  if (displayOpen('rpEditModal'))       { closeRpEditModal();   return true; }
   if (transformOpen('reportModal'))     { closeReportModal();   return true; }
   return false;
 }
@@ -5290,6 +5483,10 @@ function onNativeScanResult(raw) {
       <button onclick="setMTab('chart')" id="mNav1" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
         <span>차트</span>
+      </button>
+      <button onclick="openReportModal()" id="mNavReport" class="mobile-nav-btn">
+        <span class="m-nav-icon"><i class="fa-solid fa-file-powerpoint"></i></span>
+        <span>보고서</span>
       </button>
       <button onclick="toggleMSearchSub()" id="mNav2" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
