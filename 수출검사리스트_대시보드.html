@@ -2727,7 +2727,9 @@ function _rpFilteredRows() {
   const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
 
-  let rows = allData.filter(d => d.공장 === factory);
+  // 검사완료된 품목은 allData에서 빠지고 archiveRows(누적 이력)로 넘어가므로, 둘 다
+  // 합쳐야 이전에 검사완료된 품목도 보고서 검색/전체선택에 나타난다.
+  let rows = [...allData, ...archiveRows].filter(d => d.공장 === factory);
   if (dateVal) {
     rows = rows.filter(d => {
       const pd = parseKDate(d.포장일);
@@ -2800,11 +2802,16 @@ function _rpPhotoBox(safeKey, side, photo) {
   `;
 }
 
+// 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
+function _rpFindByKey(key) {
+  return allData.find(x => _miKey(x) === key) || archiveRows.find(x => _miKey(x) === key);
+}
+
 function toggleReportItem(key) {
   if (_reportSelected[key]) {
     delete _reportSelected[key];
   } else {
-    const d = allData.find(x => _miKey(x) === key);
+    const d = _rpFindByKey(key);
     if (!d) return;
     _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
   }
@@ -2816,7 +2823,7 @@ function toggleReportItem(key) {
 // 담는다"는 실제 작업 흐름에 더 자연스럽게 맞는다.
 function _rpEnsureSelected(key) {
   if (_reportSelected[key]) return;
-  const d = allData.find(x => _miKey(x) === key);
+  const d = _rpFindByKey(key);
   if (!d) return;
   _reportSelected[key] = { item: d, productPhoto: null, packagePhoto: null, note: '', hasHardware: false };
 }
