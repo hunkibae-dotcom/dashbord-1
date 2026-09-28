@@ -678,10 +678,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           <div style="height:220px"><canvas id="topUndoneChart"></canvas></div>
         </div>
         <div class="card p-5" onclick="openQcScheduleCalendar()" style="cursor:pointer;transition:transform .15s;" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
-          <h2 class="text-[16.5px] font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기/포장 날짜</h2>
-          <div style="height:195px;display:flex;flex-direction:column;">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-[16.5px] font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-slate-400"></i> 공장별 납기/포장 날짜</h2>
+            <div style="font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;white-space:nowrap;">크게 보기 ›</div>
+          </div>
+          <div style="height:340px;display:flex;flex-direction:column;">
             <div id="qcMiniCal" style="flex:1;"></div>
-            <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:6px;">크게 보기 ›</div>
           </div>
         </div>
       </div>
@@ -2183,16 +2185,16 @@ function _qcMiniCalHtml() {
     const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const ev = events.byDate[dateStr];
     const isToday = dateStr === todayStr;
-    cells += `<div style="text-align:center;font-size:8.5px;font-weight:${isToday ? '800' : '500'};color:${isToday ? '#6D5CE8' : '#64748B'};padding:2px 0;display:flex;flex-direction:column;align-items:center;gap:1px;">
-      <span style="${isToday ? 'background:#6D5CE8;color:#fff;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;' : ''}">${d}</span>
-      <span style="display:flex;gap:1px;height:3px;">
-        ${ev && ev.due.size ? '<span style="width:3px;height:3px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' : ''}
-        ${ev && ev.pack.size ? '<span style="width:3px;height:3px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>' : ''}
+    cells += `<div style="text-align:center;font-size:11.5px;font-weight:${isToday ? '800' : '500'};color:${isToday ? '#6D5CE8' : '#64748B'};padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <span style="${isToday ? 'background:#6D5CE8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;' : ''}">${d}</span>
+      <span style="display:flex;gap:2px;height:5px;">
+        ${ev && ev.due.size ? '<span style="width:5px;height:5px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' : ''}
+        ${ev && ev.pack.size ? '<span style="width:5px;height:5px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>' : ''}
       </span>
     </div>`;
   }
-  return `<div style="font-size:11px;font-weight:700;color:#94A3B8;margin-bottom:4px;">${year}년 ${month + 1}월</div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;">${cells}</div>`;
+  return `<div style="font-size:12.5px;font-weight:700;color:#94A3B8;margin-bottom:8px;">${year}년 ${month + 1}월</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">${cells}</div>`;
 }
 function renderQcMiniCal() {
   const html = _qcMiniCalHtml();
@@ -2365,11 +2367,15 @@ function extractCountry(건명) {
   if (/^[가-힣(]/.test(s)) return null;
   // 슬래시 포함 = 업체명/연도 내수 패턴 → 제외
   if (s.indexOf('/') >= 0) return null;
-  // 수출건: 첫 번째 '-' 앞이 국가코드 (뒤에 한글 설명 있어도 무관)
+  // 수출건: 첫 번째 '-' 앞이 영문 국가코드(FAM, FVN1, VAN, HMI 등)일 때만 인정 —
+  // "24년-사업" 처럼 대시 앞이 숫자/한글인 내수건까지 잘못 수출건으로 잡히던 문제가
+  // 있어서, 앞부분이 영문으로 시작하는 코드일 때만 통과시킨다. 뒤에 한글 설명이
+  // 붙어도 무관(코드 자체만 검사).
   const dashIdx = s.indexOf('-');
   if (dashIdx > 0) {
     const code = s.slice(0, dashIdx).trim();
-    if (code) return code;
+    if (/^[A-Za-z][A-Za-z0-9]*$/.test(code)) return code;
+    return null;
   }
   // 대시 없는 경우: 첫 공백 앞 영문 토큰 (예: KK, NY, CIFF)
   const spaceIdx = s.search(/\s/);
@@ -5027,14 +5033,16 @@ function onNativeScanResult(raw) {
 
       <!-- 공장별 납기/포장 날짜 (홈 탭 — 납기임박검사 바로 위) -->
       <div class="bg-white rounded-2xl p-4 mb-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);cursor:pointer;" onclick="openQcScheduleCalendar()">
-        <div class="flex items-center gap-2.5 mb-3">
-          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
-            <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
-          </span>
-          <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
+              <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
+            </span>
+            <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
+          </div>
+          <div style="font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;white-space:nowrap;">크게 보기 ›</div>
         </div>
         <div id="mQcMiniCal"></div>
-        <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:8px;">크게 보기 ›</div>
       </div>
 
       <!-- Factory panels 섹션 타이틀 (탭하면 전체 목록으로) -->
