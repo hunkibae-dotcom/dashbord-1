@@ -1301,18 +1301,9 @@ async function loadData() {
 
   // 진행중 리스트(작고 빠름)와 누적 이력(크고 느림)을 서로 기다리지 않고 각자 도착하는 대로 반영
   const activePromise = Promise.all(
-    FACTORIES.map(f => Promise.all([
-      fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }),
-      fetchYellowKeys(f.key).catch(e => { loadErrors.push(`${f.label} 생산완료 표시: ${e.message}`); return new Set(); })
-    ]))
+    FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
   ).then(results => {
-    allData = [];
-    results.forEach(([rows, yellowKeys]) => {
-      rows.map(r => r.source ? r : { ...r, source: 'active' }).forEach(item => {
-        if ((item.검사 === '미검사' || item.검사 === '재투입') && yellowKeys.has(_miKey(item))) item.공정완료 = true;
-        allData.push(item);
-      });
-    });
+    allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
     applyMiOverrides(allData);
     applyFilters();
     renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
@@ -1363,19 +1354,6 @@ async function fetchFactory(f) {
   return parseRows(data.table.rows, f);
 }
 
-// gviz(공개 CSV/JSON) 조회는 셀 배경색을 안 주기 때문에, "생산완료"(검사 셀이 노란색으로
-// 표시된, 즉 공정진행률 95%↑) 판정만은 doGet(action=getYellowKeys)을 따로 불러와야 한다.
-// 반환된 키(건명|단품코드|색상|수량, _miKey와 동일 형식)를 Set으로 돌려주고, 실패하면
-// 빈 Set을 던져서(에러 메시지와 함께 호출부 catch에서) 이 카드만 0건으로 보이게 한다.
-async function fetchYellowKeys(factoryKey) {
-  const url = _gasUrlForFactory(factoryKey);
-  if (!url) return new Set();
-  const res = await fetch(url + '?action=getYellowKeys', { signal: AbortSignal.timeout(15000) });
-  const json = await res.json();
-  if (json && json.status === 'success' && Array.isArray(json.keys)) return new Set(json.keys);
-  throw new Error(json && json.message ? json.message : '조회 실패');
-}
-
 // 완료 이력 시트: 상단 헤더 행(O:TOTAL CORD, P:TOTAL)의 집계값 + 개별 출고 이력 행을 함께 읽어온다
 async function fetchArchiveData(f) {
   const url = `https://docs.google.com/spreadsheets/d/${f.sheetId}/gviz/tq?tqx=out:json&gid=${f.gid}&t=${Date.now()}`;
@@ -1415,7 +1393,7 @@ function parseRows(rows, factory) {
     if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
 
     const 검사raw = g(13).trim();
-    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : 검사raw === '미투입' ? '미투입' : 검사raw === '취소' ? '취소' : '미검사';
+    const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : 검사raw === '미투입' ? '미투입' : 검사raw === '취소' ? '취소' : 검사raw === '포장대기' ? '포장대기' : '미검사';
     const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
 
     result.push({
@@ -1605,10 +1583,9 @@ function applyFilters() {
       // 바로 아래 일반 분기(d.검사 !== colInspectFilter)로 걸러지면 그 문자열과 정확히 같은
       // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
       // 데스크탑 생산중 카드(viewDetailInTable)에도 똑같이 추가함.
-      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입') || d.공정완료) return false; }
-      // '생산완료'도 '생산중'과 마찬가지로 실제 검사 상태값이 아니라 화면 전용 파생
-      // 카테고리(미검사/재투입 중 검사 셀이 노란색인 것)라 같은 이유로 별도 분기가 필요하다.
-      else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
+      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+      // '생산완료' 카드는 화면 전용 이름을 쓰지만 실제로는 검사 칼럼의 "포장대기" 상태값 하나다.
+      else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || d.검사 !== '포장대기') return false; }
       else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
@@ -1766,11 +1743,12 @@ function computeStats(items) {
   const undone = items.filter(d => d.검사 === '미검사').length;
   const waitInspect = undone + reinspectWaiting;
   const preinput = items.filter(d => d.검사 === '미투입').length;
-  // 생산완료: 미검사/재투입인데 시트에서 검사 셀이 노란색(공정진행률 95%↑)으로 표시된 항목
-  const prodDone = items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료).length;
-  // 생산중: 미검사/재투입 중 생산완료(위 prodDone)가 아닌 것만 — 두 카드가 겹치지 않도록
-  // 서로 배타적으로 나눈다(생산완료된 항목은 더 이상 "생산중"이 아님).
-  const prodOngoing = items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료).length;
+  // 생산완료: 검사 칼럼이 "포장대기"인 항목 — 예전엔 미검사/재투입 중 검사 셀이 노란색
+  // (공정진행률 95%↑)인 것으로 추정했는데, 시트에 "포장대기"라는 실제 상태값이 새로
+  // 생겨서 더 이상 추정할 필요 없이 이 값으로 직접 판정한다.
+  const prodDone = items.filter(d => d.검사 === '포장대기').length;
+  // 생산중: 미검사/재투입 — "포장대기"는 이제 별도 상태값이라 자연히 여기 안 걸린다.
+  const prodOngoing = items.filter(d => d.검사 === '미검사' || d.검사 === '재투입').length;
   // 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
   const packedToday = items.filter(d => {
     if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
@@ -1842,17 +1820,19 @@ function renderKPIs(fullData) {
   document.getElementById('kpiPreInDetail').innerHTML = renderDetailList(scopedPool(cj1PreInput, cj2PreInput), '납기일');
 
   // 4) 생산중 (미검사 + 재투입)
-  const cj1Producing = cj1Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료);
-  const cj2Producing = cj2Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && !d.공정완료);
+  const cj1Producing = cj1Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
+  const cj2Producing = cj2Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
   document.getElementById('kpiProdCj1').textContent = cj1.prodOngoing.toLocaleString();
   document.getElementById('kpiProdCj2').textContent = cj2.prodOngoing.toLocaleString();
   document.getElementById('kpiProdDetail').innerHTML = renderDetailList(scopedPool(cj1Producing, cj2Producing), '납기일');
 
-  // 5) 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) — 예전엔 이 카드 자리에
-  // "누적 검사완료"(별도 출고 이력 시트 합계, archiveTotals)를 보여줬는데, 실시간 생산 현황과
-  // 무관한 수치라 요청에 따라 실시간 데이터(allData) 기준 생산완료 건수로 바꿨다.
-  const cj1Done = cj1Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료);
-  const cj2Done = cj2Items.filter(d => (d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료);
+  // 5) 생산완료 (검사 칼럼이 "포장대기"인 항목) — 예전엔 이 카드 자리에 "누적 검사완료"
+  // (별도 출고 이력 시트 합계, archiveTotals)를 보여줬는데, 실시간 생산 현황과 무관한
+  // 수치라 요청에 따라 실시간 데이터(allData) 기준 생산완료 건수로 바꿨다. 처음엔 검사
+  // 셀 배경색(노란색=공정진행률 95%↑)으로 추정했는데, 시트에 "포장대기" 상태값이 실제로
+  // 생겨서 이제 그 값으로 직접 판정한다.
+  const cj1Done = cj1Items.filter(d => d.검사 === '포장대기');
+  const cj2Done = cj2Items.filter(d => d.검사 === '포장대기');
   document.getElementById('kpiProdDoneCj1').textContent = cj1.prodDone.toLocaleString();
   document.getElementById('kpiProdDoneCj2').textContent = cj2.prodDone.toLocaleString();
   document.getElementById('kpiProdDoneDetail').innerHTML = renderDetailList(scopedPool(cj1Done, cj2Done), '납기일');
@@ -4138,8 +4118,8 @@ function renderMobileList() {
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
     }
-    else if (mStatus === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입') || d.공정완료) return false; }
-    else if (mStatus === '생산완료') { if (d.source === 'archive' || !((d.검사 === '미검사' || d.검사 === '재투입') && d.공정완료)) return false; }
+    else if (mStatus === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+    else if (mStatus === '생산완료') { if (d.source === 'archive' || d.검사 !== '포장대기') return false; }
     else if (mStatus === '미투입') { if (d.source === 'archive' || d.검사 !== '미투입') return false; }
     else if (mStatus) { if (d.검사 !== mStatus) return false; }
     if (search && !(d.건명||'').toLowerCase().includes(search) && !(d.단품코드||'').toLowerCase().includes(search) && !(d.단품명칭||'').toLowerCase().includes(search)) return false;
