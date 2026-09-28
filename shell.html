@@ -992,7 +992,38 @@
                 processTodayWorkers(rows);
             }
         }
+        _mergeStockSpecsIntoAllData();
         renderAll();
+    }
+
+    // "수출 현황" 시트에는 가로/세로/높이/중량/파렛트 칸이 아예 없고, 그 값들은 포장 후
+    // 옮겨 적는 "충주공장 재고" 시트에만 있다. 그런데 같은 품목(code+round)이 두 시트에
+    // 동시에 남아있는 경우가 많아서, allData.find()가 먼저 매칭되는 "수출 현황" 쪽(값이
+    // 전부 빈칸)을 집어버리면 적재번호·규격·포장완료일이 실제로 입력돼 있어도 화면에는
+    // 안 보이는 문제가 있었다 — 재고 쪽 값을 code+round(+색상)로 찾아 모든 동일 품목에
+    // 되먹여서, 어느 쪽 행이 잡히든 항상 실제 입력값이 보이게 한다.
+    function _mergeStockSpecsIntoAllData() {
+        if (!stockData || !stockData.length) return;
+        const idx = {};
+        stockData.forEach(s => {
+            if (!s.code || !s.round) return;
+            const keyFull = (s.code||'').toUpperCase() + '|' + s.round + '|' + (s.color||'');
+            idx[keyFull] = s;
+            const keyNoColor = (s.code||'').toUpperCase() + '|' + s.round;
+            if (!idx[keyNoColor]) idx[keyNoColor] = s;
+        });
+        allData.forEach(it => {
+            if (!it.code || !it.round) return;
+            const s = idx[(it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')] ||
+                      idx[(it.code||'').toUpperCase() + '|' + it.round];
+            if (!s || s === it) return;
+            if (s.pallet) it.pallet = s.pallet;
+            if (s.specW) it.specW = s.specW;
+            if (s.specD) it.specD = s.specD;
+            if (s.specH) it.specH = s.specH;
+            if (s.specG) it.specG = s.specG;
+            if (s.regDate && s.regDate !== '-') it.regDate = s.regDate;
+        });
     }
 
     // ── 데이터 로드 ───────────────────────────────────────
