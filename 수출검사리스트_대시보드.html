@@ -1026,14 +1026,22 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 </div>
 
 <!-- ===== 보고서: 촬영/선택한 사진 회전 편집 후 확정 ===== -->
-<div id="rpPhotoEditModal" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--panel);border-radius:18px;padding:16px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:12px;">
-    <div style="width:100%;height:280px;background:#000;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
-      <img id="rpPhotoEditImg" style="max-width:100%;max-height:100%;transition:transform .2s;">
+<div id="rpPhotoEditModal" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:16px;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:12px;">
+    <div id="rpCropStage" style="position:relative;width:100%;height:320px;background:#000;border-radius:12px;overflow:hidden;touch-action:none;">
+      <img id="rpPhotoEditImg" style="position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;">
+      <div id="rpCropBox" onpointerdown="_rpCropPointerDown(event,'move')" style="position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.55);cursor:move;touch-action:none;">
+        <div onpointerdown="_rpCropPointerDown(event,'tl')" style="position:absolute;left:-9px;top:-9px;width:22px;height:22px;background:#fff;border-radius:50%;cursor:nwse-resize;touch-action:none;"></div>
+        <div onpointerdown="_rpCropPointerDown(event,'tr')" style="position:absolute;right:-9px;top:-9px;width:22px;height:22px;background:#fff;border-radius:50%;cursor:nesw-resize;touch-action:none;"></div>
+        <div onpointerdown="_rpCropPointerDown(event,'bl')" style="position:absolute;left:-9px;bottom:-9px;width:22px;height:22px;background:#fff;border-radius:50%;cursor:nesw-resize;touch-action:none;"></div>
+        <div onpointerdown="_rpCropPointerDown(event,'br')" style="position:absolute;right:-9px;bottom:-9px;width:22px;height:22px;background:#fff;border-radius:50%;cursor:nwse-resize;touch-action:none;"></div>
+      </div>
     </div>
+    <div style="font-size:11px;color:var(--label);text-align:center;margin-top:-4px;">모서리를 끌어 자를 범위를 조절하세요</div>
     <div style="display:flex;gap:8px;justify-content:center;">
       <button onclick="rpPhotoEditRotate(-90)" style="width:44px;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;"><i class="fa-solid fa-rotate-left"></i></button>
       <button onclick="rpPhotoEditRotate(90)" style="width:44px;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;"><i class="fa-solid fa-rotate-right"></i></button>
+      <button onclick="rpCropReset()" style="padding:0 16px;height:44px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);cursor:pointer;font-weight:700;font-size:12.5px;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-crop-simple"></i> 자르기 초기화</button>
     </div>
     <div style="display:flex;gap:8px;">
       <button onclick="rpPhotoEditRetake()" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;">다시 선택</button>
@@ -3033,8 +3041,14 @@ function _renderReportListMobile(rows) {
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div>${_rpCbmCell(safeKey, d, sel)}</div>
-        <div>${_rpNoteCell(safeKey, sel)}</div>
+        <div>
+          <div style="font-size:10.5px;font-weight:700;color:var(--label);margin-bottom:6px;text-align:center;">CBM</div>
+          ${_rpCbmCell(safeKey, d, sel)}
+        </div>
+        <div>
+          <div style="font-size:10.5px;font-weight:700;color:var(--label);margin-bottom:6px;text-align:center;">특이사항</div>
+          ${_rpNoteCell(safeKey, sel)}
+        </div>
       </div>
       <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);padding:8px 2px 0;border-top:1px solid var(--divider,var(--border));">
         <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
@@ -3132,8 +3146,15 @@ function closeRpPhotoPicker() {
 function rpPickCamera() { document.getElementById('rpCameraInput').click(); }
 function rpPickGallery() { document.getElementById('rpGalleryInput').click(); }
 
-// 촬영/선택 직후 바로 저장하지 않고, 회전 등 간단히 손볼 수 있는 미리보기 단계를 거친다.
-let _rpPendingPhotoDataUrl = null, _rpPendingPhotoRotation = 0;
+// 촬영/선택 직후 바로 저장하지 않고, 회전·자르기로 손볼 수 있는 편집 단계를 거친다.
+// 회전은 누를 때마다 그 자리에서 실제 픽셀로 다시 그려(재기록) 이미지 자체를 세워두고,
+// 자르기는 그 위에 올린 사각 틀을 화면 좌표로 드래그하다가 확정 시점에 원본 픽셀
+// 좌표로 환산해서 오려낸다.
+let _rpPendingPhotoDataUrl = null;
+let _rpCropImgRect = null;  // 스테이지 안에서 이미지가 실제로 그려지는 위치/크기(표시 px)
+let _rpCropBox = null;      // 자르기 사각형(표시 px, 스테이지 기준 좌표)
+let _rpCropDrag = null;     // 드래그 중 상태
+
 function _rpOnPhotoFileChosen(input) {
   const file = input.files && input.files[0];
   input.value = ''; // 같은 파일을 다시 골라도 change 이벤트가 나도록 비워둔다
@@ -3142,32 +3163,92 @@ function _rpOnPhotoFileChosen(input) {
   const reader = new FileReader();
   reader.onload = function(e) {
     _rpPendingPhotoDataUrl = e.target.result;
-    _rpPendingPhotoRotation = 0;
-    _rpRenderPhotoEditPreview();
+    const img = document.getElementById('rpPhotoEditImg');
+    img.onload = _rpLayoutCropStage;
+    img.src = _rpPendingPhotoDataUrl;
     document.getElementById('rpPhotoEditModal').style.display = 'flex';
     _armBackTrap();
   };
   reader.readAsDataURL(file);
 }
-function _rpRenderPhotoEditPreview() {
+
+// 이미지가 (다시) 로드될 때마다 스테이지 안에 전체가 보이도록 배치하고, 자르기
+// 사각형을 이미지 전체 크기로 초기화한다.
+function _rpLayoutCropStage() {
+  const stage = document.getElementById('rpCropStage');
   const img = document.getElementById('rpPhotoEditImg');
-  if (img) { img.style.transform = 'rotate(' + _rpPendingPhotoRotation + 'deg)'; img.src = _rpPendingPhotoDataUrl; }
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  const iw = img.naturalWidth || 1, ih = img.naturalHeight || 1;
+  const scale = Math.min(sw / iw, sh / ih);
+  const dw = iw * scale, dh = ih * scale;
+  const left = (sw - dw) / 2, top = (sh - dh) / 2;
+  img.style.width = dw + 'px';
+  img.style.height = dh + 'px';
+  img.style.left = left + 'px';
+  img.style.top = top + 'px';
+  _rpCropImgRect = { left: left, top: top, width: dw, height: dh };
+  rpCropReset();
 }
-function rpPhotoEditRotate(delta) {
-  _rpPendingPhotoRotation = (_rpPendingPhotoRotation + delta + 360) % 360;
-  _rpRenderPhotoEditPreview();
+function rpCropReset() {
+  if (!_rpCropImgRect) return;
+  _rpCropBox = { x: _rpCropImgRect.left, y: _rpCropImgRect.top, w: _rpCropImgRect.width, h: _rpCropImgRect.height };
+  _rpRenderCropBox();
 }
+function _rpRenderCropBox() {
+  const box = document.getElementById('rpCropBox');
+  if (!box || !_rpCropBox) return;
+  box.style.left = _rpCropBox.x + 'px';
+  box.style.top = _rpCropBox.y + 'px';
+  box.style.width = _rpCropBox.w + 'px';
+  box.style.height = _rpCropBox.h + 'px';
+}
+
+// 자르기 사각형 드래그(이동) / 모서리 드래그(크기조절) — mode는 'move' 또는
+// 'tl'/'tr'/'bl'/'br'(모서리 이름에 t/b/l/r 글자가 들어있는지로 어느 쪽 변을 미는지 판정).
+function _rpCropPointerDown(e, mode) {
+  e.stopPropagation();
+  e.preventDefault();
+  _rpCropDrag = { mode: mode, startX: e.clientX, startY: e.clientY, startBox: Object.assign({}, _rpCropBox) };
+  window.addEventListener('pointermove', _rpCropPointerMove);
+  window.addEventListener('pointerup', _rpCropPointerUp);
+}
+function _rpCropPointerMove(e) {
+  if (!_rpCropDrag || !_rpCropImgRect) return;
+  const dx = e.clientX - _rpCropDrag.startX, dy = e.clientY - _rpCropDrag.startY;
+  const r = _rpCropImgRect, sb = _rpCropDrag.startBox, MIN = 32;
+  let x = sb.x, y = sb.y, w = sb.w, h = sb.h;
+  if (_rpCropDrag.mode === 'move') {
+    x = Math.max(r.left, Math.min(sb.x + dx, r.left + r.width - w));
+    y = Math.max(r.top, Math.min(sb.y + dy, r.top + r.height - h));
+  } else {
+    if (_rpCropDrag.mode.indexOf('l') >= 0) { x = Math.max(r.left, Math.min(sb.x + dx, sb.x + sb.w - MIN)); w = sb.x + sb.w - x; }
+    if (_rpCropDrag.mode.indexOf('r') >= 0) { w = Math.max(MIN, Math.min(sb.w + dx, r.left + r.width - sb.x)); }
+    if (_rpCropDrag.mode.indexOf('t') >= 0) { y = Math.max(r.top, Math.min(sb.y + dy, sb.y + sb.h - MIN)); h = sb.y + sb.h - y; }
+    if (_rpCropDrag.mode.indexOf('b') >= 0) { h = Math.max(MIN, Math.min(sb.h + dy, r.top + r.height - sb.y)); }
+  }
+  _rpCropBox = { x: x, y: y, w: w, h: h };
+  _rpRenderCropBox();
+}
+function _rpCropPointerUp() {
+  _rpCropDrag = null;
+  window.removeEventListener('pointermove', _rpCropPointerMove);
+  window.removeEventListener('pointerup', _rpCropPointerUp);
+}
+
 function closeRpPhotoEdit() {
   document.getElementById('rpPhotoEditModal').style.display = 'none';
   _rpPendingPhotoDataUrl = null;
+  _rpCropImgRect = null; _rpCropBox = null; _rpCropDrag = null;
 }
 function rpPhotoEditRetake() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
   closeRpPhotoEdit();
   openRpPhotoPicker(key, side);
 }
-// 회전값을 실제 픽셀로 구워넣고(rotate 후 리사이즈까지 한 번에), 카메라 원본을 그대로
-// 저장하면 localStorage가 금방 꽉 차므로 여기서 1280px/JPEG로 같이 압축한다.
+
+// 회전값을 실제 픽셀로 구워넣는다(카메라 원본을 그대로 저장하면 localStorage가 금방
+// 꽉 차므로 1280px/JPEG로 같이 압축). 자르기는 여기서 하지 않고, 확정(사용하기) 시점에
+// 그 위에 올려둔 자르기 사각형을 반영해서 한 번 더 오려낸다.
 function _rpRasterizePhoto(img, rotationDeg) {
   const MAX = 1280;
   const swap = rotationDeg === 90 || rotationDeg === 270;
@@ -3184,21 +3265,37 @@ function _rpRasterizePhoto(img, rotationDeg) {
   else ctx.drawImage(img, -outW / 2, -outH / 2, outW, outH);
   return { dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: outW, h: outH };
 }
+function rpPhotoEditRotate(delta) {
+  const img = document.getElementById('rpPhotoEditImg');
+  const rec = _rpRasterizePhoto(img, ((delta % 360) + 360) % 360);
+  _rpPendingPhotoDataUrl = rec.dataUrl;
+  img.onload = _rpLayoutCropStage;
+  img.src = rec.dataUrl;
+}
+
 function rpPhotoEditConfirm() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
-  if (!key || !_rpPendingPhotoDataUrl) { closeRpPhotoEdit(); return; }
+  if (!key || !_rpPendingPhotoDataUrl || !_rpCropImgRect || !_rpCropBox) { closeRpPhotoEdit(); return; }
   _rpEnsureSelected(key);
-  const img = new Image();
-  img.onload = function() {
-    const rec = _rpRasterizePhoto(img, _rpPendingPhotoRotation);
-    if (!_reportSelected[key]) return;
-    if (side === 'product') _reportSelected[key].productPhoto = rec;
-    else _reportSelected[key].packagePhoto = rec;
-    _rpSaveToStorage();
-    closeRpPhotoEdit();
-    renderReportList();
-  };
-  img.src = _rpPendingPhotoDataUrl;
+  const img = document.getElementById('rpPhotoEditImg');
+  const r = _rpCropImgRect, b = _rpCropBox;
+  // 화면에 표시된 자르기 사각형(표시 px)을 원본 이미지의 실제 픽셀 좌표로 환산한다.
+  const scaleX = img.naturalWidth / r.width, scaleY = img.naturalHeight / r.height;
+  const sx = (b.x - r.left) * scaleX, sy = (b.y - r.top) * scaleY;
+  const sw = Math.max(1, b.w * scaleX), sh = Math.max(1, b.h * scaleY);
+  const MAX = 1280;
+  const ratio = Math.min(1, MAX / Math.max(sw, sh));
+  const outW = Math.max(1, Math.round(sw * ratio)), outH = Math.max(1, Math.round(sh * ratio));
+  const canvas = document.createElement('canvas');
+  canvas.width = outW; canvas.height = outH;
+  canvas.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, outW, outH);
+  const rec = { dataUrl: canvas.toDataURL('image/jpeg', 0.72), w: outW, h: outH };
+  if (!_reportSelected[key]) return;
+  if (side === 'product') _reportSelected[key].productPhoto = rec;
+  else _reportSelected[key].packagePhoto = rec;
+  _rpSaveToStorage();
+  closeRpPhotoEdit();
+  renderReportList();
 }
 
 // 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
@@ -3400,7 +3497,7 @@ async function _resolveRepresentativeRound(d) {
 
 function _todayLabel() {
   const d = new Date();
-  return String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+  return String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
 }
 
 // 실제 "수출건 검사 세부내역" 양식을 표 모양 그대로 도형+텍스트로 재현한다 — pptxgenjs의
