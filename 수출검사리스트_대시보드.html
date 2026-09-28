@@ -998,7 +998,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
 <!-- ===== 공장별 납기/포장 날짜 달력 ===== -->
 <div id="qcScheduleModal" onclick="if(event.target===this)closeQcScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+  <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
         <i class="fa-solid fa-calendar-days" style="color:#6D5CE8;"></i> 납기/포장 날짜 달력
@@ -2102,7 +2102,8 @@ function _qcScCollectEvents() {
       if (_qcScOrderType === 'export' && !isExport) return;
       if (_qcScOrderType === 'domestic' && isExport) return;
     }
-    if (!roundInfo[d.건명]) roundInfo[d.건명] = { dueDate: d.납기일, packDate: d.포장일, factory: d.공장 };
+    if (!roundInfo[d.건명]) roundInfo[d.건명] = { dueDate: d.납기일, packDate: d.포장일, factory: d.공장, qty: 0 };
+    roundInfo[d.건명].qty += parseInt(d.수량) || 0;
     const dueIso = _qcIsoDate(d.납기일);
     const packIso = _qcIsoDate(d.포장일);
     if (dueIso) { if (!byDate[dueIso]) byDate[dueIso] = { due: new Set(), pack: new Set() }; byDate[dueIso].due.add(d.건명); }
@@ -2172,14 +2173,28 @@ function qcScToggleDay(dateStr) {
   if (_qcScSelectedDates.has(dateStr)) _qcScSelectedDates.delete(dateStr);
   else _qcScSelectedDates.add(dateStr);
   renderQcScheduleCalendar();
+  // 날짜를 누르는 즉시 하단에 어떤 차수/수량인지 보여준다 — 예전엔 "조회"를 따로
+  // 눌러야만 나와서 클릭해도 아무 반응이 없는 것처럼 보였다.
+  renderQcScheduleDayList();
 }
 function qcScClearDaySelection() {
   _qcScSelectedDates = new Set();
   renderQcScheduleCalendar();
   renderQcScheduleDayList();
 }
+// "조회"는 하단 미리보기(이미 클릭할 때마다 갱신됨)를 다시 그리는 게 아니라, 선택한
+// 날짜 범위를 그대로 제품 검색으로 넘겨서 실제 검색 결과를 보여준다 — 스캔 결과를
+// 제품 검색으로 넘기는 confirmScanResult()와 같은 방식.
 function qcScRunDayQuery() {
-  renderQcScheduleDayList();
+  if (!_qcScSelectedDates.size) return;
+  const dates = Array.from(_qcScSelectedDates).sort();
+  closeQcScheduleCalendar();
+  document.getElementById('psFrom').value = dates[0];
+  document.getElementById('psTo').value = dates[dates.length - 1];
+  document.getElementById('psFactory').value = (_qcScFactory === 'all') ? '' : _qcScFactory;
+  _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
+  updatePsDateBtnLabel();
+  openProductSearch();
 }
 
 function renderQcScheduleDayList() {
@@ -2202,7 +2217,7 @@ function renderQcScheduleDayList() {
       const facLabel = x.info && x.info.factory === 'cj1' ? '충주1' : x.info && x.info.factory === 'cj2' ? '충주2' : '';
       return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 11px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;">
         <div style="min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round}</div>
+          <div style="font-size:13px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${x.round} <span style="font-weight:600;color:#94a3b8;">${(x.info ? x.info.qty : 0).toLocaleString()}개</span></div>
           <div style="font-size:11px;color:#94a3b8;margin-top:2px;">${facLabel}${facLabel ? ' · ' : ''}납기 ${_ymdShort(x.info ? x.info.dueDate : '') || '—'} · 포장 ${_ymdShort(x.info ? x.info.packDate : '') || '—'}</div>
         </div>
         <span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;flex-shrink:0;${x.type === '납기' ? 'background:#fee2e2;color:#ef4444;' : 'background:#e0f2fe;color:#0ea5e9;'}">${x.type}</span>

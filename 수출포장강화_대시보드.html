@@ -6169,7 +6169,7 @@
 
     <!-- 수출 일정 전체 달력 -->
     <div id="scheduleCalendarModal" onclick="if(event.target===this)closeScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-        <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow:hidden;">
+        <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
                     <i class="fa-solid fa-calendar-days" style="color:#f97316;"></i> 수출 일정 달력
@@ -6333,6 +6333,9 @@
             if (_scSelectedDates.has(dateStr)) _scSelectedDates.delete(dateStr);
             else _scSelectedDates.add(dateStr);
             renderScheduleCalendar();
+            // 날짜를 누르는 즉시 하단에 어떤 차수/수량인지 보여준다 — 예전엔 "조회"를
+            // 따로 눌러야만 나와서 클릭해도 아무 반응이 없는 것처럼 보였다.
+            renderScheduleDayList();
         }
         function scClearDaySelection() {
             _scSelectedDates = new Set();
@@ -6340,8 +6343,26 @@
             renderScheduleDayList();
         }
 
+        // "조회"는 하단 미리보기(이미 클릭할 때마다 갱신됨)를 다시 그리는 게 아니라, 선택한
+        // 날짜에 걸린 차수들을 그대로 메인 테이블 검색으로 넘긴다 — 카드에서 차수를 골라
+        // 검색하는 confirmCard4RoundSearch()와 같은 방식.
         function scRunDayQuery() {
-            renderScheduleDayList();
+            if (!_scSelectedDates.size) return;
+            const rounds = new Set();
+            _scSelectedDates.forEach(dateStr => {
+                const ev = _scEventsCache.byDate[dateStr];
+                if (!ev) return;
+                ev.due.forEach(r => rounds.add(r));
+                ev.load.forEach(r => rounds.add(r));
+            });
+            if (!rounds.size) return;
+            closeScheduleCalendar();
+            _ensureSourceFilterSelected();
+            cardRoundFilter = rounds;
+            document.getElementById('roundFilter').value = '';
+            applyFilters();
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function renderScheduleDayList() {
