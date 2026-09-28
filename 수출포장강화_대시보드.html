@@ -6252,10 +6252,12 @@
             renderScheduleCalendar();
         }
 
-        // 수출 현황 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를 뽑는다.
+        // 수출 현황 + 출고 완료 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를
+        // 뽑는다. 출고된 품목은 '수출 현황' 시트에서 '출고 완료' 시트로 이미 옮겨가 있어서,
+        // '수출 현황'만 보면 출고 필터에서 아무것도 안 잡힌다 — 두 시트를 합친 state.data를
+        // 그대로 써야 출고 항목도 달력에 나온다.
         function _scCollectEvents() {
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
-            const list = exportKey ? (datasetMap[exportKey] || []) : [];
+            const list = state.data || [];
             const byDate = {};
             const roundInfo = {};
             list.forEach(item => {
