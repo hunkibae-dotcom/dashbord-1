@@ -2322,6 +2322,12 @@
 
         // 소스 필터 (전체/미입고/실재고/출고)
         let _activeSourceFilter = ''; // ''=미선택(표 비어있음) — 예전엔 'all'이 기본이라 코드검색 시 소스가 섞여 나왔음
+        // "수출 일정" 카드(및 건명 복수 선택 팝업)에서 조회할 때 쓰는 정확한 건명 집합 필터.
+        // 예전엔 여기서 datasetMap의 원본 데이터를 직접 잘라 state.filteredData에 넣었는데,
+        // 그러면 상태/소스 필터·정렬이 전부 무시되고, 이후에 다른 필터 버튼을 눌러도
+        // roundFilter가 비어있어 범위가 풀려버렸다(그래서 "필터가 안 먹는다"고 느껴짐).
+        // 이제 이 값도 applyFilters()가 다른 필터와 함께 정식으로 반영한다.
+        let cardRoundFilter = null;
         let _filterDebounceTimer = null;
 
         function setSourceFilter(src) {
@@ -2337,6 +2343,10 @@
         }
 
         function applyFiltersDebounced() {
+            // 검색창에 직접 타이핑하기 시작하면, 카드에서 걸어둔 건명 단독 필터는 해제한다 —
+            // 안 그러면 새로 입력한 검색어와 예전 카드 필터가 동시에 걸려 결과가 항상
+            // 0건이 돼버린다.
+            cardRoundFilter = null;
             clearTimeout(_filterDebounceTimer);
             _filterDebounceTimer = setTimeout(() => applyFilters(), 220);
         }
@@ -2574,7 +2584,9 @@
                         matchesSource = _shippedStatuses.has(item.status);
                     }
 
-                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesStatus && matchesPallet && matchesSource;
+                    const matchesCardRound = !cardRoundFilter || cardRoundFilter.has(item.round);
+
+                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesStatus && matchesPallet && matchesSource && matchesCardRound;
                 });
 
                 sortData();
@@ -4360,6 +4372,19 @@
             applyFilters();
         }
 
+        // 카드에서 바로 조회할 때 "카테고리(전체/입고현황/실재고/적재/출고)를 먼저
+        // 선택하세요" 빈 화면이 뜨지 않도록, 소스 필터가 하나도 안 골라진 초기 상태면
+        // "전체"를 대신 선택해준다.
+        function _ensureSourceFilterSelected() {
+            if (_activeSourceFilter) return;
+            _activeSourceFilter = 'all';
+            ['srcAll', 'srcActive', 'srcStock', 'srcPallet', 'srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            document.getElementById('srcAll')?.classList.add('active');
+        }
+
         function onCard4Click(e) {
             const el = document.getElementById('card4RoundName');
             const roundName = (el.dataset.primaryRound || el.innerText).trim();
@@ -4371,22 +4396,17 @@
                 return;
             }
 
-            // 건명 1개 — 바로 필터 적용
+            _ensureSourceFilterSelected();
+            // 건명 1개 — 정확히 그 건명만 남기는 필터를 걸고, 다른 필터(상태/소스/날짜)는
+            // applyFilters()가 항상 하던 대로 함께 반영되게 한다.
             if (_card4SameDateRounds.length === 1) {
-                const roundSet = new Set(_card4SameDateRounds);
-                const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
-                const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
-                state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
-                sortData();
-                switchToGeneralDashboardView();
-                updateKPIs();
-                renderTable();
-                renderCharts();
-                updateSortHeaders();
+                cardRoundFilter = new Set(_card4SameDateRounds);
+                document.getElementById('roundFilter').value = '';
             } else {
+                cardRoundFilter = null;
                 document.getElementById('roundFilter').value = el.dataset.primaryRound || roundName;
-                applyFilters();
             }
+            applyFilters();
 
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -4445,6 +4465,7 @@
         });
 
         function resetFilters() {
+            cardRoundFilter = null;
             const _clr = id => { const el = document.getElementById(id); if (el) el.value = ''; };
             _clr('roundFilter'); _clr('productCodeFilter'); _clr('colorFilter'); _clr('palletFilter');
             _clr('startDateFilter'); _clr('endDateFilter');
@@ -4729,12 +4750,26 @@
         // 실제로 사는 곳) 필터를 걸어도 항상 결과가 0건이라 클릭해도 반응이 없는 것처럼 보였다.
         function filterByPendingStatus() {
             if (!_pendingDetailItems || !_pendingDetailItems.length) return;
+            // activeStatusFilters 값 자체는 실제로 "전체"로 둬야 한다(포장대기 항목은 다른
+            // 시트에서 온 거라 이 Set으로 걸러지는 대상이 아님) — 다만 버튼 강조 표시는
+            // "포장대기"에 줘야, 지금 화면이 포장대기만 걸러서 보여주고 있다는 게 보인다.
+            // 전에는 "전체"가 강조돼서 아무것도 안 걸린 것처럼 보였다.
             activeStatusFilters = new Set(['전체']);
             document.getElementById('statusFilterLabel')?.classList.add('hidden');
             ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고'].forEach(s => {
                 const btn = document.getElementById('sf-' + s);
-                if (btn) btn.classList.toggle('bg-slate-700/60', s === '전체');
+                if (btn) btn.classList.toggle('bg-slate-700/60', s === '포장대기');
             });
+            // 소스 필터(입고현황/실재고/적재/출고)도 "전체"로 되돌린다 — 포장대기 항목은
+            // 이 카테고리들과 무관한 별도 시트 데이터라, 이전에 걸려있던 소스 필터 버튼이
+            // 그대로 활성 표시돼 있으면 실제로는 적용 안 되는데 적용된 것처럼 보인다.
+            cardRoundFilter = null;
+            _activeSourceFilter = 'all';
+            ['srcAll', 'srcActive', 'srcStock', 'srcPallet', 'srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            document.getElementById('srcAll')?.classList.add('active');
             state.filteredData = _pendingDetailItems.slice();
             sortData();
             switchToGeneralDashboardView();
@@ -6438,16 +6473,10 @@
             const selected = _card4SameDateRounds.filter(r => _card4PickerSelected.has(r));
             if (!selected.length) return;
             closeCard4RoundPicker();
-            const roundSet = new Set(selected);
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
-            const baseData = exportKey ? (datasetMap[exportKey] || []) : (state.data || []);
-            state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
-            sortData();
-            switchToGeneralDashboardView();
-            updateKPIs();
-            renderTable();
-            renderCharts();
-            updateSortHeaders();
+            _ensureSourceFilterSelected();
+            cardRoundFilter = new Set(selected);
+            document.getElementById('roundFilter').value = '';
+            applyFilters();
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }

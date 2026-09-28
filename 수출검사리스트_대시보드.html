@@ -2043,7 +2043,9 @@ function _qcIsoDate(str) {
 function _qcScCollectEvents() {
   const byDate = {};
   const roundInfo = {};
-  allData.forEach(d => {
+  // 검사 진행중(allData)뿐 아니라 이미 검사완료 처리된 이전 이력(archiveRows)도 포함해야
+  // 지난달 등 과거 날짜를 조회했을 때 실제로 그날 납기/포장됐던 차수가 다 나온다.
+  [...allData, ...archiveRows].forEach(d => {
     if (!d.건명) return;
     if (_qcScFactory !== 'all' && d.공장 !== _qcScFactory) return;
     if (_qcScOrderType !== 'all') {
@@ -2060,12 +2062,25 @@ function _qcScCollectEvents() {
   return { byDate, roundInfo };
 }
 
+// 폰 화면(좁은 가로폭)에서는 7칸에 글자를 욱여넣으면 2~3글자만 보이다 말아서 오히려 안
+// 읽힌다 — 앱/좁은 화면에서는 점만 찍어 밀집도만 보여주고, 실제 건명은 날짜 선택 후
+// "조회" 결과(가로 폭이 넓은 리스트)에서 읽게 한다. 데스크탑 웹은 그대로 칩 텍스트를 보여준다.
 function _qcScDayChips(ev) {
   if (!ev) return '';
   const items = [];
   ev.due.forEach(r => items.push({ r, type: '납기' }));
   ev.pack.forEach(r => items.push({ r, type: '포장' }));
   if (!items.length) return '';
+
+  if (isMobile()) {
+    const dueCount = ev.due.size, packCount = ev.pack.size;
+    return `<span style="display:flex;gap:2px;justify-content:center;margin-top:3px;">
+      ${dueCount ? '<span style="width:5px;height:5px;border-radius:50%;background:#ef4444;display:inline-block;"></span>' : ''}
+      ${packCount ? '<span style="width:5px;height:5px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>' : ''}
+    </span>
+    <span style="font-size:7.5px;font-weight:700;color:#94a3b8;">${items.length}건</span>`;
+  }
+
   const shown = items.slice(0, 2);
   let html = shown.map(x => `<div style="font-size:8.5px;font-weight:700;line-height:1.5;padding:1px 4px;border-radius:4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:${x.type === '납기' ? '#FEE2E2' : '#E0F2FE'};color:${x.type === '납기' ? '#DC2626' : '#0369A1'};">${x.r}</div>`).join('');
   if (items.length > 2) html += `<div style="font-size:8px;font-weight:700;color:#94a3b8;margin-top:2px;">+${items.length - 2}건</div>`;
@@ -2086,13 +2101,14 @@ function renderQcScheduleCalendar() {
     `<div style="text-align:center;font-size:11px;font-weight:700;color:${i === 0 ? '#ef4444' : i === 6 ? '#0ea5e9' : '#94a3b8'};padding:4px 0;">${d}</div>`
   ).join('');
 
+  const cellMinH = isMobile() ? '46px' : '78px';
   for (let i = 0; i < firstDow; i++) html += '<div></div>';
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = _qcScYear + '-' + String(_qcScMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
     const ev = _qcScEventsCache.byDate[dateStr];
     const isToday = dateStr === todayStr;
     const isSelected = _qcScSelectedDates.has(dateStr);
-    html += `<div onclick="qcScToggleDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:78px;display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
+    html += `<div onclick="qcScToggleDay('${dateStr}')" style="cursor:pointer;border-radius:12px;padding:5px 3px;text-align:center;min-height:${cellMinH};display:flex;flex-direction:column;align-items:stretch;overflow:hidden;
       background:${isSelected ? '#f5f3ff' : (isToday ? '#f0f9ff' : '#fff')};
       border:1.5px solid ${isSelected ? '#8B7CF0' : (isToday ? '#bae6fd' : '#f1f5f9')};">
       <span style="font-size:11.5px;font-weight:${isToday ? '800' : '600'};color:${isToday ? '#0ea5e9' : '#334155'};">${d}</span>
@@ -2394,11 +2410,14 @@ function renderQualityChart(key, granularity) {
 
   if (granularity === 'country' || granularity === 'product') {
     const type = granularity;
+    // "가장 많이 나간" 기준은 몇 줄(건수)이 아니라 실제로 나간 수량 합계로 잡아야
+    // 종합적인 비교가 된다 — 한 줄이 1개일 수도 10,000개일 수도 있어서 건수만 세면
+    // 순위가 실제 물량과 다르게 나올 수 있다.
     const counts = {};
     allItems.forEach(d => {
       const label = type === 'country' ? extractCountry(d.건명) : (d.단품코드 || '기타');
       if (!label) return;
-      counts[label] = (counts[label] || 0) + 1;
+      counts[label] = (counts[label] || 0) + (parseInt(d.수량) || 0);
     });
     const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,10);
     const labels = sorted.map(([k]) => k.length > 16 ? k.slice(0,16)+'…' : k);
@@ -2412,7 +2431,7 @@ function renderQualityChart(key, granularity) {
         responsive:true, maintainAspectRatio:false, indexAxis:'y',
         plugins:{
           legend:{display:false},
-          tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.raw.toLocaleString()}건 — 클릭하여 필터` } }
+          tooltip:{ ...lightTooltip(), callbacks:{ label: item => `  ${item.raw.toLocaleString()}개 — 클릭하여 필터` } }
         },
         scales:{
           x:{ grid:{color:c.grid}, ticks:{color:c.tickSub, font:{size:11}} },
@@ -3582,6 +3601,7 @@ function renderMobileAll() {
   renderMobileKPIs();
   renderMobileFactoryPanels();
   renderMobileList();
+  renderQcMiniCal(); // 홈 탭에 있는 카드라 탭 여부와 무관하게 항상 최신으로 유지
   if (mCurrentTab === 'chart') renderMobileCharts();
 }
 
@@ -4075,7 +4095,6 @@ function renderMobileFactoryPanels() {
 
 function renderMobileCharts() {
   if (!isMobile()) return;
-  renderQcMiniCal();
   const c = _chartThemeColors();
 
   // 누적 품질검사 차트 (시계열 또는 국가/제품별)
@@ -4092,11 +4111,12 @@ function renderMobileCharts() {
 
     if (mGranularity === 'country' || mGranularity === 'product') {
       const mType = mGranularity;
+      // 데스크탑과 동일 — 건수가 아니라 실제 수량 합계로 "가장 많이 나간" 순위를 잡는다.
       const counts = {};
       allItems.forEach(d => {
         const label = mType === 'country' ? extractCountry(d.건명) : (d.단품코드 || '기타');
         if (!label) return;
-        counts[label] = (counts[label] || 0) + 1;
+        counts[label] = (counts[label] || 0) + (parseInt(d.수량) || 0);
       });
       const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
       const labels = sorted.map(([k]) => k.length>12?k.slice(0,12)+'…':k);
@@ -4106,7 +4126,7 @@ function renderMobileCharts() {
         type:'bar',
         data:{ labels, datasets:[{ data:values, backgroundColor:color+'88', borderColor:color, borderWidth:1, borderRadius:3 }] },
         options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y',
-          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.raw}건 — 탭하여 필터` } } },
+          plugins:{ legend:{display:false}, tooltip:{ backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:6, callbacks:{ label: item => `${item.raw}개 — 탭하여 필터` } } },
           scales:{ x:{ grid:{color:c.grid}, ticks:{color:c.tickSub,font:{size:9.5},stepSize:1} }, y:{ grid:{display:false}, ticks:{color:c.tick,font:{size:9.5}} } },
           onClick: (evt, elements) => {
             if (!elements.length) return;
@@ -5005,6 +5025,18 @@ function onNativeScanResult(raw) {
 
       </div>
 
+      <!-- 공장별 납기/포장 날짜 (홈 탭 — 납기임박검사 바로 위) -->
+      <div class="bg-white rounded-2xl p-4 mb-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);cursor:pointer;" onclick="openQcScheduleCalendar()">
+        <div class="flex items-center gap-2.5 mb-3">
+          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
+            <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
+          </span>
+          <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
+        </div>
+        <div id="mQcMiniCal"></div>
+        <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:8px;">크게 보기 ›</div>
+      </div>
+
       <!-- Factory panels 섹션 타이틀 (탭하면 전체 목록으로) -->
       <div class="flex items-center justify-between mb-3 cursor-pointer" onclick="setMTab('list')" style="-webkit-tap-highlight-color:transparent;">
         <div class="text-[15px] font-extrabold text-slate-800">납기 임박 미검사</div>
@@ -5097,18 +5129,6 @@ function onNativeScanResult(raw) {
           <span class="text-[15px] font-extrabold text-slate-800">납기 임박도별 분포</span>
         </div>
         <div style="height:180px"><canvas id="mTopChart"></canvas></div>
-      </div>
-
-      <!-- 공장별 납기/포장 날짜 -->
-      <div class="bg-white rounded-2xl p-4" style="box-shadow:0 2px 16px rgba(0,0,0,.07);cursor:pointer;" onclick="openQcScheduleCalendar()">
-        <div class="flex items-center gap-2.5 mb-3">
-          <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#DBEAFE;">
-            <i class="fa-solid fa-calendar-days text-blue-500 text-[12px]"></i>
-          </span>
-          <span class="text-[15px] font-extrabold text-slate-800">공장별 납기/포장 날짜</span>
-        </div>
-        <div id="mQcMiniCal"></div>
-        <div style="text-align:center;font-size:11px;background:#F1F5F9;color:#64748B;padding:5px 14px;border-radius:20px;font-weight:700;margin-top:8px;">크게 보기 ›</div>
       </div>
     </div>
 
