@@ -560,10 +560,16 @@ async function loadAll() {
 
     renderMstThickChips();
     renderOrders(); renderStock(); renderMaster(); renderDashboard();
+    _hidePeInitLoadingOverlay();
   } catch (e) {
     document.getElementById('orderList').innerHTML =
       '<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><div>데이터를 불러오지 못했습니다: ' + e.message + '</div></div>';
+    _hidePeInitLoadingOverlay(); // 완전히 실패해도 로딩 화면으로 영원히 덮여있으면 안 됨
   }
+}
+function _hidePeInitLoadingOverlay() {
+  const overlay = document.getElementById('peInitLoadingOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 // ── 유형별 아이콘 ──
