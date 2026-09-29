@@ -3863,6 +3863,7 @@ function _rpHandleNotePhoto(input) {
     if (!_reportSelected[key]) return;
     _reportSelected[key].notePhoto = rec;
     _rpSaveToStorage(true);
+    _rpUploadPhotoToServer(key, 'note', rec.dataUrl);
     if (_rpEditKey === key) openRpNoteEditor(key); // 미리보기 갱신
   });
 }
