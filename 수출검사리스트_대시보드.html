@@ -922,56 +922,61 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     </div>
   </div>
 
-  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
-    <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-      <div style="display:flex;align-items:stretch;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;">
-        <div style="position:relative;display:inline-block;">
-          <button type="button" id="rpDfDue" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">납기일</button>
-          <input type="date" id="rpDateInputDue" onchange="setRpDateCutoff('due', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
+  <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+    <!-- 행 1: 납기일/포장일/검사완료일 — 실제 날짜입력은 화면 밖 숨김 인풋에 두고
+         버튼은 showPicker()로 그걸 열기만 한다(예전엔 버튼 위에 투명한 날짜 인풋을
+         그대로 겹쳐뒀는데, 그 인풋의 기기별 최소 크기 때문에 버튼 하나가 필요 이상
+         넓어지며 옆에 빈 칸처럼 보이는 문제가 있었다). -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+        <div style="display:flex;align-items:stretch;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;width:fit-content;">
+          <button type="button" id="rpDfDue" class="rp-df-btn" onclick="_rpOpenDatePicker('due')" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">납기일</button>
+          <button type="button" id="rpDfPack" class="rp-df-btn" onclick="_rpOpenDatePicker('pack')" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
+          <button type="button" id="rpDfInsp" class="rp-df-btn" onclick="_rpOpenDatePicker('insp')" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료일</button>
         </div>
-        <div style="position:relative;display:inline-block;">
-          <button type="button" id="rpDfPack" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
-          <input type="date" id="rpDateInputPack" onchange="setRpDateCutoff('pack', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
-        </div>
-        <div style="position:relative;display:inline-block;">
-          <button type="button" id="rpDfInsp" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료일</button>
-          <input type="date" id="rpDateInputInsp" onchange="setRpDateCutoff('insp', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
-        </div>
+        <div id="rpDateCutoffCaption" style="font-size:10px;color:var(--label);line-height:1.3;max-width:280px;"></div>
       </div>
-      <div id="rpDateCutoffCaption" style="font-size:10px;color:var(--label);line-height:1.3;max-width:280px;"></div>
+      <div style="position:relative;flex:1;min-width:180px;">
+        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
+        <input id="rpSearch" type="text" oninput="renderReportListDebounced()" placeholder="건명·단품코드·단품명칭 검색"
+          style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
+      </div>
+      <button type="button" onclick="cycleRpSort()" id="rpSortBtn" class="rp-df-btn" style="padding:10px 14px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);flex-shrink:0;" title="누르면 내림차순 → 오름차순 → 정렬 안 함 순으로 바뀝니다"><i class="fa-solid fa-sort"></i></button>
     </div>
 
-    <div style="position:relative;flex:1;min-width:200px;">
-      <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
-      <input id="rpSearch" type="text" oninput="renderReportListDebounced()" placeholder="건명·단품코드·단품명칭 검색"
-        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
-    </div>
-
-    <div style="position:relative;flex-shrink:0;">
-      <button type="button" onclick="toggleRpFilterDD('packer',event)" id="rpPackerFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
-        <span id="rpPackerFilterLabel">포장처: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+    <!-- 행 2: 포장처/진행상태 필터 — 앱(좁은 화면)에서도 항상 같은 줄에 나란히 붙어있게
+         독립된 행으로 뺐다(예전엔 검색창·정렬버튼과 한 줄에 뒤섞여 있어서 줄바꿈 위치에
+         따라 둘이 따로 떨어져 보였다). -->
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <div style="position:relative;flex-shrink:0;">
+        <button type="button" onclick="toggleRpFilterDD('packer',event)" id="rpPackerFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
+          <span id="rpPackerFilterLabel">포장처: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+        </button>
+        <div id="rpPackerFilterDD" class="rp-filter-dd"></div>
+      </div>
+      <div style="position:relative;flex-shrink:0;">
+        <button type="button" onclick="toggleRpFilterDD('status',event)" id="rpStatusFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
+          <span id="rpStatusFilterLabel">진행상태: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+        </button>
+        <div id="rpStatusFilterDD" class="rp-filter-dd"></div>
+      </div>
+      <div style="flex:1;"></div>
+      <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;display:flex;align-items:center;gap:8px;">
+        <span><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</span>
+        <a onclick="clearAllReportChecked()" title="체크만 전부 해제(등록해둔 사진·입력값은 안 지워집니다)" style="cursor:pointer;color:var(--label);font-size:11px;text-decoration:underline;">전체해제</a>
+      </div>
+      <button onclick="generateReportPptx()" id="rpGenBtn"
+        style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-appearance:none;flex-shrink:0;box-shadow:0 4px 12px rgba(109,92,222,.35);">
+        <i class="fa-solid fa-file-powerpoint"></i> PPTX 생성
       </button>
-      <div id="rpPackerFilterDD" class="rp-filter-dd"></div>
     </div>
-    <div style="position:relative;flex-shrink:0;">
-      <button type="button" onclick="toggleRpFilterDD('status',event)" id="rpStatusFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
-        <span id="rpStatusFilterLabel">진행상태: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
-      </button>
-      <div id="rpStatusFilterDD" class="rp-filter-dd"></div>
-    </div>
-
-    <button type="button" onclick="cycleRpSort()" id="rpSortBtn" class="rp-df-btn" style="padding:10px 14px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);flex-shrink:0;" title="누르면 내림차순 → 오름차순 → 정렬 안 함 순으로 바뀝니다"><i class="fa-solid fa-sort"></i></button>
-
-    <div style="flex:1;"></div>
-    <div style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;display:flex;align-items:center;gap:8px;">
-      <span><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</span>
-      <a onclick="clearAllReportChecked()" title="체크만 전부 해제(등록해둔 사진·입력값은 안 지워집니다)" style="cursor:pointer;color:var(--label);font-size:11px;text-decoration:underline;">전체해제</a>
-    </div>
-    <button onclick="generateReportPptx()" id="rpGenBtn"
-      style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-appearance:none;flex-shrink:0;box-shadow:0 4px 12px rgba(109,92,222,.35);">
-      <i class="fa-solid fa-file-powerpoint"></i> PPTX 생성
-    </button>
   </div>
+
+  <!-- 화면 밖 숨김 날짜 인풋(실제 네이티브 달력 표시용) — 크기가 0이라 어떤 버튼의
+       레이아웃에도 영향을 못 준다. -->
+  <input type="date" id="rpDateInputDue" onchange="setRpDateCutoff('due', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;border:0;padding:0;">
+  <input type="date" id="rpDateInputPack" onchange="setRpDateCutoff('pack', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;border:0;padding:0;">
+  <input type="date" id="rpDateInputInsp" onchange="setRpDateCutoff('insp', this.value)" style="position:absolute;width:0;height:0;opacity:0;pointer-events:none;border:0;padding:0;">
 
   <div style="flex:1;overflow:auto;padding:0 18px 40px;background:var(--bg);" id="rpListWrap">
     <table style="width:100%;min-width:860px;table-layout:fixed;border-collapse:separate;border-spacing:0 8px;font-size:13px;">
