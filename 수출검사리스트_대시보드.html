@@ -5519,6 +5519,278 @@ function _gasUrlForFactory(factoryKey) {
   return '';
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 수주/공정 업데이트 — 예전엔 구글시트에 원본 엑셀을 손으로 붙여넣고 메뉴를
+// 눌러 "수주내역 분류"/"공정진행정보 분류"를 실행했는데, 그 절차를 대시보드에서
+// 엑셀 파일을 올리는 것만으로 대신하게 한다. 분류 규칙(신규 등록/납기 변경 반영/
+// 차수 병합/차수 확인 팝업 등) 자체는 구글시트 쪽 함수를 그대로 호출하므로 하나도
+// 안 바뀐다 — 여기서 하는 일은 "엑셀을 읽어서 그 함수가 원래 기대하던 시트 자리에
+// 넣어준다"는 것뿐이다.
+// ═══════════════════════════════════════════════════════════════
+let _spuMode = 'sales'; // 'sales' | 'process' | 'both'
+let _spuMismatchFactory = null;
+let _spuMismatchItems = null;
+
+function openSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'flex'; }
+function closeSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'none'; }
+
+const _SPU_SALES_DESC = '업로드하면 새로 들어온 수주 건은 검사항목 리스트에 새로 추가되고, 이미 있는 항목은 납기일 · BOM확정이 바뀐 경우만 자동으로 반영됩니다. 내수건(한글 건명)은 수주량 50개 이상인 것만 반영되고, 그 미만은 제외됩니다. 업로드한 파일 내용은 반영 후 남겨두지 않습니다.';
+const _SPU_PROCESS_DESC = '업로드하면 포장계획일 · 공정진행률이 검사항목 리스트에 반영되고, 공정진행률이 95% 이상이면 검사 상태가 "포장대기"로 자동 전환됩니다. 어느 차수인지 확실하지 않은 항목은 업로드 뒤 별도 확인창에서 직접 골라 반영합니다.';
+
+function openSpuUploadModal(mode) {
+  _spuMode = mode;
+  closeSpuChoiceModal();
+  document.getElementById('spuUploadTitle').textContent =
+    mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : '수주내역 + 공정진행정보 업데이트';
+
+  const salesBlock = `
+    <div style="margin-bottom:18px;">
+      <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">수주내역 (grd_Group 파일)</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주1<input type="file" id="spuFileSalesCj1" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주2<input type="file" id="spuFileSalesCj2" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.5;">${_SPU_SALES_DESC}</div>
+    </div>`;
+  const processBlock = `
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">공정진행정보 (grd_List 파일)</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주1<input type="file" id="spuFileProcessCj1" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주2<input type="file" id="spuFileProcessCj2" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
+      </div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.5;">${_SPU_PROCESS_DESC}</div>
+    </div>`;
+
+  document.getElementById('spuUploadBody').innerHTML =
+    mode === 'sales' ? salesBlock : mode === 'process' ? processBlock : (salesBlock + processBlock);
+  document.getElementById('spuUploadResult').textContent = '';
+  document.getElementById('spuUploadModal').style.display = 'flex';
+}
+function closeSpuUploadModal() { document.getElementById('spuUploadModal').style.display = 'none'; }
+
+// 엑셀 파일을 브라우저 안에서 바로 열어 표(2차원 배열)로 바꿔주는 라이브러리를
+// 그때그때 불러온다(처음 쓸 때 한 번만 내려받고, 이후엔 다시 안 받음). 이 라이브러리
+// 자체나 업로드한 파일을 어디 서버에 저장해두는 게 아니라, 필요한 값만 뽑아서 바로
+// 구글시트로 보내고 끝낸다 — 그래서 업로드를 여러 번 해도 파일이 쌓이지 않는다.
+function _loadXlsxLib(cb) {
+  if (window.XLSX) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = function() { alert('엑셀 처리 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+  document.head.appendChild(s);
+}
+function _spuReadFileAsGrid(file, cb) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    _loadXlsxLib(function() {
+      try {
+        const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const grid = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+        cb(null, grid);
+      } catch (err) { cb(err); }
+    });
+  };
+  reader.onerror = function() { cb(new Error('파일을 읽을 수 없습니다.')); };
+  reader.readAsArrayBuffer(file);
+}
+function _spuDateStr(v) {
+  if (v === '' || v == null) return '';
+  if (v instanceof Date) {
+    if (isNaN(v.getTime())) return '';
+    return v.getFullYear() + '-' + String(v.getMonth() + 1).padStart(2, '0') + '-' + String(v.getDate()).padStart(2, '0');
+  }
+  const s = v.toString().trim();
+  if (!s) return '';
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? s : (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+}
+
+// 실제 원본 파일(grd_Group_*)을 직접 확인한 결과: 1행이 제목줄, 2행부터 진짜 내용 —
+// 구글시트 안(충주1 수주내역)의 "6행 헤더, 7행부터" 규칙과는 다르므로 헷갈리지 않게.
+// 열 배치(0-based): L=11 수주건명, P=15 확정납기, Q=16 단품코드, R=17 색상, S=18 수주량,
+// X=23 BOM확정, AB=27 제품구분, AD=29 단품명칭.
+function _spuExtractSalesRows(grid) {
+  const rows = [];
+  for (let i = 1; i < grid.length; i++) {
+    const row = grid[i];
+    if (!row) continue;
+    const roundName = (row[11] || '').toString().trim();
+    if (!roundName) continue;
+    const isDomestic = /[가-힣]/.test(roundName); // 한글 건명=내수, 국가명(영문)-차수=수출
+    const qty = Number(row[18]) || 0;
+    if (isDomestic && qty < 50) continue; // 내수건은 수주량 50개 미만 제외
+    rows.push({
+      roundName: roundName,
+      dueDate: _spuDateStr(row[15]),
+      itemCode: (row[16] || '').toString().trim(),
+      color: (row[17] || '').toString().trim(),
+      qty: qty,
+      bom: (row[23] || '').toString().trim(),
+      productGroup: (row[27] || '').toString().trim(),
+      itemName: (row[29] || '').toString().trim()
+    });
+  }
+  return rows;
+}
+// 실제 원본 파일(grd_List_*)을 직접 확인한 결과도 1행 제목줄, 2행부터 진짜 내용.
+// 열 배치(0-based): I=8 품목코드, K=10 색상, L=11 계획량, O=14 포장계획일, R=17 건명,
+// AA=26 공정진행률.
+function _spuExtractProcessRows(grid) {
+  const rows = [];
+  for (let i = 1; i < grid.length; i++) {
+    const row = grid[i];
+    if (!row) continue;
+    const itemCode = (row[8] || '').toString().trim();
+    const color = (row[10] || '').toString().trim();
+    if (!itemCode || !color) continue;
+    const rateRaw = row[26];
+    rows.push({
+      itemCode: itemCode,
+      color: color,
+      qty: Number(row[11]) || 0,
+      packDate: _spuDateStr(row[14]),
+      roundName: (row[17] || '').toString().trim(),
+      progressRate: (rateRaw === '' || rateRaw == null || isNaN(Number(rateRaw))) ? null : Number(rateRaw)
+    });
+  }
+  return rows;
+}
+
+function _spuUserName() { return localStorage.getItem(PRESENCE_NAME_KEY) || ''; }
+
+async function _spuRunImport() {
+  const btn = document.getElementById('spuUploadRunBtn');
+  const resultEl = document.getElementById('spuUploadResult');
+  const name = _spuUserName();
+
+  const candidates = [];
+  if (_spuMode === 'sales' || _spuMode === 'both') {
+    candidates.push({ type: 'sales', factory: 'cj1', inputId: 'spuFileSalesCj1' });
+    candidates.push({ type: 'sales', factory: 'cj2', inputId: 'spuFileSalesCj2' });
+  }
+  if (_spuMode === 'process' || _spuMode === 'both') {
+    candidates.push({ type: 'process', factory: 'cj1', inputId: 'spuFileProcessCj1' });
+    candidates.push({ type: 'process', factory: 'cj2', inputId: 'spuFileProcessCj2' });
+  }
+  const jobs = candidates.filter(j => {
+    const el = document.getElementById(j.inputId);
+    return el && el.files && el.files[0];
+  });
+  if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요.'; return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+  resultEl.textContent = '';
+
+  const logs = [];
+  for (const job of jobs) {
+    const file = document.getElementById(job.inputId).files[0];
+    const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : '공정진행정보');
+    try {
+      const grid = await new Promise((resolve, reject) => _spuReadFileAsGrid(file, (err, g) => err ? reject(err) : resolve(g)));
+      const rows = job.type === 'sales' ? _spuExtractSalesRows(grid) : _spuExtractProcessRows(grid);
+      const url = _gasUrlForFactory(job.factory);
+      const action = job.type === 'sales' ? 'importSalesOrders' : 'importProcessProgress';
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: action, rows: rows, name: name }),
+        signal: AbortSignal.timeout(60000)
+      });
+      const json = await res.json();
+      if (json.status === 'success') {
+        logs.push(`✓ ${label}\n${json.message}`);
+      } else if (json.status === 'needsReview') {
+        logs.push(`⚠ ${label}: 차수 확인이 필요한 항목이 있습니다 — 잠시 후 뜨는 확인창에서 골라주세요.`);
+        _spuOpenMismatchModal(job.factory, json.pending);
+      } else {
+        logs.push(`✗ ${label} 실패: ${json.message || '알 수 없는 오류'}`);
+      }
+    } catch (err) {
+      logs.push(`✗ ${label} 처리 실패: ${(err && err.message) || err}`);
+    }
+  }
+  resultEl.textContent = logs.join('\n\n');
+  btn.disabled = false;
+  btn.innerHTML = '업데이트 실행';
+  _spuLoadStatus();
+}
+
+// 공정진행정보에서 "어느 차수인지 자동으로 확정 못한" 항목만 여기로 넘어온다 —
+// 구글시트에서 직접 실행했을 때 뜨던 체크박스 확인 팝업과 같은 정보를 그대로 보여준다.
+function _spuOpenMismatchModal(factoryKey, pending) {
+  _spuMismatchFactory = factoryKey;
+  _spuMismatchItems = pending;
+  const listEl = document.getElementById('spuMismatchList');
+  listEl.innerHTML = pending.map((it, idx) => {
+    const notes = [];
+    if (it.noNameMatch) notes.push('공정진행정보에 건명이 비어있어 품목코드+색상만으로 추정됨');
+    else if (it.fuzzyNameMatch) notes.push('건명 표기가 달라 유사 매칭됨(내수건 등)');
+    if (it.candidateCount > 1) notes.push(`후보 ${it.candidateCount}개 중 수량이 가장 가까운 차수로 추정`);
+    const esc = (s) => (s || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `
+    <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;border-bottom:1px solid #f1f5f9;">
+      <input type="checkbox" class="spu-mismatch-chk" data-idx="${idx}" checked style="margin-top:3px;">
+      <div style="display:flex;flex-direction:column;gap:2px;font-size:12.5px;">
+        <div style="color:#475569;">검사항목리스트&nbsp;&nbsp;${esc(it.existingLabel)}</div>
+        <div style="color:#1e293b;font-weight:700;">공정진행정보&nbsp;&nbsp;${esc(it.incomingLabel)}</div>
+        ${notes.length ? `<div style="color:#f59e0b;font-size:11px;">${notes.join(' · ')}</div>` : ''}
+      </div>
+    </label>`;
+  }).join('');
+  document.getElementById('spuMismatchModal').style.display = 'flex';
+}
+function closeSpuMismatchModal() { document.getElementById('spuMismatchModal').style.display = 'none'; }
+async function _spuApplyMismatches() {
+  const checked = Array.from(document.querySelectorAll('.spu-mismatch-chk')).filter(c => c.checked).map(c => Number(c.dataset.idx));
+  const url = _gasUrlForFactory(_spuMismatchFactory);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'applyProcessMismatches', selectedIndices: checked, name: _spuUserName() }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const json = await res.json();
+    if (json.status === 'success') {
+      alert('반영 완료\n' + json.message);
+      closeSpuMismatchModal();
+      _spuLoadStatus();
+    } else {
+      alert('반영 실패: ' + (json.message || '알 수 없는 오류'));
+    }
+  } catch (err) {
+    alert('반영 요청 실패: ' + ((err && err.message) || err));
+  }
+}
+
+// 사이드바 "연동 · 업데이트 상태"에 마지막 업로드가 언제/누구였는지 보여준다.
+async function _spuLoadStatus() {
+  const box = document.getElementById('spuStatusBox');
+  if (!box) return;
+  const urls = { cj1: GAS_URL_CJ1, cj2: GAS_URL_CJ2 };
+  const lines = [];
+  await Promise.all(Object.keys(urls).map(async (fk) => {
+    if (!urls[fk]) return;
+    try {
+      const res = await fetch(urls[fk] + '?' + new URLSearchParams({ action: 'getImportStatus' }), { signal: AbortSignal.timeout(10000) });
+      const json = await res.json();
+      if (json.status !== 'success' || !json.data) return;
+      const label = fk === 'cj1' ? '충주1' : '충주2';
+      const fmt = (o, kindLabel) => {
+        if (!o || !o.time) return `${label} ${kindLabel}: 이력 없음`;
+        const d = new Date(o.time);
+        const dateStr = d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+        return `${label} ${kindLabel}: ${dateStr}${o.name ? ' (' + o.name + ')' : ''}`;
+      };
+      lines.push(fmt(json.data.sales, '수주내역'));
+      lines.push(fmt(json.data.process, '공정'));
+    } catch (e) { /* 조용히 무시 — 사이드바 표시만 못할 뿐 다른 기능엔 영향 없음 */ }
+  }));
+  box.innerHTML = lines.length ? lines.join('<br>') : '—';
+}
+
 // ── "...외N차수" 병합 건명 상세 ─────────────────────────────
 // 구글시트에서 여러 차수를 하나의 건명으로 병합할 때 그 내역을 셀 메모(포함된
 // 차수: ...)로 남겨두는데, 이 메모는 시트 값이 아니라 메타데이터라서 지금까지
