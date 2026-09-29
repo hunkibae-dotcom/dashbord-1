@@ -4000,7 +4000,7 @@ function _addReportSlide(pptx, d, sel, repRound) {
     { x: colX[5], w: colW[5] + colW[6] + colW[7] },   // 포장처+출고일+검사자 폭
   ];
   const pad = 0.15;
-  [sel.productPhoto, sel.packagePhoto].forEach((photo, i) => {
+  [sel._resolvedProductPhoto, sel._resolvedPackagePhoto].forEach((photo, i) => {
     const box = photoBoxes[i];
     slide.addShape('rect', { x: box.x, y: y, w: box.w, h: photoRowH, line: { color: borderColor, width: 0.5 }, fill: { color: 'FFFFFF' } });
     const innerW = box.w - pad * 2, innerH = photoRowH - pad * 2;
