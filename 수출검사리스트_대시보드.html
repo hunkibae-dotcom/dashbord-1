@@ -3124,8 +3124,16 @@ function openReportModal() {
   _rpUpdateFilterBtnLabels();
   document.getElementById('mNavReport')?.classList.add('active');
   _updateRpSortBtn();
-  renderReportList();
-  _rpFetchSharedReportData();
+  const overlay = document.getElementById('rpLoadingOverlay');
+  if (overlay) overlay.style.display = 'flex';
+  // renderReportList()가 무거워서(검사완료 누적 이력까지 합치면 수천 행) 곧바로 부르면
+  // 로딩 스피너가 그려지기도 전에 메인 스레드가 막혀버려 스피너가 아예 안 보인다 —
+  // 두 프레임을 양보해서(브라우저가 실제로 한 번 그리고 난 뒤) 무거운 렌더링을 시작한다.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    renderReportList();
+    if (overlay) overlay.style.display = 'none';
+    _rpFetchSharedReportData();
+  }));
   _armBackTrap();
 }
 function closeReportModal() {
