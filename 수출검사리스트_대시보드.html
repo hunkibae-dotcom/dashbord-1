@@ -3786,7 +3786,8 @@ function openRpNoteEditor(key) {
   const sel = _reportSelected[key];
   if (!sel) return;
   _rpEditKey = key; _rpEditMode = 'note';
-  const photoUrl = sel.notePhoto && sel.notePhoto.dataUrl;
+  const notePhotoEff = _rpEffectivePhoto(sel, 'note');
+  const photoUrl = notePhotoEff && notePhotoEff.src;
   document.getElementById('rpEditTitle').textContent = '검사 특이사항';
   document.getElementById('rpEditBody').innerHTML = `
     <textarea id="rpNoteText" rows="4" placeholder="특이사항을 입력하세요 (PPTX에는 이 글자만 들어갑니다)" style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;">${(sel.note || '').replace(/</g, '&lt;')}</textarea>
