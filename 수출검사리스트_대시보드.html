@@ -3867,34 +3867,46 @@ async function _rpSyncNoteToSheet(item, noteText) {
   } catch (e) { return false; }
 }
 
-async function _rpSaveEditModal() {
+// 구글 앱스스크립트 호출(시트 반영)은 실제로 재보니 건당 2~4초, 느릴 땐 그 이상 걸렸다 —
+// 예전엔 이 저장 버튼이 그 응답을 기다렸다가("저장 중..." 표시) 창을 닫아서, 보고서에서
+// CBM·특이사항을 하나씩 입력할 때마다 몇 초씩 화면이 멈춘 것처럼 느껴진 실제 원인이었다.
+// 이 기기 화면·PPTX용 데이터는 이미 로컬에 즉시 반영되므로, 창은 바로 닫고 시트 반영은
+// 뒤에서 계속 진행한 뒤 끝나면 작은 토스트로만 알려준다(작업 순서·최종 결과는 그대로).
+function _rpSaveEditModal() {
   const key = _rpEditKey, mode = _rpEditMode;
   if (!key || !_reportSelected[key]) { closeRpEditModal(); return; }
   const sel = _reportSelected[key];
-  const btn = document.getElementById('rpEditSaveBtn');
-  const statusEl = document.getElementById('rpEditSyncStatus');
-  if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
-  if (statusEl) { statusEl.textContent = ''; }
 
-  let ok = true;
+  let syncPromise = null;
   if (mode === 'cbm') {
     const num = (id) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
     const vals = { w: num('rpCbmW'), d: num('rpCbmD'), h: num('rpCbmH'), weight: num('rpCbmWeight') };
     sel.cbm = (vals.w == null && vals.d == null && vals.h == null && vals.weight == null) ? null : vals;
-    ok = await _rpSyncCbmToSheet(sel.item, vals);
+    syncPromise = _rpSyncCbmToSheet(sel.item, vals);
   } else if (mode === 'note') {
     sel.note = document.getElementById('rpNoteText').value.trim();
-    ok = await _rpSyncNoteToSheet(sel.item, sel.note);
+    syncPromise = _rpSyncNoteToSheet(sel.item, sel.note);
   }
   _rpSaveToStorage();
-
-  if (statusEl) {
-    statusEl.textContent = ok ? '✓ 시트에도 반영됐습니다' : '⚠ 시트 반영 실패 — 앱엔 저장됨, 나중에 다시 저장해보세요';
-    statusEl.style.color = ok ? '#16A34A' : '#F59E0B';
-  }
-  if (btn) { btn.disabled = false; btn.textContent = '저장'; }
   renderReportList();
-  setTimeout(closeRpEditModal, ok ? 450 : 1600);
+  closeRpEditModal();
+
+  if (syncPromise) {
+    syncPromise
+      .then(ok => _rpShowToast(ok ? '✓ 시트에도 반영됐습니다' : '⚠ 시트 반영 실패 — 이 기기엔 저장됨, 나중에 다시 시도해주세요', !ok))
+      .catch(() => _rpShowToast('⚠ 시트 반영 실패 — 이 기기엔 저장됨, 나중에 다시 시도해주세요', true));
+  }
+}
+
+// 저장 버튼 등을 막고 기다리게 하지 않으면서도 시트 반영 성공/실패는 알려주기 위한
+// 작은 하단 토스트 — 아무 것도 가리지 않고 잠깐 떴다 사라진다.
+function _rpShowToast(message, isError) {
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.style.cssText = `position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:99999;background:${isError ? '#F59E0B' : '#16A34A'};color:#fff;font-size:12.5px;font-weight:700;padding:9px 16px;border-radius:20px;pointer-events:none;box-shadow:0 6px 20px rgba(0,0,0,.2);transition:opacity .35s;opacity:1;max-width:80vw;text-align:center;`;
+  document.body.appendChild(toast);
+  const life = isError ? 2600 : 1600;
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, life);
 }
 
 // 사진은 선택 즉시(저장 버튼과 무관하게) 반영한다 — 제품/포장완료 사진칸과 동일한 동작.
