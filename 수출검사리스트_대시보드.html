@@ -2200,19 +2200,32 @@ function renderTable(data) {
   noData.classList.add('hidden');
 
   if (!window._mItemMap) window._mItemMap = {};
+  if (!window._mItemByMiKey) window._mItemByMiKey = {};
   tbody.innerHTML = data.map((d, i) => {
     const isDone = d.검사 === '검사';
     const isArchive = d.source === 'archive';
     const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
     const bomCell = d.BOM ? `<span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${d.BOM === 'Y' ? 'pill-bom-y' : 'pill-bom-n'}">${d.BOM}</span>` : `<span class="text-slate-300 text-[12px]">—</span>`;
-    const rowBg = isArchive ? 'background:#F8FAFC;' : '';
+    // 검사완료 이력(archive) 행은 배경을 살짝 다르게 — 다중선택 모드에서 체크된 행은
+    // 그보다 우선해서 보라색 배경으로 표시한다.
+    const miKey = _miKey(d);
+    const isSelected = _tblMultiSelectMode && _tblSelectedKeys.has(miKey);
+    const rowBg = isSelected ? 'background:#F5F3FF;' : (isArchive ? 'background:#F8FAFC;' : '');
     // 행 전체를 누르면 진행상태/검사완료일/CBM을 한 번에 고칠 수 있는 상세창(mItemDetailModal,
     // 앱에서 쓰던 것과 동일)이 뜬다 — 단품코드 글자는 그대로 스펙 조회로 남겨두고, 클릭이
-    // 두 군데로 겹치지 않도록 그 글자를 누르면 행 클릭은 막는다(stopPropagation).
+    // 두 군데로 겹치지 않도록 그 글자를 누르면 행 클릭은 막는다(stopPropagation). 다중선택
+    // 모드에서는 행을 눌러도 상세창 대신 체크만 토글된다(_miKey로 식별 — 필터/정렬이 바뀌어도
+    // 같은 품목을 계속 같은 것으로 인식해야 해서, 화면 순서 기반 키(mrow_i)는 안 쓴다).
     const mik = 'mrow_' + i;
     window._mItemMap[mik] = d;
-    return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;${rowBg}">
-      <td class="py-2.5 pr-3 text-slate-400">${i + 1}</td>
+    window._mItemByMiKey[miKey] = d;
+    const attrKey = miKey.replace(/"/g, '&quot;');
+    const rowClick = _tblMultiSelectMode ? `_tblToggleRowSelect('${miKey.replace(/'/g, "\\'")}')` : `openMItemDetail('${mik}')`;
+    const firstCell = _tblMultiSelectMode
+      ? `<td class="py-2.5 pr-3" onclick="event.stopPropagation();_tblToggleRowSelect('${miKey.replace(/'/g, "\\'")}')"><input type="checkbox" class="tbl-select-box" ${isSelected ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;"></td>`
+      : `<td class="py-2.5 pr-3 text-slate-400">${i + 1}</td>`;
+    return `<tr class="tbl-row${isSelected ? ' tbl-row-selected' : ''}" data-tbl-key="${attrKey}" onclick="${rowClick}" style="cursor:pointer;${rowBg}">
+      ${firstCell}
       <td class="py-2.5 pr-3">
         <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span>
       </td>
