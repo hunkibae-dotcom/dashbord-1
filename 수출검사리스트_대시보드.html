@@ -3019,6 +3019,7 @@ function _rpAllFactoryUrls() {
 // 못 올라간 내 최근 변경을 되돌리지 않는다.
 async function _rpFetchSharedReportData() {
   const urls = _rpAllFactoryUrls();
+  let changed = false;
   await Promise.all(urls.map(async (url) => {
     try {
       const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportData' }), { signal: AbortSignal.timeout(15000) });
@@ -3045,11 +3046,17 @@ async function _rpFetchSharedReportData() {
         if (remote.packagePhotoId) sel.packagePhotoRemote = { fileId: remote.packagePhotoId };
         if (remote.notePhotoId) sel.notePhotoRemote = { fileId: remote.notePhotoId };
         sel._updatedAt = remote.updatedAt || Date.now();
+        changed = true;
       });
-      _rpSaveToStorage();
-      renderReportList();
     } catch (e) { /* 네트워크 실패는 조용히 무시 — 로컬 데이터로 계속 작업 가능 */ }
   }));
+  // 두 공장(충주1/2)이 각자 따로 renderReportList()를 부르면 하나 열 때마다 무거운 전체
+  // 재렌더가 두 번 겹쳐 일어났다 — 다 받아온 뒤 한 번만, 그리고 실제로 달라진 게 있을
+  // 때만(대부분은 아무도 안 바꿔서 달라진 게 없다) 다시 그린다.
+  if (changed) {
+    _rpSaveToStorage();
+    renderReportList();
+  }
 }
 
 let _rpMetaSyncTimers = {}; // key별로 따로 디바운스
