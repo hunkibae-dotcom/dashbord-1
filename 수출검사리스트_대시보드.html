@@ -4036,6 +4036,44 @@ const STATUS_LABEL = (d) => {
   return '진행중·미검사';
 };
 
+// 건명/단품코드/단품명칭 클릭 시 클립보드로 복사 — 예전엔 단품코드를 누르면 상세스펙
+// 조회창이 떴는데, 검사항목목록에서는 그보다 "빠르게 복붙"하는 용도가 더 자주 필요하다는
+// 요청으로 바꿨다(스펙조회는 좌측 메뉴 openSpecModal()에 그대로 남아있음).
+function copyCellText(text, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const val = (text || '').toString().trim();
+  if (!val || val === '-' || val === '—') return;
+  const showToast = () => {
+    const toast = document.createElement('div');
+    toast.textContent = '"' + (val.length > 24 ? val.slice(0, 24) + '…' : val) + '" 복사됨';
+    toast.style.cssText = 'position:fixed;z-index:99999;background:#1E293B;color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:8px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .35s,transform .35s;opacity:1;white-space:nowrap;';
+    const x = e ? e.clientX : window.innerWidth / 2, y = e ? e.clientY : window.innerHeight / 2;
+    toast.style.left = Math.min(Math.max(x, 80), window.innerWidth - 80) + 'px';
+    toast.style.top = Math.max(y - 40, 8) + 'px';
+    toast.style.transform = 'translate(-50%,0)';
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%,-8px)'; });
+    setTimeout(() => toast.remove(), 550);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(val).then(showToast).catch(() => _copyCellTextFallback(val, showToast));
+  } else {
+    _copyCellTextFallback(val, showToast);
+  }
+}
+function _copyCellTextFallback(val, cb) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = val;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    cb();
+  } catch (e) { /* 복사 실패는 조용히 무시 */ }
+}
+
 function _toggleTextExpand(el, e) {
   if (e) e.stopPropagation();
   if (el.dataset.expanded === '1') {
