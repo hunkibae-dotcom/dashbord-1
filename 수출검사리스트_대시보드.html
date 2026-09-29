@@ -3777,7 +3777,6 @@ function generateReportPptx() {
   const missing = keys.filter(k => !_reportSelected[k].productPhoto || !_reportSelected[k].packagePhoto);
   if (missing.length && !confirm(missing.length + '개 품목에 사진이 빠져있습니다. 그래도 계속할까요?')) return;
 
-  const factory = document.getElementById('rpFactory').value;
   const btn = document.getElementById('rpGenBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
