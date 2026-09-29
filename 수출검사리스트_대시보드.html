@@ -3371,30 +3371,25 @@ function _renderReportListMobile(rows) {
 function _rpRowHtmlMobile(d, checkedOrderMap) {
   const key = _miKey(d);
   const sel = _reportSelected[key];
-  const checked = _reportChecked.has(key);
   const hasHardware = sel ? sel.hasHardware === true : false;
   const safeKey = key.replace(/'/g, "\\'");
   const attrKey = key.replace(/"/g, '&quot;');
-  const orderNum = checkedOrderMap.get(key);
   const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
+  // 체크박스(선택)는 PPTX 생성 순서를 정하는 용도인데, PPTX 생성 자체가 웹에서만
+  // 되는 기능(rpGenBtn도 mobile에선 숨김)이라 앱/모바일 화면에선 체크박스가 눌러도
+  // 아무 의미가 없었다 — 여기선 아예 빼서 헷갈리지 않게 한다.
   return `
-    <div class="rp-card${checked ? ' rp-checked' : ''}" data-mikey="${attrKey}">
+    <div class="rp-card" data-mikey="${attrKey}">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
         ${d.포장처 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--icon-bg);border-radius:6px;padding:2px 8px;">${d.포장처}</span>` : ''}
         <span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span>
       </div>
-      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
-        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:1px;">
-          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}', this)" style="width:20px;height:20px;accent-color:#6D5CE8;cursor:pointer;">
-          <span class="rp-order-badge" data-mikey="${attrKey}" style="display:${orderNum ? '' : 'none'};font-size:10px;font-weight:800;color:#6D5CE8;background:rgba(109,92,222,.14);border-radius:8px;padding:1px 5px;">${orderNum || ''}</span>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
+        <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
+          <span style="font-family:'Inter',monospace;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span><span>·</span><span>${d.색상 || '—'}</span><span>·</span><span style="font-weight:700;color:#6D5CE8;">${d.수량 || 0}개</span>
         </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
-          <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
-            <span style="font-family:'Inter',monospace;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span><span>·</span><span>${d.색상 || '—'}</span><span>·</span><span style="font-weight:700;color:#6D5CE8;">${d.수량 || 0}개</span>
-          </div>
-          ${d.단품명칭 ? `<div style="font-size:11px;color:var(--label);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_rpSummarizeName(d.단품명칭)}</div>` : ''}
-        </div>
+        ${d.단품명칭 ? `<div style="font-size:11px;color:var(--label);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_rpSummarizeName(d.단품명칭)}</div>` : ''}
       </div>
       <div style="display:flex;gap:10px;margin-bottom:12px;">
         <div style="flex:1;text-align:center;">
