@@ -3304,9 +3304,13 @@ function renderReportList() {
   if (tableWrap) tableWrap.style.display = mobile ? 'none' : '';
   if (mobileWrap) mobileWrap.style.display = mobile ? '' : 'none';
 
-  // PPTX 생성은 웹에서만 — 보고서는 앱이 아니라 웹에서만 다운받게 한다.
+  // PPTX 생성은 웹에서만 — 보고서는 앱이 아니라 웹에서만 다운받게 한다. 체크박스도
+  // PPTX 생성 순서를 정하는 용도라 앱/모바일에선 의미가 없어서(카드에서도 이미 뺐다)
+  // "N개 선택됨" 카운터도 같이 숨긴다.
   const genBtn = document.getElementById('rpGenBtn');
   if (genBtn) genBtn.style.display = mobile ? 'none' : '';
+  const selCountBar = document.getElementById('rpSelCountBar');
+  if (selCountBar) selCountBar.style.display = mobile ? 'none' : '';
 
   if (_rpOpenFilterDD) _renderRpFilterDD(_rpOpenFilterDD);
 
