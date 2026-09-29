@@ -2389,7 +2389,7 @@ async function _tblApplyBulkEdit() {
   const resultEl = document.getElementById('tblBulkResult');
   if (!status && !dateVal) { resultEl.textContent = '진행상태 또는 검사완료일 중 하나는 선택해주세요.'; return; }
 
-  const items = Array.from(_tblSelectedKeys).map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  const items = _tblBulkTargetKeys.map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
   if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
 
   const btn = document.getElementById('tblBulkApplyBtn');
