@@ -3072,13 +3072,7 @@ function renderReportList() {
   const genBtn = document.getElementById('rpGenBtn');
   if (genBtn) genBtn.style.display = mobile ? 'none' : '';
 
-  const selectTh = document.getElementById('rpSelectTh');
-  if (selectTh) {
-    const allChecked = rows.length > 0 && rows.every(d => _reportChecked.has(_miKey(d)));
-    selectTh.style.background = allChecked ? '#6D5CE8' : '';
-    selectTh.style.color = allChecked ? '#fff' : '';
-    selectTh.title = allChecked ? '클릭: 보이는 품목 전체해제' : '클릭: 보이는 품목 전체선택';
-  }
+  _rpUpdateSelectThState(rows);
   if (_rpOpenFilterDD) _renderRpFilterDD(_rpOpenFilterDD);
 
   if (!rows.length) {
