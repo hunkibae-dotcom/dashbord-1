@@ -3461,13 +3461,24 @@ let _rpImgFallbackInFlight = {}; // fileId -> Promise (같은 사진에 대한 �
 // 항상 접근 가능)를 통해 한 번 더 받아와 채워 넣는다. 평소엔(직접 링크가 되면) 이
 // 요청이 전혀 안 나가서 추가 비용이 없다.
 async function _rpImgFallback(imgEl, fileId, factoryKey) {
+  if (_rpResolvedImageCache[fileId]) { imgEl.src = _rpResolvedImageCache[fileId]; return; }
+  if (_rpImgFallbackInFlight[fileId]) {
+    try { imgEl.src = await _rpImgFallbackInFlight[fileId]; } catch (e) { /* 무시 */ }
+    return;
+  }
   const url = _gasUrlForFactory(factoryKey);
   if (!url || !fileId) return;
-  try {
+  const p = (async () => {
     const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportPhotoBase64', fileId }), { signal: AbortSignal.timeout(20000) });
     const json = await res.json();
-    if (json.status === 'success' && json.dataUrl) imgEl.src = json.dataUrl;
+    if (json.status === 'success' && json.dataUrl) { _rpResolvedImageCache[fileId] = json.dataUrl; return json.dataUrl; }
+    throw new Error('no dataUrl');
+  })();
+  _rpImgFallbackInFlight[fileId] = p;
+  try {
+    imgEl.src = await p;
   } catch (e) { /* 이것마저 실패하면 조용히 깨진 채로 둔다(사진 없음과 동일하게 취급) */ }
+  finally { delete _rpImgFallbackInFlight[fileId]; }
 }
 
 function _rpPhotoBox(safeKey, side, sel, size) {
