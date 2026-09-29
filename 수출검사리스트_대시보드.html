@@ -6189,6 +6189,10 @@ loadData();
 _presenceInit();
 
 initMobile();
+// 위 최초 호출 시점엔 #mobileApp이 아직 없어서(널 가드로 크래시는 막았지만) 실제
+// 화면 반영은 못 한다 — DOM이 다 만들어진 뒤 한 번 더 불러서 확실히 적용한다.
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initMobile);
+else initMobile();
 
 if ('serviceWorker' in navigator) {
   // updateViaCache:'none' — 기본값이면 브라우저가 service-worker.js 파일 자체를 HTTP
