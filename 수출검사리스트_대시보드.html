@@ -3579,6 +3579,9 @@ function _rpClearPhotoOnServer(key, side) {
 // ── 카메라 촬영 / 갤러리 선택 고르기 ──────────────────────────────
 function openRpPhotoPicker(key, side) {
   _rpPhotoActionKey = key; _rpPhotoActionSide = side;
+  // PC 웹은 카메라가 없어서 "촬영/갤러리" 중 고를 게 없다 — 그 선택창 자체를 건너뛰고
+  // 바로 파일 선택창을 연다("갤러리"가 아니라 그냥 사진 업로드).
+  if (!isMobile()) { rpPickGallery(); return; }
   const titleEl = document.getElementById('rpPickTitle');
   if (titleEl) titleEl.textContent = side === 'product' ? '제품 사진' : '포장완료 사진';
   document.getElementById('rpPhotoPickModal').style.display = 'flex';
