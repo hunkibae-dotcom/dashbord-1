@@ -2952,6 +2952,46 @@ function _updateRpSortBtn() {
     : '정렬 안 함 (누르면 내림차순으로)';
 }
 
+// ── 포장처/진행상태 칼럼 헤더 드롭다운 필터 ──
+let _rpPackerFilter = null; // null(전체) 또는 실제 포장처 값
+let _rpStatusFilter = null; // null(전체) 또는 실제 검사상태 값
+let _rpOpenFilterDD = null; // 'packer' | 'status' | null
+
+function _rpDistinctValues(field) {
+  const set = new Set();
+  [...allData, ...archiveRows].forEach(d => { if (d[field]) set.add(d[field]); });
+  return Array.from(set).sort();
+}
+function toggleRpFilterDD(which, e) {
+  if (e) e.stopPropagation();
+  if (_rpOpenFilterDD === which) { _closeRpFilterDDs(); return; }
+  _rpOpenFilterDD = which;
+  _renderRpFilterDD(which);
+  const openEl = document.getElementById(which === 'packer' ? 'rpPackerFilterDD' : 'rpStatusFilterDD');
+  const otherEl = document.getElementById(which === 'packer' ? 'rpStatusFilterDD' : 'rpPackerFilterDD');
+  if (openEl) openEl.style.display = 'block';
+  if (otherEl) otherEl.style.display = 'none';
+}
+function _closeRpFilterDDs() {
+  _rpOpenFilterDD = null;
+  const a = document.getElementById('rpPackerFilterDD'), b = document.getElementById('rpStatusFilterDD');
+  if (a) a.style.display = 'none';
+  if (b) b.style.display = 'none';
+}
+document.addEventListener('click', () => { if (_rpOpenFilterDD) _closeRpFilterDDs(); });
+function _renderRpFilterDD(which) {
+  const el = document.getElementById(which === 'packer' ? 'rpPackerFilterDD' : 'rpStatusFilterDD');
+  if (!el) return;
+  const field = which === 'packer' ? '포장처' : '검사';
+  const current = which === 'packer' ? _rpPackerFilter : _rpStatusFilter;
+  const setFn = which === 'packer' ? 'setRpPackerFilter' : 'setRpStatusFilter';
+  const values = _rpDistinctValues(field);
+  el.innerHTML = `<div class="rp-filter-dd-item ${!current ? 'active' : ''}" onclick="${setFn}(null)">전체</div>` +
+    values.map(v => `<div class="rp-filter-dd-item ${current === v ? 'active' : ''}" onclick="${setFn}('${_jsAttr(v)}')">${v}</div>`).join('');
+}
+function setRpPackerFilter(v) { _rpPackerFilter = v; _closeRpFilterDDs(); renderReportList(); }
+function setRpStatusFilter(v) { _rpStatusFilter = v; _closeRpFilterDDs(); renderReportList(); }
+
 function _rpFilteredRows() {
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
   const dateFieldKey = RP_DATE_FIELD_MAP[_rpDateField] || '포장일';
