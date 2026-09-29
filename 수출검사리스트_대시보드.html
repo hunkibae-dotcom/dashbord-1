@@ -3753,6 +3753,27 @@ function rpPhotoEditRotate(delta) {
   img.src = rec.dataUrl;
 }
 
+// 90도 버튼은 딱 떨어지는 각도라 눌릴 때마다 바로 구워도 되지만, 미세 회전은 슬라이더를
+// 끌던 도중에 매 프레임 굽고(느림) 다시 그리면(자르기 사각형이 매번 초기화돼) 조작감이
+// 나빠진다 — 그래서 끄는 동안은 화면상 CSS 회전으로만 미리 보여주고, 손을 뗀(change)
+// 시점에 딱 한 번만 실제 픽셀로 굽는다.
+function _rpFineRotatePreview(val) {
+  const deg = Number(val) || 0;
+  const label = document.getElementById('rpFineRotateLabel');
+  if (label) label.textContent = deg + '°';
+  const img = document.getElementById('rpPhotoEditImg');
+  if (img) img.style.transform = deg ? ('rotate(' + deg + 'deg)') : '';
+}
+function _rpFineRotateCommit(val) {
+  const deg = Number(val) || 0;
+  const img = document.getElementById('rpPhotoEditImg');
+  if (!deg) { img.style.transform = ''; return; }
+  const rec = _rpRasterizePhoto(img, deg);
+  _rpPendingPhotoDataUrl = rec.dataUrl;
+  img.onload = _rpLayoutCropStage; // 여기서 슬라이더도 0으로 리셋됨(다음 조작은 새로 구워진 상태 기준)
+  img.src = rec.dataUrl;
+}
+
 function rpPhotoEditConfirm() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
   if (!key || !_rpPendingPhotoDataUrl || !_rpCropImgRect || !_rpCropBox) { closeRpPhotoEdit(); return; }
