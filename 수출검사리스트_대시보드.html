@@ -3719,6 +3719,8 @@ function closeRpPhotoEdit() {
   document.getElementById('rpPhotoEditModal').style.display = 'none';
   _rpPendingPhotoDataUrl = null;
   _rpCropImgRect = null; _rpCropBox = null; _rpCropDrag = null;
+  const img = document.getElementById('rpPhotoEditImg');
+  if (img) img.style.transform = ''; // 미세 회전 슬라이더를 드래그 중(커밋 전)에 닫아도 다음에 열 때 깨끗한 상태로
 }
 function rpPhotoEditRetake() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
