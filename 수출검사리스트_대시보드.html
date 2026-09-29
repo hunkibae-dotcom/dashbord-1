@@ -3984,6 +3984,27 @@ async function _rpResolvePhotoForSlide(sel, side) {
   } catch (e) { return null; }
 }
 
+// 건명 맨 앞 거래처 코드 → 국가. "추측"으로 표시된 항목은 확정된 값이 아니라서 뺐다
+// (거래처 기준표 확인, 2026-09-29). 여러 차수가 겹친 건명("FAM-NY-44")은 맨 앞
+// 코드만 기준으로 삼는다.
+const RP_COUNTRY_CODE_MAP = {
+  RF: '일본', UY: '일본', JIS: '중국', JAEI: '중국', SHAN: '중국',
+  HMI: '인도', COR: '인도네시아', VAN: '싱가폴', AIO: '필리핀', JII: '자카르타',
+  DLX: '파키스탄', ILTW: '대만', AW: '말레이시아', ANUN: '태국', RS: '스리랑카',
+  KAZ: '카자흐스탄', TAN: '카자흐스탄', KMG: '카자흐스탄', KTNGKZ: '카자흐스탄',
+  AJD: '홍콩/필리핀', CENO: '베트남', APC: '베트남', FVN1: '베트남',
+  SPW: 'UAE', ARCO: 'UAE', KEN: '케냐', DI: '호주', EO: '러시아', KDC: '영국',
+  NY: '미국', IMA: '미국', GUAM: '미국', LA: '미국', MAV: '미국', TOF: '미국',
+  BIF: '미국', CLE: '미국', JIMP: '미국', SDA: '미국', FAM: '미국', INICS: '멕시코',
+  CHL: '칠레', COL: '콜롬비아', COS: '코스타리카', GUA: '과테말라', HON: '온두라스',
+  CUR: '퀴라소', JAM: '자메이카', PER: '페루', PNM: '파나마', VEN: '베네수엘라'
+};
+function _rpCountryLabel(roundName) {
+  if (!roundName) return '';
+  const code = roundName.split('-')[0].trim().toUpperCase();
+  return RP_COUNTRY_CODE_MAP[code] || '';
+}
+
 function _addReportSlide(pptx, d, sel, repRound) {
   const slide = pptx.addSlide();
   const factoryKey = d.공장;
