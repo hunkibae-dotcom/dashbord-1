@@ -3239,6 +3239,12 @@ let _rpPackerFilter = null; // null(전체) 또는 실제 포장처 값
 let _rpStatusFilter = '검사'; // null(전체) 또는 실제 검사상태 값 — 기본은 검사완료 품목만
 let _rpOpenFilterDD = null; // 'packer' | 'status' | null
 
+// 검사완료 누적 이력까지 합치면 기본 필터만으로도 수천 행이라, 가상 스크롤 대신 더
+// 단순하고 확실한 페이지네이션으로 나눈다 — 한 번에 화면(DOM)에 50행만 존재하므로
+// 앱/웹 어디서든 스크롤·클릭이 무거워질 걱정이 없다.
+const RP_PAGE_SIZE = 50;
+let _rpPage = 1;
+
 function _rpDistinctValues(field) {
   const set = new Set();
   [...allData, ...archiveRows].forEach(d => { if (d[field]) set.add(d[field]); });
