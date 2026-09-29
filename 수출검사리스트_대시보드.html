@@ -3481,7 +3481,14 @@ function openRpPhotoAction(key, side) {
   const titleEl = document.getElementById('rpPhotoActionTitle');
   if (titleEl) titleEl.textContent = side === 'product' ? '제품 사진' : '포장완료 사진';
   const previewEl = document.getElementById('rpPhotoActionPreview');
-  if (previewEl) previewEl.src = eff ? eff.src : '';
+  if (previewEl) {
+    previewEl.onerror = null;
+    previewEl.src = eff ? eff.src : '';
+    const factoryKey = sel && sel.item && sel.item.공장;
+    if (eff && eff.isRemoteOnly && factoryKey) {
+      previewEl.onerror = () => { previewEl.onerror = null; _rpImgFallback(previewEl, eff.fileId, factoryKey); };
+    }
+  }
   document.getElementById('rpPhotoActionModal').style.display = 'flex';
   _armBackTrap();
 }
@@ -3489,15 +3496,31 @@ function closeRpPhotoAction() {
   document.getElementById('rpPhotoActionModal').style.display = 'none';
   _rpPhotoActionKey = null; _rpPhotoActionSide = null;
 }
-function rpPhotoActionDownload() {
+// Drive 직접 다운로드 링크도 화면 표시와 같은 이유(조직 공유 정책)로 실패할 수 있어서,
+// 남이 등록한 사진(원격)은 항상 GAS 프록시로 base64를 받아 블롭으로 다운로드한다 —
+// 이 기기에서 직접 찍은 사진(local)은 그럴 필요 없어 기존처럼 즉시 다운로드한다.
+async function rpPhotoActionDownload() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
   const sel = key && _reportSelected[key];
   const eff = _rpEffectivePhoto(sel, side);
   if (!eff) { closeRpPhotoAction(); return; }
   const code = (sel.item && sel.item.단품코드) ? sel.item.단품코드.replace(/[^a-zA-Z0-9가-힣_-]/g, '') : 'photo';
+  const filename = code + '_' + (side === 'product' ? '제품' : '포장완료') + '.jpg';
+
+  let href = eff.downloadHref;
+  if (eff.isRemoteOnly && sel.item && sel.item.공장) {
+    const url = _gasUrlForFactory(sel.item.공장);
+    if (url) {
+      try {
+        const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportPhotoBase64', fileId: eff.fileId }), { signal: AbortSignal.timeout(20000) });
+        const json = await res.json();
+        if (json.status === 'success' && json.dataUrl) href = json.dataUrl;
+      } catch (e) { /* 실패하면 Drive 직접 링크로라도 시도(아래) */ }
+    }
+  }
   const a = document.createElement('a');
-  a.href = eff.downloadHref;
-  a.download = code + '_' + (side === 'product' ? '제품' : '포장완료') + '.jpg';
+  a.href = href;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
