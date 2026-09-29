@@ -2957,6 +2957,7 @@ function openReportModal() {
   modal.style.transform = 'translateX(0)';
   document.body.classList.add('m-lock');
   _updateRpDateFieldUI();
+  _rpUpdateFilterBtnLabels();
   document.getElementById('mNavReport')?.classList.add('active');
   _updateRpSortBtn();
   renderReportList();
