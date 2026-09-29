@@ -4613,6 +4613,7 @@ function openMItemDetail(key) {
   const d = window._mItemMap && window._mItemMap[key];
   if (!d) return;
   _miCurrent = d;
+  _miOriginalStatus = d.검사;
   const saveBtn = document.getElementById('miSaveBtn');
   if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
   document.getElementById('miTitle').textContent = d.건명 || '—';
