@@ -976,6 +976,21 @@ function renderDashKpiBody() {
 }
 function closeDashDetail() { document.getElementById('dashDetailModal').classList.remove('open'); }
 
+// 홈 화면 "재고 부족 자재" 카드 전용 — 다른 KPI 카드처럼 탭으로 넘어가는 대신 바로
+// 목록을 띄운다. 이 목록 안에서 항목을 누르면, 바로 위(943번째 줄 부근) 주석에 적힌
+// 것과 같은 이유로 이 목록 모달을 먼저 닫고 나서 진짜 재고 상세 모달을 연다 — 두
+// modal-bg를 동시에 열어두면 z-index가 같아서 나중에 연 쪽이 오히려 가려졌었다.
+function openDashLowStockDetail() {
+  const low = [...remainStockList()].sort((a, b) => a.total - b.total).slice(0, 6);
+  document.getElementById('dashDetailTypeChips').style.display = 'none';
+  document.getElementById('dashKpiSortBtn').style.display = 'none';
+  document.getElementById('dashDetailTitle').textContent = '재고 부족 자재 (' + low.length + '종)';
+  document.getElementById('dashDetailBody').innerHTML = low.length
+    ? low.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')"><div class="stk-ico">${typeIconHtml(g.type)}</div><div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div></div><div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
+    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
+  document.getElementById('dashDetailModal').classList.add('open');
+}
+
 // 대시보드의 재고 카드는 "전체 유형 · 남은 재고 · 검색어 없음" 기준으로 묶은 key를 쓴다.
 // 재고 탭 필터를 그 기본값으로 되돌려 다시 그린 뒤 열어야, 사용자가 재고 탭에서 다른
 // 필터를 걸어둔 상태여도 _stockGroups에 해당 key가 반드시 존재한다.
