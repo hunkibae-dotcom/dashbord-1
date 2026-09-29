@@ -3126,6 +3126,7 @@ function openReportModal() {
   _rpUpdateFilterBtnLabels();
   document.getElementById('mNavReport')?.classList.add('active');
   _updateRpSortBtn();
+  _rpPage = 1;
   const overlay = document.getElementById('rpLoadingOverlay');
   if (overlay) overlay.style.display = 'flex';
   // renderReportList()가 무거워서(검사완료 누적 이력까지 합치면 수천 행) 곧바로 부르면
