@@ -3409,8 +3409,20 @@ function rpPhotoEditConfirm() {
 }
 
 // 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
+// 전체선택을 누르면 화면에 보이는 수백 건 각각에 대해 _rpFindByKey를 호출하는데,
+// 예전엔 이게 매번 allData+archiveRows(누적 이력 2,000행 이상) 전체를 처음부터 한 줄씩
+// .find()로 훑고, 그 비교마다 _miKey가 배열+join으로 문자열을 새로 만들었다 —
+// N(보이는 행)×M(전체 행) 만큼 느려져서, "전체선택 버튼을 만들고 나서부터 느려졌다"는
+// 지적의 실제 원인이었다. 인덱스(Map)를 한 번만 만들어두고 재사용하면 조회가 O(1)이 된다.
+let _rpKeyIndex = null;
+function _rpInvalidateKeyIndex() { _rpKeyIndex = null; }
 function _rpFindByKey(key) {
-  return allData.find(x => _miKey(x) === key) || archiveRows.find(x => _miKey(x) === key);
+  if (!_rpKeyIndex) {
+    _rpKeyIndex = new Map();
+    for (const x of allData) _rpKeyIndex.set(_miKey(x), x);
+    for (const x of archiveRows) if (!_rpKeyIndex.has(_miKey(x))) _rpKeyIndex.set(_miKey(x), x);
+  }
+  return _rpKeyIndex.get(key) || null;
 }
 
 // 체크박스는 이번 PPTX 생성에 포함할지만 정한다 — 해제해도 등록해둔 사진/CBM/특이사항은
