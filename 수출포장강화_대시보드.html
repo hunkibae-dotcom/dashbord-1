@@ -5995,10 +5995,10 @@
             wrap.innerHTML = _STATUS_OPTS.map(opt => {
                 const isCur = opt.v === _pkgCurStatus;
                 return `<button onclick="selectPkgStatus('${opt.v}')"
-                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1px solid ${isCur?opt.c:'#334155'};background:${isCur?opt.c+'22':'transparent'};color:${opt.c};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;"
-                    onmouseenter="this.style.background='${opt.c}22';this.style.borderColor='${opt.c}'"
-                    onmouseleave="this.style.background='${isCur?opt.c+'22':'transparent'}';this.style.borderColor='${isCur?opt.c:'#334155'}'">
-                    <i class="fa-solid fa-circle" style="font-size:6px;opacity:.6;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
+                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?opt.c:'#e2e8f0'};background:${isCur?opt.c+'1A':'#fff'};color:${isCur?opt.c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;"
+                    onmouseenter="this.style.background='${opt.c}1A';this.style.borderColor='${opt.c}'"
+                    onmouseleave="this.style.background='${isCur?opt.c+'1A':'#fff'}';this.style.borderColor='${isCur?opt.c:'#e2e8f0'}'">
+                    <i class="fa-solid fa-circle" style="font-size:6px;color:${opt.c};opacity:.8;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
                 </button>`;
             }).join('');
         }
