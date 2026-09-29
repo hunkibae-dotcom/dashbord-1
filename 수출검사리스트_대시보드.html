@@ -3199,12 +3199,15 @@ function renderReportList() {
 // 표와는 확실히 다른 느낌으로 보여준다.
 function _renderReportListMobile(rows) {
   const wrap = document.getElementById('rpListMobile');
+  const checkedOrderMap = _rpCheckedOrderMap();
   wrap.innerHTML = rows.map(d => {
     const key = _miKey(d);
     const sel = _reportSelected[key];
     const checked = _reportChecked.has(key);
     const hasHardware = sel ? sel.hasHardware === true : false;
     const safeKey = key.replace(/'/g, "\\'");
+    const attrKey = key.replace(/"/g, '&quot;');
+    const orderNum = checkedOrderMap.get(key);
     const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     return `
     <div class="rp-card${checked ? ' rp-checked' : ''}">
@@ -3213,7 +3216,10 @@ function _renderReportListMobile(rows) {
         <span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span>
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
-        <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}', this)" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#6D5CE8;cursor:pointer;">
+        <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:1px;">
+          <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}', this)" style="width:20px;height:20px;accent-color:#6D5CE8;cursor:pointer;">
+          <span class="rp-order-badge" data-mikey="${attrKey}" style="display:${orderNum ? '' : 'none'};font-size:10px;font-weight:800;color:#6D5CE8;background:rgba(109,92,222,.14);border-radius:8px;padding:1px 5px;">${orderNum || ''}</span>
+        </div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
           <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
