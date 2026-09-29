@@ -6003,6 +6003,13 @@ function onNativeScanResult(raw) {
       <button id="miStBtn_양지"   onclick="setMiField('검사','양지')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">양지</button>
     </div>
 
+    <div id="miReasonWrap" style="display:none;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;margin-bottom:6px;">재투입 사유</div>
+      <input id="miReasonInput" type="text" placeholder="사유를 입력하세요 (시트 비고란에 저장됩니다)"
+          onchange="setMiField('비고', this.value)"
+          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+    </div>
+
     <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;">검사완료일</div>
     <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)"
         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
