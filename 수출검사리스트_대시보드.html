@@ -1032,6 +1032,14 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     </table>
   </div>
   <div style="flex:1;overflow-y:auto;padding:12px 14px 40px;background:var(--bg);display:none;" id="rpListMobile"></div>
+
+  <!-- 검사완료 누적 이력까지 합치면 목록이 수천 행이라 처음 열 때 그 전체를 그리는
+       동안 화면이 잠깐 멈춘 것처럼 보인다 — 어차피 걸리는 시간이라면 최소한 "지금
+       불러오는 중"이라는 걸 보여준다. -->
+  <div id="rpLoadingOverlay" style="display:none;position:absolute;inset:0;background:var(--bg);z-index:50;align-items:center;justify-content:center;flex-direction:column;gap:10px;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size:26px;color:#6D5CE8;"></i>
+    <div style="font-size:12.5px;color:var(--label);font-weight:700;">불러오는 중...</div>
+  </div>
 </div>
 
 <!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
