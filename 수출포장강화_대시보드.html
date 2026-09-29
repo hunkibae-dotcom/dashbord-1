@@ -3384,11 +3384,19 @@
             }
             const cardHtmlParts = [];
 
+            // 행 전체 클릭 → 진행상태/포장완료일/적재번호/CBM을 한번에 고치는 상세수정창
+            // (앱의 openItemEdit/saveItemEdit과 동일 방식). 제품코드 글자 클릭(스펙 조회 패널
+            // 이동)과는 별개 동작이라 그쪽은 event.stopPropagation()으로 행 클릭이 겹치지 않게 뺀다.
+            window._pkgRowMap = {};
+
             state.filteredData.forEach((item, _rowIdx) => {
                 const tr = document.createElement('tr');
-                tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;';
+                tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;';
                 tr.onmouseenter = function(){ this.style.background='#f8fafc'; };
                 tr.onmouseleave = function(){ this.style.background=''; };
+                const _pkgKey = 'pkg_' + _rowIdx;
+                window._pkgRowMap[_pkgKey] = item;
+                tr.addEventListener('click', () => openPkgItemDetail(_pkgKey));
                 const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[]};
                 const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h);
                 item._cbm = (_wA&&_dA&&_hA) ? (_wA*_dA*_hA)/1e9 : null;
