@@ -966,7 +966,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </colgroup>
       <thead style="position:sticky;top:0;background:var(--bg);z-index:1;">
         <tr>
-          <th onclick="toggleSelectAllVisibleReportItems()" title="클릭: 보이는 품목 전체선택 / 다시 클릭: 전체해제" style="cursor:pointer;text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">선택</th>
+          <th id="rpSelectTh" onclick="toggleSelectAllVisibleReportItems()" title="클릭: 보이는 품목 전체선택 / 다시 클릭: 전체해제" style="cursor:pointer;text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;border-radius:6px;transition:background .12s,color .12s;">선택</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;position:relative;">
             <span onclick="toggleRpFilterDD('packer',event)" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px;">포장처<i class="fa-solid fa-caret-down" style="font-size:8px;"></i></span>
             <div id="rpPackerFilterDD" class="rp-filter-dd" onclick="event.stopPropagation()"></div>
