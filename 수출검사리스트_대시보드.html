@@ -3483,16 +3483,7 @@ function _rpFindByKey(key) {
 
 // 체크박스는 이번 PPTX 생성에 포함할지만 정한다 — 해제해도 등록해둔 사진/CBM/특이사항은
 // _reportSelected에 그대로 남아있다가, 다시 체크하면 그대로 이어서 쓸 수 있다.
-function _rpUpdateSelectThState(rows) {
-  const selectTh = document.getElementById('rpSelectTh');
-  if (!selectTh) return;
-  rows = rows || _rpFilteredRows();
-  const allChecked = rows.length > 0 && rows.every(d => _reportChecked.has(_miKey(d)));
-  selectTh.style.background = allChecked ? '#6D5CE8' : '';
-  selectTh.style.color = allChecked ? '#fff' : '';
-  selectTh.title = allChecked ? '클릭: 보이는 품목 전체해제' : '클릭: 보이는 품목 전체선택';
-}
-
+// (전체선택/전체해제 일괄 토글 기능은 너무 느려서 일단 없앴다 — 필요하면 하나씩 체크한다.)
 // 체크박스 하나 누를 때마다 표/카드 전체를 다시 그리면(사진칸의 base64 이미지까지
 // 포함해서) 이미 등록해둔 사진들이 매번 새로 디코딩되며 버벅였다 — 이 항목의 카드/행
 // 하나에만 rp-checked 클래스를 토글해서, 그 무거운 다시 그리기 자체를 건너뛴다.
@@ -3510,7 +3501,6 @@ function toggleReportItem(key, checkboxEl) {
   if (rowEl) {
     rowEl.classList.toggle('rp-checked', checked);
     document.getElementById('rpSelCount').textContent = _reportChecked.size;
-    _rpUpdateSelectThState();
   } else {
     // 체크박스 엘리먼트를 못 받은 호출(과거 호환)은 안전하게 전체를 다시 그린다.
     renderReportList();
