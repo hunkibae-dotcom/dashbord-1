@@ -5986,8 +5986,13 @@ async function _spuRunImport() {
     }
   }
   resultEl.textContent = logs.join('\n\n');
+  // 다 끝난 뒤에도 버튼이 "업데이트 실행" 그대로면 또 눌러야 하는 것처럼 보여서(실제로
+  // 누르면 같은 파일 4개를 처음부터 다시 처리해버림) 헷갈린다는 지적이 있었다 — 끝나면
+  // "완료"로 바꿔서 누르면 그냥 창만 닫히게 한다. 창을 다시 열면(openSpuUploadModal)
+  // "업데이트 실행"으로 되돌아온다.
   btn.disabled = false;
-  btn.innerHTML = '업데이트 실행';
+  btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
+  btn.onclick = closeSpuUploadModal;
   _spuLoadStatus();
 }
 
