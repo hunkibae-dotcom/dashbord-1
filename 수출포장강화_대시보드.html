@@ -5973,7 +5973,7 @@
             if (!names.length) { bar.style.display = 'none'; return; }
             bar.style.display = 'flex';
             bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">접속 중</span>` + names.map(n => {
-                const initial = n.trim().slice(-1);
+                const initial = n.trim().slice(0, 1); // 맨 앞 성이 보이게
                 const isMe = n === myName;
                 return `<span title="${n.replace(/"/g,'&quot;')}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#00B0FF;color:#0B0F19;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};">${initial}</span>`;
             }).join('');
