@@ -2835,34 +2835,88 @@ let _reportChecked = new Set(); // 지금 PPTX 생성 대상으로 체크된 키
 // 보고서는 하루만에 다 채우기 어려워서, 오늘 등록한 사진을 닫았다 다시 열어도(하루
 // 지나서 다시 접속해도) 그대로 남아있다가 다음번에 이어서 채우고 누적해서 생성할 수
 // 있어야 한다 — localStorage에 저장해서 새로고침/재접속에도 선택·사진이 유지된다.
-const RP_STORAGE_KEY = 'qc_report_selected_v1';
-// 사진이 누적될수록 저장 용량이 수 MB로 커질 수 있어서, 매 클릭마다 그 전체를
-// JSON.stringify + localStorage.setItem 하면(둘 다 동기 작업이라 메인 스레드를 그대로
-// 막는다) 체크박스 하나 누르는 것도 버벅이게 느껴졌다 — 연달아 누르는 동안은 저장을
-// 한 번으로 묶어서(디바운스) 부담을 줄인다.
+const RP_STORAGE_KEY = 'qc_report_selected_v1'; // 가벼운 메타데이터(품목정보/체크여부/철물/특이사항/CBM)
+const RP_PHOTOS_KEY = 'qc_report_photos_v2';    // 무거운 사진(base64, 개당 수십~수백KB)만 따로
+// 예전엔 사진까지 전부 한 덩어리(_reportSelected)로 두고 뭘 고치든(철물 체크, 특이사항
+// 입력, 체크박스 하나) 매번 그 전체를 JSON.stringify + localStorage.setItem 했다 — 사진이
+// 누적될수록(수 MB) 이 두 동작이 다 동기(=메인 스레드를 막는) 작업이라, 사진과 전혀
+// 상관없는 조작 한 번에도 몇 초씩 버벅이는 원인이었다. 이제 사진은 실제로 사진이
+// 바뀐 순간에만(_rpSaveToStorage(true)) 별도 키에 저장하고, 나머지 자잘한 변경은
+// 가벼운 메타데이터만 다시 쓴다.
 let _rpSaveDebounceTimer = null;
-function _rpSaveToStorage() {
+let _rpPhotosDirty = false;
+function _rpSaveToStorage(photosChanged) {
+  if (photosChanged) _rpPhotosDirty = true;
   clearTimeout(_rpSaveDebounceTimer);
   _rpSaveDebounceTimer = setTimeout(function() {
-    try { localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: _reportSelected, checked: Array.from(_reportChecked) })); }
-    catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
+    try {
+      const metaOnly = {};
+      for (const k in _reportSelected) {
+        const s = _reportSelected[k];
+        metaOnly[k] = { item: s.item, note: s.note, hasHardware: s.hasHardware, cbm: s.cbm };
+      }
+      localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: metaOnly, checked: Array.from(_reportChecked) }));
+    } catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
+    if (_rpPhotosDirty) {
+      _rpPhotosDirty = false;
+      try {
+        const photosOnly = {};
+        for (const k in _reportSelected) {
+          const s = _reportSelected[k];
+          if (s.productPhoto || s.packagePhoto || s.notePhoto) {
+            photosOnly[k] = { productPhoto: s.productPhoto, packagePhoto: s.packagePhoto, notePhoto: s.notePhoto };
+          }
+        }
+        localStorage.setItem(RP_PHOTOS_KEY, JSON.stringify(photosOnly));
+      } catch (e) { console.warn('보고서 사진 임시저장 실패(저장 용량 초과 가능):', e); }
+    }
   }, 300);
 }
 function _rpLoadFromStorage() {
+  let metaSelected = {}, checkedArr = [];
   try {
     const raw = localStorage.getItem(RP_STORAGE_KEY);
-    if (!raw) return;
-    const parsed = JSON.parse(raw) || {};
-    if (parsed.selected) {
-      // 새 형식: { selected, checked }
-      _reportSelected = parsed.selected;
-      _reportChecked = new Set(parsed.checked || []);
-    } else {
-      // 예전 형식(순수 {키:값} 저장) 호환 — 저장돼 있던 항목은 전부 체크된 것으로 본다
-      _reportSelected = parsed;
-      _reportChecked = new Set(Object.keys(parsed));
+    if (raw) {
+      const parsed = JSON.parse(raw) || {};
+      if (parsed.selected) {
+        // 새 형식: { selected, checked }
+        metaSelected = parsed.selected;
+        checkedArr = parsed.checked || [];
+      } else {
+        // 아주 예전 형식(순수 {키:값} 저장) 호환 — 저장돼 있던 항목은 전부 체크된 것으로 본다
+        metaSelected = parsed;
+        checkedArr = Object.keys(parsed);
+      }
     }
-  } catch (e) { _reportSelected = {}; _reportChecked = new Set(); }
+  } catch (e) { metaSelected = {}; checkedArr = []; }
+
+  let photosMap = {};
+  let photosKeyExists = false;
+  try {
+    const rawPhotos = localStorage.getItem(RP_PHOTOS_KEY);
+    photosKeyExists = rawPhotos !== null;
+    if (rawPhotos) photosMap = JSON.parse(rawPhotos) || {};
+  } catch (e) { photosMap = {}; }
+
+  _reportSelected = {};
+  for (const k in metaSelected) {
+    const m = metaSelected[k] || {};
+    // 사진을 분리 저장하기 전 형식은 selected[key] 안에 사진이 그대로 들어있었다 —
+    // 이 기기에 분리된 사진 저장소가 아직 한 번도 안 만들어졌다면(예전 버전을 쓰던
+    // 기기) 그 자리의 사진을 그대로 이어받는다. 다음 저장부터는 자동으로 새 분리
+    // 형식으로 바뀐다.
+    const p = photosMap[k] || (!photosKeyExists ? { productPhoto: m.productPhoto, packagePhoto: m.packagePhoto, notePhoto: m.notePhoto } : {});
+    _reportSelected[k] = {
+      item: m.item,
+      note: m.note || '',
+      hasHardware: m.hasHardware === true,
+      cbm: m.cbm || null,
+      productPhoto: p.productPhoto || null,
+      packagePhoto: p.packagePhoto || null,
+      notePhoto: p.notePhoto || null
+    };
+  }
+  _reportChecked = new Set(checkedArr);
 }
 // 이 JSON.parse도 누적된 사진 데이터가 크면 수백ms 이상 걸릴 수 있어서, 첫 화면이
 // 그려지는 걸 막지 않도록 한 박자 미뤄서 실행한다(보고서 탭은 어차피 나중에 연다).
