@@ -3055,15 +3055,22 @@ function renderReportList() {
   if (tableWrap) tableWrap.style.display = mobile ? 'none' : '';
   if (mobileWrap) mobileWrap.style.display = mobile ? '' : 'none';
 
-  const selectAllBtn = document.getElementById('rpSelectAllBtn');
-  if (selectAllBtn) {
+  // PPTX 생성은 웹에서만 — 보고서는 앱이 아니라 웹에서만 다운받게 한다.
+  const genBtn = document.getElementById('rpGenBtn');
+  if (genBtn) genBtn.style.display = mobile ? 'none' : '';
+
+  const selectTh = document.getElementById('rpSelectTh');
+  if (selectTh) {
     const allChecked = rows.length > 0 && rows.every(d => _reportChecked.has(_miKey(d)));
-    selectAllBtn.textContent = allChecked ? '전체해제' : '전체선택';
+    selectTh.style.background = allChecked ? '#6D5CE8' : '';
+    selectTh.style.color = allChecked ? '#fff' : '';
+    selectTh.title = allChecked ? '클릭: 보이는 품목 전체해제' : '클릭: 보이는 품목 전체선택';
   }
+  if (_rpOpenFilterDD) _renderRpFilterDD(_rpOpenFilterDD);
 
   if (!rows.length) {
     const emptyMsg = '<div style="text-align:center;padding:52px 0;color:var(--label);"><i class="fa-solid fa-file-powerpoint" style="font-size:28px;display:block;margin-bottom:10px;color:var(--border);"></i><div style="font-size:13px;">조건에 맞는 품목이 없습니다</div></div>';
-    document.getElementById('rpList').innerHTML = '<tr><td colspan="11">' + emptyMsg + '</td></tr>';
+    document.getElementById('rpList').innerHTML = '<tr><td colspan="13">' + emptyMsg + '</td></tr>';
     if (mobileWrap) mobileWrap.innerHTML = emptyMsg;
     document.getElementById('rpSelCount').textContent = _reportChecked.size;
     return;
