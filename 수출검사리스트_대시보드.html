@@ -1522,6 +1522,7 @@ function parseRows(rows, factory) {
       가로, 세로, 높이,
       중량: parseFloat(g(12)) || 0,
       CBM: (가로 && 세로 && 높이) ? (가로 * 세로 * 높이 / 1e9) : null,
+      비고: g(15).trim(),
     });
   }
   return result;
