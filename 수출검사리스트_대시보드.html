@@ -3074,8 +3074,12 @@ async function _rpUploadPhotoToServer(key, side, dataUrl) {
     if (json.status === 'success') {
       sel[side + 'PhotoRemote'] = { fileId: json.fileId, viewUrl: json.viewUrl, downloadUrl: json.downloadUrl };
       sel._updatedAt = Date.now();
+    } else {
+      // 조용히 무시하면 "공유된다더니 안 보인다"처럼 실패한 줄도 모르고 지나가게 된다 —
+      // 이 기기 화면엔 이미 사진이 보이니 작업 흐름은 안 막되, 공유는 실패했다고 알려준다.
+      _rpShowToast('⚠ 사진 공유 실패(이 기기엔 저장됨): ' + (json.message || '알 수 없는 오류'), true);
     }
-  } catch (e) { /* 사진 공유 업로드 실패 — 이 기기에는 이미 보이므로 조용히 무시 */ }
+  } catch (e) { _rpShowToast('⚠ 사진 공유 업로드 실패(이 기기엔 저장됨) — 네트워크를 확인해주세요', true); }
 }
 
 function openReportModal() {
