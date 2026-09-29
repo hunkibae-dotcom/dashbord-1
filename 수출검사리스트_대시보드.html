@@ -128,6 +128,15 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   .rp-filter-dd-item { padding:7px 10px; border-radius:7px; font-size:12.5px; color:var(--text); cursor:pointer; white-space:nowrap; }
   .rp-filter-dd-item:hover { background:var(--input-bg); }
   .rp-filter-dd-item.active { background:#6D5CE8; color:#fff; font-weight:800; }
+  /* 체크 여부에 따른 강조색은 인라인 스타일이 아니라 클래스 토글로 처리한다 — 체크박스
+     하나 누를 때마다 사진칸(base64 이미지)까지 포함한 표 전체를 다시 그리면(innerHTML을
+     통째로 교체하면 브라우저가 이미 등록된 사진들까지 매번 새로 디코딩해서 버벅였다),
+     이제는 그 행 하나의 클래스만 바꿔서 다시 그리기 자체를 건너뛴다. */
+  .rp-row td { background:var(--panel); border-top:1px solid var(--border); border-bottom:1px solid var(--border); border-left:none; border-right:none; transition:background .15s,border-color .15s; }
+  .rp-row td:first-child { border-radius:12px 0 0 12px; border-left:1px solid var(--border); }
+  .rp-row td:last-child { border-radius:0 12px 12px 0; border-right:1px solid var(--border); }
+  .rp-row.rp-checked td { background:linear-gradient(0deg,rgba(139,124,240,.08),rgba(139,124,240,.08)),var(--panel); border-color:#8B7CF0; }
+  .rp-card { transition:border-color .15s,box-shadow .15s; }
   .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-sub); font-size:10px; font-weight:600; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
   .mobile-nav-btn.active { color:#6D5CE8; }
   .m-nav-icon { display:flex; align-items:center; justify-content:center; }
