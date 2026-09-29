@@ -1443,6 +1443,7 @@ async function loadData() {
     archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
     archiveRows = archives.filter(Boolean).flatMap(t => t.items).map(r => r.source ? r : { ...r, source: 'archive' });
     applyMiOverrides(archiveRows);
+    _rpInvalidateKeyIndex();
     _saveArchiveCache(archiveTotals, archiveRows);
     renderQualityCharts();
     applyFilters(); // 이력 데이터가 검색결과 카운트에도 반영되므로 갱신 후 다시 그림
