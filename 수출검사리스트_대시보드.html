@@ -3687,7 +3687,7 @@ function _rpHandleNotePhoto(input) {
   _rpCompressImage(file, function(rec) {
     if (!_reportSelected[key]) return;
     _reportSelected[key].notePhoto = rec;
-    _rpSaveToStorage();
+    _rpSaveToStorage(true);
     if (_rpEditKey === key) openRpNoteEditor(key); // 미리보기 갱신
   });
 }
