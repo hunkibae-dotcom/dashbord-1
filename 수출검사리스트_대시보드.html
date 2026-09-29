@@ -2877,7 +2877,11 @@ function _rpSaveToStorage(photosChanged) {
       const metaOnly = {};
       for (const k in _reportSelected) {
         const s = _reportSelected[k];
-        metaOnly[k] = { item: s.item, note: s.note, hasHardware: s.hasHardware, cbm: s.cbm };
+        metaOnly[k] = {
+          item: s.item, note: s.note, hasHardware: s.hasHardware, cbm: s.cbm,
+          productPhotoRemote: s.productPhotoRemote, packagePhotoRemote: s.packagePhotoRemote, notePhotoRemote: s.notePhotoRemote,
+          _updatedAt: s._updatedAt
+        };
       }
       localStorage.setItem(RP_STORAGE_KEY, JSON.stringify({ selected: metaOnly, checked: Array.from(_reportChecked) }));
     } catch (e) { console.warn('보고서 임시저장 실패(저장 용량 초과 가능):', e); }
