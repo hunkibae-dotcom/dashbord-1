@@ -4728,7 +4728,11 @@ function isMobile() {
 
 function initMobile() {
   const mob = isMobile();
-  document.getElementById('mobileApp').style.display = mob ? 'flex' : 'none';
+  // 이 함수의 최초 호출(스크립트 하단 INIT 부분)이 #mobileApp이 실제로 파싱되기도
+  // 전에 실행되고 있어서, 그동안 이 한 줄에서 예외가 나 스크립트가 거기서 멈췄다 —
+  // 그 뒤에 있던 서비스워커 등록 코드까지 매번 조용히 실행이 안 되고 있었다.
+  const el = document.getElementById('mobileApp');
+  if (el) el.style.display = mob ? 'flex' : 'none';
   document.body.classList.toggle('m-lock', mob);
 }
 window.addEventListener('resize', initMobile);
