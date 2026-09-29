@@ -3292,8 +3292,8 @@ function _rpUpdateFilterBtnLabels() {
   const sEl = document.getElementById('rpStatusFilterLabel');
   if (sEl) sEl.textContent = '진행상태: ' + (_rpStatusFilter ? _rpStatusLabel(_rpStatusFilter) : '전체');
 }
-function setRpPackerFilter(v) { _rpPackerFilter = v; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
-function setRpStatusFilter(v) { _rpStatusFilter = v; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
+function setRpPackerFilter(v) { _rpPackerFilter = v; _rpPage = 1; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
+function setRpStatusFilter(v) { _rpStatusFilter = v; _rpPage = 1; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
 
 function _rpFilteredRows() {
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
