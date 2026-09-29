@@ -3413,19 +3413,70 @@ function closeRpEditModal() {
   _rpEditKey = null; _rpEditMode = null;
 }
 
-function _rpSaveEditModal() {
+// 보고서에서 CBM·특이사항을 수기 입력하면, 로컬(localStorage)뿐 아니라 실제 구글시트
+// (가로/세로/높이/중량 칼럼, 특이사항은 비고 칼럼 — 사진은 시트에 못 넣으니 글자만)에도
+// 그대로 반영한다. 검사완료로 이관된 품목은 진행중 시트가 아니라 검사완료 이력
+// 시트에 있으므로, GAS 쪽(_qcFindRow)이 둘 다 뒤져서 찾아준다.
+function _gasQcSyncParams(item) {
+  return { round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: String(item.수량 != null ? item.수량 : '') };
+}
+async function _rpSyncCbmToSheet(item, vals) {
+  if (!item || !item.공장) return false;
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) return false;
+  const params = Object.assign({ action: 'updateSpec' }, _gasQcSyncParams(item));
+  let any = false;
+  if (vals.w != null) { params.w = vals.w; any = true; }
+  if (vals.d != null) { params.d = vals.d; any = true; }
+  if (vals.h != null) { params.h = vals.h; any = true; }
+  if (vals.weight != null) { params.g = vals.weight; any = true; }
+  if (!any) return true; // 다 비워서 지운 경우 — 시트는 그대로 두면 되니 성공 취급
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
+    const json = await res.json();
+    return json.status === 'success';
+  } catch (e) { return false; }
+}
+async function _rpSyncNoteToSheet(item, noteText) {
+  if (!item || !item.공장) return false;
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) return false;
+  const params = Object.assign({ action: 'updateNote', note: noteText || '' }, _gasQcSyncParams(item));
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
+    const json = await res.json();
+    return json.status === 'success';
+  } catch (e) { return false; }
+}
+
+async function _rpSaveEditModal() {
   const key = _rpEditKey, mode = _rpEditMode;
   if (!key || !_reportSelected[key]) { closeRpEditModal(); return; }
+  const sel = _reportSelected[key];
+  const btn = document.getElementById('rpEditSaveBtn');
+  const statusEl = document.getElementById('rpEditSyncStatus');
+  if (btn) { btn.disabled = true; btn.textContent = '저장 중...'; }
+  if (statusEl) { statusEl.textContent = ''; }
+
+  let ok = true;
   if (mode === 'cbm') {
     const num = (id) => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; };
-    const w = num('rpCbmW'), d = num('rpCbmD'), h = num('rpCbmH'), weight = num('rpCbmWeight');
-    _reportSelected[key].cbm = (w == null && d == null && h == null && weight == null) ? null : { w, d, h, weight };
+    const vals = { w: num('rpCbmW'), d: num('rpCbmD'), h: num('rpCbmH'), weight: num('rpCbmWeight') };
+    sel.cbm = (vals.w == null && vals.d == null && vals.h == null && vals.weight == null) ? null : vals;
+    ok = await _rpSyncCbmToSheet(sel.item, vals);
   } else if (mode === 'note') {
-    _reportSelected[key].note = document.getElementById('rpNoteText').value.trim();
+    sel.note = document.getElementById('rpNoteText').value.trim();
+    ok = await _rpSyncNoteToSheet(sel.item, sel.note);
   }
   _rpSaveToStorage();
-  closeRpEditModal();
+
+  if (statusEl) {
+    statusEl.textContent = ok ? '✓ 시트에도 반영됐습니다' : '⚠ 시트 반영 실패 — 앱엔 저장됨, 나중에 다시 저장해보세요';
+    statusEl.style.color = ok ? '#16A34A' : '#F59E0B';
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '저장'; }
   renderReportList();
+  setTimeout(closeRpEditModal, ok ? 450 : 1600);
 }
 
 // 사진은 선택 즉시(저장 버튼과 무관하게) 반영한다 — 제품/포장완료 사진칸과 동일한 동작.
