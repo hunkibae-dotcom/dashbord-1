@@ -4431,6 +4431,7 @@
             updateConnectionStatus(false);
             autoAdjustDateFilters();
             applyFilters();
+            { const _pkgOv = document.getElementById('pkgInitLoadingOverlay'); if (_pkgOv) _pkgOv.style.display = 'none'; }
         }
 
         // 카드에서 바로 조회할 때 "카테고리(전체/입고현황/실재고/적재/출고)를 먼저
