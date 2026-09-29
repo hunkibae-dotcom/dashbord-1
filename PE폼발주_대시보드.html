@@ -422,7 +422,12 @@
   <div class="modal-box">
     <div class="modal-hdr">
       <div class="modal-title" id="dashDetailTitle">상세</div>
-      <button class="modal-close" onclick="closeDashDetail()"><i class="fa-solid fa-xmark"></i></button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="sort-btn" id="dashKpiSortBtn" onclick="toggleDashKpiSort()" title="정렬 순서 전환" style="display:none;">
+          <i class="fa-solid fa-arrow-down-wide-short" id="dashKpiSortIcon"></i>
+        </button>
+        <button class="modal-close" onclick="closeDashDetail()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
     </div>
     <div class="chip-row" id="dashDetailTypeChips" style="display:none;">
       <span class="chip on" data-v="">전체</span>
