@@ -3899,6 +3899,9 @@ function _addReportSlide(pptx, d, sel, repRound) {
 }
 
 function generateReportPptx() {
+  // _reportChecked는 Set이라 항목이 실제로 체크된(추가된) 순서를 그대로 유지한다 —
+  // 그래서 여기서 순서를 다시 매기지 않고 그대로 순회해도 화면의 순서 배지(rp-order-badge)
+  // 숫자와 슬라이드 순서가 항상 일치한다.
   const keys = Array.from(_reportChecked).filter(k => _reportSelected[k]);
   if (!keys.length) { alert('보고서에 넣을 품목을 먼저 선택해주세요.'); return; }
   const missing = keys.filter(k => !_reportSelected[k].productPhoto || !_reportSelected[k].packagePhoto);
