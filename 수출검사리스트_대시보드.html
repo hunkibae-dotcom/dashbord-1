@@ -4573,6 +4573,8 @@ function openMItemDetail(key) {
   document.getElementById('miTitle').textContent = d.건명 || '—';
   document.getElementById('miSub').innerHTML = `<b style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</b> · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
   _refreshMiStatusButtons(d.검사);
+  _refreshMiReinspectReason(d.검사);
+  document.getElementById('miReasonInput').value = d.비고 || '';
   document.getElementById('miDateInput').value = _miNormDate(d.검사일);
   document.getElementById('miW').value = d.가로 || '';
   document.getElementById('miD').value = d.세로 || '';
