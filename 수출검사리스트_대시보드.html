@@ -954,7 +954,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </div>
       <div style="position:relative;flex:1;min-width:180px;">
         <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--label);font-size:12px;"></i>
-        <input id="rpSearch" type="text" oninput="renderReportListDebounced()" placeholder="건명·단품코드·단품명칭 검색"
+        <input id="rpSearch" type="text" oninput="_rpPage=1;renderReportListDebounced()" placeholder="건명·단품코드·단품명칭 검색"
           style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
       </div>
       <button type="button" onclick="cycleRpSort()" id="rpSortBtn" class="rp-df-btn" style="padding:10px 14px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);flex-shrink:0;" title="누르면 내림차순 → 오름차순 → 정렬 안 함 순으로 바뀝니다"><i class="fa-solid fa-sort"></i></button>
