@@ -2991,7 +2991,7 @@ function _rpSummarizeName(name) {
 // 안 걸린 상태 그대로 유지된다.
 let _rpDateField = 'insp'; // 'due' | 'pack' | 'insp' — 마지막으로 고른 기준 필드(기본: 검사완료일)
 let _rpDateCutoff = null; // yyyy-MM-dd 또는 null(필터 없음 = 전체 보기)
-let _rpSortDir = null; // null | 'asc' | 'desc'
+let _rpSortDir = 'desc'; // null | 'asc' | 'desc' — 기본: 검사완료일 최신순(내림차순)
 const RP_DATE_FIELD_MAP = { due: '납기일', pack: '포장일', insp: '검사일' };
 const RP_DATE_FIELD_BTN = { due: 'rpDfDue', pack: 'rpDfPack', insp: 'rpDfInsp' };
 const RP_DATE_FIELD_LABEL = { due: '납기일', pack: '포장일', insp: '검사완료일' };
