@@ -3530,6 +3530,24 @@ function clearAllReportChecked() {
 // 체크박스 하나 누를 때마다 표/카드 전체를 다시 그리면(사진칸의 base64 이미지까지
 // 포함해서) 이미 등록해둔 사진들이 매번 새로 디코딩되며 버벅였다 — 이 항목의 카드/행
 // 하나에만 rp-checked 클래스를 토글해서, 그 무거운 다시 그리기 자체를 건너뛴다.
+// PPTX는 체크한 순서 그대로 생성된다(_reportChecked는 Set이라 삽입 순서를 그대로
+// 유지하고, generateReportPptx도 그 순서를 그대로 씀) — 그 순서를 화면에서도 바로
+// 확인할 수 있게 체크박스 옆에 작은 숫자 배지로 보여준다.
+function _rpCheckedOrderMap() {
+  const m = new Map();
+  Array.from(_reportChecked).forEach((k, i) => m.set(k, i + 1));
+  return m;
+}
+// 체크 하나를 바꾸면 그 뒤로 이어지던 다른 품목들의 순서 번호도 한 칸씩 밀리므로,
+// 사진처럼 무거운 건 다시 안 그리고 이 작은 숫자 배지들만 골라 다시 매긴다.
+function _rpRenumberCheckedBadges() {
+  const order = _rpCheckedOrderMap();
+  document.querySelectorAll('.rp-order-badge').forEach(el => {
+    const n = order.get(el.dataset.mikey);
+    el.textContent = n || '';
+    el.style.display = n ? '' : 'none';
+  });
+}
 function toggleReportItem(key, checkboxEl) {
   if (_reportChecked.has(key)) {
     _reportChecked.delete(key);
@@ -3544,6 +3562,7 @@ function toggleReportItem(key, checkboxEl) {
   if (rowEl) {
     rowEl.classList.toggle('rp-checked', checked);
     document.getElementById('rpSelCount').textContent = _reportChecked.size;
+    _rpRenumberCheckedBadges();
   } else {
     // 체크박스 엘리먼트를 못 받은 호출(과거 호환)은 안전하게 전체를 다시 그린다.
     renderReportList();
