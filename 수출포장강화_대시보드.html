@@ -6508,6 +6508,50 @@
         let _scStatusType = 'all'; // 'all' | 'working' | 'shipped'
         const SC_SHIPPED_STATUSES = new Set(['출고', '피킹', '출고완료']);
 
+        // ── INFORM 카드 슬라이드1: 미니 달력 ──────────────────────
+        // 모달(scheduleCalendarModal)과 동일한 이벤트 수집 로직(_scCollectEvents)을
+        // 재사용하되, INFORM 카드 슬롯 크기에 맞는 축소된 그리드로 따로 그린다.
+        // 날짜를 눌러도(또는 카드 자체를 눌러도) 상세 선택은 모달에서 하도록 그대로 연다.
+        let _informCalYear, _informCalMonth;
+        function informCalMoveMonth(delta) {
+            if (_informCalYear === undefined) { const now = new Date(); _informCalYear = now.getFullYear(); _informCalMonth = now.getMonth(); }
+            _informCalMonth += delta;
+            if (_informCalMonth < 0) { _informCalMonth = 11; _informCalYear--; }
+            if (_informCalMonth > 11) { _informCalMonth = 0; _informCalYear++; }
+            renderInformCalendar();
+        }
+        function renderInformCalendar() {
+            if (_informCalYear === undefined) { const now = new Date(); _informCalYear = now.getFullYear(); _informCalMonth = now.getMonth(); }
+            const lbl = document.getElementById('informCalMonthLabel');
+            if (lbl) lbl.innerHTML = '<i class="fa-solid fa-calendar-days text-[11px]" style="color:#f97316;display:flex;align-items:center;"></i> ' + _informCalYear + '. ' + String(_informCalMonth + 1).padStart(2, '0');
+            const grid = document.getElementById('informCalGrid');
+            if (!grid) return;
+            const events = _scCollectEvents();
+            const firstDow = new Date(_informCalYear, _informCalMonth, 1).getDay();
+            const daysInMonth = new Date(_informCalYear, _informCalMonth + 1, 0).getDate();
+            const todayStr = normalizeDate(new Date());
+            const dowLabels = ['일', '월', '화', '수', '목', '금', '토'];
+            let html = dowLabels.map((d, i) =>
+                `<div style="text-align:center;font-size:8px;font-weight:700;color:${i === 0 ? '#ef4444' : i === 6 ? '#0ea5e9' : '#94a3b8'};padding:1px 0;">${d}</div>`
+            ).join('');
+            for (let i = 0; i < firstDow; i++) html += '<div></div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = _informCalYear + '-' + String(_informCalMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+                const ev = events.byDate[dateStr];
+                const isToday = dateStr === todayStr;
+                let dots = '';
+                if (ev) {
+                    if (ev.due.size) dots += '<span style="width:4px;height:4px;border-radius:50%;background:#ef4444;display:inline-block;margin:0 1px;"></span>';
+                    if (ev.load.size) dots += '<span style="width:4px;height:4px;border-radius:50%;background:#0ea5e9;display:inline-block;margin:0 1px;"></span>';
+                }
+                html += `<div style="text-align:center;padding:1px 0;border-radius:5px;background:${isToday ? 'rgba(14,165,233,0.12)' : 'transparent'};">
+                    <div style="font-size:9.5px;font-weight:${isToday ? '800' : '500'};color:${isToday ? '#0ea5e9' : '#334155'};line-height:1.5;">${d}</div>
+                    <div style="height:5px;display:flex;align-items:center;justify-content:center;">${dots}</div>
+                </div>`;
+            }
+            grid.innerHTML = html;
+        }
+
         function openScheduleCalendar() {
             const now = new Date();
             _scYear = now.getFullYear();
