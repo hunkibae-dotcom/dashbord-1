@@ -781,6 +781,7 @@ let _dashOrderPeriod = 'month';
 function renderDashboard() {
   const ongoingOrders = orderRows.filter(r => r.stat === '발주' || r.stat === '부분입고');
   document.getElementById('dkOngoing').innerHTML = ongoingOrders.length + '<small>건</small>';
+  document.getElementById('dkOngoingMat').innerHTML = ongoingOrders.length + '<small>건</small>';
   const thisMonth = new Date().toISOString().slice(0, 7);
   document.getElementById('dkMonth').innerHTML = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '<small>건</small>';
   const leadNums = orderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n) && n > 0);
