@@ -1323,8 +1323,19 @@
         const list = allData || [];
         const byDate = {};
         const roundInfo = {};
-        list.forEach(item => {
+        // allData엔 "수출 현황"+"충주공장 재고"+"출고 완료"가 순서대로 이어붙어 있어서,
+        // 같은 품목(code+round+색상)이 여러 시트에 중복으로 남아있는 경우가 있다. 그러면
+        // 상차일이 갱신되기 전의 옛 값을 물고 있는 시트 쪽 행도 그대로 섞여 들어가서, 달력에
+        // 상차일을 바꾼 뒤에도 지워진 옛 날짜 칸이 안 없어지고 계속 남아있는 것처럼 보였다.
+        // code+round+색상 단위로 마지막에 이어붙는(=더 나중 시트, 보통 더 최신 값) 행 하나만
+        // 남기고 중복을 제거한다.
+        const dedup = {};
+        list.forEach((item, idx) => {
             if (!item.round) return;
+            const key = item.code ? ((item.code||'').toUpperCase() + '|' + item.round + '|' + (item.color||'')) : ('__noCode_' + idx);
+            dedup[key] = item;
+        });
+        Object.values(dedup).forEach(item => {
             if (_scStatusType !== 'all') {
                 if (_scStatusType === 'shipped' && !item.isDone) return;
                 if (_scStatusType === 'working' && item.isDone) return;
