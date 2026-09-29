@@ -3671,6 +3671,7 @@ function toggleReportItem(key, checkboxEl) {
     _reportChecked.add(key);
   }
   _rpSaveToStorage();
+  _rpSyncMetaToServer(key);
   const checked = _reportChecked.has(key);
   const rowEl = checkboxEl ? checkboxEl.closest('.rp-row, .rp-card') : null;
   if (rowEl) {
