@@ -3012,6 +3012,17 @@ const RP_DATE_FIELD_MAP = { due: '납기일', pack: '포장일', insp: '검사�
 const RP_DATE_FIELD_BTN = { due: 'rpDfDue', pack: 'rpDfPack', insp: 'rpDfInsp' };
 const RP_DATE_FIELD_LABEL = { due: '납기일', pack: '포장일', insp: '검사완료일' };
 
+// 버튼 자체는 화면 밖 숨김 날짜 인풋(rpDateInput*)을 열기만 한다 — showPicker()가
+// 없는(구버전) 웹뷰에서는 .click()으로 대체한다.
+function _rpOpenDatePicker(field) {
+  const id = field === 'due' ? 'rpDateInputDue' : field === 'pack' ? 'rpDateInputPack' : 'rpDateInputInsp';
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (typeof el.showPicker === 'function') {
+    try { el.showPicker(); return; } catch (e) { /* 일부 웹뷰는 지원한다 해놓고 예외를 던지기도 해서 클릭으로 대체 */ }
+  }
+  el.click();
+}
 function setRpDateCutoff(field, value) {
   if (!value) return; // 날짜 선택창을 취소하면 빈 문자열 — 기존 필터 상태를 그대로 둔다
   _rpDateField = field;
