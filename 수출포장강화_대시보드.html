@@ -5845,6 +5845,162 @@
             }
         }
 
+        // ── 행 상세수정 모달(진행상태/포장완료일/적재번호/CBM) ───────────
+        // 앱(shell.html)의 openItemEdit/saveItemEdit과 같은 방식: code+round만으로는
+        // 같은 건명에 색상만 다른 행이 여러 개일 때 서로 헷갈릴 수 있어 color까지 함께 보낸다.
+        let _pkgCode = '', _pkgRound = '', _pkgColor = '';
+        let _pkgOrigStatus = '', _pkgCurStatus = '';
+        let _pkgOrigPallet = '';
+        let _pkgOrigRegDate = '';
+        let _pkgOrigW = '', _pkgOrigD = '', _pkgOrigH = '', _pkgOrigG = '';
+
+        function _pkgGasUrl() {
+            return localStorage.getItem('sheet_pub_url') ||
+                'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
+        }
+
+        function openPkgItemDetail(key) {
+            const item = window._pkgRowMap && window._pkgRowMap[key];
+            if (!item) return;
+            _pkgCode = item.code || ''; _pkgRound = item.round || ''; _pkgColor = item.color || '';
+            document.getElementById('pkgCodeLabel').textContent = _pkgCode || '—';
+            document.getElementById('pkgRoundLabel').textContent = _pkgRound || '—';
+            document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
+            document.getElementById('pkgQtyBadge').textContent = (item.qty || 0).toLocaleString() + ' BOX';
+            document.getElementById('pkgDueBadge').textContent = '납기 ' + shortDate(item.dueDate);
+            document.getElementById('pkgDateBadge').textContent = '상차 ' + shortDate(item.date);
+
+            _pkgOrigStatus = item.status || '';
+            _pkgCurStatus = _pkgOrigStatus;
+            _renderPkgStatusOpts();
+
+            const regDateNorm = normalizeDate(item.regDate);
+            _pkgOrigRegDate = regDateNorm !== '-' ? regDateNorm : '';
+            document.getElementById('pkgRegDate').value = _pkgOrigRegDate;
+
+            _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
+            document.getElementById('pkgPallet').value = _pkgOrigPallet;
+
+            _pkgOrigW = (item.specW || '').toString().replace(/[^0-9.]/g, '');
+            _pkgOrigD = (item.specD || '').toString().replace(/[^0-9.]/g, '');
+            _pkgOrigH = (item.specH || '').toString().replace(/[^0-9.]/g, '');
+            _pkgOrigG = (item.specG || '').toString().replace(/[^0-9.]/g, '');
+            document.getElementById('pkgW').value = _pkgOrigW;
+            document.getElementById('pkgD').value = _pkgOrigD;
+            document.getElementById('pkgH').value = _pkgOrigH;
+            document.getElementById('pkgG').value = _pkgOrigG;
+
+            document.getElementById('pkgDetailFeedback').textContent = '';
+            document.getElementById('pkgItemDetailModal').style.display = 'flex';
+        }
+
+        function closePkgItemDetail() {
+            document.getElementById('pkgItemDetailModal').style.display = 'none';
+            _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
+        }
+
+        function _renderPkgStatusOpts() {
+            const wrap = document.getElementById('pkgStatusOpts');
+            wrap.innerHTML = _STATUS_OPTS.map(opt => {
+                const isCur = opt.v === _pkgCurStatus;
+                return `<button onclick="selectPkgStatus('${opt.v}')"
+                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1px solid ${isCur?opt.c:'#334155'};background:${isCur?opt.c+'22':'transparent'};color:${opt.c};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;"
+                    onmouseenter="this.style.background='${opt.c}22';this.style.borderColor='${opt.c}'"
+                    onmouseleave="this.style.background='${isCur?opt.c+'22':'transparent'}';this.style.borderColor='${isCur?opt.c:'#334155'}'">
+                    <i class="fa-solid fa-circle" style="font-size:6px;opacity:.6;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
+                </button>`;
+            }).join('');
+        }
+
+        function selectPkgStatus(v) {
+            _pkgCurStatus = v;
+            _renderPkgStatusOpts();
+        }
+
+        async function savePkgItemDetail() {
+            if (!_pkgCode) return;
+            const btn = document.getElementById('pkgDetailSaveBtn');
+            const fb = document.getElementById('pkgDetailFeedback');
+            fb.textContent = ''; fb.style.color = '';
+
+            let newRegDate = (document.getElementById('pkgRegDate').value || '').trim();
+            if (_pkgCurStatus === '포장완료' && !newRegDate) newRegDate = normalizeDate(new Date());
+            const newPalletRaw = (document.getElementById('pkgPallet').value || '').trim();
+            const newW = (document.getElementById('pkgW').value || '').trim();
+            const newD = (document.getElementById('pkgD').value || '').trim();
+            const newH = (document.getElementById('pkgH').value || '').trim();
+            const newG = (document.getElementById('pkgG').value || '').trim();
+
+            const tasks = [];
+            const changed = {};
+            const gasUrl = _pkgGasUrl();
+
+            if (_pkgCurStatus && _pkgCurStatus !== _pkgOrigStatus) {
+                tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateStatus', code:_pkgCode, round:_pkgRound, color:_pkgColor, status:_pkgCurStatus }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                changed.status = _pkgCurStatus;
+            }
+            if (newPalletRaw !== _pkgOrigPallet) {
+                const sendPallet = /^\d+$/.test(newPalletRaw) ? '적재 ' + newPalletRaw : newPalletRaw;
+                tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updatePallet', code:_pkgCode, round:_pkgRound, color:_pkgColor, pallet:sendPallet }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                changed.pallet = sendPallet;
+            }
+            if (newRegDate !== _pkgOrigRegDate) {
+                tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateRegDate', code:_pkgCode, round:_pkgRound, color:_pkgColor, regDate:newRegDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                changed.regDate = newRegDate;
+            }
+            const specChanged = newW !== _pkgOrigW || newD !== _pkgOrigD || newH !== _pkgOrigH || newG !== _pkgOrigG;
+            if (specChanged) {
+                tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateSpec', code:_pkgCode, round:_pkgRound, color:_pkgColor, w:newW, d:newD, h:newH, g:newG }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                changed.spec = true;
+            }
+            if (!tasks.length) {
+                fb.textContent = '변경사항이 없습니다.'; fb.style.color = '#94A3B8';
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+            try {
+                await Promise.all(tasks);
+                const _pkgMatch = it => (it.code||'').toUpperCase() === _pkgCode.toUpperCase() && (it.round||'') === _pkgRound && (it.color||'') === _pkgColor;
+                if (changed.status) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.status = changed.status; }); });
+                }
+                if (changed.regDate !== undefined) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.regDate = changed.regDate; }); });
+                }
+                if (changed.spec) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => {
+                        if (_pkgMatch(it)) { if (newW) it.specW = newW; if (newD) it.specD = newD; if (newH) it.specH = newH; if (newG) it.specG = newG; }
+                    }); });
+                }
+                if (changed.pallet !== undefined && state.rawStockRows && state.rawStockRows.length > 1) {
+                    const hdr = state.rawStockRows[0].map(h => (h||'').toString().trim());
+                    const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                    const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                    const iCol = hdr.findIndex(h => h.replace(/\s/g,'').includes('색상') || h.toLowerCase().includes('color'));
+                    for (let i = 1; i < state.rawStockRows.length; i++) {
+                        const r = state.rawStockRows[i]; if (!r) continue;
+                        const rColor = iCol >= 0 ? (r[iCol]||'').toString().trim() : '';
+                        if ((r[iC>=0?iC:1]||'').toString().trim().toUpperCase() === _pkgCode.toUpperCase() &&
+                            (r[iR>=0?iR:4]||'').toString().trim() === _pkgRound &&
+                            (iCol < 0 || rColor === _pkgColor)) { r[10] = changed.pallet; break; }
+                    }
+                }
+                fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#34D399';
+                setTimeout(() => {
+                    closePkgItemDetail();
+                    const exactCode = (document.getElementById('productCodeFilter')?.value || '').trim();
+                    if (exactCode) renderProductDetailTable(exactCode);
+                    else renderTable();
+                }, 500);
+            } catch (e) {
+                fb.textContent = '저장 실패: ' + (e.message || '오류'); fb.style.color = '#F87171';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장';
+            }
+        }
+
         function exportDetailPanelCSV() {
             if (!_currentDetailProductCode) return;
             const matchedList = state.data.filter(item => item.code.toLowerCase() === _currentDetailProductCode.toLowerCase());
