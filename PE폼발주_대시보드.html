@@ -245,6 +245,13 @@
 </style>
 </head>
 <body>
+<!-- 데이터가 도착하기 전엔 홈(대시보드) 화면에 아무 표시가 없어서, 다 불러온 줄 알고
+     탭을 눌렀다가 헷갈리는 경우가 있었다 — 첫 로딩에서만 뜨고, loadAll()이 한 번
+     끝나면 다시는 안 뜬다(새로고침 버튼 등으로 재호출돼도 그대로 숨겨져 있음). -->
+<div id="peInitLoadingOverlay" style="position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:var(--amber);"></i>
+  <div style="font-size:13px;color:var(--text-sub);font-weight:700;">불러오는 중...</div>
+</div>
 <div id="app">
 
   <header>
