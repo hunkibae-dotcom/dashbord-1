@@ -3707,6 +3707,7 @@ function toggleReportHardware(key, checked) {
   if (!_reportSelected[key]) return;
   _reportSelected[key].hasHardware = checked;
   _rpSaveToStorage();
+  _rpSyncMetaToServer(key);
   if (!wasSelected) renderReportList();
 }
 
