@@ -2251,7 +2251,10 @@ function renderTable(data) {
 // 바뀐다. 선택은 필터/정렬이 바뀌어도 유지되도록 화면 순서가 아니라 _miKey로 기억한다.
 let _tblMultiSelectMode = false;
 let _tblSelectedKeys = new Set();
-const TBL_BULK_STATUS_OPTIONS = ['미검사', '검사', '양지', '재투입', '미투입', '취소', '포장대기'];
+// 단일 품목 상세창(_refreshMiStatusButtons)이 사람이 직접 고르게 두는 상태값과 똑같이
+// 맞춘다 — 미투입/포장대기/취소는 자동 전환(공정진행정보 분류 등)이나 별도 경로로만
+// 바뀌는 값이라 여기서도 임의로 노출하지 않는다.
+const TBL_BULK_STATUS_OPTIONS = ['미검사', '검사', '재투입', '양지'];
 let _tblBulkStatus = null; // null = 변경 안 함
 
 function toggleTblMultiSelect() {
