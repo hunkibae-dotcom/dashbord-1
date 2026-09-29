@@ -5946,7 +5946,8 @@ async function _spuRunImport() {
       const res = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({ action: action, rows: rows, name: name }),
-        signal: AbortSignal.timeout(60000)
+        // 신규/변경 건이 많으면 분류 자체(병합·매칭)에 시간이 걸릴 수 있어 넉넉히 잡는다.
+        signal: AbortSignal.timeout(240000)
       });
       const json = await res.json();
       if (json.status === 'success') {
