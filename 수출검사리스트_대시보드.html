@@ -947,6 +947,19 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:11px;padding:10px 14px 10px 34px;font-size:13px;outline:none;width:100%;box-sizing:border-box;">
     </div>
 
+    <div style="position:relative;flex-shrink:0;">
+      <button type="button" onclick="toggleRpFilterDD('packer',event)" id="rpPackerFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
+        <span id="rpPackerFilterLabel">포장처: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+      </button>
+      <div id="rpPackerFilterDD" class="rp-filter-dd"></div>
+    </div>
+    <div style="position:relative;flex-shrink:0;">
+      <button type="button" onclick="toggleRpFilterDD('status',event)" id="rpStatusFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
+        <span id="rpStatusFilterLabel">진행상태: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+      </button>
+      <div id="rpStatusFilterDD" class="rp-filter-dd"></div>
+    </div>
+
     <button type="button" onclick="cycleRpSort()" id="rpSortBtn" class="rp-df-btn" style="padding:10px 14px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);flex-shrink:0;" title="누르면 내림차순 → 오름차순 → 정렬 안 함 순으로 바뀝니다"><i class="fa-solid fa-sort"></i></button>
 
     <div style="flex:1;"></div>
