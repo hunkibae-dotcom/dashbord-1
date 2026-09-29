@@ -4569,6 +4569,9 @@ function setMTab(tab) {
   // hide top button on tab switch
   document.getElementById('mToTopBtn')?.classList.remove('show');
   if (tab === 'chart') setTimeout(renderMobileCharts, 60);
+  // 목록 화면은 renderMobileList() 자체가 '보이지 않을 때는 건너뛰기'로 바뀌었으므로,
+  // 실제로 들어가는 이 시점에 한 번은 확실히 최신 내용으로 그려준다.
+  if (tab === 'list') renderMobileList();
 }
 
 function setMGranularity(g) {
