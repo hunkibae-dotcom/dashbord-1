@@ -2917,6 +2917,26 @@ function _rpLoadFromStorage() {
     };
   }
   _reportChecked = new Set(checkedArr);
+
+  // 이 기기에 분리된 사진 저장소가 아직 없던 경우(막 이 버전으로 넘어온 기기)라면,
+  // 위에서 옛 형식의 인라인 사진을 이어받은 걸 지금 바로 새 저장소에 적어둔다 —
+  // 그러지 않고 다음 저장을 기다리면, 사진과 무관한 조작(철물 체크 등)이 먼저 와서
+  // 가벼운 메타데이터만 다시 쓰는 바람에 옛 인라인 사진이 통째로 사라져버린다.
+  if (!photosKeyExists) {
+    const migrated = {};
+    let hasAny = false;
+    for (const k in _reportSelected) {
+      const s = _reportSelected[k];
+      if (s.productPhoto || s.packagePhoto || s.notePhoto) {
+        migrated[k] = { productPhoto: s.productPhoto, packagePhoto: s.packagePhoto, notePhoto: s.notePhoto };
+        hasAny = true;
+      }
+    }
+    if (hasAny) {
+      try { localStorage.setItem(RP_PHOTOS_KEY, JSON.stringify(migrated)); }
+      catch (e) { console.warn('보고서 사진 이전 저장 실패:', e); }
+    }
+  }
 }
 // 이 JSON.parse도 누적된 사진 데이터가 크면 수백ms 이상 걸릴 수 있어서, 첫 화면이
 // 그려지는 걸 막지 않도록 한 박자 미뤄서 실행한다(보고서 탭은 어차피 나중에 연다).
