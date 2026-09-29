@@ -3797,7 +3797,11 @@ function generateReportPptx() {
       // 파일명/제목의 날짜는 조회 필터(포장일)가 아니라 항상 "지금 다운로드하는 날짜" —
       // 예전엔 필터 날짜나 toISOString()(UTC 기준이라 자정 근처엔 하루 밀림)을 썼었다.
       const dateLabel = _todayLabel();
-      const fname = `수출건 검사 세부내역${dateLabel}(${_rpFactoryLabel(factory)}-${keys.length}품목).pptx`;
+      // 공장 선택창이 없어져서 이제 한 번에 충주1/충주2 품목을 섞어 고를 수 있다 —
+      // 선택된 품목들이 실제로 어느 공장인지 모아서 파일명에 반영한다.
+      const factoriesUsed = new Set(keys.map(k => _reportSelected[k].item.공장));
+      const factoryLabel = factoriesUsed.size === 1 ? _rpFactoryLabel([...factoriesUsed][0]) : [...factoriesUsed].map(_rpFactoryLabel).join('+');
+      const fname = `수출건 검사 세부내역${dateLabel}(${factoryLabel}-${keys.length}품목).pptx`;
       pptx.writeFile({ fileName: fname }).then(_rpResetGenBtn).catch(function(e) { alert('생성 실패: ' + e.message); _rpResetGenBtn(); });
     } catch (e) {
       alert('생성 실패: ' + e.message);
