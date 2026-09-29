@@ -3381,7 +3381,7 @@ function _rpCbmCell(safeKey, d, sel) {
 
 function _rpNoteCell(safeKey, sel) {
   const note = sel && sel.note;
-  const hasPhoto = !!(sel && sel.notePhoto);
+  const hasPhoto = !!_rpEffectivePhoto(sel, 'note');
   const label = note ? (note.length > 14 ? note.slice(0, 14) + '…' : note) : '입력';
   return `<div onclick="openRpNoteEditor('${safeKey}')" style="cursor:pointer;font-size:11px;font-weight:700;color:${note ? 'var(--text-sub)' : 'var(--label)'};background:var(--icon-bg);border:1px dashed var(--border);border-radius:8px;padding:8px 6px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(note || '').replace(/"/g, '&quot;')}">${label}${hasPhoto ? ' <i class="fa-solid fa-image" style="font-size:9px;color:#0EA5E9;"></i>' : ''}</div>`;
 }
