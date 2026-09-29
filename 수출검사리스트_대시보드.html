@@ -3123,14 +3123,19 @@ function _renderReportListMobile(rows) {
     const checked = _reportChecked.has(key);
     const hasHardware = sel ? sel.hasHardware === true : false;
     const safeKey = key.replace(/'/g, "\\'");
+    const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     return `
     <div style="background:var(--panel);border:1.5px solid ${checked ? '#8B7CF0' : 'var(--border)'};border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:${checked ? '0 4px 16px rgba(109,92,222,.18)' : '0 1px 6px rgba(0,0,0,.04)'};transition:border-color .15s;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+        ${d.포장처 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--icon-bg);border-radius:6px;padding:2px 8px;">${d.포장처}</span>` : ''}
+        <span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span>
+      </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
         <input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;accent-color:#6D5CE8;cursor:pointer;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
           <div style="font-size:11.5px;color:var(--text-sub);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
-            <span style="font-family:'Inter',monospace;">${d.단품코드 || '—'}</span><span>·</span><span>${d.색상 || '—'}</span><span>·</span><span style="font-weight:700;color:#6D5CE8;">${d.수량 || 0}개</span>
+            <span style="font-family:'Inter',monospace;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span><span>·</span><span>${d.색상 || '—'}</span><span>·</span><span style="font-weight:700;color:#6D5CE8;">${d.수량 || 0}개</span>
           </div>
           ${d.단품명칭 ? `<div style="font-size:11px;color:var(--label);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_rpSummarizeName(d.단품명칭)}</div>` : ''}
         </div>
