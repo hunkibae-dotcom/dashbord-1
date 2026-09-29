@@ -1813,6 +1813,12 @@ const kpiDetailRenderDebounced = debounce(() => _kpiDetailRender(), 250);
 function applyFilters() {
   const search = document.getElementById('fSearch').value.toLowerCase();
 
+  // 검색/필터/정렬/공장탭 중 뭐라도 바뀌면 표 페이지를 1페이지로 되돌린다 — 호출하는
+  // 곳이 워낙 많아서(정렬 클릭, 탭 전환, 카드 클릭 필터 등) 매번 거기서 리셋하는 대신,
+  // 여기 한 곳에서 "직전 호출 때와 조건이 달라졌는지"만 보고 판단한다.
+  const _tblSig = JSON.stringify([search, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, factoryTab, tableSortKey, tableSortDir]);
+  if (_tblSig !== _tblLastFilterSig) { _tblPage = 1; _tblLastFilterSig = _tblSig; }
+
   function matchRow(d) {
     if (search && !(d.건명||'').toLowerCase().includes(search) &&
         !(d.단품코드||'').toLowerCase().includes(search) &&
