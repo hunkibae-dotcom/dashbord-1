@@ -4588,6 +4588,7 @@ function applyMiOverrides(list) {
 }
 
 let _miCurrent = null;
+let _miOriginalStatus = null; // 상세창을 연 시점의 검사상태 — "저장" 시점에 검사완료로 새로 바뀐 건지 비교용
 function _refreshMiStatusButtons(status) {
   ['미검사', '검사', '재투입', '양지'].forEach(v => {
     const btn = document.getElementById('miStBtn_' + v);
