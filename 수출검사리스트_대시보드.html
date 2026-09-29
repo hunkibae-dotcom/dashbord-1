@@ -5166,6 +5166,7 @@ function applyMiOverrides(list) {
 
 let _miCurrent = null;
 let _miOriginalStatus = null; // 상세창을 연 시점의 검사상태 — "저장" 시점에 검사완료로 새로 바뀐 건지 비교용
+let _miPendingSync = {}; // 저장 버튼을 누르기 전까지 모아두는 변경사항(field → value)
 function _refreshMiStatusButtons(status) {
   ['미검사', '검사', '재투입', '양지'].forEach(v => {
     const btn = document.getElementById('miStBtn_' + v);
