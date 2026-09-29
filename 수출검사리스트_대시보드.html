@@ -2989,7 +2989,7 @@ function _rpSummarizeName(name) {
 // 누르면 바로 날짜 선택창이 뜨고, 고른 날짜는 "그 날짜까지(종료일 기준)"로 걸러서
 // 하루 단위로 매번 다시 고를 필요가 없게 했다. 날짜를 안 고르면(취소) 필터가 전혀
 // 안 걸린 상태 그대로 유지된다.
-let _rpDateField = 'pack'; // 'due' | 'pack' | 'insp' — 마지막으로 고른 기준 필드
+let _rpDateField = 'insp'; // 'due' | 'pack' | 'insp' — 마지막으로 고른 기준 필드(기본: 검사완료일)
 let _rpDateCutoff = null; // yyyy-MM-dd 또는 null(필터 없음 = 전체 보기)
 let _rpSortDir = null; // null | 'asc' | 'desc'
 const RP_DATE_FIELD_MAP = { due: '납기일', pack: '포장일', insp: '검사일' };
