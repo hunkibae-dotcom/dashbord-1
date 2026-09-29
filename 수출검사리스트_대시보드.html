@@ -2409,18 +2409,12 @@ async function _tblApplyBulkEdit() {
   btn.disabled = false;
   btn.innerHTML = '적용';
 
-  // 화면(표/차트/모바일) 갱신 + 다중선택 모드 종료
+  // 화면(표/차트/모바일) 갱신 — 다중선택 모드는 이미 "조회하기"를 누른 시점에 끝났다
   renderMobileKPIs();
   renderMobileFactoryPanels();
   renderMobileList();
   if (typeof applyFilters === 'function') applyFilters();
-  setTimeout(() => {
-    closeTblBulkEditModal();
-    _tblMultiSelectMode = false;
-    _tblSelectedKeys = new Set();
-    _updateTblMultiBtn();
-    renderTable(displayedRows || []);
-  }, 900);
+  setTimeout(() => { closeTblBulkEditModal(); }, 900);
 }
 
 // ===== CHARTS =====
