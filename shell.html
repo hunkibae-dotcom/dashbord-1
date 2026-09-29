@@ -357,6 +357,27 @@
             </div>
         </div>
 
+        <!-- Row 3.5: 수출 일정 달력 (미니, 눌러서 전체 달력 모달 열기) -->
+        <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
+                    <i class="fa-solid fa-calendar-days" style="color:#00E676;"></i> <span id="miniCalMonthLabel">-</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <button onclick="miniCalMoveMonth(-1)" style="-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">‹</button>
+                    <button onclick="miniCalMoveMonth(1)" style="-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">›</button>
+                    <button onclick="openScheduleCalendar()" style="-webkit-appearance:none;appearance:none;margin-left:2px;padding:4px 10px;border-radius:8px;border:none;background:rgba(0,230,118,.14);color:#00E676;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">
+                        <i class="fa-solid fa-expand" style="font-size:9px;"></i> 전체보기
+                    </button>
+                </div>
+            </div>
+            <div id="miniCalGrid" onclick="openScheduleCalendar()" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;cursor:pointer;"></div>
+            <div style="display:flex;gap:12px;font-size:10px;color:var(--label);padding:0 1px;">
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#38BDF8;display:inline-block;"></span>상차일</span>
+                <span style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#F87171;display:inline-block;"></span>납기일</span>
+            </div>
+        </div>
+
         <!-- Row 4: 수출 포장 관리 현황 -->
         <div class="card" style="display:flex;flex-direction:column;gap:12px;">
             <div onclick="openMgmtModal()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
