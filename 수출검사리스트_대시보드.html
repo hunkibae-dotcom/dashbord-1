@@ -3086,20 +3086,26 @@ function renderReportList() {
     const checked = _reportChecked.has(key);
     const hasHardware = sel ? sel.hasHardware === true : false;
     const safeKey = key.replace(/'/g, "\\'");
-    const rowBg = 'background:var(--panel);';
+    // 체크된 품목은 은은한 보라 톤으로 강조해서(모바일 카드와 같은 색) 지금 보고서에
+    // 뭐가 담겨있는지 표만 봐도 바로 구분되게 한다.
+    const rowBg = checked ? 'background:linear-gradient(0deg,rgba(139,124,240,.08),rgba(139,124,240,.08)),var(--panel);' : 'background:var(--panel);';
+    const rowBorder = checked ? '#8B7CF0' : 'var(--border)';
+    const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     return `
     <tr>
-      <td style="${rowBg}padding:10px 6px;text-align:center;border-radius:12px 0 0 12px;border:1px solid var(--border);border-right:none;"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;"></td>
-      <td style="${rowBg}padding:10px 6px;color:var(--text);font-weight:700;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);" title="${(d.건명 || '').replace(/"/g, '&quot;')}">${d.건명 || '—'}</td>
-      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);font-family:'Inter',monospace;font-size:12px;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.단품코드 || '—'}</td>
-      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.색상 || '—'}</td>
-      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${d.수량 || 0}</td>
-      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid var(--border);border-bottom:1px solid var(--border);" title="${(d.단품명칭 || '').replace(/"/g, '&quot;')}">${_rpSummarizeName(d.단품명칭) || ''}</td>
-      <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto)}</td>
-      <td style="${rowBg}padding:8px 6px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto)}</td>
-      <td style="${rowBg}padding:10px 6px;text-align:center;border-top:1px solid var(--border);border-bottom:1px solid var(--border);"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
-      <td style="${rowBg}padding:6px 4px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">${_rpCbmCell(safeKey, d, sel)}</td>
-      <td style="${rowBg}padding:6px 4px;border-radius:0 12px 12px 0;border:1px solid var(--border);border-left:none;">${_rpNoteCell(safeKey, sel)}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;border-radius:12px 0 0 12px;border:1px solid ${rowBorder};border-right:none;"><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleReportItem('${safeKey}')" style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;"></td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};" title="${(d.포장처 || '').replace(/"/g, '&quot;')}">${d.포장처 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};"><span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span></td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text);font-weight:700;font-size:13.5px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};" title="${(d.건명 || '').replace(/"/g, '&quot;')}">${d.건명 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text);font-weight:800;font-family:'Inter',monospace;font-size:12.5px;white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${d.단품코드 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${d.색상 || '—'}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${d.수량 || 0}</td>
+      <td style="${rowBg}padding:10px 6px;color:var(--text-sub);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};" title="${(d.단품명칭 || '').replace(/"/g, '&quot;')}">${_rpSummarizeName(d.단품명칭) || ''}</td>
+      <td style="${rowBg}padding:8px 6px;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${_rpPhotoBox(safeKey, 'product', sel && sel.productPhoto)}</td>
+      <td style="${rowBg}padding:8px 6px;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${_rpPhotoBox(safeKey, 'package', sel && sel.packagePhoto)}</td>
+      <td style="${rowBg}padding:10px 6px;text-align:center;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
+      <td style="${rowBg}padding:6px 4px;border-top:1px solid ${rowBorder};border-bottom:1px solid ${rowBorder};">${_rpCbmCell(safeKey, d, sel)}</td>
+      <td style="${rowBg}padding:6px 4px;border-radius:0 12px 12px 0;border:1px solid ${rowBorder};border-left:none;">${_rpNoteCell(safeKey, sel)}</td>
     </tr>`;
   }).join('');
   document.getElementById('rpSelCount').textContent = _reportChecked.size;
