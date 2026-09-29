@@ -3501,6 +3501,17 @@ function _rpFindByKey(key) {
   return _rpKeyIndex.get(key) || null;
 }
 
+// 체크만 전부 해제한다 — 이미 등록된 사진/CBM/특이사항(_reportSelected)은 그대로 두고
+// _reportChecked만 비우므로, 대량 선택(예: 예전 전체선택 테스트로 남은 값)을 되돌릴 때도
+// 각 품목을 일일이 조회할 필요가 없어(단순히 Set 하나만 비우면 됨) 느려지지 않는다.
+function clearAllReportChecked() {
+  if (!_reportChecked.size) return;
+  if (!confirm(_reportChecked.size + '개 품목의 체크를 전부 해제할까요? (등록해둔 사진·입력값은 남습니다)')) return;
+  _reportChecked.clear();
+  _rpSaveToStorage();
+  renderReportList();
+}
+
 // 체크박스는 이번 PPTX 생성에 포함할지만 정한다 — 해제해도 등록해둔 사진/CBM/특이사항은
 // _reportSelected에 그대로 남아있다가, 다시 체크하면 그대로 이어서 쓸 수 있다.
 // (전체선택/전체해제 일괄 토글 기능은 너무 느려서 일단 없앴다 — 필요하면 하나씩 체크한다.)
