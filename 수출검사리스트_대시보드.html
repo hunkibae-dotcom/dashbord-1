@@ -3432,12 +3432,31 @@ function _rpEffectivePhoto(sel, side) {
   return null;
 }
 
+// Drive의 "링크가 있는 모든 사용자" 공유가 조직 정책으로 조용히 "조직 내부만"으로
+// 제한되는 경우가 있어서, 사진을 등록한 사람 화면(같은 조직 로그인 상태)에는 잘
+// 보이는데 다른 컴퓨터/계정에서는 이미지가 깨져 보이는 문제가 있었다 — 직접 Drive
+// 링크가 실패하면(onerror) 이미 있는 GAS 프록시(getReportPhotoBase64, 소유자 권한으로
+// 항상 접근 가능)를 통해 한 번 더 받아와 채워 넣는다. 평소엔(직접 링크가 되면) 이
+// 요청이 전혀 안 나가서 추가 비용이 없다.
+async function _rpImgFallback(imgEl, fileId, factoryKey) {
+  const url = _gasUrlForFactory(factoryKey);
+  if (!url || !fileId) return;
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportPhotoBase64', fileId }), { signal: AbortSignal.timeout(20000) });
+    const json = await res.json();
+    if (json.status === 'success' && json.dataUrl) imgEl.src = json.dataUrl;
+  } catch (e) { /* 이것마저 실패하면 조용히 깨진 채로 둔다(사진 없음과 동일하게 취급) */ }
+}
+
 function _rpPhotoBox(safeKey, side, sel, size) {
   size = size || 48;
   const eff = _rpEffectivePhoto(sel, side);
+  const factoryKey = sel && sel.item && sel.item.공장;
+  const onerrAttr = (eff && eff.isRemoteOnly && factoryKey)
+    ? ` onerror="this.onerror=null;_rpImgFallback(this,'${eff.fileId}','${factoryKey}')"` : '';
   return `
     <div onclick="_rpPhotoBoxClick('${safeKey}','${side}')" style="width:${size}px;height:${size}px;border-radius:${size >= 80 ? 12 : 8}px;border:1.5px dashed var(--border);background:${eff ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin:0 auto;">
-      ${eff ? `<img src="${eff.src}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:${size >= 80 ? 22 : 14}px;"></i>`}
+      ${eff ? `<img src="${eff.src}"${onerrAttr} style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:${size >= 80 ? 22 : 14}px;"></i>`}
     </div>
   `;
 }
