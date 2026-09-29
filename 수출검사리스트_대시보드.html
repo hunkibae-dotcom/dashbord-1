@@ -5405,32 +5405,6 @@ async function _postMiSync(item, params) {
     _setMiSyncNote('네트워크 오류로 시트 저장 실패 — 이 기기에는 저장됨', true);
   }
 }
-let _miSyncDebounceTimer = null;
-function _syncMiFieldToSheet(item, field, value) {
-  if (field === '검사') {
-    _postMiSync(item, { action: 'updateStatus', status: value });
-    return;
-  }
-  if (field === '검사일') {
-    _postMiSync(item, { action: 'updateInspectDate', date: value });
-    return;
-  }
-  if (['가로', '세로', '높이', '중량'].includes(field)) {
-    // 숫자 입력칸은 타이핑할 때마다 호출되므로, 매 키입력마다 요청을 보내지 않도록
-    // 입력이 잠시 멈췄을 때 한 번만 보낸다
-    clearTimeout(_miSyncDebounceTimer);
-    _miSyncDebounceTimer = setTimeout(() => {
-      _postMiSync(item, {
-        action: 'updateSpec',
-        w: item.가로 ?? '', d: item.세로 ?? '', h: item.높이 ?? '', g: item.중량 ?? ''
-      });
-    }, 700);
-    return;
-  }
-  if (field === '비고') {
-    _postMiSync(item, { action: 'updateNote', note: value || '' });
-  }
-}
 
 function renderMobileFactoryPanels() {
   ['cj1', 'cj2'].forEach((key, i) => {
