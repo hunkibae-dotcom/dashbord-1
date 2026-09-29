@@ -3436,14 +3436,23 @@ function _rpEffectivePhoto(sel, side) {
   if (local && local.dataUrl) return { src: local.dataUrl, downloadHref: local.dataUrl, isRemoteOnly: false };
   const remote = side === 'product' ? sel.productPhotoRemote : side === 'package' ? sel.packagePhotoRemote : sel.notePhotoRemote;
   if (remote && remote.fileId) {
+    // 이 fileId가 이번 세션에서 이미 한 번 프록시로 받아온 적 있으면(직접 Drive 링크가
+    // 깨져있었던 경우) 그 결과를 바로 쓴다 — renderReportList()는 목록을 건드릴 때마다
+    // (체크박스, 메모/CBM 저장 등) innerHTML을 통째로 다시 그려서 <img>가 매번 새로
+    // 생기는데, 캐시가 없으면 이미 실패한다고 알고 있는 Drive 링크를 매번 다시 시도했다가
+    // 또 실패하고 또 프록시를 호출하는 게 반복돼(렌더될 때마다 깨진 사진 개수만큼 GAS
+    // 요청이 몰림) 이게 최근 "여전히 느리다"의 실질적 원인이었다.
+    const cached = _rpResolvedImageCache[remote.fileId];
     return {
-      src: remote.viewUrl || ('https://drive.google.com/uc?export=view&id=' + remote.fileId),
+      src: cached || remote.viewUrl || ('https://drive.google.com/uc?export=view&id=' + remote.fileId),
       downloadHref: remote.downloadUrl || ('https://drive.google.com/uc?export=download&id=' + remote.fileId),
       isRemoteOnly: true, fileId: remote.fileId
     };
   }
   return null;
 }
+let _rpResolvedImageCache = {}; // fileId -> dataUrl (한 번 해결되면 재렌더에서 재요청 안 함)
+let _rpImgFallbackInFlight = {}; // fileId -> Promise (같은 사진에 대한 동시 중복 요청 방지)
 
 // Drive의 "링크가 있는 모든 사용자" 공유가 조직 정책으로 조용히 "조직 내부만"으로
 // 제한되는 경우가 있어서, 사진을 등록한 사람 화면(같은 조직 로그인 상태)에는 잘
