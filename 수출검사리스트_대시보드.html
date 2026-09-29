@@ -2244,6 +2244,123 @@ function renderTable(data) {
   }).join('');
 }
 
+// ── 검사 항목 목록: 다중선택 후 일괄 수정(진행상태 · 검사완료일) ──────────
+// 평소엔 행을 누르면 바로 그 품목 하나만 고치는 상세창이 뜨는데, 여러 품목을 같은
+// 값으로 한꺼번에 바꿔야 할 때(예: 같은 차수 여러 색상을 전부 검사완료로) 하나씩
+// 여는 건 번거롭다 — "다중선택"을 누르면 행 클릭이 체크로 바뀌고, 버튼이 "조회하기"로
+// 바뀐다. 선택은 필터/정렬이 바뀌어도 유지되도록 화면 순서가 아니라 _miKey로 기억한다.
+let _tblMultiSelectMode = false;
+let _tblSelectedKeys = new Set();
+const TBL_BULK_STATUS_OPTIONS = ['미검사', '검사', '양지', '재투입', '미투입', '취소', '포장대기'];
+let _tblBulkStatus = null; // null = 변경 안 함
+
+function toggleTblMultiSelect() {
+  if (_tblMultiSelectMode) {
+    if (_tblSelectedKeys.size > 0) { openTblBulkEditModal(); return; }
+    _tblMultiSelectMode = false; // 아무것도 안 고르고 다시 누르면 다중선택 모드만 취소
+  } else {
+    _tblMultiSelectMode = true;
+    _tblSelectedKeys = new Set();
+  }
+  _updateTblMultiBtn();
+  renderTable(displayedRows || []);
+}
+function _updateTblMultiBtn() {
+  const btn = document.getElementById('tblMultiBtn');
+  if (!btn) return;
+  if (_tblMultiSelectMode) {
+    btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> 조회하기${_tblSelectedKeys.size ? ' (' + _tblSelectedKeys.size + ')' : ''}`;
+    btn.style.background = '#6D5CE8';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#6D5CE8';
+  } else {
+    btn.innerHTML = `<i class="fa-solid fa-list-check"></i> 다중선택`;
+    btn.style.background = '#f8fafc';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+  }
+}
+// 체크 하나 바뀔 때마다 수백~수천 행짜리 표 전체를 다시 그리면 느려지므로, 그 행
+// 하나의 배경/체크 상태만 직접 바꾼다.
+function _tblToggleRowSelect(key) {
+  if (_tblSelectedKeys.has(key)) _tblSelectedKeys.delete(key);
+  else _tblSelectedKeys.add(key);
+  _updateTblMultiBtn();
+  let row = null;
+  try { row = document.querySelector('[data-tbl-key="' + CSS.escape(key) + '"]'); } catch (e) {}
+  if (!row) return;
+  const selected = _tblSelectedKeys.has(key);
+  row.classList.toggle('tbl-row-selected', selected);
+  row.style.background = selected ? '#F5F3FF' : '';
+  const box = row.querySelector('.tbl-select-box');
+  if (box) box.checked = selected;
+}
+
+function openTblBulkEditModal() {
+  _tblBulkStatus = null;
+  document.getElementById('tblBulkDateInput').value = '';
+  document.getElementById('tblBulkResult').textContent = '';
+  document.getElementById('tblBulkCount').textContent = _tblSelectedKeys.size + '개 품목 선택됨';
+  _tblRenderBulkStatusBtns();
+  document.getElementById('tblBulkEditModal').style.display = 'flex';
+}
+function closeTblBulkEditModal() {
+  document.getElementById('tblBulkEditModal').style.display = 'none';
+}
+function _tblRenderBulkStatusBtns() {
+  const wrap = document.getElementById('tblBulkStatusBtns');
+  if (!wrap) return;
+  wrap.innerHTML = TBL_BULK_STATUS_OPTIONS.map(v => {
+    const on = _tblBulkStatus === v;
+    return `<button type="button" onclick="_tblSetBulkStatus('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${v}</button>`;
+  }).join('');
+}
+function _tblSetBulkStatus(v) {
+  _tblBulkStatus = (_tblBulkStatus === v) ? null : v; // 같은 걸 다시 누르면 "변경 안 함"으로
+  _tblRenderBulkStatusBtns();
+}
+
+// 저장 버튼을 눌렀을 때만 실제로 반영한다(단일 품목 상세창의 저장 방식과 동일) —
+// 여러 건을 한꺼번에 백그라운드로 쏘고, 끝나는 대로 결과를 모아서 보여준다.
+async function _tblApplyBulkEdit() {
+  const status = _tblBulkStatus;
+  const dateVal = (document.getElementById('tblBulkDateInput').value || '').trim();
+  const resultEl = document.getElementById('tblBulkResult');
+  if (!status && !dateVal) { resultEl.textContent = '진행상태 또는 검사완료일 중 하나는 선택해주세요.'; return; }
+
+  const items = Array.from(_tblSelectedKeys).map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+
+  const btn = document.getElementById('tblBulkApplyBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...';
+
+  items.forEach(item => {
+    const patch = {};
+    if (status) { item.검사 = status; patch.검사 = status; }
+    if (dateVal) { item.검사일 = dateVal; patch.검사일 = dateVal; }
+    _saveMiOverride(_miKey(item), patch);
+    if (status) _postMiSync(item, { action: 'updateStatus', status: status });
+    if (dateVal) _postMiSync(item, { action: 'updateInspectDate', date: dateVal });
+  });
+
+  resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`;
+  btn.disabled = false;
+  btn.innerHTML = '적용';
+
+  // 화면(표/차트/모바일) 갱신 + 다중선택 모드 종료
+  renderMobileKPIs();
+  renderMobileFactoryPanels();
+  renderMobileList();
+  if (typeof applyFilters === 'function') applyFilters();
+  setTimeout(() => {
+    closeTblBulkEditModal();
+    _tblMultiSelectMode = false;
+    _tblSelectedKeys = new Set();
+    _updateTblMultiBtn();
+  }, 900);
+}
+
 // ===== CHARTS =====
 function renderCharts(data) {
   renderTopUndoneChart(data);
