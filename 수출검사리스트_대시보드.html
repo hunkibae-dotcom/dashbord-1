@@ -3449,7 +3449,7 @@ function rpPhotoActionDownload() {
   if (!eff) { closeRpPhotoAction(); return; }
   const code = (sel.item && sel.item.단품코드) ? sel.item.단품코드.replace(/[^a-zA-Z0-9가-힣_-]/g, '') : 'photo';
   const a = document.createElement('a');
-  a.href = photo.dataUrl;
+  a.href = eff.downloadHref;
   a.download = code + '_' + (side === 'product' ? '제품' : '포장완료') + '.jpg';
   document.body.appendChild(a);
   a.click();
