@@ -3695,7 +3695,7 @@ function _rpRemoveNotePhoto() {
   const key = _rpEditKey;
   if (!key || !_reportSelected[key]) return;
   _reportSelected[key].notePhoto = null;
-  _rpSaveToStorage();
+  _rpSaveToStorage(true);
   openRpNoteEditor(key);
 }
 
