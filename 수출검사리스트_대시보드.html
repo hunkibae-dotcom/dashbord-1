@@ -2897,17 +2897,42 @@ function _rpSummarizeName(name) {
 
 // 날짜칸이 뭘 기준으로 거르는지 안 보여서 헷갈린다는 지적 — 납기일/포장일/검사완료일
 // 중 어떤 날짜 필드로 거를지 명시적으로 고르게 한다. 정렬도 같은 필드 기준으로 한다.
-let _rpDateField = 'pack'; // 'due' | 'pack' | 'insp'
+// 예전엔 버튼으로 "기준 필드"만 고르고 옆의 별도 날짜칸에 정확히 일치하는 날짜를
+// 입력해야 했는데, 그러면 하루라도 다르면 아무 것도 안 보였다 — 이제 버튼 자체를
+// 누르면 바로 날짜 선택창이 뜨고, 고른 날짜는 "그 날짜까지(종료일 기준)"로 걸러서
+// 하루 단위로 매번 다시 고를 필요가 없게 했다. 날짜를 안 고르면(취소) 필터가 전혀
+// 안 걸린 상태 그대로 유지된다.
+let _rpDateField = 'pack'; // 'due' | 'pack' | 'insp' — 마지막으로 고른 기준 필드
+let _rpDateCutoff = null; // yyyy-MM-dd 또는 null(필터 없음 = 전체 보기)
 let _rpSortDir = null; // null | 'asc' | 'desc'
 const RP_DATE_FIELD_MAP = { due: '납기일', pack: '포장일', insp: '검사일' };
 const RP_DATE_FIELD_BTN = { due: 'rpDfDue', pack: 'rpDfPack', insp: 'rpDfInsp' };
+const RP_DATE_FIELD_LABEL = { due: '납기일', pack: '포장일', insp: '검사완료일' };
 
-function setRpDateField(field) {
+function setRpDateCutoff(field, value) {
+  if (!value) return; // 날짜 선택창을 취소하면 빈 문자열 — 기존 필터 상태를 그대로 둔다
   _rpDateField = field;
-  Object.keys(RP_DATE_FIELD_BTN).forEach(f => {
-    document.getElementById(RP_DATE_FIELD_BTN[f])?.classList.toggle('active', f === field);
-  });
+  _rpDateCutoff = value;
+  _updateRpDateFieldUI();
   renderReportList();
+}
+function clearRpDateCutoff() {
+  _rpDateCutoff = null;
+  ['Due', 'Pack', 'Insp'].forEach(s => { const el = document.getElementById('rpDateInput' + s); if (el) el.value = ''; });
+  _updateRpDateFieldUI();
+  renderReportList();
+}
+function _updateRpDateFieldUI() {
+  Object.keys(RP_DATE_FIELD_BTN).forEach(f => {
+    document.getElementById(RP_DATE_FIELD_BTN[f])?.classList.toggle('active', !!_rpDateCutoff && f === _rpDateField);
+  });
+  const cap = document.getElementById('rpDateCutoffCaption');
+  if (!cap) return;
+  if (_rpDateCutoff) {
+    cap.innerHTML = `<b>${RP_DATE_FIELD_LABEL[_rpDateField]} ${_rpDateCutoff}</b>까지(종료일 기준) · <a onclick="clearRpDateCutoff()" style="cursor:pointer;color:#6D5CE8;font-weight:700;">전체보기</a>`;
+  } else {
+    cap.textContent = '납기일·포장일·검사완료일 클릭 시 그 날짜까지(종료일 기준)의 항목만 봅니다.';
+  }
 }
 
 // 버튼 하나로 내림차순 → 오름차순 → 정렬 안 함 순서로 순환한다.
