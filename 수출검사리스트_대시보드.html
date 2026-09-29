@@ -3518,6 +3518,13 @@ async function rpPhotoActionDownload() {
       } catch (e) { /* 실패하면 Drive 직접 링크로라도 시도(아래) */ }
     }
   }
+  // <a download>는 웹에서는 되지만, 네이티브 앱(WebView)에는 다운로드 매니저가 연결돼
+  // 있지 않아 클릭해도 아무 반응이 없었다 — 앱에서는 대신 네이티브 브릿지로 저장한다.
+  if (window.Android && typeof window.Android.saveBase64Image === 'function' && href.startsWith('data:')) {
+    window.Android.saveBase64Image(href, filename);
+    closeRpPhotoAction();
+    return;
+  }
   const a = document.createElement('a');
   a.href = href;
   a.download = filename;
