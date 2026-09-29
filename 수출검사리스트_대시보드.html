@@ -3539,6 +3539,30 @@ function rpPhotoActionChange() {
   closeRpPhotoAction();
   if (key) openRpPhotoPicker(key, side);
 }
+// 사진 비우기 — 이 기기 화면은 즉시 빈 칸으로 돌아가고, 서버(공유) 쪽 참조도 지워서
+// 다른 사람 화면·다음 새로고침에서 지운 사진이 다시 나타나지 않게 한다.
+function rpPhotoActionClear() {
+  const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
+  const sel = key && _reportSelected[key];
+  if (!sel) { closeRpPhotoAction(); return; }
+  if (side === 'product') { sel.productPhoto = null; sel.productPhotoRemote = null; }
+  else if (side === 'package') { sel.packagePhoto = null; sel.packagePhotoRemote = null; }
+  else { sel.notePhoto = null; sel.notePhotoRemote = null; }
+  sel._updatedAt = Date.now();
+  _rpSaveToStorage(true);
+  _rpClearPhotoOnServer(key, side);
+  closeRpPhotoAction();
+  renderReportList();
+  if (_rpEditKey === key && _rpEditMode === 'note') openRpNoteEditor(key); // 특이사항 편집창이 열려있었으면 미리보기도 갱신
+}
+function _rpClearPhotoOnServer(key, side) {
+  const sel = _reportSelected[key];
+  if (!sel || !sel.item || !sel.item.공장) return;
+  const url = _gasUrlForFactory(sel.item.공장);
+  if (!url) return;
+  fetch(url + '?' + new URLSearchParams({ action: 'saveReportMeta', key, clearPhoto: side }), { signal: AbortSignal.timeout(15000) })
+    .catch(() => {});
+}
 
 // ── 카메라 촬영 / 갤러리 선택 고르기 ──────────────────────────────
 function openRpPhotoPicker(key, side) {
