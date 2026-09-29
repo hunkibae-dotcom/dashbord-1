@@ -4553,6 +4553,11 @@ function _refreshMiStatusButtons(status) {
     btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
   });
 }
+// 재투입일 때만 사유 입력칸을 보여준다 — 그 외 상태에서는 사유가 의미 없다.
+function _refreshMiReinspectReason(status) {
+  const wrap = document.getElementById('miReasonWrap');
+  if (wrap) wrap.style.display = status === '재투입' ? 'block' : 'none';
+}
 function _updateMiCbm() {
   const w = parseFloat(document.getElementById('miW').value) || 0;
   const d = parseFloat(document.getElementById('miD').value) || 0;
