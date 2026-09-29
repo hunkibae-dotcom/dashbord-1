@@ -4601,12 +4601,13 @@ function saveMItemDetail() {
 }
 function setMiField(field, value) {
   if (!_miCurrent) return;
+  const prevStatus = _miCurrent.검사;
   if (['가로', '세로', '높이', '중량'].includes(field)) {
     value = parseFloat(value) || 0;
     _updateMiCbm();
   }
   _miCurrent[field] = value;
-  if (field === '검사') _refreshMiStatusButtons(value);
+  if (field === '검사') { _refreshMiStatusButtons(value); _refreshMiReinspectReason(value); }
   _saveMiOverride(_miKey(_miCurrent), { [field]: value });
   _syncMiFieldToSheet(_miCurrent, field, value);
   // 가로/세로/높이/중량은 목록·KPI·뱃지 표시에 영향이 없는데도, 숫자 입력칸에 한 글자
@@ -4620,7 +4621,35 @@ function setMiField(field, value) {
     if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
     if (specHistoryRows && specHistoryRows.length) runSpecLookup();
     if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
+    if (typeof applyFilters === 'function') applyFilters(); // PC 웹 테이블도 같이 갱신
   }
+  // 검사완료로 "바뀐" 순간에만 물어본다 — 이미 검사완료 상태에서 다른 칸을 만지는
+  // 김에 다시 뜨면 성가시다.
+  if (field === '검사' && value === '검사' && prevStatus !== '검사') {
+    const item = _miCurrent;
+    setTimeout(() => {
+      if (confirm(item.건명 + ' / ' + item.단품코드 + '\n\n검사완료로 변경했습니다. 이 품목으로 보고서를 작성하시겠습니까?')) {
+        _miGoToReport(item);
+      }
+    }, 150);
+  }
+}
+
+// "보고서 작성" 확인 시 보고서 탭을 열고, 이 품목을 검색·체크까지 해서 바로 이어서
+// 사진/CBM/특이사항을 채울 수 있게 한다. 보고서와 이 상세창은 같은 키(_miKey)를
+// 쓰므로 서로 다른 항목을 잘못 짚을 일이 없다.
+function _miGoToReport(item) {
+  closeMItemDetail();
+  openReportModal();
+  const factSel = document.getElementById('rpFactory');
+  if (factSel) factSel.value = item.공장;
+  const searchInp = document.getElementById('rpSearch');
+  if (searchInp) searchInp.value = item.단품코드 || item.건명 || '';
+  const key = _miKey(item);
+  _rpEnsureSelected(key);
+  _reportChecked.add(key);
+  _rpSaveToStorage();
+  renderReportList();
 }
 
 // ── 품목 상세 수정 → 실제 구글시트 반영 ──────────────────────
