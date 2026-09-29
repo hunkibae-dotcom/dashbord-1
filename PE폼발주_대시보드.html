@@ -802,6 +802,7 @@ function renderDashboard() {
 
   // ── 재고 적게 남은 자재 (클릭 시 재고 상세 — 재고 탭 필터를 기본값으로 맞춘 뒤 연다) ──
   const low = [...remainList].sort((a, b) => a.total - b.total).slice(0, 6);
+  document.getElementById('dkLowStockCount').innerHTML = low.length + '<small>종</small>';
   document.getElementById('dashLowStock').innerHTML = low.length
     ? low.map(stockMiniCardHtml).join('')
     : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
