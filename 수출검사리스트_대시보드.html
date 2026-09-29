@@ -5205,7 +5205,8 @@ function openMItemDetail(key) {
   document.getElementById('miH').value = d.높이 || '';
   document.getElementById('miG').value = d.중량 || '';
   _updateMiCbm();
-  _setMiSyncNote('변경하면 자동으로 실제 시트에 저장됩니다', false);
+  _miPendingSync = {};
+  _setMiSyncNote('저장 버튼을 눌러야 실제 시트에 반영됩니다', false);
   document.getElementById('mItemDetailModal').style.display = 'flex';
   _armBackTrap();
 }
@@ -5213,15 +5214,30 @@ function closeMItemDetail() {
   document.getElementById('mItemDetailModal').style.display = 'none';
   _miCurrent = null;
 }
+// 이 창의 입력칸(진행상태/검사완료일/규격/재투입 사유)은 예전엔 건드리는 즉시 시트에
+// 반영됐는데, 그러면 하단 "저장" 버튼이 이미 다 끝난 일을 다시 누르는 것 같은 의미
+// 없는 버튼이 됐다 — 이제 변경사항은 _miPendingSync에만 모아두고, 실제 시트 반영은
+// 이 저장 버튼을 눌렀을 때 한 번에 보낸다.
 function saveMItemDetail() {
-  // 각 입력칸은 이미 변경 즉시 자동으로 저장되고 있어서, 이 버튼은 별도로 다시 저장을
-  // 시도하지 않고 "저장됐다"는 확인 피드백만 준 뒤 창을 닫는 확인 버튼 역할을 한다.
   const btn = document.getElementById('miSaveBtn');
   if (btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장 완료';
   }
   const item = _miCurrent;
+  const pending = _miPendingSync;
+  _miPendingSync = {};
+  const fields = Object.keys(pending);
+  // 응답을 기다리면(느린 시트 반영 때문에) 화면이 멈춘 것처럼 느껴지므로, 화면은 이미
+  // 최신 상태라 응답을 기다리지 않고 백그라운드로 보낸다(결과는 인라인 문구로 계속 표시).
+  if (item && fields.length) {
+    if (fields.some(f => ['가로', '세로', '높이', '중량'].includes(f))) {
+      _postMiSync(item, { action: 'updateSpec', w: item.가로 ?? '', d: item.세로 ?? '', h: item.높이 ?? '', g: item.중량 ?? '' });
+    }
+    if (fields.includes('검사')) _postMiSync(item, { action: 'updateStatus', status: item.검사 });
+    if (fields.includes('검사일')) _postMiSync(item, { action: 'updateInspectDate', date: item.검사일 });
+    if (fields.includes('비고')) _postMiSync(item, { action: 'updateNote', note: item.비고 || '' });
+  }
   // 검사완료 팝업은 상태 버튼을 누르는 즉시가 아니라 "저장"을 눌렀을 때만 묻는다 —
   // 다른 칸(규격 등)을 만지다 실수로 튀어나오지 않게. 이 창을 연 시점의 원래 상태와
   // 비교해 검사완료로 "바뀐" 경우에만 물어본다.
@@ -5243,7 +5259,7 @@ function setMiField(field, value) {
   _miCurrent[field] = value;
   if (field === '검사') { _refreshMiStatusButtons(value); _refreshMiReinspectReason(value); }
   _saveMiOverride(_miKey(_miCurrent), { [field]: value });
-  _syncMiFieldToSheet(_miCurrent, field, value);
+  _miPendingSync[field] = value; // 실제 시트 반영은 "저장" 버튼을 눌렀을 때 한 번에
   // 가로/세로/높이/중량은 목록·KPI·뱃지 표시에 영향이 없는데도, 숫자 입력칸에 한 글자
   // 칠 때마다 리스트 전체(수백 건)를 통째로 다시 그리고 있었다 — 화면에 실제로 영향을
   // 주는 검사상태·검사일 변경일 때만 무거운 재렌더링을 하도록 제한한다.
