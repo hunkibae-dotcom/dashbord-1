@@ -4027,13 +4027,24 @@ function _addReportSlide(pptx, d, sel, repRound) {
 
   let y = top;
   const headers = ['수출건명', '단품코드', '색상', '단품명칭', '수량', '포장처', '출고일', '검사자'];
+  const roundNameForSlide = repRound || d.건명 || '';
   const values = [
-    repRound || d.건명 || '', d.단품코드 || '', d.색상 || '', _rpSummarizeName(d.단품명칭) || '',
+    roundNameForSlide, d.단품코드 || '', d.색상 || '', _rpSummarizeName(d.단품명칭) || '',
     (d.수량 || 0), _rpFactoryLabel(factoryKey), _rpShipDate(d), _rpInspector(factoryKey)
   ];
   headers.forEach((h, i) => cell(colX[i], y, colW[i], rowH, h, { bold: true, fill: { color: headerFill } }));
   y += rowH;
-  values.forEach((v, i) => cell(colX[i], y, colW[i], rowH, v, {}));
+  // 수출건명 칸만 위에 건명, 아래에 (국가명) 두 줄로 — 나머지 칸은 그대로 한 줄.
+  const countryLabel = _rpCountryLabel(roundNameForSlide);
+  if (countryLabel) {
+    slide.addText(
+      [{ text: roundNameForSlide, options: { breakLine: true } }, { text: '(' + countryLabel + ')', options: { fontSize: 9, color: '64748B' } }],
+      { x: colX[0], y: y, w: colW[0], h: rowH, align: 'center', valign: 'middle', fontSize: 11, fontFace: '맑은 고딕', color: '1E293B', line: { color: borderColor, width: 0.5 } }
+    );
+  } else {
+    cell(colX[0], y, colW[0], rowH, roundNameForSlide, {});
+  }
+  values.slice(1).forEach((v, i) => cell(colX[i + 1], y, colW[i + 1], rowH, v, {}));
   y += rowH;
 
   // 검사 항목(수출건명+단품코드 폭) / 치수 및 외관(색상+단품명칭 폭) / 검사 장비(수량+포장처 폭) / 줄자...(출고일+검사자 폭)
