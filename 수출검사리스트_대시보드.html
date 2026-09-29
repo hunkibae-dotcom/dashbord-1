@@ -4786,6 +4786,10 @@ function _syncMiFieldToSheet(item, field, value) {
         w: item.가로 ?? '', d: item.세로 ?? '', h: item.높이 ?? '', g: item.중량 ?? ''
       });
     }, 700);
+    return;
+  }
+  if (field === '비고') {
+    _postMiSync(item, { action: 'updateNote', note: value || '' });
   }
 }
 
