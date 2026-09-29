@@ -1423,6 +1423,7 @@ async function loadData() {
     archiveTotals = cached.totals;
     archiveRows = cached.rows;
     applyMiOverrides(archiveRows);
+    _rpInvalidateKeyIndex();
     renderQualityCharts();
   }
 
