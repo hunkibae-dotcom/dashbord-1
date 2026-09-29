@@ -2953,20 +2953,23 @@ function _updateRpSortBtn() {
 }
 
 function _rpFilteredRows() {
-  const factory = document.getElementById('rpFactory').value;
-  const dateVal = document.getElementById('rpDate').value; // yyyy-MM-dd
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
   const dateFieldKey = RP_DATE_FIELD_MAP[_rpDateField] || '포장일';
 
   // 검사완료된 품목은 allData에서 빠지고 archiveRows(누적 이력)로 넘어가므로, 둘 다
-  // 합쳐야 이전에 검사완료된 품목도 보고서 검색/전체선택에 나타난다.
-  let rows = [...allData, ...archiveRows].filter(d => d.공장 === factory);
-  if (dateVal) {
+  // 합쳐야 이전에 검사완료된 품목도 보고서 검색/전체선택에 나타난다. 공장을 먼저
+  // 고르게 하던 상단 선택버튼은 없앴다 — 항상 두 공장을 같이 보여주고, 대신 포장처/
+  // 진행상태 칼럼의 드롭다운으로 필요한 만큼만 좁혀본다.
+  let rows = [...allData, ...archiveRows];
+  if (_rpPackerFilter) rows = rows.filter(d => d.포장처 === _rpPackerFilter);
+  if (_rpStatusFilter) rows = rows.filter(d => d.검사 === _rpStatusFilter);
+  if (_rpDateCutoff) {
+    // 정확히 그 날짜만 보여주면 하루만 달라도 아무 것도 안 보였다 — 선택한 날짜를
+    // "종료일"로 보고 그 날짜까지의 항목을 전부 보여준다.
+    const cutoff = new Date(_rpDateCutoff + 'T23:59:59');
     rows = rows.filter(d => {
       const pd = parseKDate(d[dateFieldKey]);
-      if (!pd) return false;
-      const iso = pd.getFullYear() + '-' + String(pd.getMonth() + 1).padStart(2, '0') + '-' + String(pd.getDate()).padStart(2, '0');
-      return iso === dateVal;
+      return !!pd && pd <= cutoff;
     });
   }
   if (q) rows = rows.filter(d => (d.건명 + ' ' + d.단품코드 + ' ' + d.단품명칭).toLowerCase().includes(q));
