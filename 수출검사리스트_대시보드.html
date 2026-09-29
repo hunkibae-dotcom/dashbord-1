@@ -4679,16 +4679,6 @@ function setMiField(field, value) {
     if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
     if (typeof applyFilters === 'function') applyFilters(); // PC 웹 테이블도 같이 갱신
   }
-  // 검사완료로 "바뀐" 순간에만 물어본다 — 이미 검사완료 상태에서 다른 칸을 만지는
-  // 김에 다시 뜨면 성가시다.
-  if (field === '검사' && value === '검사' && prevStatus !== '검사') {
-    const item = _miCurrent;
-    setTimeout(() => {
-      if (confirm(item.건명 + ' / ' + item.단품코드 + '\n\n검사완료로 변경했습니다. 이 품목으로 보고서를 작성하시겠습니까?')) {
-        _miGoToReport(item);
-      }
-    }, 150);
-  }
 }
 
 // "보고서 작성" 확인 시 보고서 탭을 열고, 이 품목을 검색·체크까지 해서 바로 이어서
