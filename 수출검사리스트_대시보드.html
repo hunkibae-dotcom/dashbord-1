@@ -3348,18 +3348,57 @@ function renderReportList() {
     document.getElementById('rpList').innerHTML = '<tr><td colspan="13">' + emptyMsg + '</td></tr>';
     if (mobileWrap) mobileWrap.innerHTML = emptyMsg;
     document.getElementById('rpSelCount').textContent = _reportChecked.size;
+    _rpRenderPagination(0, 0);
     return;
   }
 
-  if (mobile) { _renderReportListMobile(rows); document.getElementById('rpSelCount').textContent = _reportChecked.size; return; }
+  const totalPages = Math.max(1, Math.ceil(rows.length / RP_PAGE_SIZE));
+  if (_rpPage > totalPages) _rpPage = totalPages;
+  if (_rpPage < 1) _rpPage = 1;
+  const pageRows = rows.slice((_rpPage - 1) * RP_PAGE_SIZE, _rpPage * RP_PAGE_SIZE);
+  _rpRenderPagination(rows.length, totalPages);
+
+  if (mobile) { _renderReportListMobile(pageRows); document.getElementById('rpSelCount').textContent = _reportChecked.size; return; }
 
   // 데스크탑 화면이라 세로로 긴 카드 목록 대신, 표 한 줄에 사진 등록칸까지 같이 두는
   // 카드형 행으로 — 스크롤 없이 훨씬 많은 품목을 한눈에 보고 고를 수 있다.
   // PPTX는 체크한 "순서 그대로"(Set의 삽입 순서, generateReportPptx 참고) 생성되므로,
   // 그 순서를 체크박스 옆 작은 숫자로 미리 보여준다.
   const checkedOrderMap = _rpCheckedOrderMap();
-  document.getElementById('rpList').innerHTML = rows.map(d => _rpRowHtmlDesktop(d, checkedOrderMap)).join('');
+  document.getElementById('rpList').innerHTML = pageRows.map(d => _rpRowHtmlDesktop(d, checkedOrderMap)).join('');
   document.getElementById('rpSelCount').textContent = _reportChecked.size;
+}
+
+// 페이지 번호는 전부 다 보여주면(검사완료 누적까지 합치면 수십~백 페이지) 버튼이 끝없이
+// 늘어서므로, 현재 페이지 주변 7개만 창(window)처럼 보여주고 양 끝엔 처음/이전·다음/마지막
+// 버튼을 둔다.
+function _rpRenderPagination(totalRows, totalPages) {
+  const bar = document.getElementById('rpPaginationBar');
+  if (!bar) return;
+  if (!totalRows || totalPages <= 1) {
+    bar.innerHTML = totalRows ? `<span style="font-size:11.5px;color:var(--label);">총 ${totalRows}건</span>` : '';
+    return;
+  }
+  const cur = _rpPage;
+  const WINDOW = 7;
+  let start = Math.max(1, cur - Math.floor(WINDOW / 2));
+  let end = Math.min(totalPages, start + WINDOW - 1);
+  start = Math.max(1, end - WINDOW + 1);
+  const btn = (label, page, disabled, active) =>
+    `<button type="button" onclick="_rpGoToPage(${page})" ${disabled ? 'disabled' : ''} style="min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1.5px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'var(--input-bg)'};color:${active ? '#fff' : 'var(--text-sub)'};font-size:12.5px;font-weight:800;cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};">${label}</button>`;
+  let html = `<span style="font-size:11.5px;color:var(--label);margin-right:6px;">총 ${totalRows}건 · ${cur}/${totalPages}페이지</span>`;
+  html += btn('<i class="fa-solid fa-angles-left"></i>', 1, cur === 1, false);
+  html += btn('<i class="fa-solid fa-angle-left"></i>', cur - 1, cur === 1, false);
+  for (let p = start; p <= end; p++) html += btn(String(p), p, false, p === cur);
+  html += btn('<i class="fa-solid fa-angle-right"></i>', cur + 1, cur === totalPages, false);
+  html += btn('<i class="fa-solid fa-angles-right"></i>', totalPages, cur === totalPages, false);
+  bar.innerHTML = html;
+}
+function _rpGoToPage(page) {
+  _rpPage = page;
+  renderReportList();
+  const wrap = document.getElementById(isMobile() ? 'rpListMobile' : 'rpListWrap');
+  if (wrap) wrap.scrollTop = 0;
 }
 
 // renderReportList()가 전체를 다시 그릴 때와, 사진 한 장/CBM/특이사항 하나만 바뀌어서
