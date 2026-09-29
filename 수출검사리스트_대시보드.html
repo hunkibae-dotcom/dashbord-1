@@ -3366,17 +3366,19 @@ function _rpRowHtmlDesktop(d, checkedOrderMap) {
 function _renderReportListMobile(rows) {
   const wrap = document.getElementById('rpListMobile');
   const checkedOrderMap = _rpCheckedOrderMap();
-  wrap.innerHTML = rows.map(d => {
-    const key = _miKey(d);
-    const sel = _reportSelected[key];
-    const checked = _reportChecked.has(key);
-    const hasHardware = sel ? sel.hasHardware === true : false;
-    const safeKey = key.replace(/'/g, "\\'");
-    const attrKey = key.replace(/"/g, '&quot;');
-    const orderNum = checkedOrderMap.get(key);
-    const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
-    return `
-    <div class="rp-card${checked ? ' rp-checked' : ''}">
+  wrap.innerHTML = rows.map(d => _rpRowHtmlMobile(d, checkedOrderMap)).join('');
+}
+function _rpRowHtmlMobile(d, checkedOrderMap) {
+  const key = _miKey(d);
+  const sel = _reportSelected[key];
+  const checked = _reportChecked.has(key);
+  const hasHardware = sel ? sel.hasHardware === true : false;
+  const safeKey = key.replace(/'/g, "\\'");
+  const attrKey = key.replace(/"/g, '&quot;');
+  const orderNum = checkedOrderMap.get(key);
+  const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
+  return `
+    <div class="rp-card${checked ? ' rp-checked' : ''}" data-mikey="${attrKey}">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
         ${d.포장처 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--icon-bg);border-radius:6px;padding:2px 8px;">${d.포장처}</span>` : ''}
         <span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span>
@@ -3418,7 +3420,27 @@ function _renderReportListMobile(rows) {
         <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
       </label>
     </div>`;
-  }).join('');
+}
+
+// 사진/CBM/특이사항 하나만 바뀌었을 뿐인데도 renderReportList()를 통째로 부르면
+// (기본 필터만 해도 검사완료 누적 이력까지 합쳐 수천 행) 그 행 하나 바뀐 걸 반영하자고
+// 매번 수천 개의 <tr>/<div> 문자열을 새로 만들고 다시 그리는 셈이라 클릭 자체는
+// 바로 반응해도 그 직후 화면이 몇 초씩 멈칫거렸다 — 바뀐 행 하나만 정확히 찾아서
+// 그 DOM만 교체한다(찾았을 때만; 필터에 가려 화면에 없으면 손댈 게 없어 그냥 둔다).
+function _rpRowEl(key) {
+  try { return document.querySelector('[data-mikey="' + CSS.escape(key) + '"]'); } catch (e) { return null; }
+}
+function _rpRefreshRow(key) {
+  const el = _rpRowEl(key);
+  if (!el) return;
+  const d = _rpFindByKey(key);
+  if (!d) return;
+  const mobile = isMobile();
+  const html = mobile ? _rpRowHtmlMobile(d, _rpCheckedOrderMap()) : _rpRowHtmlDesktop(d, _rpCheckedOrderMap());
+  const container = document.createElement(mobile ? 'div' : 'tbody');
+  container.innerHTML = html.trim();
+  const fresh = container.firstElementChild;
+  if (fresh) el.replaceWith(fresh);
 }
 
 // 값이 하나라도 있으면 실제 수치를, 없으면 "입력" 안내를 보여준다 — CBM 값은 사용자가
