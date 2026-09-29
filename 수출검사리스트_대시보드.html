@@ -4004,7 +4004,10 @@ function _rpRemoveNotePhoto() {
   const key = _rpEditKey;
   if (!key || !_reportSelected[key]) return;
   _reportSelected[key].notePhoto = null;
+  _reportSelected[key].notePhotoRemote = null;
+  _reportSelected[key]._updatedAt = Date.now();
   _rpSaveToStorage(true);
+  _rpClearPhotoOnServer(key, 'note');
   openRpNoteEditor(key);
 }
 
