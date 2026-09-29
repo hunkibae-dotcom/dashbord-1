@@ -924,17 +924,17 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
   <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-shrink:0;flex-wrap:wrap;">
     <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
-      <div style="display:flex;align-items:center;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;">
-        <div style="position:relative;display:flex;">
-          <button type="button" id="rpDfDue" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">납기일</button>
+      <div style="display:flex;align-items:stretch;gap:0;border:1.5px solid var(--border);border-radius:11px;overflow:hidden;">
+        <div style="position:relative;display:inline-block;">
+          <button type="button" id="rpDfDue" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">납기일</button>
           <input type="date" id="rpDateInputDue" onchange="setRpDateCutoff('due', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
         </div>
-        <div style="position:relative;display:flex;">
-          <button type="button" id="rpDfPack" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
+        <div style="position:relative;display:inline-block;">
+          <button type="button" id="rpDfPack" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">포장일</button>
           <input type="date" id="rpDateInputPack" onchange="setRpDateCutoff('pack', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
         </div>
-        <div style="position:relative;display:flex;">
-          <button type="button" id="rpDfInsp" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료일</button>
+        <div style="position:relative;display:inline-block;">
+          <button type="button" id="rpDfInsp" class="rp-df-btn" style="display:block;padding:10px 12px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료일</button>
           <input type="date" id="rpDateInputInsp" onchange="setRpDateCutoff('insp', this.value)" style="position:absolute;inset:0;opacity:0;cursor:pointer;border:0;padding:0;width:100%;height:100%;">
         </div>
       </div>
