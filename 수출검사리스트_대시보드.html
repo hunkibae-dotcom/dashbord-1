@@ -3197,11 +3197,13 @@ function setRpDateCutoff(field, value) {
   if (!value) return; // 날짜 선택창을 취소하면 빈 문자열 — 기존 필터 상태를 그대로 둔다
   _rpDateField = field;
   _rpDateCutoff = value;
+  _rpPage = 1; // 필터가 바뀌면 행 구성이 달라지므로 1페이지부터 다시 본다
   _updateRpDateFieldUI();
   renderReportList();
 }
 function clearRpDateCutoff() {
   _rpDateCutoff = null;
+  _rpPage = 1;
   ['Due', 'Pack', 'Insp'].forEach(s => { const el = document.getElementById('rpDateInput' + s); if (el) el.value = ''; });
   _updateRpDateFieldUI();
   renderReportList();
