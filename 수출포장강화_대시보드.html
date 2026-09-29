@@ -1668,6 +1668,9 @@
                 try { log = JSON.parse(localStorage.getItem(DATE_CHANGE_LOG_KEY) || '[]'); } catch(e) {}
                 renderNoticeDateChanges(log);
             })();
+
+            // 5. INFORM 카드 슬라이드1(미니 달력) 즉시 렌더링
+            renderInformCalendar();
         });
 
         // 다중 파일 로드 시 중복 행 증발 방지 및 결합 파이프라인
