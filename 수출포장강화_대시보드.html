@@ -6427,8 +6427,19 @@
             const list = state.data || [];
             const byDate = {};
             const roundInfo = {};
-            list.forEach(item => {
+            // state.data는 "수출 현황"+"출고 완료"를 이어붙인 것이라, 출고 처리 중이거나
+            // 시트에 중복 입력된 경우 같은 품목(code+round+색상)이 두 번 잡힐 수 있다.
+            // 그러면 상차일이 갱신되기 전의 옛 값을 물고 있는 행도 같이 섞여 들어가서,
+            // 상차일을 바꾼 뒤에도 달력에 지워진 옛 날짜 칸이 계속 남아있는 것처럼 보였다.
+            // code+round+색상 단위로 마지막에 이어붙는(=더 나중 시트, 보통 더 최신 값)
+            // 행 하나만 남기고 중복을 제거한다.
+            const dedup = {};
+            list.forEach((item, idx) => {
                 if (!item.round) return;
+                const key = item.code ? ((item.code||'').toUpperCase() + '|' + item.round + '|' + (item.color||'')) : ('__noCode_' + idx);
+                dedup[key] = item;
+            });
+            Object.values(dedup).forEach(item => {
                 if (_scStatusType !== 'all') {
                     const isShipped = SC_SHIPPED_STATUSES.has(item.status);
                     if (_scStatusType === 'shipped' && !isShipped) return;
