@@ -412,14 +412,19 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <span class="flex-1">상세스펙</span>
     </div>
 
-    <div class="nav-item w-full" id="navProductSearch" onclick="openProductSearch()">
-      <i class="fa-solid fa-magnifying-glass w-4 text-center"></i>
-      <span class="flex-1">필터 검색</span>
-    </div>
-
     <div class="nav-item w-full" id="navReport" onclick="openReportModal()">
       <i class="fa-solid fa-file-powerpoint w-4 text-center"></i>
       <span class="flex-1">보고서 <span style="font-weight:600;color:var(--label);">(제작중)</span></span>
+    </div>
+
+    <div class="nav-item w-full" id="navSalesProcessUpdate" onclick="openSpuChoiceModal()">
+      <i class="fa-solid fa-file-arrow-up w-4 text-center"></i>
+      <span class="flex-1">수주 · 공정 업데이트</span>
+    </div>
+
+    <div class="nav-item w-full" id="navProductSearch" onclick="openProductSearch()">
+      <i class="fa-solid fa-magnifying-glass w-4 text-center"></i>
+      <span class="flex-1">필터 검색</span>
     </div>
 
     <div class="border-t border-slate-100 my-1"></div>
