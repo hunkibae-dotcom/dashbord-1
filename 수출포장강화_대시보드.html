@@ -2120,13 +2120,16 @@
                 } else if (rawStatusNorm.includes('입고')) {
                     statusDisplay = '입고';
                     statusCategory = '입고';
+                } else if (rawStatusNorm.includes('재고활용')) {
+                    statusDisplay = statusVal;
+                    statusCategory = '재고활용';
                 } else {
                     statusDisplay = statusVal;
                     statusCategory = '미입고';
                 }
 
                 // 포장이 완료되지 않은 상태는 포장일 없음 처리
-                if (statusCategory === '미입고' || statusCategory === '입고') regDateVal = '-';
+                if (statusCategory === '미입고' || statusCategory === '입고' || statusCategory === '재고활용') regDateVal = '-';
 
                 let countryVal = indices.country !== -1 && indices.country < row.length && row[indices.country] ? row[indices.country].toString().trim() : 'DOMESTIC';
                 let colorVal = indices.color !== -1 && indices.color < row.length && row[indices.color] ? row[indices.color].toString().trim() : '-';
