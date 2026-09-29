@@ -3620,7 +3620,7 @@ function rpPhotoActionClear() {
   _rpSaveToStorage(true);
   _rpClearPhotoOnServer(key, side);
   closeRpPhotoAction();
-  renderReportList();
+  _rpRefreshRow(key);
   if (_rpEditKey === key && _rpEditMode === 'note') openRpNoteEditor(key); // 특이사항 편집창이 열려있었으면 미리보기도 갱신
 }
 function _rpClearPhotoOnServer(key, side) {
