@@ -2372,6 +2372,11 @@ function _qcMiniCalHtml() {
     <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">${cells}</div>`;
 }
 function renderQcMiniCal() {
+  // 모바일에선 이 미니 달력이 홈 탭 전용 카드라, 차트/목록 탭을 보고 있을 땐 안 보인다 —
+  // 그런데도 계산 자체가 [진행중+누적이력](수천 건) 전체를 훑는 무거운 작업이라, 다른
+  // 탭을 보는 동안의 모든 상호작용마다 안 보이는 이 계산까지 매번 다시 하고 있었다.
+  // 홈 탭으로 돌아오는 순간(setMTab)에 한 번 더 그려주므로 최신 상태는 그대로 보장된다.
+  if (isMobile() && mCurrentTab !== 'home') return;
   const html = _qcMiniCalHtml();
   const d = document.getElementById('qcMiniCal'); if (d) d.innerHTML = html;
   const m = document.getElementById('mQcMiniCal'); if (m) m.innerHTML = html;
