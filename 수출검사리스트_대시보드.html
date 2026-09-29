@@ -2965,7 +2965,12 @@ function _rpLoadFromStorage() {
       _updatedAt: m._updatedAt || 0
     };
   }
-  _reportChecked = new Set(checkedArr);
+  // 체크 상태는 새로고침해도 유지하지 말라는 요청 — 등록해둔 사진·CBM·특이사항 같은
+  // "작업 내용"은 그대로 이어받지만, "이번에 PPTX에 뭘 넣을지" 체크만큼은 매번 새로
+  // 열 때 0개(빈 선택)로 시작한다. checkedArr 자체는 안 쓰지만, 예전 형식 파일에
+  // 남아있던 값이라 변수는 그대로 두고 반영만 안 한다.
+  void checkedArr;
+  _reportChecked = new Set();
 
   // 이 기기에 분리된 사진 저장소가 아직 없던 경우(막 이 버전으로 넘어온 기기)라면,
   // 위에서 옛 형식의 인라인 사진을 이어받은 걸 지금 바로 새 저장소에 적어둔다 —
