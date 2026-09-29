@@ -4064,7 +4064,7 @@ function _rpSaveEditModal() {
     syncPromise = _rpSyncNoteToSheet(sel.item, sel.note);
   }
   _rpSaveToStorage();
-  renderReportList();
+  _rpRefreshRow(key);
   closeRpEditModal();
 
   if (syncPromise) {
