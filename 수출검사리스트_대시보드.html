@@ -3460,7 +3460,7 @@ function rpPhotoEditConfirm() {
   if (!_reportSelected[key]) return;
   if (side === 'product') _reportSelected[key].productPhoto = rec;
   else _reportSelected[key].packagePhoto = rec;
-  _rpSaveToStorage();
+  _rpSaveToStorage(true);
   closeRpPhotoEdit();
   renderReportList();
 }
