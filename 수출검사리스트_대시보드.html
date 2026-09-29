@@ -5262,6 +5262,13 @@ function renderMobileCharts() {
 
 function renderMobileList() {
   if (!isMobile()) return;
+  // '목록' 화면은 홈 카드에서 들어가는 별도 서브뷰라 평소엔 화면에 안 보이는데도,
+  // 검색·필터·데이터 갱신 등 거의 모든 조작마다 [진행중+누적이력](수천 건 이상)을
+  // 매번 다시 걸러서 통째로 다시 그리고 있었다 — 안 보이는 화면을 매번 무겁게
+  // 다시 그리는 게 "포장강화보다 유독 느리다"는 지적의 핵심 원인 중 하나였다.
+  // 목록 화면이 실제로 열려있을 때만 그리고, setMTab('list')로 들어가는 순간에만
+  // 별도로 한 번 그려서 최신 상태를 보장한다.
+  if (mCurrentTab !== 'list') return;
   const search = (document.getElementById('mSearch')?.value || '').toLowerCase();
   const allItems = [...allData, ...archiveRows];
   const items = allItems.filter(d => {
