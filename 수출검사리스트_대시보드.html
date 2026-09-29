@@ -2239,7 +2239,7 @@ function renderTable(data) {
     const rowClick = _tblMultiSelectMode ? `_tblToggleRowSelect('${miKey.replace(/'/g, "\\'")}')` : `openMItemDetail('${mik}')`;
     const firstCell = _tblMultiSelectMode
       ? `<td class="py-2.5 pr-3" onclick="event.stopPropagation();_tblToggleRowSelect('${miKey.replace(/'/g, "\\'")}')"><input type="checkbox" class="tbl-select-box" ${isSelected ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;"></td>`
-      : `<td class="py-2.5 pr-3 text-slate-400">${i + 1}</td>`;
+      : `<td class="py-2.5 pr-3 text-slate-400">${(_tblPage - 1) * TBL_PAGE_SIZE + i + 1}</td>`;
     return `<tr class="tbl-row${isSelected ? ' tbl-row-selected' : ''}" data-tbl-key="${attrKey}" onclick="${rowClick}" style="cursor:pointer;${rowBg}">
       ${firstCell}
       <td class="py-2.5 pr-3">
