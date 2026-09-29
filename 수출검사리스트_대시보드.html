@@ -3126,7 +3126,6 @@ function renderReportList() {
   const genBtn = document.getElementById('rpGenBtn');
   if (genBtn) genBtn.style.display = mobile ? 'none' : '';
 
-  _rpUpdateSelectThState(rows);
   if (_rpOpenFilterDD) _renderRpFilterDD(_rpOpenFilterDD);
 
   if (!rows.length) {
