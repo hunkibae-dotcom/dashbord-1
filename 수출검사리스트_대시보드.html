@@ -2361,7 +2361,7 @@ function openTblBulkEditModal() {
   _tblBulkStatus = null;
   document.getElementById('tblBulkDateInput').value = '';
   document.getElementById('tblBulkResult').textContent = '';
-  document.getElementById('tblBulkCount').textContent = _tblSelectedKeys.size + '개 품목 선택됨';
+  document.getElementById('tblBulkCount').textContent = _tblBulkTargetKeys.length + '개 품목 선택됨';
   _tblRenderBulkStatusBtns();
   document.getElementById('tblBulkEditModal').style.display = 'flex';
 }
