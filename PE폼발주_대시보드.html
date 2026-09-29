@@ -896,15 +896,28 @@ function renderDashSpecModalBody() {
 const DASH_KPI_TITLE = { ongoing: '진행중 발주', month: '이번 달 발주', stock: '남은 재고 자재', lead: '리드타임 상세' };
 let _dashKpiKind = null;
 let _dashKpiStockTypeFilter = '';
+// 'month'(이번 달 발주)와 'lead'(평균 리드타임) 상세 목록에만 정렬 버튼을 쓴다 —
+// 기본값은 각각 날짜 최신순 / 리드타임 긴 순(desc)으로, 기존 정렬 결과를 그대로 유지한다.
+let _dashKpiSortDir = 'desc';
 
 function openDashKpiDetail(kind) {
   _dashKpiKind = kind;
   _dashKpiStockTypeFilter = '';
+  _dashKpiSortDir = 'desc';
   const typeChips = document.getElementById('dashDetailTypeChips');
   typeChips.style.display = kind === 'stock' ? 'flex' : 'none';
   typeChips.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.v === ''));
+  const sortBtn = document.getElementById('dashKpiSortBtn');
+  sortBtn.style.display = (kind === 'month' || kind === 'lead') ? 'flex' : 'none';
+  document.getElementById('dashKpiSortIcon').className = 'fa-solid fa-arrow-down-wide-short';
   renderDashKpiBody();
   document.getElementById('dashDetailModal').classList.add('open');
+}
+
+function toggleDashKpiSort() {
+  _dashKpiSortDir = _dashKpiSortDir === 'desc' ? 'asc' : 'desc';
+  document.getElementById('dashKpiSortIcon').className = 'fa-solid ' + (_dashKpiSortDir === 'desc' ? 'fa-arrow-down-wide-short' : 'fa-arrow-up-wide-short');
+  renderDashKpiBody();
 }
 document.getElementById('dashDetailTypeChips').addEventListener('click', e => {
   const chip = e.target.closest('.chip'); if (!chip) return;
