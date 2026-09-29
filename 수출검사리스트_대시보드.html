@@ -990,14 +990,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <thead style="position:sticky;top:0;background:var(--bg);z-index:1;">
         <tr>
           <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">선택</th>
-          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;position:relative;">
-            <span onclick="toggleRpFilterDD('packer',event)" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px;">포장처<i class="fa-solid fa-caret-down" style="font-size:8px;"></i></span>
-            <div id="rpPackerFilterDD" class="rp-filter-dd" onclick="event.stopPropagation()"></div>
-          </th>
-          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;position:relative;">
-            <span onclick="toggleRpFilterDD('status',event)" style="cursor:pointer;display:inline-flex;align-items:center;gap:3px;">진행상태<i class="fa-solid fa-caret-down" style="font-size:8px;"></i></span>
-            <div id="rpStatusFilterDD" class="rp-filter-dd" onclick="event.stopPropagation()"></div>
-          </th>
+          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">포장처</th>
+          <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">진행상태</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">건명</th>
           <th style="text-align:left;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">단품코드</th>
           <th style="text-align:center;padding:6px;color:var(--label);font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;">색상</th>
