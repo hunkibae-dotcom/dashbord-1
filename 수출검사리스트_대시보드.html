@@ -3826,7 +3826,7 @@ function rpPhotoEditConfirm() {
   _rpSaveToStorage(true);
   _rpUploadPhotoToServer(key, side, rec.dataUrl);
   closeRpPhotoEdit();
-  renderReportList();
+  _rpRefreshRow(key);
 }
 
 // 검사완료된 품목은 allData가 아니라 archiveRows에 있으므로 둘 다 뒤져야 찾는다.
