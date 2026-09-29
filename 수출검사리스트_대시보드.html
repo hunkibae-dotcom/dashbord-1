@@ -2966,6 +2966,94 @@ function _rpLoadFromStorage() {
 // 그려지는 걸 막지 않도록 한 박자 미뤄서 실행한다(보고서 탭은 어차피 나중에 연다).
 setTimeout(_rpLoadFromStorage, 0);
 
+// ── 보고서 공유 동기화(체크 여부/철물/사진) ──────────────────────────
+// 예전엔 이 전부가 각자 기기의 localStorage에만 있어서 다른 사람 화면엔 아예 안
+// 보였다 — 이제 GAS의 "보고서 임시저장" 시트(+사진은 Drive)에도 백그라운드로 올려서,
+// 누가 열든 같은 보고서 초안을 보고 이어서 채울 수 있다. 화면은 지금처럼 로컬에서
+// 즉시 반응하고(체크·특이사항 입력 등 체감 속도는 그대로) 서버 반영만 뒤에서 조용히
+// 진행한다 — CBM/특이사항은 이미 updateSpec/updateNote로 시트 원본(가로/세로/높이/
+// 중량/비고 칼럼)에 반영되고 있어서(_rpSyncCbmToSheet/_rpSyncNoteToSheet 참고) 여기서는
+// 그 둘이 못 채워주는 체크 여부·철물·사진만 다룬다.
+function _rpAllFactoryUrls() {
+  return [GAS_URL_CJ1, GAS_URL_CJ2].filter(Boolean);
+}
+
+// 서버에서 받아온 보고서 데이터를 로컬 상태에 합친다 — 서버 쪽 updatedAt이 내가 이
+// 기기에서 마지막으로 반영한 시점보다 최신일 때만 그 값으로 덮어써서, 아직 서버로
+// 못 올라간 내 최근 변경을 되돌리지 않는다.
+async function _rpFetchSharedReportData() {
+  const urls = _rpAllFactoryUrls();
+  await Promise.all(urls.map(async (url) => {
+    try {
+      const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportData' }), { signal: AbortSignal.timeout(15000) });
+      const json = await res.json();
+      if (json.status !== 'success' || !json.items) return;
+      Object.keys(json.items).forEach(key => {
+        const remote = json.items[key];
+        const item = _rpFindByKey(key);
+        if (!item) return; // 지금 화면에 없는(이관/삭제된) 품목은 건너뛴다
+        const localUpdatedAt = (_reportSelected[key] && _reportSelected[key]._updatedAt) || 0;
+        if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) return; // 내 로컬이 더 최신
+        _rpEnsureSelected(key);
+        const sel = _reportSelected[key];
+        sel.hasHardware = remote.hasHardware === true;
+        if (remote.productPhotoId) sel.productPhotoRemote = { fileId: remote.productPhotoId };
+        if (remote.packagePhotoId) sel.packagePhotoRemote = { fileId: remote.packagePhotoId };
+        if (remote.notePhotoId) sel.notePhotoRemote = { fileId: remote.notePhotoId };
+        sel._updatedAt = remote.updatedAt || Date.now();
+        if (remote.checked) _reportChecked.add(key); // 남이 체크한 것도 같이 보이게(해제는 각자 판단)
+      });
+      _rpSaveToStorage();
+      renderReportList();
+    } catch (e) { /* 네트워크 실패는 조용히 무시 — 로컬 데이터로 계속 작업 가능 */ }
+  }));
+}
+
+let _rpMetaSyncTimers = {}; // key별로 따로 디바운스
+function _rpSyncMetaToServer(key) {
+  const sel = _reportSelected[key];
+  if (!sel || !sel.item || !sel.item.공장) return;
+  const url = _gasUrlForFactory(sel.item.공장);
+  if (!url) return;
+  clearTimeout(_rpMetaSyncTimers[key]);
+  _rpMetaSyncTimers[key] = setTimeout(async () => {
+    const params = Object.assign({
+      action: 'saveReportMeta', key: key,
+      checked: _reportChecked.has(key) ? '1' : '0',
+      hasHardware: sel.hasHardware ? '1' : '0'
+    }, _gasQcSyncParams(sel.item));
+    try {
+      await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
+      sel._updatedAt = Date.now();
+    } catch (e) { /* 실패해도 로컬엔 이미 반영돼 있어 다음 변경 때 자연히 다시 시도됨 */ }
+  }, 400);
+}
+
+// 사진은 base64라 GET으로 못 보내서 POST — 실패해도 로컬 사진은 이미 이 기기 화면엔
+// 바로 보이므로 체감상 문제 없고, 다른 사람과의 공유만 잠시 안 될 뿐이다.
+async function _rpUploadPhotoToServer(key, side, dataUrl) {
+  const sel = _reportSelected[key];
+  if (!sel || !sel.item || !sel.item.공장) return;
+  const url = _gasUrlForFactory(sel.item.공장);
+  if (!url) return;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'uploadReportPhoto', key: key, side: side, dataUrl: dataUrl,
+        round: sel.item.건명 || '', code: sel.item.단품코드 || '', color: sel.item.색상 || '',
+        qty: String(sel.item.수량 != null ? sel.item.수량 : '')
+      }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const json = await res.json();
+    if (json.status === 'success') {
+      sel[side + 'PhotoRemote'] = { fileId: json.fileId, viewUrl: json.viewUrl, downloadUrl: json.downloadUrl };
+      sel._updatedAt = Date.now();
+    }
+  } catch (e) { /* 사진 공유 업로드 실패 — 이 기기에는 이미 보이므로 조용히 무시 */ }
+}
+
 function openReportModal() {
   const modal = document.getElementById('reportModal');
   modal.style.transform = 'translateX(0)';
@@ -2975,6 +3063,7 @@ function openReportModal() {
   document.getElementById('mNavReport')?.classList.add('active');
   _updateRpSortBtn();
   renderReportList();
+  _rpFetchSharedReportData();
   _armBackTrap();
 }
 function closeReportModal() {
