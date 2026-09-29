@@ -948,7 +948,9 @@ function renderDashKpiBody() {
     rows.sort((a, b) => a.total - b.total);
     html = rows.map(stockInfoRowHtml).join('');
   } else if (kind === 'lead') {
-    rows = orderRows.filter(r => parseFloat(r.lead) > 0).sort((a, b) => parseFloat(b.lead) - parseFloat(a.lead));
+    rows = orderRows.filter(r => parseFloat(r.lead) > 0).sort((a, b) => _dashKpiSortDir === 'desc'
+      ? parseFloat(b.lead) - parseFloat(a.lead)
+      : parseFloat(a.lead) - parseFloat(b.lead));
     html = rows.map(leadInfoRowHtml).join('');
   }
   const unitLabel = kind === 'stock' ? '종' : '건';
