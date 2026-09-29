@@ -5802,6 +5802,12 @@ function openSpuUploadModal(mode) {
     </div>
     <div style="font-size:11px;color:#94a3b8;line-height:1.6;">${descParts.join('<br><br>')}</div>`;
   document.getElementById('spuUploadResult').textContent = '';
+  // 지난번 실행이 끝나 "완료" 버튼으로 바뀌어 있었을 수 있으니, 새로 열 때마다 항상
+  // "업데이트 실행" 상태로 되돌린다.
+  const runBtn = document.getElementById('spuUploadRunBtn');
+  runBtn.disabled = false;
+  runBtn.innerHTML = '업데이트 실행';
+  runBtn.onclick = _spuRunImport;
   document.getElementById('spuUploadModal').style.display = 'flex';
 }
 function closeSpuUploadModal() { document.getElementById('spuUploadModal').style.display = 'none'; }
