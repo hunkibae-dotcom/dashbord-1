@@ -3953,6 +3953,29 @@ function _todayLabel() {
 // 실제 사용 중인 "수출건 검사 세부내역 양식.pptx"를 직접 열어(표의 gridCol/행높이를
 // EMU 단위로 그대로 추출) 얻은 칼럼 폭·행 높이다 — 예전엔 8칸을 똑같은 폭으로 나눠서
 // 실제 양식과 간격이 달랐고, 검사사진 두 칸도 경계선 없이 하나로 붙어있었다.
+// 이 기기에 원본이 있으면 그대로 쓰고, 없으면(남이 등록한 사진) Drive에서 base64로
+// 받아온다 — pptxgenjs의 addImage는 실제 base64 데이터가 있어야 해서 URL만으로는
+// 안 되고, w/h(가로세로 비율)도 몰라서 이미지를 한 번 그려 알아낸다.
+async function _rpResolvePhotoForSlide(sel, side) {
+  const local = side === 'product' ? sel.productPhoto : sel.packagePhoto;
+  if (local && local.dataUrl) return local;
+  const remote = side === 'product' ? sel.productPhotoRemote : sel.packagePhotoRemote;
+  if (!remote || !remote.fileId || !sel.item || !sel.item.공장) return null;
+  const url = _gasUrlForFactory(sel.item.공장);
+  if (!url) return null;
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams({ action: 'getReportPhotoBase64', fileId: remote.fileId }), { signal: AbortSignal.timeout(20000) });
+    const json = await res.json();
+    if (json.status !== 'success' || !json.dataUrl) return null;
+    return await new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => resolve({ dataUrl: json.dataUrl, w: img.naturalWidth || 1, h: img.naturalHeight || 1 });
+      img.onerror = () => resolve({ dataUrl: json.dataUrl, w: 1, h: 1 });
+      img.src = json.dataUrl;
+    });
+  } catch (e) { return null; }
+}
+
 function _addReportSlide(pptx, d, sel, repRound) {
   const slide = pptx.addSlide();
   const factoryKey = d.공장;
