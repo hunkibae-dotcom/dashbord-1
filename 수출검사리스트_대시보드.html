@@ -5852,20 +5852,13 @@ async function _spuRunImport() {
   const resultEl = document.getElementById('spuUploadResult');
   const name = _spuUserName();
 
-  const candidates = [];
-  if (_spuMode === 'sales' || _spuMode === 'both') {
-    candidates.push({ type: 'sales', factory: 'cj1', inputId: 'spuFileSalesCj1' });
-    candidates.push({ type: 'sales', factory: 'cj2', inputId: 'spuFileSalesCj2' });
-  }
-  if (_spuMode === 'process' || _spuMode === 'both') {
-    candidates.push({ type: 'process', factory: 'cj1', inputId: 'spuFileProcessCj1' });
-    candidates.push({ type: 'process', factory: 'cj2', inputId: 'spuFileProcessCj2' });
-  }
-  const jobs = candidates.filter(j => {
-    const el = document.getElementById(j.inputId);
-    return el && el.files && el.files[0];
-  });
-  if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요.'; return; }
+  const jobs = ['sales_cj1', 'sales_cj2', 'process_cj1', 'process_cj2']
+    .filter(key => _spuDetected[key])
+    .map(key => {
+      const [type, factory] = key.split('_');
+      return { type: type, factory: factory, file: _spuDetected[key] };
+    });
+  if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요 (파일 이름에 수주1/수주2/공정1/공정2가 포함되어야 합니다).'; return; }
 
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
@@ -5873,7 +5866,7 @@ async function _spuRunImport() {
 
   const logs = [];
   for (const job of jobs) {
-    const file = document.getElementById(job.inputId).files[0];
+    const file = job.file;
     const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : '공정진행정보');
     try {
       const grid = await new Promise((resolve, reject) => _spuReadFileAsGrid(file, (err, g) => err ? reject(err) : resolve(g)));
