@@ -3031,8 +3031,8 @@ function _rpFilteredRows() {
 }
 
 // 검색/필터로 좁혀놓은 화면에 보이는 품목을 한 번에 체크/해제한다 — 이미 등록된 사진·
-// 입력값은 그대로 두고(누적), 체크 표시만 켠다. 지금 보이는 품목이 전부 체크돼 있으면
-// 버튼이 "전체해제"로 바뀌어 눌렀을 때 반대로 전부 해제한다.
+// 입력값은 그대로 두고(누적), 체크 표시만 켠다. "선택" 칼럼 헤더를 누르면 실행되고,
+// 지금 보이는 품목이 전부 체크돼 있으면 반대로 전부 해제한다(헤더 배경색으로 상태 표시).
 function toggleSelectAllVisibleReportItems() {
   const rows = _rpFilteredRows();
   if (!rows.length) return;
