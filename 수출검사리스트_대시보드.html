@@ -4039,6 +4039,7 @@ const STATUS_LABEL = (d) => {
 // 건명/단품코드/단품명칭 클릭 시 클립보드로 복사 — 예전엔 단품코드를 누르면 상세스펙
 // 조회창이 떴는데, 검사항목목록에서는 그보다 "빠르게 복붙"하는 용도가 더 자주 필요하다는
 // 요청으로 바꿨다(스펙조회는 좌측 메뉴 openSpecModal()에 그대로 남아있음).
+function _jsAttr(s) { return (s || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
 function copyCellText(text, e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   const val = (text || '').toString().trim();
