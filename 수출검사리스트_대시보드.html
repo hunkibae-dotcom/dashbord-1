@@ -124,6 +124,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
   /* ===== MOBILE APP ===== */
   .rp-df-btn.active { background:#6D5CE8 !important; color:#fff !important; }
+  .rp-filter-dd { position:absolute; top:calc(100% + 4px); left:0; z-index:50; background:var(--panel); border:1.5px solid var(--border); border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,.18); padding:5px; min-width:150px; max-height:260px; overflow-y:auto; text-transform:none; letter-spacing:normal; font-weight:600; }
+  .rp-filter-dd-item { padding:7px 10px; border-radius:7px; font-size:12.5px; color:var(--text); cursor:pointer; white-space:nowrap; }
+  .rp-filter-dd-item:hover { background:var(--input-bg); }
+  .rp-filter-dd-item.active { background:#6D5CE8; color:#fff; font-weight:800; }
   .mobile-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-sub); font-size:10px; font-weight:600; cursor:pointer; border:none; background:transparent; transition:color .15s; -webkit-tap-highlight-color:transparent; }
   .mobile-nav-btn.active { color:#6D5CE8; }
   .m-nav-icon { display:flex; align-items:center; justify-content:center; }
