@@ -2358,6 +2358,7 @@ async function _tblApplyBulkEdit() {
     _tblMultiSelectMode = false;
     _tblSelectedKeys = new Set();
     _updateTblMultiBtn();
+    renderTable(displayedRows || []);
   }, 900);
 }
 
