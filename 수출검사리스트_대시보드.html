@@ -1607,10 +1607,15 @@ async function loadData() {
     console.error(e);
     setConnStatus('error');
     document.getElementById('tableBody').innerHTML = `<tr><td colspan="11" class="text-center py-10 text-rose-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i>데이터 로드 실패: ${e.message}</td></tr>`;
+    _hideQcInitLoadingOverlay(); // 완전히 실패해도 화면이 로딩 표시로 영원히 덮여있으면 안 됨
   } finally {
     btn.disabled = false;
     icon.classList.remove('fa-spin');
   }
+}
+function _hideQcInitLoadingOverlay() {
+  const overlay = document.getElementById('qcInitLoadingOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 // gviz(구글의 공개 JSON 조회 URL)는 응답을 한동안 캐싱해서, 방금 검사완료 처리되어
