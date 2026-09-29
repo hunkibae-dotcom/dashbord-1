@@ -5852,6 +5852,17 @@ function _spuDateStr(v) {
   return isNaN(d.getTime()) ? s : (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
 }
 
+// 건명이 한글이면 내수건인 게 보통이지만, 내수건인데도 회사명이 영문(주로 약자)으로
+// 찍히는 경우가 간혹 있다(예: IMC) — 그런 예외는 발견될 때마다 여기에 이름만 추가하면
+// 된다. 접두어(하이픈/언더바 앞부분) 기준으로 대소문자 구분 없이 비교한다.
+const SPU_DOMESTIC_NAME_OVERRIDES = ['IMC'];
+function _spuIsDomesticRound(roundName) {
+  const n = (roundName || '').trim();
+  if (/[가-힣]/.test(n)) return true; // 한글이 하나라도 있으면 내수
+  const prefix = n.split(/[-_]/)[0].trim().toUpperCase();
+  return SPU_DOMESTIC_NAME_OVERRIDES.some(p => prefix === p.toUpperCase());
+}
+
 // 실제 원본 파일(grd_Group_*)을 직접 확인한 결과: 1행이 제목줄, 2행부터 진짜 내용 —
 // 구글시트 안(충주1 수주내역)의 "6행 헤더, 7행부터" 규칙과는 다르므로 헷갈리지 않게.
 // 열 배치(0-based): L=11 수주건명, P=15 확정납기, Q=16 단품코드, R=17 색상, S=18 수주량,
@@ -5863,7 +5874,7 @@ function _spuExtractSalesRows(grid) {
     if (!row) continue;
     const roundName = (row[11] || '').toString().trim();
     if (!roundName) continue;
-    const isDomestic = /[가-힣]/.test(roundName); // 한글 건명=내수, 국가명(영문)-차수=수출
+    const isDomestic = _spuIsDomesticRound(roundName);
     const qty = Number(row[18]) || 0;
     if (isDomestic && qty < 50) continue; // 내수건은 수주량 50개 미만 제외
     rows.push({
