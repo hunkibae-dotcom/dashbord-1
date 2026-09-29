@@ -3662,6 +3662,10 @@ function _rpLayoutCropStage() {
   img.style.height = dh + 'px';
   img.style.left = left + 'px';
   img.style.top = top + 'px';
+  img.style.transform = ''; // 90도 회전이든 미세 회전 커밋이든, 새로 구워진 픽셀을 불러온 뒤라 미리보기용 CSS 회전은 원상복구
+  const fineSlider = document.getElementById('rpFineRotateSlider'), fineLabel = document.getElementById('rpFineRotateLabel');
+  if (fineSlider) fineSlider.value = 0;
+  if (fineLabel) fineLabel.textContent = '0°';
   _rpCropImgRect = { left: left, top: top, width: dw, height: dh };
   rpCropReset();
 }
