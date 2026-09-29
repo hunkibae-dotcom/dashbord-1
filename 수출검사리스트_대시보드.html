@@ -5693,37 +5693,67 @@ function closeSpuChoiceModal() { document.getElementById('spuChoiceModal').style
 const _SPU_SALES_DESC = '업로드하면 새로 들어온 수주 건은 검사항목 리스트에 새로 추가되고, 이미 있는 항목은 납기일 · BOM확정이 바뀐 경우만 자동으로 반영됩니다. 내수건(한글 건명)은 수주량 50개 이상인 것만 반영되고, 그 미만은 제외됩니다. 업로드한 파일 내용은 반영 후 남겨두지 않습니다.';
 const _SPU_PROCESS_DESC = '업로드하면 포장계획일 · 공정진행률이 검사항목 리스트에 반영되고, 공정진행률이 95% 이상이면 검사 상태가 "포장대기"로 자동 전환됩니다. 어느 차수인지 확실하지 않은 항목은 업로드 뒤 별도 확인창에서 직접 골라 반영합니다.';
 
+// 파일마다 따로 선택칸을 두니 4칸을 일일이 눌러야 해서 번거롭다는 피드백을 받고,
+// 한 번에 여러 파일을 같이 선택하면 파일 이름(수주1/수주2/공정1/공정2가 들어있는지)
+// 만 보고 자동으로 구분하는 방식으로 바꿨다.
+let _spuDetected = {}; // "sales_cj1" 등 → File
+
+function _spuDetectFileKind(filename) {
+  const n = filename || '';
+  if (n.includes('수주1')) return { type: 'sales', factory: 'cj1' };
+  if (n.includes('수주2')) return { type: 'sales', factory: 'cj2' };
+  if (n.includes('공정1')) return { type: 'process', factory: 'cj1' };
+  if (n.includes('공정2')) return { type: 'process', factory: 'cj2' };
+  return null;
+}
+
 function openSpuUploadModal(mode) {
   _spuMode = mode;
+  _spuDetected = {};
   closeSpuChoiceModal();
   document.getElementById('spuUploadTitle').textContent =
     mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : '수주내역 + 공정진행정보 업데이트';
 
-  const salesBlock = `
-    <div style="margin-bottom:18px;">
-      <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">수주내역 (grd_Group 파일)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주1<input type="file" id="spuFileSalesCj1" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주2<input type="file" id="spuFileSalesCj2" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
-      </div>
-      <div style="font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.5;">${_SPU_SALES_DESC}</div>
-    </div>`;
-  const processBlock = `
-    <div>
-      <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:8px;">공정진행정보 (grd_List 파일)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주1<input type="file" id="spuFileProcessCj1" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#475569;">충주2<input type="file" id="spuFileProcessCj2" accept=".xlsx,.xls" style="flex:1;font-size:12px;"></label>
-      </div>
-      <div style="font-size:11px;color:#94a3b8;margin-top:6px;line-height:1.5;">${_SPU_PROCESS_DESC}</div>
-    </div>`;
+  const descParts = [];
+  if (mode === 'sales' || mode === 'both') descParts.push(_SPU_SALES_DESC);
+  if (mode === 'process' || mode === 'both') descParts.push(_SPU_PROCESS_DESC);
 
-  document.getElementById('spuUploadBody').innerHTML =
-    mode === 'sales' ? salesBlock : mode === 'process' ? processBlock : (salesBlock + processBlock);
+  document.getElementById('spuUploadBody').innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12.5px;color:#475569;margin-bottom:8px;">파일 이름에 "수주1 · 수주2 · 공정1 · 공정2"가 들어있으면 자동으로 구분합니다 — 한 번에 여러 개를 같이 선택하세요.</div>
+      <input type="file" id="spuFileMulti" accept=".xlsx,.xls" multiple onchange="_spuOnFilesChosen()" style="width:100%;font-size:12.5px;">
+      <div id="spuFileDetectList" style="margin-top:10px;font-size:12px;line-height:1.7;"></div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;line-height:1.6;">${descParts.join('<br><br>')}</div>`;
   document.getElementById('spuUploadResult').textContent = '';
   document.getElementById('spuUploadModal').style.display = 'flex';
 }
 function closeSpuUploadModal() { document.getElementById('spuUploadModal').style.display = 'none'; }
+
+function _spuOnFilesChosen() {
+  const input = document.getElementById('spuFileMulti');
+  _spuDetected = {};
+  const rows = [];
+  Array.from((input && input.files) || []).forEach(file => {
+    const kind = _spuDetectFileKind(file.name);
+    if (!kind) {
+      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 이름에서 수주1/수주2/공정1/공정2를 찾지 못했습니다.</div>`);
+      return;
+    }
+    if (_spuMode === 'sales' && kind.type !== 'sales') {
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 지금은 수주내역만 처리하는 중이라 건너뜁니다.</div>`);
+      return;
+    }
+    if (_spuMode === 'process' && kind.type !== 'process') {
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
+      return;
+    }
+    _spuDetected[kind.type + '_' + kind.factory] = file;
+    const label = (kind.factory === 'cj1' ? '충주1 ' : '충주2 ') + (kind.type === 'sales' ? '수주내역' : '공정진행정보');
+    rows.push(`<div style="color:#16a34a;">✓ ${file.name} → ${label}</div>`);
+  });
+  document.getElementById('spuFileDetectList').innerHTML = rows.join('') || '';
+}
 
 // 엑셀 파일을 브라우저 안에서 바로 열어 표(2차원 배열)로 바꿔주는 라이브러리를
 // 그때그때 불러온다(처음 쓸 때 한 번만 내려받고, 이후엔 다시 안 받음). 이 라이브러리
