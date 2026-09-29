@@ -5972,6 +5972,7 @@ async function _spuRunImport() {
 function _spuOpenMismatchModal(factoryKey, pending) {
   _spuMismatchFactory = factoryKey;
   _spuMismatchItems = pending;
+  document.getElementById('spuMismatchStatus').textContent = '';
   const listEl = document.getElementById('spuMismatchList');
   listEl.innerHTML = pending.map((it, idx) => {
     const notes = [];
