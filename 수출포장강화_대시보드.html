@@ -1987,6 +1987,7 @@
                     updateConnectionStatus(true, 'sheet');
                     autoAdjustDateFilters();
                     applyFilters();
+                    document.getElementById('pkgInitLoadingOverlay')?.style && (document.getElementById('pkgInitLoadingOverlay').style.display = 'none');
                     if (!isInitial) {
                         showNotification('실시간 동기화 완료', '모든 활성 탭 데이터가 완벽 결합되었습니다!', 'success');
                     }
