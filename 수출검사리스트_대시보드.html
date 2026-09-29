@@ -1573,6 +1573,7 @@ async function loadData() {
     _rpInvalidateKeyIndex();
     applyFilters();
     renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
+    _hideQcInitLoadingOverlay(); // 진행중 리스트(실제로 조작하는 대상)가 준비되는 시점 = 눌러도 되는 시점
   });
 
   const archivePromise = Promise.all(
