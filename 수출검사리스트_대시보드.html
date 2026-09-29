@@ -5635,8 +5635,8 @@ function renderMobileList() {
       <div style="flex:1;padding:14px 14px 13px;min-width:0;">
         <div class="flex items-start justify-between mb-2.5">
           <div style="flex:1;min-width:0;margin-right:10px;">
-            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d.건명, d.공장)}</div>
-            <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;cursor:pointer;" onclick="_toggleTextExpand(this,event);copyCellText('${_jsAttr(d.단품명칭)}', event)" title="클릭하여 전체 명칭 보기 · 복사">${d.단품명칭 || '—'}</div>
+            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;"><span class="cursor-pointer" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d.건명, d.공장)}</span></div>
+            <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기"><span onclick="copyCellText('${_jsAttr(d.단품명칭)}', event)" title="클릭하여 복사">${d.단품명칭 || '—'}</span></div>
           </div>
           <span class="pill ${pillCls} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${pillIcon}" style="font-size:9px;"></i> ${pillText}</span>
         </div>
