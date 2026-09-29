@@ -3224,6 +3224,7 @@ function _updateRpDateFieldUI() {
 // 버튼 하나로 내림차순 → 오름차순 → 정렬 안 함 순서로 순환한다.
 function cycleRpSort() {
   _rpSortDir = _rpSortDir === null ? 'desc' : _rpSortDir === 'desc' ? 'asc' : null;
+  _rpPage = 1;
   _updateRpSortBtn();
   renderReportList();
 }
