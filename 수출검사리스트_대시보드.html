@@ -4643,11 +4643,21 @@ function saveMItemDetail() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장 완료';
   }
-  setTimeout(closeMItemDetail, 400);
+  const item = _miCurrent;
+  // 검사완료 팝업은 상태 버튼을 누르는 즉시가 아니라 "저장"을 눌렀을 때만 묻는다 —
+  // 다른 칸(규격 등)을 만지다 실수로 튀어나오지 않게. 이 창을 연 시점의 원래 상태와
+  // 비교해 검사완료로 "바뀐" 경우에만 물어본다.
+  const justCompleted = item && item.검사 === '검사' && _miOriginalStatus !== '검사';
+  setTimeout(() => {
+    if (justCompleted && confirm(item.건명 + ' / ' + item.단품코드 + '\n\n검사완료로 저장했습니다. 이 품목으로 보고서를 작성하시겠습니까?')) {
+      _miGoToReport(item);
+    } else {
+      closeMItemDetail();
+    }
+  }, 400);
 }
 function setMiField(field, value) {
   if (!_miCurrent) return;
-  const prevStatus = _miCurrent.검사;
   if (['가로', '세로', '높이', '중량'].includes(field)) {
     value = parseFloat(value) || 0;
     _updateMiCbm();
