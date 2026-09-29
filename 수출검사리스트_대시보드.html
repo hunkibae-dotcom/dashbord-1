@@ -6110,29 +6110,36 @@ function _presenceInit() {
   _presenceStart();
 }
 
+// 예전엔 하트비트(저장)와 목록 조회를 따로 호출해서 주기마다 공장당 2번씩(=최대 4번)
+// 네트워크 요청이 나갔다 — 어차피 하트비트를 보낼 때마다 최신 목록도 같이 필요하므로
+// GAS 쪽에서 한 응답에 같이 담아 보내도록 합쳐서 요청 수를 절반으로 줄였다. 주기도
+// 25초→45초로 늘리고, 화면이 꺼져있거나(백그라운드) 안 보일 때는 아예 멈춰서
+// 안 보이는 동안 배터리·데이터를 쓰지 않게 했다(다시 보이면 즉시 한 번 갱신).
 function _presenceStart() {
-  _presenceHeartbeat();
-  _presenceFetchAndRender();
+  _presenceTick();
   clearInterval(_presenceTimer);
-  _presenceTimer = setInterval(() => { _presenceHeartbeat(); _presenceFetchAndRender(); }, 25000);
+  _presenceTimer = setInterval(_presenceTick, 45000);
+  document.addEventListener('visibilitychange', _presenceOnVisibilityChange);
+}
+function _presenceOnVisibilityChange() {
+  if (document.hidden) {
+    clearInterval(_presenceTimer);
+    _presenceTimer = null;
+  } else if (localStorage.getItem(PRESENCE_NAME_KEY)) {
+    _presenceTick();
+    clearInterval(_presenceTimer);
+    _presenceTimer = setInterval(_presenceTick, 45000);
+  }
 }
 
-async function _presenceHeartbeat() {
+async function _presenceTick() {
   const name = localStorage.getItem(PRESENCE_NAME_KEY);
   if (!name) return;
   const urls = [GAS_URL_CJ1, GAS_URL_CJ2].filter(Boolean);
-  await Promise.all(urls.map(url =>
-    fetch(url + '?' + new URLSearchParams({ action: 'presenceHeartbeat', name }), { signal: AbortSignal.timeout(10000) }).catch(() => {})
-  ));
-}
-
-async function _presenceFetchAndRender() {
-  const urls = [GAS_URL_CJ1, GAS_URL_CJ2].filter(Boolean);
-  const myName = localStorage.getItem(PRESENCE_NAME_KEY);
   const latest = {}; // name → lastSeen(가장 최신 값으로 병합, 공장별 시트 두 곳을 합치므로)
   await Promise.all(urls.map(async (url) => {
     try {
-      const res = await fetch(url + '?' + new URLSearchParams({ action: 'getPresence' }), { signal: AbortSignal.timeout(10000) });
+      const res = await fetch(url + '?' + new URLSearchParams({ action: 'presenceHeartbeat', name }), { signal: AbortSignal.timeout(10000) });
       const json = await res.json();
       if (json.status !== 'success' || !json.items) return;
       json.items.forEach(it => {
@@ -6142,7 +6149,7 @@ async function _presenceFetchAndRender() {
     } catch (e) { /* 조용히 무시 */ }
   }));
   const now = Date.now();
-  const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS && n !== myName);
+  const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS && n !== name);
   const bar = document.getElementById('presenceBar');
   if (!bar) return;
   if (!names.length) { bar.style.display = 'none'; return; }
