@@ -2303,10 +2303,21 @@ let _tblSelectedKeys = new Set();
 // 바뀌는 값이라 여기서도 임의로 노출하지 않는다.
 const TBL_BULK_STATUS_OPTIONS = ['미검사', '검사', '재투입', '양지'];
 let _tblBulkStatus = null; // null = 변경 안 함
+let _tblBulkTargetKeys = []; // "조회하기"를 누른 시점의 선택 목록(모달은 이걸 기준으로 동작)
 
 function toggleTblMultiSelect() {
   if (_tblMultiSelectMode) {
-    if (_tblSelectedKeys.size > 0) { openTblBulkEditModal(); return; }
+    if (_tblSelectedKeys.size > 0) {
+      // "조회하기"를 누르면 그 순간 대상 목록만 따로 챙겨두고, 선택 모드는 바로
+      // 끝난다 — 버튼은 다시 "다중선택"으로, 체크박스는 전부 해제된 채로 돌아간다.
+      _tblBulkTargetKeys = Array.from(_tblSelectedKeys);
+      _tblMultiSelectMode = false;
+      _tblSelectedKeys = new Set();
+      _updateTblMultiBtn();
+      renderTable(displayedRows || []);
+      openTblBulkEditModal();
+      return;
+    }
     _tblMultiSelectMode = false; // 아무것도 안 고르고 다시 누르면 다중선택 모드만 취소
   } else {
     _tblMultiSelectMode = true;
