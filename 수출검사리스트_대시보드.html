@@ -6149,14 +6149,17 @@ async function _presenceTick() {
     } catch (e) { /* 조용히 무시 */ }
   }));
   const now = Date.now();
-  const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS && n !== name);
+  // 나 자신도 같이 보여준다 — 안 그러면 접속한 사람이 나 혼자일 땐 배지가 하나도 안
+  // 떠서 "기능이 안 되는 건가?" 헷갈릴 수 있다.
+  const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS);
   const bar = document.getElementById('presenceBar');
   if (!bar) return;
   if (!names.length) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
-  bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">함께 보는 중</span>` + names.map(n => {
+  bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">접속 중</span>` + names.map(n => {
     const initial = n.trim().slice(-1); // 성이 아니라 이름 끝 글자가 더 구분하기 쉬워서
-    return `<span title="${n.replace(/"/g,'&quot;')}" style="width:26px;height:26px;border-radius:50%;background:#6D5CE8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);">${initial}</span>`;
+    const isMe = n === name;
+    return `<span title="${n.replace(/"/g,'&quot;')}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#6D5CE8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};">${initial}</span>`;
   }).join('');
 }
 
