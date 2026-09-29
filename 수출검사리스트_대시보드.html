@@ -1130,6 +1130,46 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== 수주/공정 업데이트: 무엇을 할지 고르는 선택창 ===== -->
+<div id="spuChoiceModal" onclick="if(event.target===this)closeSpuChoiceModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:380px;margin:16px;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+    <div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:4px;">수주 · 공정 업데이트</div>
+    <div style="font-size:12.5px;color:#64748b;margin-bottom:18px;">무엇을 업데이트할까요?</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button onclick="openSpuUploadModal('sales')" style="padding:13px;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-weight:700;font-size:13.5px;cursor:pointer;text-align:left;">📥 수주내역만</button>
+      <button onclick="openSpuUploadModal('process')" style="padding:13px;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-weight:700;font-size:13.5px;cursor:pointer;text-align:left;">🏭 공정진행정보만</button>
+      <button onclick="openSpuUploadModal('both')" style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;text-align:left;">📥🏭 둘 다 함께</button>
+    </div>
+    <button onclick="closeSpuChoiceModal()" style="margin-top:14px;width:100%;padding:9px;border:none;background:none;color:#94a3b8;font-size:12.5px;font-weight:600;cursor:pointer;">취소</button>
+  </div>
+</div>
+
+<!-- ===== 수주/공정 업데이트: 파일 업로드 화면 ===== -->
+<div id="spuUploadModal" onclick="if(event.target===this)closeSpuUploadModal()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:520px;margin:16px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div id="spuUploadTitle" style="font-size:16px;font-weight:800;color:#1e293b;"></div>
+      <button onclick="closeSpuUploadModal()" style="width:30px;height:30px;border:none;background:#f1f5f9;border-radius:8px;cursor:pointer;color:#64748b;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="spuUploadBody"></div>
+    <div id="spuUploadResult" style="margin-top:14px;font-size:12px;color:#475569;white-space:pre-line;line-height:1.6;"></div>
+    <button id="spuUploadRunBtn" onclick="_spuRunImport()" style="margin-top:16px;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">업데이트 실행</button>
+  </div>
+</div>
+
+<!-- ===== 수주/공정 업데이트: 공정진행정보 차수 확인(애매한 매칭만) ===== -->
+<div id="spuMismatchModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:640px;margin:16px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:4px;">차수 확인 필요</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:12px;">아래 항목들은 어느 차수인지 자동으로 확정할 수 없었습니다. 맞는 것만 체크하고 반영해주세요.</div>
+    <div id="spuMismatchList" style="flex:1;overflow-y:auto;border:1px solid #e2e8f0;border-radius:10px;"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;">
+      <button onclick="closeSpuMismatchModal()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#64748b;font-weight:700;cursor:pointer;">나중에</button>
+      <button onclick="_spuApplyMismatches()" style="flex:2;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">선택 항목 반영</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 공장별 납기/포장 날짜 달력 ===== -->
 <div id="qcScheduleModal" onclick="if(event.target===this)closeQcScheduleCalendar()" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:20px;padding:22px;width:100%;max-width:680px;margin:16px;max-height:92vh;box-shadow:0 20px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px;overflow-y:auto;">
