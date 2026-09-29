@@ -938,7 +938,9 @@ function renderDashKpiBody() {
     html = rows.map(orderInfoRowHtml).join('');
   } else if (kind === 'month') {
     const thisMonth = new Date().toISOString().slice(0, 7);
-    rows = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    rows = orderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).sort((a, b) => _dashKpiSortDir === 'desc'
+      ? (b.date || '').localeCompare(a.date || '')
+      : (a.date || '').localeCompare(b.date || ''));
     html = rows.map(orderInfoRowHtml).join('');
   } else if (kind === 'stock') {
     rows = remainStockList();
