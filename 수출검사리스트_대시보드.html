@@ -3041,7 +3041,7 @@ function _updateRpSortBtn() {
 
 // ── 포장처/진행상태 칼럼 헤더 드롭다운 필터 ──
 let _rpPackerFilter = null; // null(전체) 또는 실제 포장처 값
-let _rpStatusFilter = null; // null(전체) 또는 실제 검사상태 값
+let _rpStatusFilter = '검사'; // null(전체) 또는 실제 검사상태 값 — 기본은 검사완료 품목만
 let _rpOpenFilterDD = null; // 'packer' | 'status' | null
 
 function _rpDistinctValues(field) {
