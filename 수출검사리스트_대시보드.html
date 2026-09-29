@@ -2941,7 +2941,11 @@ function _rpLoadFromStorage() {
       cbm: m.cbm || null,
       productPhoto: p.productPhoto || null,
       packagePhoto: p.packagePhoto || null,
-      notePhoto: p.notePhoto || null
+      notePhoto: p.notePhoto || null,
+      productPhotoRemote: m.productPhotoRemote || null,
+      packagePhotoRemote: m.packagePhotoRemote || null,
+      notePhotoRemote: m.notePhotoRemote || null,
+      _updatedAt: m._updatedAt || 0
     };
   }
   _reportChecked = new Set(checkedArr);
