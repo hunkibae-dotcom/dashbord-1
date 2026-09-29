@@ -4806,8 +4806,6 @@ function setMiField(field, value) {
 function _miGoToReport(item) {
   closeMItemDetail();
   openReportModal();
-  const factSel = document.getElementById('rpFactory');
-  if (factSel) factSel.value = item.공장;
   const searchInp = document.getElementById('rpSearch');
   if (searchInp) searchInp.value = item.단품코드 || item.건명 || '';
   const key = _miKey(item);
