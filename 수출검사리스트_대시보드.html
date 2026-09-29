@@ -6085,9 +6085,78 @@ window.addEventListener('popstate', () => {
 });
 history.pushState({ fworkBase: true }, '', location.href);
 
+// ── 접속현황(현재 이 대시보드를 보고 있는 사람) ─────────────────────
+// 구글시트처럼 실시간 정밀 추적은 아니고, "최근 75초 이내에 하트비트를 보낸 사람"만
+// 접속중으로 본다 — 25초마다 한 번씩 조용히(백그라운드) 보내고 받아오므로 평소
+// 조작 속도에는 영향이 없다. 이름은 이 브라우저(기기)에 한 번만 물어보고 저장해둔다.
+const PRESENCE_NAME_KEY = 'fwork_user_name';
+const PRESENCE_FRESH_MS = 75000;
+let _presenceTimer = null;
+
+function _presenceSaveName() {
+  const name = (document.getElementById('presenceNameInput').value || '').trim();
+  if (!name) return;
+  localStorage.setItem(PRESENCE_NAME_KEY, name);
+  document.getElementById('presenceNameModal').style.display = 'none';
+  _presenceStart();
+}
+
+function _presenceInit() {
+  const name = localStorage.getItem(PRESENCE_NAME_KEY);
+  if (!name) {
+    document.getElementById('presenceNameModal').style.display = 'flex';
+    return;
+  }
+  _presenceStart();
+}
+
+function _presenceStart() {
+  _presenceHeartbeat();
+  _presenceFetchAndRender();
+  clearInterval(_presenceTimer);
+  _presenceTimer = setInterval(() => { _presenceHeartbeat(); _presenceFetchAndRender(); }, 25000);
+}
+
+async function _presenceHeartbeat() {
+  const name = localStorage.getItem(PRESENCE_NAME_KEY);
+  if (!name) return;
+  const urls = [GAS_URL_CJ1, GAS_URL_CJ2].filter(Boolean);
+  await Promise.all(urls.map(url =>
+    fetch(url + '?' + new URLSearchParams({ action: 'presenceHeartbeat', name }), { signal: AbortSignal.timeout(10000) }).catch(() => {})
+  ));
+}
+
+async function _presenceFetchAndRender() {
+  const urls = [GAS_URL_CJ1, GAS_URL_CJ2].filter(Boolean);
+  const myName = localStorage.getItem(PRESENCE_NAME_KEY);
+  const latest = {}; // name → lastSeen(가장 최신 값으로 병합, 공장별 시트 두 곳을 합치므로)
+  await Promise.all(urls.map(async (url) => {
+    try {
+      const res = await fetch(url + '?' + new URLSearchParams({ action: 'getPresence' }), { signal: AbortSignal.timeout(10000) });
+      const json = await res.json();
+      if (json.status !== 'success' || !json.items) return;
+      json.items.forEach(it => {
+        if (!it.name) return;
+        if (!latest[it.name] || it.lastSeen > latest[it.name]) latest[it.name] = it.lastSeen;
+      });
+    } catch (e) { /* 조용히 무시 */ }
+  }));
+  const now = Date.now();
+  const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS && n !== myName);
+  const bar = document.getElementById('presenceBar');
+  if (!bar) return;
+  if (!names.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">함께 보는 중</span>` + names.map(n => {
+    const initial = n.trim().slice(-1); // 성이 아니라 이름 끝 글자가 더 구분하기 쉬워서
+    return `<span title="${n.replace(/"/g,'&quot;')}" style="width:26px;height:26px;border-radius:50%;background:#6D5CE8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid rgba(255,255,255,.5);">${initial}</span>`;
+  }).join('');
+}
+
 // ===== INIT =====
 var _scanCodeHandled = false;
 loadData();
+_presenceInit();
 
 initMobile();
 
