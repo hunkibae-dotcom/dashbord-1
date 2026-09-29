@@ -2202,13 +2202,22 @@ function renderTable(data) {
   if (!data.length) {
     tbody.innerHTML = '';
     noData.classList.remove('hidden');
+    _tblRenderPagination(0, 0);
     return;
   }
   noData.classList.add('hidden');
 
+  // 검사완료 누적 이력까지 합치면 수천 행이라 한 번에 다 그리면 무거워진다 —
+  // 보고서 목록과 같은 방식으로 한 페이지에 50행만 실제로 DOM에 둔다.
+  const totalPages = Math.max(1, Math.ceil(data.length / TBL_PAGE_SIZE));
+  if (_tblPage > totalPages) _tblPage = totalPages;
+  if (_tblPage < 1) _tblPage = 1;
+  const pageRows = data.slice((_tblPage - 1) * TBL_PAGE_SIZE, _tblPage * TBL_PAGE_SIZE);
+  _tblRenderPagination(data.length, totalPages);
+
   if (!window._mItemMap) window._mItemMap = {};
   if (!window._mItemByMiKey) window._mItemByMiKey = {};
-  tbody.innerHTML = data.map((d, i) => {
+  tbody.innerHTML = pageRows.map((d, i) => {
     const isDone = d.검사 === '검사';
     const isArchive = d.source === 'archive';
     const factoryBadgeCls = d.공장 === 'cj1' ? 'bg-f1-50 text-f1-700' : 'bg-f2-50 text-f2-700';
