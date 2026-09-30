@@ -3840,6 +3840,23 @@ function _rpRowHtmlMobile(d, checkedOrderMap) {
 // 매번 수천 개 행의 HTML 문자열을 새로 만들고 다시 그리는 셈이라 클릭 자체는
 // 바로 반응해도 그 직후 화면이 몇 초씩 멈칫거렸다 — 바뀐 행 하나만 정확히 찾아서
 // 그 DOM만 교체한다(찾았을 때만; 필터에 가려 화면에 없으면 손댈 게 없어 그냥 둔다).
+// 납기일/포장일/검사일을 표에 칼럼 3개로 더 늘리면 표가 너무 길어져서, 대신 포장처와
+// 진행상태 사이의 자리에 작은 달력 버튼만 하나 두고 누르면 그 품목의 세 날짜를 작은
+// 팝업으로 보여준다(칼럼 추가 없음).
+function openRpDateDetail(key) {
+  const d = _rpFindByKey(key);
+  if (!d) return;
+  document.getElementById('rpDateDetailTitle').textContent = d.건명 || '—';
+  document.getElementById('rpDateDetailSub').textContent = (d.단품코드 || '—') + ' · ' + (d.색상 || '—') + ' · ' + (d.수량 || 0) + '개';
+  document.getElementById('rpDateDetailDue').textContent = d.납기일 || '—';
+  document.getElementById('rpDateDetailPack').textContent = d.포장일 || '—';
+  document.getElementById('rpDateDetailInspect').textContent = d.검사일 || '—';
+  document.getElementById('rpDateDetailModal').style.display = 'flex';
+}
+function closeRpDateDetail() {
+  document.getElementById('rpDateDetailModal').style.display = 'none';
+}
+
 function _rpRowEl(key) {
   try { return document.querySelector('[data-mikey="' + CSS.escape(key) + '"]'); } catch (e) { return null; }
 }
