@@ -4518,7 +4518,7 @@ function _rpCompressImage(file, cb) {
 let _rpEditKey = null, _rpEditMode = null; // 'cbm' | 'note'
 
 function openRpCbmEditor(key) {
-  _rpEnsureSelected(key);
+  _rpEnsureRecord(key);
   const sel = _reportSelected[key];
   if (!sel) return;
   _rpEditKey = key; _rpEditMode = 'cbm';
