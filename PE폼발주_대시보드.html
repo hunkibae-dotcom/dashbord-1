@@ -665,7 +665,7 @@ function typeBarsHtml(entries, onclickFn) {
   return entries.map(e => `
     <div class="bar-row clickable" onclick="${onclickFn}('${e.label.replace(/'/g, "\\'")}')">
       <div class="bar-row-top">
-        <span class="bl"><span style="display:inline-flex;align-items:center;margin-right:6px;color:var(--text-sub);">${typeIconHtml(e.label)}</span>${e.label}</span>
+        <span class="bl"><span style="display:inline-flex;align-items:center;margin-right:7px;vertical-align:middle;">${typeIconHtml(e.label, 24)}</span>${e.label}</span>
         <span class="bv">${e.value.toLocaleString()} ${e.unit || ''} <i class="fa-solid fa-chevron-right" style="margin-left:3px;color:var(--dim);font-size:10px;"></i></span>
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, e.value / max * 100)}%;"></div></div>
