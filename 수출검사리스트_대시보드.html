@@ -1000,6 +1000,12 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         </button>
         <div id="rpStatusFilterDD" class="rp-filter-dd"></div>
       </div>
+      <div style="position:relative;flex-shrink:0;">
+        <button type="button" onclick="toggleRpFilterDD('written',event)" id="rpWrittenFilterBtn" class="rp-df-btn" style="padding:10px 12px;font-size:12.5px;font-weight:700;border:1.5px solid var(--border);border-radius:11px;cursor:pointer;background:var(--input-bg);color:var(--text-sub);white-space:nowrap;display:flex;align-items:center;gap:5px;">
+          <span id="rpWrittenFilterLabel">작성완료: 전체</span><i class="fa-solid fa-caret-down" style="font-size:8px;"></i>
+        </button>
+        <div id="rpWrittenFilterDD" class="rp-filter-dd"></div>
+      </div>
       <div style="flex:1;"></div>
       <div id="rpSelCountBar" style="font-size:12.5px;color:var(--text-sub);flex-shrink:0;background:var(--icon-bg);padding:8px 13px;border-radius:20px;display:flex;align-items:center;gap:8px;">
         <span><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</span>
