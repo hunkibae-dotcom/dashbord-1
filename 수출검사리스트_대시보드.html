@@ -5013,7 +5013,7 @@ function renderProductSearchResults(results) {
     window._mItemMap[mik] = d;
     return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;">
       <td class="py-2.5 pr-3"><span class="pill ${statusCls}">${statusLabel}</span></td>
-      <td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span></td>
+      <td class="py-2.5 pr-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap ${factoryBadgeCls}">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span></td>
       <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
       <td class="py-2.5 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
       <td class="py-2.5 pr-3 text-slate-600 max-w-[220px] truncate" title="${d.단품명칭}">${d.단품명칭 || '—'}</td>
