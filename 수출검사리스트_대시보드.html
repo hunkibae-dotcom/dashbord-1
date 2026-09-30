@@ -4434,7 +4434,10 @@ function toggleReportWritten(key, checked) {
   _reportSelected[key].written = checked;
   _rpSaveToStorage();
   _rpSyncMetaToServer(key);
-  _rpRefreshRow(key);
+  // 작성완료 필터(미작성/작성완료)가 걸려있으면 체크한 순간 그 행이 목록에서
+  // 빠지거나 들어와야 하므로 그때만 전체를 다시 그린다 — 평소엔 행 하나만 바꾼다.
+  if (_rpWrittenFilter) renderReportList();
+  else _rpRefreshRow(key);
 }
 
 // 사진을 파일로만 받으면 원본 해상도/비율을 몰라서 PPTX에 넣을 때 억지로 늘려찍힌
