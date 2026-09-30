@@ -4402,10 +4402,10 @@ function toggleReportItem(key, checkboxEl) {
   }
 }
 
-// 사진칸/철물칸을 누르면 아직 체크 안 된 품목도 자동으로 선택시킨다 — "사진부터 찍고
-// 담는다"는 실제 작업 흐름에 더 자연스럽게 맞는다. 이미 기록이 있으면 건드리지 않는다.
-function _rpEnsureSelected(key) {
-  if (_reportSelected[key]) { _reportChecked.add(key); return; }
+// 사진/CBM/특이사항/철물처럼 "그 값만 기록해두는" 동작들은 선택(PPTX 대상) 체크를
+// 자동으로 켜지 않는다 — 기록해둘 자리(_reportSelected[key])가 없으면 만들어주기만 한다.
+function _rpEnsureRecord(key) {
+  if (_reportSelected[key]) return;
   const d = _rpFindByKey(key);
   if (!d) return;
   _reportSelected[key] = {
@@ -4416,38 +4416,77 @@ function _rpEnsureSelected(key) {
     productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null,
     _updatedAt: 0
   };
-  _reportChecked.add(key);
+}
+
+// 선택(체크박스) 자체를 누르거나, "보고서 작성"으로 바로 넘어올 때만 쓴다 — 그 외
+// (사진/CBM/특이사항/철물)는 이제 _rpEnsureRecord만 쓰고 선택은 건드리지 않는다.
+function _rpEnsureSelected(key) {
+  _rpEnsureRecord(key);
+  if (_reportSelected[key]) _reportChecked.add(key);
 }
 
 function toggleReportHardware(key, checked) {
-  const wasSelected = !!_reportSelected[key];
-  _rpEnsureSelected(key);
+  _rpEnsureRecord(key);
   if (!_reportSelected[key]) return;
   _reportSelected[key].hasHardware = checked;
   _rpSaveToStorage();
   _rpSyncMetaToServer(key);
-  if (!wasSelected) renderReportList();
+  _rpRefreshRow(key);
 }
 
-// "작성완료"는 PPTX 대상 선택(선택 칼럼)과 완전히 별개의 개인 체크 표시라서, 여기선
-// _rpEnsureSelected를 안 쓴다(그 함수는 이미 있는 항목이어도 항상 선택 체크까지 켜버려서,
-// 작성완료만 누르려던 게 의도치 않게 PPTX 선택까지 같이 켜지는 부작용이 생긴다).
+// 작성완료 체크는 (사진/CBM/특이사항/철물과 달리) 선택(PPTX 대상)도 같이 켠다 —
+// "다 썼다"고 표시하는 항목은 보통 PPTX에도 포함하고 싶을 거란 실제 작업 흐름에 맞춘
+// 것. 체크를 다시 풀 때는 선택까지 같이 풀지는 않는다(실수로 PPTX 대상에서 빠지는 것
+// 방지 — 선택 해제는 항상 선택 칼럼에서 직접 하게 한다).
 function toggleReportWritten(key, checked) {
-  if (!_reportSelected[key]) {
-    const d = _rpFindByKey(key);
-    if (!d) return;
-    _reportSelected[key] = {
-      item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, written: false, cbm: null,
-      productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null, _updatedAt: 0
-    };
-  }
+  _rpEnsureRecord(key);
+  if (!_reportSelected[key]) return;
+  const wasChecked = _reportChecked.has(key);
   _reportSelected[key].written = checked;
+  if (checked) _reportChecked.add(key);
   _rpSaveToStorage();
   _rpSyncMetaToServer(key);
-  // 작성완료 필터(미작성/작성완료)가 걸려있으면 체크한 순간 그 행이 목록에서
-  // 빠지거나 들어와야 하므로 그때만 전체를 다시 그린다 — 평소엔 행 하나만 바꾼다.
-  if (_rpWrittenFilter) renderReportList();
+  // 작성완료 필터가 걸려있으면 이 행 자체가 목록에서 빠지거나 들어와야 하고, 방금 선택도
+  // 같이 새로 켜졌으면 상단 선택 개수·순서 배지도 갱신해야 하니 그때만 전체를 다시
+  // 그린다 — 그 외엔(이미 선택돼 있었거나, 체크를 해제하는 경우) 이 행 하나만 바꾼다.
+  if (_rpWrittenFilter || _reportChecked.has(key) !== wasChecked) renderReportList();
   else _rpRefreshRow(key);
+}
+
+// 헤더 클릭 일괄 토글 — 지금 필터/검색 조건에 맞는(화면에 보이는) 행 전체를 대상으로,
+// 하나라도 안 켜져있으면 전부 켜고, 이미 다 켜져있으면 전부 끈다(선택/작성완료/철물
+// 세 헤더 공통 로직). 페이지네이션과 무관하게 "조건에 맞는 전체"가 대상이다.
+function toggleRpHeaderBulk(kind) {
+  const keys = _rpFilteredRows().map(d => _miKey(d));
+  if (!keys.length) return;
+  const isOn = (key) => {
+    if (kind === 'select') return _reportChecked.has(key);
+    const sel = _reportSelected[key];
+    if (!sel) return false;
+    return kind === 'written' ? sel.written === true : sel.hasHardware === true;
+  };
+  const allOn = keys.every(isOn);
+  const newVal = !allOn;
+  const label = kind === 'select' ? '선택' : kind === 'written' ? '작성완료' : '철물';
+  if (!confirm(`보이는 ${keys.length}개 품목을 전부 ${label} ${newVal ? '체크' : '해제'}할까요?`)) return;
+  keys.forEach(key => {
+    if (kind === 'select') {
+      if (newVal) { _rpEnsureRecord(key); if (_reportSelected[key]) _reportChecked.add(key); }
+      else _reportChecked.delete(key);
+      return;
+    }
+    _rpEnsureRecord(key);
+    if (!_reportSelected[key]) return;
+    if (kind === 'written') {
+      _reportSelected[key].written = newVal;
+      if (newVal) _reportChecked.add(key);
+    } else {
+      _reportSelected[key].hasHardware = newVal;
+    }
+  });
+  _rpSaveToStorage();
+  keys.forEach(key => _rpSyncMetaToServer(key));
+  renderReportList();
 }
 
 // 사진을 파일로만 받으면 원본 해상도/비율을 몰라서 PPTX에 넣을 때 억지로 늘려찍힌
