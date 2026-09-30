@@ -1267,7 +1267,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     <div style="font-size:11px;color:var(--label);margin-top:-6px;">포장일 → 검사일 → 납기일 순으로 있는 값을 기준으로 검색</div>
     <div>
       <div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">시작일</div>
-      <input type="date" id="psFrom" onchange="runProductSearch();updatePsDateBtnLabel()"
+      <input type="date" id="psFrom" onchange="_psExactDateFilter=null;runProductSearch();updatePsDateBtnLabel()"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
     </div>
     <div>
