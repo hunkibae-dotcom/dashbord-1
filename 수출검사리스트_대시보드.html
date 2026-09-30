@@ -5042,7 +5042,7 @@ function renderProductSearchResults(results) {
     return `<div onclick="openMItemDetail('${mik}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
         <span class="pill ${statusCls}" style="font-size:11px;">${statusLabel}</span>
-        <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 9px;border-radius:20px;">${d.공장명}</span>
+        <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 9px;border-radius:20px;white-space:nowrap;">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span>
       </div>
       <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:0;">
