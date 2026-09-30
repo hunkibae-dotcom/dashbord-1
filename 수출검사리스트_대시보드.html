@@ -2616,6 +2616,10 @@ function qcScClearDaySelection() {
 // "조회"는 하단 미리보기(이미 클릭할 때마다 갱신됨)를 다시 그리는 게 아니라, 선택한
 // 날짜 범위를 그대로 제품 검색으로 넘겨서 실제 검색 결과를 보여준다 — 스캔 결과를
 // 제품 검색으로 넘기는 confirmScanResult()와 같은 방식.
+// 예전엔 선택한 날짜들 중 가장 빠른/늦은 날짜만 psFrom/psTo에 넣었는데, 그러면 연속되지
+// 않은 날짜를 골랐을 때(예: 3일 + 20일만, 그 사이는 안 고름) "범위 검색"이 되어버려서
+// 사이에 낀 날짜(4~19일)까지 결과에 같이 나왔다 — "가끔 원하는 대로 조회가 안 된다"던
+// 원인. _psExactDateFilter에 고른 날짜만 정확히 담아서, 그 날짜들만 결과에 나오게 한다.
 function qcScRunDayQuery() {
   if (!_qcScSelectedDates.size) return;
   const dates = Array.from(_qcScSelectedDates).sort();
@@ -2623,6 +2627,7 @@ function qcScRunDayQuery() {
   document.getElementById('psFrom').value = dates[0];
   document.getElementById('psTo').value = dates[dates.length - 1];
   document.getElementById('psFactory').value = (_qcScFactory === 'all') ? '' : _qcScFactory;
+  _psExactDateFilter = { dates: new Set(dates), field: _qcScDateType };
   _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
   updatePsDateBtnLabel();
   openProductSearch();
