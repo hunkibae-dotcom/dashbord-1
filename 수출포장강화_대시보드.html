@@ -6640,6 +6640,10 @@
                 dedup[key] = item;
             });
             Object.values(dedup).forEach(item => {
+                // "재고활용"은 실제 수주(발주) 건이 아니라 이미 있는 재고를 대신 쓰는 항목이라
+                // 애초에 납기일/상차일 자체가 없는 게 정상이다 — 필터 선택과 무관하게 항상
+                // 달력에서 제외한다(혹시라도 옛 값이 남아있어 날짜가 찍혀 보이는 걸 방지).
+                if (item.status === '재고활용') return;
                 if (_scStatusType !== 'all') {
                     const isShipped = SC_SHIPPED_STATUSES.has(item.status);
                     if (_scStatusType === 'shipped' && !isShipped) return;
