@@ -855,18 +855,17 @@ function renderDashboard() {
   renderDashUsageBars();
   renderDashOrderTypeBars();
 
-  // ── 발주중인 자재 (발주/부분입고 상태 — 클릭 시 발주 상세) ──
-  const ongoingSorted = [...ongoingOrders].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 6);
-  document.getElementById('dashOngoingOrders').innerHTML = ongoingSorted.length
-    ? ongoingSorted.map(orderCardHtml).join('')
-    : '<div class="empty"><i class="fa-solid fa-inbox"></i><div>발주중인 자재가 없습니다</div></div>';
+  // ── 유형별 재고 보유 현황 (클릭 시 재고 탭에서 그 유형으로 필터) ──
+  renderDashStockTypeBars();
 
-  // ── 재고 적게 남은 자재 (클릭 시 재고 상세 — 재고 탭 필터를 기본값으로 맞춘 뒤 연다) ──
-  const low = [...remainList].sort((a, b) => a.total - b.total).slice(0, 6);
-  document.getElementById('dkLowStockCount').innerHTML = low.length + '<small>종</small>';
-  document.getElementById('dashLowStock').innerHTML = low.length
-    ? low.map(stockMiniCardHtml).join('')
-    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
+  // ── 재고 부족·발주 대상 (평균 1회 발주량 − 현재고, 클릭 시 재고 상세) ──
+  const deficits = dashLowStockDeficitList();
+  document.getElementById('dkLowStockCount').innerHTML = deficits.length + '<small>종</small>';
+  document.getElementById('dashDeficitCount').textContent = deficits.length ? deficits.length + '건' : '';
+  const deficitTop = deficits.slice(0, 6);
+  document.getElementById('dashLowStock').innerHTML = deficitTop.length
+    ? deficitTop.map(deficitCardHtml).join('')
+    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
 }
 
 // ── 유형/규격별 소요량 (기간 필터 적용, 유형별로 쪼갬 — 클릭 시 규격별 상세) ──
