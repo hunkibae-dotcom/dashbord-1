@@ -1314,6 +1314,19 @@ function checkAppUpdate() {
 
 function downloadLatestApk() {
     if (!_latestApkUrl) return;
+    // 네이티브 앱에서는 Android가 직접 받아서 완료되면 설치 화면까지 띄워준다 —
+    // 웹(브라우저)에서 열었을 때는 그 브릿지가 없으니 기존처럼 새 창으로 연다.
+    try {
+        if (typeof Android !== 'undefined' && Android.isNative && Android.isNative()) {
+            var btn = document.getElementById('aiDownloadBtn');
+            if (btn) { btn.textContent = '다운로드 중...'; btn.disabled = true; }
+            Android.downloadAndInstallApk(_latestApkUrl);
+            setTimeout(function() {
+                if (btn) { btn.textContent = '업데이트하기'; btn.disabled = false; }
+            }, 3000);
+            return;
+        }
+    } catch (e) {}
     window.open(_latestApkUrl, '_blank');
 }
 
