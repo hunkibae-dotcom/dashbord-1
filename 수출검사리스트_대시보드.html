@@ -4541,7 +4541,7 @@ function openRpCbmEditor(key) {
 }
 
 function openRpNoteEditor(key) {
-  _rpEnsureSelected(key);
+  _rpEnsureRecord(key);
   const sel = _reportSelected[key];
   if (!sel) return;
   _rpEditKey = key; _rpEditMode = 'note';
