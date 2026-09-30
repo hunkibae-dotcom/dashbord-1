@@ -86,6 +86,10 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
      칠해준다 — 이 클래스는 처음 그려질 때의 기본 모양·간격만 담당).*/
   .qcsc-chip { padding:6px 13px; border-radius:999px; border:1.5px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:background .12s,border-color .12s,color .12s; }
   .qcsc-chip-on { background:#6D5CE8; border-color:#6D5CE8; color:#fff; }
+  /* 공장/구분/날짜 한 줄씩 차지하던 칩 3묶음을 요약 버튼 1개씩으로 압축 — 누르면
+     qcScFilterModal 미니 팝업이 뜬다. */
+  .qcsc-filter-btn { flex:1; padding:9px 10px; border-radius:10px; border:1.5px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .qcsc-filter-btn.on { border-color:#6D5CE8; color:#6D5CE8; background:rgba(109,92,232,.08); }
 
   .nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:13px 14px; border-radius:10px; cursor:pointer; color:#64748B; transition:all .15s; font-size:14.5px; font-weight:600; white-space:nowrap; }
   .nav-item:hover { background:#F1F5F9; color:#334155; }
