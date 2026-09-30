@@ -3625,12 +3625,25 @@ document.addEventListener('click', () => { if (_rpOpenFilterDD) _closeRpFilterDD
 function _rpStatusLabel(v) { return v === '검사' ? '검사완료' : v; }
 
 function _renderRpFilterDD(which) {
-  const el = document.getElementById(which === 'packer' ? 'rpPackerFilterDD' : 'rpStatusFilterDD');
+  const el = document.getElementById(RP_FILTER_DD_IDS[which]);
   if (!el) return;
+  if (which === 'written') {
+    const current = _rpWrittenFilter;
+    const opts = [['전체', null], ['미작성', 'no'], ['작성완료', 'yes']];
+    el.innerHTML = opts.map(([label, v]) =>
+      `<div class="rp-filter-dd-item ${current === v ? 'active' : ''}" onclick="setRpWrittenFilter(${v ? "'" + v + "'" : 'null'})">${label}</div>`
+    ).join('');
+    return;
+  }
   const field = which === 'packer' ? '포장처' : '검사';
   const current = which === 'packer' ? _rpPackerFilter : _rpStatusFilter;
   const setFn = which === 'packer' ? 'setRpPackerFilter' : 'setRpStatusFilter';
-  const values = _rpDistinctValues(field);
+  let values = _rpDistinctValues(field);
+  // 포장처는 보통 충주1/충주2만 보는 경우가 많아서, 전체 바로 밑으로 두 값을 끌어올린다.
+  if (which === 'packer') {
+    const priority = ['충주1', '충주2'];
+    values = [...priority.filter(v => values.includes(v)), ...values.filter(v => !priority.includes(v))];
+  }
   el.innerHTML = `<div class="rp-filter-dd-item ${!current ? 'active' : ''}" onclick="${setFn}(null)">전체</div>` +
     values.map(v => `<div class="rp-filter-dd-item ${current === v ? 'active' : ''}" onclick="${setFn}('${_jsAttr(v)}')">${which === 'status' ? _rpStatusLabel(v) : v}</div>`).join('');
 }
@@ -3639,9 +3652,12 @@ function _rpUpdateFilterBtnLabels() {
   if (pEl) pEl.textContent = '포장처: ' + (_rpPackerFilter || '전체');
   const sEl = document.getElementById('rpStatusFilterLabel');
   if (sEl) sEl.textContent = '진행상태: ' + (_rpStatusFilter ? _rpStatusLabel(_rpStatusFilter) : '전체');
+  const wEl = document.getElementById('rpWrittenFilterLabel');
+  if (wEl) wEl.textContent = '작성완료: ' + (_rpWrittenFilter === 'yes' ? '작성완료' : _rpWrittenFilter === 'no' ? '미작성' : '전체');
 }
 function setRpPackerFilter(v) { _rpPackerFilter = v; _rpPage = 1; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
 function setRpStatusFilter(v) { _rpStatusFilter = v; _rpPage = 1; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
+function setRpWrittenFilter(v) { _rpWrittenFilter = v; _rpPage = 1; _closeRpFilterDDs(); _rpUpdateFilterBtnLabels(); renderReportList(); }
 
 function _rpFilteredRows() {
   const q = (document.getElementById('rpSearch').value || '').trim().toLowerCase();
