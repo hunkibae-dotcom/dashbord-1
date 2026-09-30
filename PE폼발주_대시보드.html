@@ -1011,7 +1011,7 @@ function openDashLowStockDetail() {
   document.getElementById('dashKpiSortBtn').style.display = 'none';
   document.getElementById('dashDetailTitle').textContent = '재고 부족 · 발주 대상 (' + deficits.length + '종)';
   document.getElementById('dashDetailBody').innerHTML = deficits.length
-    ? deficits.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">${typeIconHtml(g.type)}<div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div><div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div></div><div class="stk-total"><b style="color:var(--warn);">${Math.round(g.deficit).toLocaleString()}</b><span>${g.unit} 부족</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
+    ? deficits.map(deficitCardHtml).join('')
     : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
   document.getElementById('dashDetailModal').classList.add('open');
 }
