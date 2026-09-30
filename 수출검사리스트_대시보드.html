@@ -2450,7 +2450,7 @@ function renderCharts(data) {
 // 이미 출고된 이력(archiveRows) 기준 완료율이라 지금 진행중인 차수의 실제 일정 파악에는
 // 도움이 안 됐다. 처음엔 날짜순 리스트로 바꿨는데, 포장강화 쪽에 만든 "달력 안에서 바로
 // 어떤 차수인지 보이는" 큰 달력 스타일로 통일해달라는 요청으로 이 형태로 다시 바꿨다.
-let _qcScYear, _qcScMonth, _qcScFactory = 'all', _qcScOrderType = 'all', _qcScEventsCache = { byDate: {}, roundInfo: {} };
+let _qcScYear, _qcScMonth, _qcScFactory = 'all', _qcScOrderType = 'all', _qcScDateType = 'all', _qcScEventsCache = { byDate: {}, roundInfo: {} };
 let _qcScSelectedDates = new Set(); // 복수 선택 — "조회" 버튼을 눌러야 아래 목록이 갱신된다
 
 function openQcScheduleCalendar() {
