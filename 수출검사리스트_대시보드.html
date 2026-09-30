@@ -3837,9 +3837,14 @@ function _rpRowHtmlMobile(d, checkedOrderMap) {
           ${_rpNoteCell(safeKey, sel)}
         </div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);padding:8px 2px 0;border-top:1px solid var(--divider,var(--border));">
-        <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
-      </label>
+      <div style="display:flex;gap:14px;padding:8px 2px 0;border-top:1px solid var(--divider,var(--border));">
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);">
+          <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);">
+          <input type="checkbox" ${written ? 'checked' : ''} onchange="toggleReportWritten('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#22C55E;"> 작성완료
+        </label>
+      </div>
     </div>`;
 }
 
