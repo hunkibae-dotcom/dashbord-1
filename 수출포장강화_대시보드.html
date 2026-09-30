@@ -6613,30 +6613,59 @@
         }
         function scSetStatusType(type) {
             _scStatusType = type;
-            ['all', 'working', 'shipped'].forEach(t => {
-                const btn = document.getElementById(t === 'all' ? 'scTAll' : (t === 'working' ? 'scTWorking' : 'scTShipped'));
-                if (!btn) return;
-                const on = t === type;
-                btn.style.background = on ? '#f97316' : '#f8fafc';
-                btn.style.borderColor = on ? '#f97316' : '#e2e8f0';
-                btn.style.color = on ? '#fff' : '#475569';
-            });
+            _updateScFilterButtons();
             renderScheduleCalendar();
         }
         function scSetDateType(type) {
             _scDateType = type;
-            ['all', 'load', 'due'].forEach(t => {
-                const btn = document.getElementById(t === 'all' ? 'scDAll' : (t === 'load' ? 'scDLoad' : 'scDDue'));
-                if (!btn) return;
-                const on = t === type;
-                btn.style.background = on ? '#f97316' : '#f8fafc';
-                btn.style.borderColor = on ? '#f97316' : '#e2e8f0';
-                btn.style.color = on ? '#fff' : '#475569';
-            });
+            _updateScFilterButtons();
             // 날짜 종류를 바꾸면 이미 골라둔 날짜 선택은 의미가 달라지므로 같이 초기화한다.
             _scSelectedDates = new Set();
             renderScheduleCalendar();
             renderScheduleDayList();
+        }
+
+        // 상태/날짜 칩 묶음을 요약 버튼 1개씩(+미니 팝업)으로 압축한 것 — 품질검사 달력의
+        // QC_SC_FILTER_META와 완전히 같은 패턴(옵션 여러 개 중 단일 선택).
+        const SC_FILTER_META = {
+            status: { title: '상태', btnId: 'scStatusBtn', prefix: '상태', options: [['all','전체'],['working','작업'],['shipped','출고']], get: () => _scStatusType, set: scSetStatusType },
+            date:   { title: '날짜', btnId: 'scDateBtn', prefix: '날짜', options: [['all','전체'],['load','상차일'],['due','납기일']], get: () => _scDateType, set: scSetDateType },
+        };
+        let _scPickerKind = null;
+        function _updateScFilterButtons() {
+            Object.keys(SC_FILTER_META).forEach(kind => {
+                const meta = SC_FILTER_META[kind];
+                const btn = document.getElementById(meta.btnId);
+                if (!btn) return;
+                const cur = meta.get();
+                const opt = meta.options.find(o => o[0] === cur);
+                btn.textContent = meta.prefix + ': ' + (opt ? opt[1] : '전체');
+                btn.classList.toggle('on', cur !== 'all');
+            });
+        }
+        function openScFilterPicker(kind) {
+            _scPickerKind = kind;
+            const meta = SC_FILTER_META[kind];
+            if (!meta) return;
+            document.getElementById('scFilterModalTitle').textContent = meta.title;
+            const cur = meta.get();
+            document.getElementById('scFilterModalList').innerHTML = meta.options.map(([v, l]) => {
+                const active = v === cur;
+                return `<button onclick="_scPickFilterValue('${v}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#f97316' : '#e2e8f0'};background:${active ? 'rgba(249,115,22,.1)' : '#f8fafc'};color:${active ? '#f97316' : '#334155'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;width:100%;">
+                    <span style="width:16px;height:16px;border-radius:50%;border:2px solid ${active ? '#f97316' : '#cbd5e1'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<span style="width:8px;height:8px;border-radius:50%;background:#f97316;"></span>' : ''}</span>
+                    ${l}
+                </button>`;
+            }).join('');
+            document.getElementById('scFilterModal').style.display = 'flex';
+        }
+        function _scPickFilterValue(v) {
+            const meta = SC_FILTER_META[_scPickerKind];
+            if (!meta) return;
+            meta.set(v);
+            closeScFilterPicker();
+        }
+        function closeScFilterPicker() {
+            document.getElementById('scFilterModal').style.display = 'none';
         }
 
         // 수출 현황 + 출고 완료 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를
