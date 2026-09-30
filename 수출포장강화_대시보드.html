@@ -6599,6 +6599,7 @@
             _scYear = now.getFullYear();
             _scMonth = now.getMonth();
             _scSelectedDates = new Set();
+            _updateScFilterButtons();
             renderScheduleCalendar();
             document.getElementById('scheduleCalendarModal').style.display = 'flex';
         }
