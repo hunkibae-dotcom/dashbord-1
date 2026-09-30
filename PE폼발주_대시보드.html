@@ -1009,13 +1009,13 @@ function closeDashDetail() { document.getElementById('dashDetailModal').classLis
 // 것과 같은 이유로 이 목록 모달을 먼저 닫고 나서 진짜 재고 상세 모달을 연다 — 두
 // modal-bg를 동시에 열어두면 z-index가 같아서 나중에 연 쪽이 오히려 가려졌었다.
 function openDashLowStockDetail() {
-  const low = [...remainStockList()].sort((a, b) => a.total - b.total).slice(0, 6);
+  const deficits = dashLowStockDeficitList();
   document.getElementById('dashDetailTypeChips').style.display = 'none';
   document.getElementById('dashKpiSortBtn').style.display = 'none';
-  document.getElementById('dashDetailTitle').textContent = '재고 부족 자재 (' + low.length + '종)';
-  document.getElementById('dashDetailBody').innerHTML = low.length
-    ? low.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')"><div class="stk-ico">${typeIconHtml(g.type)}</div><div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div></div><div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
-    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>재고 데이터가 없습니다</div></div>';
+  document.getElementById('dashDetailTitle').textContent = '재고 부족 · 발주 대상 (' + deficits.length + '종)';
+  document.getElementById('dashDetailBody').innerHTML = deficits.length
+    ? deficits.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')"><div class="stk-ico">${typeIconHtml(g.type)}</div><div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div><div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div></div><div class="stk-total"><b style="color:var(--warn);">${Math.round(g.deficit).toLocaleString()}</b><span>${g.unit} 부족</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
+    : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
   document.getElementById('dashDetailModal').classList.add('open');
 }
 
