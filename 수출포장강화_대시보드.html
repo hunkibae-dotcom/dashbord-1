@@ -175,6 +175,13 @@
         ::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
 
+        /* 수출 일정 달력의 필터 칩 — 예전엔 3줄 다 flex:1로 꽉 채운 큼직한 버튼이라
+           단조롭고 공간만 차지한다는 지적이 있었다. 라벨 + 내용만큼만 차지하는 작은
+           알약 모양으로 바꿔서 가볍게 보이게 한다(on/off 색은 JS가 그때그때 인라인으로
+           칠해준다 — 이 클래스는 기본 모양·간격만 담당). */
+        .sc-chip { padding:6px 13px; border-radius:999px; border:1.5px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:background .12s,border-color .12s,color .12s; }
+        .sc-chip-on { background:#f97316; border-color:#f97316; color:#fff; }
+
         /* ── 모바일: KPI 카드 4개 / 차트 2개 좌우 스와이프 캐러셀 ── */
         .mobile-card-list { display: none; }
         @media (max-width: 767px) {
