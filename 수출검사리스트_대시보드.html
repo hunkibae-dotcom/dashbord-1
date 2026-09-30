@@ -7252,17 +7252,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈
-(function(){
-  const p = new URLSearchParams(location.search);
-  if (p.get('openScan') === '1') {
-    setTimeout(function(){
-      openScanView();
-      history.replaceState(null, '', location.pathname);
-    }, 300);
-  }
-})();
-
 function _openScanSmart() {
   try { Android.startScan(); return; } catch(e) {}
   openScanView();
