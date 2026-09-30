@@ -80,6 +80,13 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   ::-webkit-scrollbar { width:6px; height:6px; }
   ::-webkit-scrollbar-thumb { background:#CBD5E1; border-radius:3px; }
 
+  /* 납기/포장 날짜 달력의 필터 칩 — 예전엔 3줄 다 flex:1로 꽉 채운 큼직한 버튼이라
+     단조롭고 공간만 차지한다는 지적이 있었다. 라벨 + 내용만큼만 차지하는 작은 알약
+     모양으로 바꿔서 가볍게 보이게 한다(on/off 색은 그대로 JS가 매번 인라인으로
+     칠해준다 — 이 클래스는 처음 그려질 때의 기본 모양·간격만 담당).*/
+  .qcsc-chip { padding:6px 13px; border-radius:999px; border:1.5px solid #e2e8f0; background:#f8fafc; color:#475569; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; transition:background .12s,border-color .12s,color .12s; }
+  .qcsc-chip-on { background:#6D5CE8; border-color:#6D5CE8; color:#fff; }
+
   .nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:13px 14px; border-radius:10px; cursor:pointer; color:#64748B; transition:all .15s; font-size:14.5px; font-weight:600; white-space:nowrap; }
   .nav-item:hover { background:#F1F5F9; color:#334155; }
   .nav-item .nav-chevron { opacity:0; transition:opacity .15s; }
