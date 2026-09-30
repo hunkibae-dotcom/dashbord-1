@@ -1214,20 +1214,23 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </button>
     </div>
 
-    <div style="display:flex;gap:6px;">
-      <button onclick="qcScSetFactory('all')" id="qcScFAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
-      <button onclick="qcScSetFactory('cj1')" id="qcScFCj1" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주1공장</button>
-      <button onclick="qcScSetFactory('cj2')" id="qcScFCj2" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">충주2공장</button>
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">공장</span>
+      <button onclick="qcScSetFactory('all')" id="qcScFAll" class="qcsc-chip qcsc-chip-on">전체</button>
+      <button onclick="qcScSetFactory('cj1')" id="qcScFCj1" class="qcsc-chip">충주1</button>
+      <button onclick="qcScSetFactory('cj2')" id="qcScFCj2" class="qcsc-chip">충주2</button>
     </div>
-    <div style="display:flex;gap:6px;">
-      <button onclick="qcScSetOrderType('all')" id="qcScTAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
-      <button onclick="qcScSetOrderType('export')" id="qcScTExport" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">수출건</button>
-      <button onclick="qcScSetOrderType('domestic')" id="qcScTDomestic" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">내수건</button>
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">구분</span>
+      <button onclick="qcScSetOrderType('all')" id="qcScTAll" class="qcsc-chip qcsc-chip-on">전체</button>
+      <button onclick="qcScSetOrderType('export')" id="qcScTExport" class="qcsc-chip">수출건</button>
+      <button onclick="qcScSetOrderType('domestic')" id="qcScTDomestic" class="qcsc-chip">내수건</button>
     </div>
-    <div style="display:flex;gap:6px;">
-      <button onclick="qcScSetDateType('all')" id="qcScDAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
-      <button onclick="qcScSetDateType('pack')" id="qcScDPack" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">포장일</button>
-      <button onclick="qcScSetDateType('due')" id="qcScDDue" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">납기일</button>
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">날짜</span>
+      <button onclick="qcScSetDateType('all')" id="qcScDAll" class="qcsc-chip qcsc-chip-on">전체</button>
+      <button onclick="qcScSetDateType('pack')" id="qcScDPack" class="qcsc-chip">포장일</button>
+      <button onclick="qcScSetDateType('due')" id="qcScDDue" class="qcsc-chip">납기일</button>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;">
