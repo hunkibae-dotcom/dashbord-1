@@ -3388,16 +3388,11 @@ async function _rpFetchSharedReportData() {
         if (!item) return; // 지금 화면에 없는(이관/삭제된) 품목은 건너뛴다
         const localUpdatedAt = (_reportSelected[key] && _reportSelected[key]._updatedAt) || 0;
         if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) return; // 내 로컬이 더 최신
-        // _rpEnsureSelected는 체크 표시까지 같이 켜버린다(사진칸 자동선택용 함수라) —
         // 체크 여부는 새로고침해도 유지하지 말고 매번 0개로 시작하라는 요청이라, 여기서는
-        // 항목만 만들고 체크는 절대 건드리지 않는다.
-        if (!_reportSelected[key]) {
-          _reportSelected[key] = {
-            item: item, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, written: false, cbm: null,
-            productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null, _updatedAt: 0
-          };
-        }
+        // _rpEnsureSelected(체크까지 같이 켜버림) 대신 _rpEnsureRecord로 항목만 만든다.
+        _rpEnsureRecord(key);
         const sel = _reportSelected[key];
+        if (!sel) return;
         sel.hasHardware = remote.hasHardware === true;
         sel.written = remote.written === true;
         if (remote.productPhotoId) sel.productPhotoRemote = { fileId: remote.productPhotoId };
