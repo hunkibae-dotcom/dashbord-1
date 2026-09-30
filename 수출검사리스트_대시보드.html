@@ -1727,8 +1727,9 @@ function parseRows(rows, factory) {
       BOM: g(5).trim().toUpperCase(),
       // 포장처는 검사완료 이동 때 항상 그 공장 이름("충주1"/"충주2")으로 고정 기록되는
       // 값이라(GAS 쪽 finalData[5] = "충주1" 하드코딩), 아직 이동 전인 진행중 항목도
-      // 미리 같은 값으로 채운다 — 이관 전후로 포장처가 달라 보일 이유가 없다.
-      포장처: factory.label,
+      // 미리 같은 값으로 채운다 — 이관 전후로 포장처가 달라 보일 이유가 없다. label엔
+      // "공장"이 붙어있어(예: "충주1공장") 이관 후 값("충주1")과 다르므로 factory.key로 맞춘다.
+      포장처: factory.key === 'cj1' ? '충주1' : factory.key === 'cj2' ? '충주2' : factory.label,
       납기일: g(6).trim(),
       포장일: g(7).trim(),
       검사일: g(8).trim(),
