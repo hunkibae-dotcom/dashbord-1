@@ -4913,7 +4913,15 @@ function runProductSearch() {
       // 시트 기준으로 먼저 나누고, 그 안에서 세부 검사상태(d.검사)로 한 번 더 좁힌다.
       if (_psSourceFilter && d.source !== _psSourceFilter) return false;
       if (_psStatusFilters.size && !_psStatusFilters.has(d.검사 || '미검사')) return false;
-      if (fromDate || toDate) {
+      if (_psExactDateFilter) {
+        // 달력에서 고른 날짜만 정확히 매칭 — 범위(from~to) 검색이 아니다. 어떤 종류의
+        // 날짜를 기준으로 골랐는지(포장일/납기일/둘 다)도 그대로 따른다.
+        const f = _psExactDateFilter;
+        let matched = false;
+        if (f.field !== 'due') { const iso = _qcIsoDate(d.포장일); if (iso && f.dates.has(iso)) matched = true; }
+        if (!matched && f.field !== 'pack') { const iso = _qcIsoDate(d.납기일); if (iso && f.dates.has(iso)) matched = true; }
+        if (!matched) return false;
+      } else if (fromDate || toDate) {
         const ref = parseKDate(d.포장일) || parseKDate(d.검사일) || parseKDate(d.납기일);
         if (!ref) return false;
         if (fromDate && ref < fromDate) return false;
