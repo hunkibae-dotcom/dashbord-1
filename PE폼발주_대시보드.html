@@ -1012,7 +1012,7 @@ function openDashLowStockDetail() {
   document.getElementById('dashKpiSortBtn').style.display = 'none';
   document.getElementById('dashDetailTitle').textContent = '재고 부족 · 발주 대상 (' + deficits.length + '종)';
   document.getElementById('dashDetailBody').innerHTML = deficits.length
-    ? deficits.map(deficitCardHtml).join('')
+    ? deficits.map(g => deficitCardHtml(g, true)).join('')
     : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
   document.getElementById('dashDetailModal').classList.add('open');
 }
