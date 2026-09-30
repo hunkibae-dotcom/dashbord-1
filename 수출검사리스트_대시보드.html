@@ -429,7 +429,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 
     <div class="nav-item w-full" id="navReport" onclick="openReportModal()">
       <i class="fa-solid fa-file-powerpoint w-4 text-center"></i>
-      <span class="flex-1">보고서 <span style="font-weight:600;color:var(--label);">(제작중)</span></span>
+      <span class="flex-1">보고서</span>
     </div>
 
     <div class="nav-item w-full" id="navSalesProcessUpdate" onclick="openSpuChoiceModal()">
@@ -959,7 +959,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <i class="fa-solid fa-file-powerpoint" style="color:#fff;font-size:16px;"></i>
     </div>
     <div style="flex:1;min-width:0;">
-      <div style="font-size:15.5px;font-weight:800;color:#fff;line-height:1.2;">수출건 검사 세부내역 보고서 <span style="font-weight:600;color:rgba(255,255,255,.65);font-size:11px;">(제작중)</span></div>
+      <div style="font-size:15.5px;font-weight:800;color:#fff;line-height:1.2;">수출건 검사 세부내역 보고서</div>
       <div style="font-size:11px;color:rgba(255,255,255,.78);margin-top:2px;">품목 선택 → 사진 등록 → PPTX 생성</div>
     </div>
   </div>
@@ -1255,23 +1255,13 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       </button>
     </div>
 
-    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
-      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">공장</span>
-      <button onclick="qcScSetFactory('all')" id="qcScFAll" class="qcsc-chip qcsc-chip-on">전체</button>
-      <button onclick="qcScSetFactory('cj1')" id="qcScFCj1" class="qcsc-chip">충주1</button>
-      <button onclick="qcScSetFactory('cj2')" id="qcScFCj2" class="qcsc-chip">충주2</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
-      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">구분</span>
-      <button onclick="qcScSetOrderType('all')" id="qcScTAll" class="qcsc-chip qcsc-chip-on">전체</button>
-      <button onclick="qcScSetOrderType('export')" id="qcScTExport" class="qcsc-chip">수출건</button>
-      <button onclick="qcScSetOrderType('domestic')" id="qcScTDomestic" class="qcsc-chip">내수건</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
-      <span style="font-size:10.5px;font-weight:800;color:#94a3b8;flex-shrink:0;">날짜</span>
-      <button onclick="qcScSetDateType('all')" id="qcScDAll" class="qcsc-chip qcsc-chip-on">전체</button>
-      <button onclick="qcScSetDateType('pack')" id="qcScDPack" class="qcsc-chip">포장일</button>
-      <button onclick="qcScSetDateType('due')" id="qcScDDue" class="qcsc-chip">납기일</button>
+    <!-- 공장/구분/날짜 필터가 각각 한 줄씩(라벨+버튼 3개) 차지해서 공간을 많이 잡아먹던 걸,
+         버튼 하나씩(지금 값 표시) + 누르면 미니 팝업으로 고르는 방식으로 압축했다 — 그만큼
+         아래 달력·건명 목록에 세로 공간을 더 준다. -->
+    <div style="display:flex;gap:8px;">
+      <button onclick="openQcScFilterPicker('factory')" id="qcScFactoryBtn" class="qcsc-filter-btn">공장: 전체</button>
+      <button onclick="openQcScFilterPicker('type')" id="qcScTypeBtn" class="qcsc-filter-btn">구분: 전체</button>
+      <button onclick="openQcScFilterPicker('date')" id="qcScDateBtn" class="qcsc-filter-btn">날짜: 전체</button>
     </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -1341,6 +1331,21 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     </div>
     <div id="psSourceModalList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;"></div>
     <button onclick="applyPsSourcePicker()" style="width:100%;background:#6D5CE8;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;">적용</button>
+  </div>
+</div>
+
+<!-- ===== 검사 목록(앱): 세부 진행상태 선택 팝업 — 제품검색과 같은 구조, 한 번에 하나만 고름 ===== -->
+<div id="mSourceModal" style="display:none;position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeMSourcePicker()">
+  <div style="background:var(--panel);border-radius:18px;width:100%;max-width:300px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div id="mSourceModalTitle" style="font-size:14px;font-weight:700;color:var(--text);">진행상태</div>
+      <button onclick="closeMSourcePicker()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;-webkit-appearance:none;">
+        <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--text-sub);margin-top:-6px;">하나만 선택 · 아무것도 선택 안 하면 전체</div>
+    <div id="mSourceModalList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;"></div>
+    <button onclick="applyMSourcePicker()" style="width:100%;background:#6D5CE8;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;">적용</button>
   </div>
 </div>
 
@@ -5484,6 +5489,10 @@ function exportSpecHistory() {
 let mCurrentTab = 'home';
 let mFactory = 'all';
 let mStatus = '';
+// 검사 목록 화면의 "소스" — 제품검색창과 같은 개념(진행중/진행중인데검사완료/출고완료).
+// 기본은 진행중(active)만: 이 목록은 원래 "검사 대기 중인 품목"을 보는 화면이라, 이미
+// 출고완료로 넘어간 이력까지 기본으로 섞어 보여줄 이유가 없다.
+let mSource = 'active';
 let mGranularity = 'day';
 const mCharts = {};
 
@@ -5582,9 +5591,8 @@ function setMGranularity(g) {
 
 function setMFactory(f) {
   mFactory = f;
-  [['All','all'], ['Cj1','cj1'], ['Cj2','cj2']].forEach(([s, v]) => {
-    document.getElementById('mF' + s)?.classList.toggle('active', v === f);
-  });
+  const factorySel = document.getElementById('mFactorySelect');
+  if (factorySel) factorySel.value = f;
   ['All','Cj1','Cj2'].forEach((s, i) => {
     document.getElementById('mHomeF' + s)?.classList.toggle('active', ['all','cj1','cj2'][i] === f);
   });
@@ -5600,15 +5608,81 @@ function setMFactory(f) {
 
 function setMStatus(s) {
   mStatus = s;
-  document.getElementById('mSAll')?.classList.toggle('active', s === '');
-  document.getElementById('mSDone')?.classList.toggle('active', s === '검사');
-  // '진행_미검사'·'금일포장'은 카드 클릭 전용 파생 필터 — 미검사 버튼에 하이라이트
-  document.getElementById('mSUndone')?.classList.toggle('active', s === '미검사' || s === '진행_미검사' || s === '금일포장');
-  document.getElementById('mSPreinput')?.classList.toggle('active', s === '미투입');
-  document.getElementById('mSProducing')?.classList.toggle('active', s === '생산중');
-  document.getElementById('mSReinspect')?.classList.toggle('active', s === '재투입');
-  document.getElementById('mSYangji')?.classList.toggle('active', s === '양지');
-  document.getElementById('mSArchiveUndone')?.classList.toggle('active', s === '미검사출고');
+  _updateMSourceButtons();
+  renderMobileList();
+}
+
+// 검사 목록 화면의 소스(진행중/진행중인데검사완료/출고완료) — 제품검색창의 소스
+// 드롭다운과 완전히 같은 개념·같은 3단계라, 헷갈리지 않게 그대로 재사용했다.
+const _M_SOURCE_META = {
+  active:  { label: '검사 진행현황', options: [
+    { v:'미투입', l:'미투입' }, { v:'진행_미검사', l:'미검사' }, { v:'생산중', l:'생산중' },
+    { v:'재투입', l:'재투입' }, { v:'양지', l:'양지(회수)' }, { v:'검사', l:'검사완료' }
+  ] },
+  archive: { label: '검사완료현황(출고)', options: [
+    { v:'미검사출고', l:'미검사(출고)' }, { v:'검사', l:'출고완료' }
+  ] },
+};
+let _mPickerStatuses = new Set();
+// "검사완료(진행중)"은 별도 소스가 아니라 source=active + 세부상태={검사}의 지름길 —
+// 제품검색창의 같은 이름 옵션과 완전히 같은 방식(수출검사리스트_대시보드.html의
+// setPsSourceFromDropdown 참고).
+function setMSourceFromDropdown(value) {
+  if (value === 'active_done') { mSource = 'active'; mStatus = '검사'; }
+  else { mSource = value; mStatus = ''; }
+  _updateMSourceButtons();
+  renderMobileList();
+}
+function _updateMSourceButtons() {
+  const sel = document.getElementById('mSourceSelect');
+  if (sel) {
+    sel.value = (mSource === 'active' && mStatus === '검사') ? 'active_done' : mSource;
+  }
+  const lbl = document.getElementById('mSrcDetailLabel');
+  if (!lbl) return;
+  const meta = _M_SOURCE_META[mSource];
+  const opt = meta && meta.options.find(o => o.v === mStatus);
+  lbl.textContent = opt ? opt.l : '전체';
+  lbl.style.color = opt ? '#6D5CE8' : 'var(--label)';
+  const detailBtn = document.getElementById('mSrcDetailBtn');
+  if (detailBtn) {
+    detailBtn.style.borderColor = opt ? '#6D5CE8' : 'var(--border)';
+    detailBtn.style.background  = opt ? 'rgba(109,92,232,.1)' : 'var(--icon-bg)';
+  }
+}
+function _renderMSourceList() {
+  const meta = _M_SOURCE_META[mSource];
+  if (!meta) return;
+  document.getElementById('mSourceModalList').innerHTML = meta.options.map(o => {
+    const active = _mPickerStatuses.has(o.v);
+    return `<button onclick="_toggleMPickerStatus('${o.v}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? 'rgba(109,92,232,.12)' : 'var(--icon-bg)'};color:${active ? '#6D5CE8' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;width:100%;">
+      <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#fff;"></i>' : ''}</span>
+      ${o.l}
+    </button>`;
+  }).join('');
+}
+function openMSourcePicker() {
+  const meta = _M_SOURCE_META[mSource];
+  if (!meta) return;
+  _mPickerStatuses = mStatus ? new Set([mStatus]) : new Set();
+  document.getElementById('mSourceModalTitle').textContent = meta.label + ' 세부상태';
+  _renderMSourceList();
+  document.getElementById('mSourceModal').style.display = 'flex';
+  _armBackTrap();
+}
+// 한 번에 하나만 고를 수 있다(제품검색과 달리 이 목록은 여러 상태를 겹쳐 볼 일이
+// 거의 없고, 기존 버튼 방식도 항상 하나만 고르던 방식이라 그대로 맞췄다).
+function _toggleMPickerStatus(v) {
+  _mPickerStatuses = _mPickerStatuses.has(v) ? new Set() : new Set([v]);
+  _renderMSourceList();
+}
+function closeMSourcePicker() {
+  document.getElementById('mSourceModal').style.display = 'none';
+}
+function applyMSourcePicker() {
+  mStatus = _mPickerStatuses.size ? [..._mPickerStatuses][0] : '';
+  closeMSourcePicker();
+  _updateMSourceButtons();
   renderMobileList();
 }
 
@@ -6601,7 +6675,9 @@ function renderMobileList() {
   // 별도로 한 번 그려서 최신 상태를 보장한다.
   if (mCurrentTab !== 'list') return;
   const search = (document.getElementById('mSearch')?.value || '').toLowerCase();
-  const allItems = [...allData, ...archiveRows];
+  // 기본은 진행중(active)만 — 이 목록은 원래 "검사 대기 중인 품목" 기준 화면이라,
+  // mSource를 'archive'로 바꾸기 전까진 이미 출고완료로 넘어간 이력을 안 섞는다.
+  const allItems = mSource === 'archive' ? archiveRows : allData;
   const items = allItems.filter(d => {
     if (mFactory !== 'all' && d.공장 !== mFactory) return false;
     if (mStatus === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
@@ -7387,7 +7463,7 @@ function onNativeScanResult(raw) {
       <div class="grid grid-cols-2 gap-3 mb-3">
 
         <!-- 금일 포장 -->
-        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('금일포장');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('금일포장');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-c" style="background:#E0F2FE;">
               <i class="fa-solid fa-box text-sky-500 text-[13px]"></i>
@@ -7409,7 +7485,7 @@ function onNativeScanResult(raw) {
         </div>
 
         <!-- 검사 대기 -->
-        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('진행_미검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('진행_미검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-r" style="background:#FEE2E2;">
               <i class="fa-solid fa-hourglass-half text-rose-500 text-[13px]"></i>
@@ -7436,7 +7512,7 @@ function onNativeScanResult(raw) {
       <div class="grid grid-cols-3 gap-3 mb-6">
 
         <!-- 투입전 -->
-        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('미투입');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('미투입');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-1.5 mb-2.5">
             <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style="background:#F1F5F9;">
               <i class="fa-solid fa-clock-rotate-left text-slate-500 text-[10px]"></i>
@@ -7457,7 +7533,7 @@ function onNativeScanResult(raw) {
         </div>
 
         <!-- 생산중 -->
-        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('생산중');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('생산중');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-1.5 mb-2.5">
             <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style="background:#FFF7ED;">
               <i class="fa-solid fa-gears text-orange-500 text-[10px]"></i>
@@ -7478,7 +7554,7 @@ function onNativeScanResult(raw) {
         </div>
 
         <!-- 생산완료 (미검사/재투입 중 검사 셀이 노란색 — 공정진행률 95%↑) -->
-        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);setMStatus('생산완료');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('생산완료');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-1.5 mb-2.5">
             <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 m-kpi-g" style="background:#DCFCE7;">
               <i class="fa-solid fa-circle-check text-emerald-500 text-[10px]"></i>
@@ -7534,7 +7610,7 @@ function onNativeScanResult(raw) {
             </div>
             <div class="flex items-center gap-2">
               <span id="mBadge1" class="pill pill-undone" style="font-size:10.5px;">— 미검사</span>
-              <button onclick="event.stopPropagation();setMFactory('cj1');setMStatus('');setMTab('list')"
+              <button onclick="event.stopPropagation();setMFactory('cj1');mSource='active';setMStatus('');setMTab('list')"
                 class="m-fb-bl" style="font-size:10px;font-weight:700;color:#3B82F6;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:3px 8px;cursor:pointer;white-space:nowrap;">개별보기</button>
             </div>
           </div>
@@ -7553,7 +7629,7 @@ function onNativeScanResult(raw) {
             </div>
             <div class="flex items-center gap-2">
               <span id="mBadge2" class="pill pill-undone" style="font-size:10.5px;">— 미검사</span>
-              <button onclick="event.stopPropagation();setMFactory('cj2');setMStatus('');setMTab('list')"
+              <button onclick="event.stopPropagation();setMFactory('cj2');mSource='active';setMStatus('');setMTab('list')"
                 class="m-fb-vi" style="font-size:10px;font-weight:700;color:#7C3AED;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:6px;padding:3px 8px;cursor:pointer;white-space:nowrap;">개별보기</button>
             </div>
           </div>
@@ -7617,22 +7693,33 @@ function onNativeScanResult(raw) {
           <button onclick="setMTab('home')" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 -ml-1.5" style="-webkit-tap-highlight-color:transparent;"><i class="fa-solid fa-chevron-left text-[15px]"></i></button>
           <div class="text-[20px] font-extrabold text-slate-900" style="letter-spacing:-0.5px;">검사 목록</div>
         </div>
-        <!-- 공장 필터 -->
-        <div class="flex gap-1 mb-2.5" style="background:var(--icon-bg);border-radius:12px;padding:3px;">
-          <button onclick="setMFactory('all')" id="mFAll" class="tab-btn active flex-1" style="font-size:12.5px;border-radius:9px;">전체</button>
-          <button onclick="setMFactory('cj1')" id="mFCj1" class="tab-btn flex-1" style="font-size:12.5px;border-radius:9px;">충주1</button>
-          <button onclick="setMFactory('cj2')" id="mFCj2" class="tab-btn flex-1" style="font-size:12.5px;border-radius:9px;">충주2</button>
+        <!-- 사업장 + 소스(제품검색창과 같은 스타일: 드롭다운 + 세부상태 버튼) -->
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="position:relative;flex:1;min-width:0;">
+            <select id="mFactorySelect" onchange="setMFactory(this.value)"
+              style="width:100%;height:100%;background:var(--icon-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:10px 26px 10px 12px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
+              <option value="all">사업장 전체</option>
+              <option value="cj1">충주1공장</option>
+              <option value="cj2">충주2공장</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
+          </div>
         </div>
-        <!-- 상태 필터 -->
-        <div class="flex gap-1 mb-2.5" style="background:var(--icon-bg);border-radius:12px;padding:3px;">
-          <button onclick="setMStatus('')" id="mSAll" class="tab-btn active flex-1" style="font-size:10.5px;border-radius:9px;">전체</button>
-          <button onclick="setMStatus('검사')" id="mSDone" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">완료</button>
-          <button onclick="setMStatus('진행_미검사')" id="mSUndone" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">미검사</button>
-          <button onclick="setMStatus('미투입')" id="mSPreinput" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">미투입</button>
-          <button onclick="setMStatus('생산중')" id="mSProducing" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">생산중</button>
-          <button onclick="setMStatus('재투입')" id="mSReinspect" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">재투입</button>
-          <button onclick="setMStatus('양지')" id="mSYangji" class="tab-btn flex-1" style="font-size:10.5px;border-radius:9px;">양지</button>
-          <button onclick="setMStatus('미검사출고')" id="mSArchiveUndone" class="tab-btn flex-1" style="font-size:10px;border-radius:9px;">미검사(출고)</button>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="position:relative;flex:1;min-width:0;">
+            <select id="mSourceSelect" onchange="setMSourceFromDropdown(this.value)"
+              style="width:100%;height:100%;background:var(--icon-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:10px 26px 10px 12px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
+              <option value="active">검사 진행현황</option>
+              <option value="active_done">검사완료(진행중)</option>
+              <option value="archive">검사완료현황(출고)</option>
+            </select>
+            <i class="fa-solid fa-chevron-down" style="position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
+          </div>
+          <button id="mSrcDetailBtn" onclick="openMSourcePicker()"
+            style="flex-shrink:0;min-width:72px;background:var(--icon-bg);color:var(--label);border:1.5px solid var(--border);border-radius:12px;padding:0 10px;font-size:10.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.3;">
+            <i class="fa-solid fa-sliders" style="font-size:10px;"></i>
+            <span id="mSrcDetailLabel">전체</span>
+          </button>
         </div>
         <!-- 검색 -->
         <div class="relative">
