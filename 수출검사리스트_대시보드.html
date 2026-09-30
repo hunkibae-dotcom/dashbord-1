@@ -4305,7 +4305,7 @@ function _rpFineRotateCommit(val) {
 function rpPhotoEditConfirm() {
   const key = _rpPhotoActionKey, side = _rpPhotoActionSide;
   if (!key || !_rpPendingPhotoDataUrl || !_rpCropImgRect || !_rpCropBox) { closeRpPhotoEdit(); return; }
-  _rpEnsureSelected(key);
+  _rpEnsureRecord(key);
   const img = document.getElementById('rpPhotoEditImg');
   const r = _rpCropImgRect, b = _rpCropBox;
   // 화면에 표시된 자르기 사각형(표시 px)을 원본 이미지의 실제 픽셀 좌표로 환산한다.
