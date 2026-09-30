@@ -895,7 +895,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <select id="psSourceSelect" onchange="setPsSourceFromDropdown(this.value)"
           style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 30px 11px 14px;font-size:13.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
           <option value="active">검사 진행현황</option>
-          <option value="archive">검사완료현황</option>
+          <option value="active_done">검사완료(진행중)</option>
+          <option value="archive">검사완료현황(출고)</option>
         </select>
         <i class="fa-solid fa-chevron-down" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--label);pointer-events:none;"></i>
       </div>
