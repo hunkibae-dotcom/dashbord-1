@@ -3584,10 +3584,12 @@ function _updateRpSortBtn() {
     : '정렬 안 함 (누르면 내림차순으로)';
 }
 
-// ── 포장처/진행상태 칼럼 헤더 드롭다운 필터 ──
+// ── 포장처/진행상태/작성완료 칼럼 헤더 드롭다운 필터 ──
 let _rpPackerFilter = null; // null(전체) 또는 실제 포장처 값
 let _rpStatusFilter = '검사'; // null(전체) 또는 실제 검사상태 값 — 기본은 검사완료 품목만
-let _rpOpenFilterDD = null; // 'packer' | 'status' | null
+let _rpWrittenFilter = null; // null(전체) | 'yes'(작성완료) | 'no'(미작성)
+let _rpOpenFilterDD = null; // 'packer' | 'status' | 'written' | null
+const RP_FILTER_DD_IDS = { packer: 'rpPackerFilterDD', status: 'rpStatusFilterDD', written: 'rpWrittenFilterDD' };
 
 // 검사완료 누적 이력까지 합치면 기본 필터만으로도 수천 행이라, 가상 스크롤 대신 더
 // 단순하고 확실한 페이지네이션으로 나눈다 — 한 번에 화면(DOM)에 50행만 존재하므로
