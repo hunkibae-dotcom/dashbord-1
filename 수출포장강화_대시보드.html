@@ -6510,9 +6510,26 @@
                 <button onclick="scRunDayQuery()" style="flex:1;padding:9px 14px;border-radius:9px;border:none;background:#f97316;color:#fff;font-size:13px;font-weight:800;cursor:pointer;">선택한 날짜 조회 (<span id="scSelCount">0</span>)</button>
             </div>
 
-            <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+            <!-- 예전엔 여기에 자체 max-height(320px)+스크롤을 또 둬서 "스크롤 박스 안에
+                 스크롤 박스"처럼 갑갑했다 — 이제 자체 높이 제한을 없애고 min-height로 넉넉한
+                 기본 크기만 주고, 모달 전체(위 max-height:92vh + overflow-y:auto)가
+                 스크롤되게 해서 실제 내용이 잘리지 않고 다 펼쳐져 보인다. -->
+            <div id="scDayList" style="border-top:1px solid #e2e8f0;padding-top:12px;min-height:280px;display:flex;flex-direction:column;gap:8px;">
                 <div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:12px 0;">날짜를 선택하고 조회를 눌러주세요.</div>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== 상태/날짜 미니 필터 팝업(위 scheduleCalendarModal 전용) ===== -->
+    <div id="scFilterModal" onclick="if(event.target===this)closeScFilterPicker()" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;">
+        <div style="background:#fff;border-radius:18px;width:100%;max-width:280px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div id="scFilterModalTitle" style="font-size:14px;font-weight:800;color:#1e293b;">필터</div>
+                <button onclick="closeScFilterPicker()" style="width:28px;height:28px;border:none;background:#f8fafc;border-radius:8px;cursor:pointer;color:#64748b;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+                </button>
+            </div>
+            <div id="scFilterModalList" style="display:flex;flex-direction:column;gap:6px;"></div>
         </div>
     </div>
 
