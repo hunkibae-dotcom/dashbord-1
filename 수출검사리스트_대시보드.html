@@ -2535,8 +2535,9 @@ function _qcScCollectEvents() {
     roundInfo[d.건명].qty += parseInt(d.수량) || 0;
     const dueIso = _qcIsoDate(d.납기일);
     const packIso = _qcIsoDate(d.포장일);
-    if (dueIso) { if (!byDate[dueIso]) byDate[dueIso] = { due: new Set(), pack: new Set() }; byDate[dueIso].due.add(d.건명); }
-    if (packIso) { if (!byDate[packIso]) byDate[packIso] = { due: new Set(), pack: new Set() }; byDate[packIso].pack.add(d.건명); }
+    // 포장일/납기일 필터가 걸려있으면 그 종류만 달력·목록에 반영한다.
+    if (dueIso && _qcScDateType !== 'pack') { if (!byDate[dueIso]) byDate[dueIso] = { due: new Set(), pack: new Set() }; byDate[dueIso].due.add(d.건명); }
+    if (packIso && _qcScDateType !== 'due') { if (!byDate[packIso]) byDate[packIso] = { due: new Set(), pack: new Set() }; byDate[packIso].pack.add(d.건명); }
   });
   return { byDate, roundInfo };
 }
