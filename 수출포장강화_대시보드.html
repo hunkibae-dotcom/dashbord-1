@@ -6603,6 +6603,21 @@
             });
             renderScheduleCalendar();
         }
+        function scSetDateType(type) {
+            _scDateType = type;
+            ['all', 'load', 'due'].forEach(t => {
+                const btn = document.getElementById(t === 'all' ? 'scDAll' : (t === 'load' ? 'scDLoad' : 'scDDue'));
+                if (!btn) return;
+                const on = t === type;
+                btn.style.background = on ? '#f97316' : '#f8fafc';
+                btn.style.borderColor = on ? '#f97316' : '#e2e8f0';
+                btn.style.color = on ? '#fff' : '#475569';
+            });
+            // 날짜 종류를 바꾸면 이미 골라둔 날짜 선택은 의미가 달라지므로 같이 초기화한다.
+            _scSelectedDates = new Set();
+            renderScheduleCalendar();
+            renderScheduleDayList();
+        }
 
         // 수출 현황 + 출고 완료 데이터에서 날짜별(상차/납기) 이벤트와 차수별 요약 정보를
         // 뽑는다. 출고된 품목은 '수출 현황' 시트에서 '출고 완료' 시트로 이미 옮겨가 있어서,
