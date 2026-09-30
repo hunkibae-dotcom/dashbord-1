@@ -3552,7 +3552,7 @@ function _updateRpDateFieldUI() {
   if (_rpDateCutoff) {
     cap.innerHTML = `<b>${RP_DATE_FIELD_LABEL[_rpDateField]} ${_rpDateCutoff}</b>까지(종료일 기준) · <a onclick="clearRpDateCutoff()" style="cursor:pointer;color:#6D5CE8;font-weight:700;">전체보기</a>`;
   } else {
-    cap.textContent = '납기일·포장일·검사완료일 클릭 시 그 날짜까지(종료일 기준)의 항목만 봅니다.';
+    cap.textContent = '날짜 클릭 시 그날까지(종료일 기준)만 봅니다.';
   }
 }
 
