@@ -1068,6 +1068,29 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== 보고서: 납기/포장/검사일 상세보기 (칼럼을 늘리지 않고 작은 버튼으로) ===== -->
+<div id="rpDateDetailModal" onclick="if(event.target===this)closeRpDateDetail()" style="display:none;position:fixed;inset:0;z-index:205;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:16px;padding:20px;width:100%;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div id="rpDateDetailTitle" style="font-size:14px;font-weight:800;color:var(--text);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+    <div id="rpDateDetailSub" style="font-size:11.5px;color:var(--label);margin-bottom:14px;"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--icon-bg);border-radius:10px;">
+        <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">납기일</span>
+        <span id="rpDateDetailDue" style="font-size:13px;font-weight:800;color:var(--text);"></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--icon-bg);border-radius:10px;">
+        <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">포장일</span>
+        <span id="rpDateDetailPack" style="font-size:13px;font-weight:800;color:var(--text);"></span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--icon-bg);border-radius:10px;">
+        <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">검사일</span>
+        <span id="rpDateDetailInspect" style="font-size:13px;font-weight:800;color:var(--text);"></span>
+      </div>
+    </div>
+    <button onclick="closeRpDateDetail()" style="margin-top:16px;width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;font-size:13px;cursor:pointer;">닫기</button>
+  </div>
+</div>
+
 <!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
 <div id="rpEditModal" onclick="if(event.target===this)closeRpEditModal()" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--panel);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
