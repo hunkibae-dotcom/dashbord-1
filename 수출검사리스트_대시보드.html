@@ -3670,6 +3670,11 @@ function _rpFilteredRows() {
   let rows = [...allData, ...archiveRows];
   if (_rpPackerFilter) rows = rows.filter(d => d.포장처 === _rpPackerFilter);
   if (_rpStatusFilter) rows = rows.filter(d => d.검사 === _rpStatusFilter);
+  if (_rpWrittenFilter) rows = rows.filter(d => {
+    const sel = _reportSelected[_miKey(d)];
+    const isWritten = sel ? sel.written === true : false;
+    return _rpWrittenFilter === 'yes' ? isWritten : !isWritten;
+  });
   if (_rpDateCutoff) {
     // 정확히 그 날짜만 보여주면 하루만 달라도 아무 것도 안 보였다 — 선택한 날짜를
     // "종료일"로 보고 그 날짜까지의 항목을 전부 보여준다.
