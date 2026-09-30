@@ -307,11 +307,12 @@
           <div class="bar-panel" id="dashOrderTypeBars"></div>
         </div>
         <div>
-          <div class="sec-title" style="margin-bottom:8px;">발주중인 자재</div>
-          <div style="display:flex;flex-direction:column;gap:9px;" id="dashOngoingOrders"></div>
+          <div class="sec-title" style="margin-bottom:8px;">유형별 재고 보유 현황</div>
+          <div class="bar-panel" id="dashStockTypeBars"></div>
         </div>
         <div>
-          <div class="sec-title" style="margin-bottom:8px;">재고 적게 남은 자재</div>
+          <div class="sec-title" style="margin-bottom:2px;">재고 부족 · 발주 대상 <span id="dashDeficitCount" style="color:var(--warn);"></span></div>
+          <div style="font-size:11px;color:var(--dim);margin-bottom:8px;">평균 1회 발주량보다 현재고가 적은 자재</div>
           <div style="display:flex;flex-direction:column;gap:9px;" id="dashLowStock"></div>
         </div>
       </div>
