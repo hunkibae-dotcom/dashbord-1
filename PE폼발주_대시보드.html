@@ -824,13 +824,13 @@ function renderDashboard() {
   // ── 유형별 재고 보유 현황 (클릭 시 재고 탭에서 그 유형으로 필터) ──
   renderDashStockTypeBars();
 
-  // ── 재고 부족·발주 대상 (평균 1회 발주량 − 현재고, 클릭 시 재고 상세) ──
+  // ── 재고 부족·발주 대상 (자주 발주하는 품목 중 현재고 100개 이하, 클릭 시 재고 상세) ──
   const deficits = dashLowStockDeficitList();
   document.getElementById('dkLowStockCount').innerHTML = deficits.length + '<small>종</small>';
   document.getElementById('dashDeficitCount').textContent = deficits.length ? deficits.length + '건' : '';
   const deficitTop = deficits.slice(0, 6);
   document.getElementById('dashLowStock').innerHTML = deficitTop.length
-    ? deficitTop.map(deficitCardHtml).join('')
+    ? deficitTop.map(g => deficitCardHtml(g)).join('')
     : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
 }
 
