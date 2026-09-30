@@ -2668,10 +2668,10 @@ function renderQcScheduleDayList() {
 function _qcMiniCalHtml() {
   const now = new Date();
   const year = now.getFullYear(), month = now.getMonth();
-  const savedFactory = _qcScFactory, savedType = _qcScOrderType;
-  _qcScFactory = 'all'; _qcScOrderType = 'all';
+  const savedFactory = _qcScFactory, savedType = _qcScOrderType, savedDateType = _qcScDateType;
+  _qcScFactory = 'all'; _qcScOrderType = 'all'; _qcScDateType = 'all';
   const events = _qcScCollectEvents();
-  _qcScFactory = savedFactory; _qcScOrderType = savedType;
+  _qcScFactory = savedFactory; _qcScOrderType = savedType; _qcScDateType = savedDateType;
 
   const firstDow = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
