@@ -1224,6 +1224,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <button onclick="qcScSetOrderType('export')" id="qcScTExport" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">수출건</button>
       <button onclick="qcScSetOrderType('domestic')" id="qcScTDomestic" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">내수건</button>
     </div>
+    <div style="display:flex;gap:6px;">
+      <button onclick="qcScSetDateType('all')" id="qcScDAll" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #6D5CE8;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">전체</button>
+      <button onclick="qcScSetDateType('pack')" id="qcScDPack" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">포장일</button>
+      <button onclick="qcScSetDateType('due')" id="qcScDDue" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:12.5px;font-weight:700;cursor:pointer;">납기일</button>
+    </div>
 
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <button onclick="qcScMoveMonth(-1)" style="width:30px;height:30px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-size:14px;">‹</button>
