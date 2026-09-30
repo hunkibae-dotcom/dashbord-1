@@ -6649,11 +6649,12 @@
                 roundInfo[item.round].qty += parseInt(item.qty) || 0;
                 const loadD = normalizeDate(item.date);
                 const dueD = normalizeDate(item.dueDate);
-                if (loadD && loadD !== '-') {
+                // 상차일/납기일 필터가 걸려있으면 그 종류만 달력·목록에 반영한다.
+                if (loadD && loadD !== '-' && _scDateType !== 'due') {
                     if (!byDate[loadD]) byDate[loadD] = { load: new Set(), due: new Set() };
                     byDate[loadD].load.add(item.round);
                 }
-                if (dueD && dueD !== '-') {
+                if (dueD && dueD !== '-' && _scDateType !== 'load') {
                     if (!byDate[dueD]) byDate[dueD] = { load: new Set(), due: new Set() };
                     byDate[dueD].due.add(item.round);
                 }
