@@ -760,21 +760,6 @@ function openStockTypeDetail(type) {
   switchTab('stock');
 }
 
-// 대시보드 본 화면의 "재고 적게 남은 자재" 목록용 — 클릭하면 재고 상세를 연다(마찬가지로
-// 모달 안이 아니라 대시보드 화면에 바로 떠 있어 다른 모달과 겹치지 않는다).
-function stockMiniCardHtml(g) {
-  return `<div class="stk-card">
-    <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
-      <div class="stk-ico">${typeIconHtml(g.type)}</div>
-      <div class="stk-mid">
-        <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
-      </div>
-      <div class="stk-total"><b>${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
-      <i class="fa-solid fa-chevron-right stk-chev"></i>
-    </div>
-  </div>`;
-}
-
 // ── KPI 카드(상단 4개) 상세 모달 전용 — 그 위에 발주/재고 상세 모달을 또 열면 먼저 열린
 // 모달(dashDetailModal)이 나중에 열린 모달에 덮여 보이지 않고, 클릭도 항상 맨 위 모달로만
 // 가서 엉뚱한 항목이 열리는 것처럼 보이는 문제가 있었다 — 그래서 이 목록들은 클릭해도
