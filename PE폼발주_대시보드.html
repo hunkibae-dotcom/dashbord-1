@@ -717,6 +717,66 @@ function orderCardHtml(r) {
     </div>
   </div>`;
 }
+// 재고 부족·발주 대상 — 실제 구글시트 발주 관리에서 쓰는 방식과 똑같이 "평균 1회
+// 발주량 − 현재고"가 양수인 자재만, 부족분이 큰 순서로 보여준다. 발주 이력이 아예
+// 없는 자재는 "평균 1회 발주량" 기준 자체가 없어 판단할 수 없으므로 제외한다.
+function dashLowStockDeficitList() {
+  const stockGroups = groupStock(stockRows);
+  const orderQtyByKey = {};
+  orderRows.forEach(r => {
+    const key = (r.code || r.name) + '|' + r.spec;
+    const q = stkQtyNum(r.qty);
+    if (q > 0) (orderQtyByKey[key] || (orderQtyByKey[key] = [])).push(q);
+  });
+  return Object.entries(stockGroups).map(([key, g]) => {
+    const total = g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0);
+    const qtys = orderQtyByKey[key];
+    const avgOrderQty = qtys && qtys.length ? qtys.reduce((a, b) => a + b, 0) / qtys.length : 0;
+    return { key, code: g.code, name: g.name, spec: g.spec, type: g.type, unit: g.unit, total, avgOrderQty, deficit: avgOrderQty - total };
+  }).filter(g => g.avgOrderQty > 0 && g.deficit > 0).sort((a, b) => b.deficit - a.deficit);
+}
+function deficitCardHtml(g) {
+  return `<div class="stk-card">
+    <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
+      <div class="stk-ico">${typeIconHtml(g.type)}</div>
+      <div class="stk-mid">
+        <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+        <div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div>
+      </div>
+      <div class="stk-total"><b style="color:var(--warn);">${Math.round(g.deficit).toLocaleString()}</b><span>${g.unit} 부족</span></div>
+      <i class="fa-solid fa-chevron-right stk-chev"></i>
+    </div>
+  </div>`;
+}
+
+// 유형별 재고 보유 현황 — 유형(일자형/코너형/패드형/롤형)별 남은 재고 총량 막대(클릭 시
+// 재고 탭에서 그 유형으로 필터해서 보여준다).
+function dashStockTypeEntries() {
+  const groups = groupStock(stockRows);
+  const byType = {};
+  Object.values(groups).forEach(g => {
+    const total = g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0);
+    const key = g.type || '기타';
+    if (!byType[key]) byType[key] = { label: key, value: 0, unit: g.unit };
+    byType[key].value += total;
+  });
+  return Object.values(byType).sort((a, b) => b.value - a.value);
+}
+function renderDashStockTypeBars() {
+  const entries = dashStockTypeEntries();
+  document.getElementById('dashStockTypeBars').innerHTML = entries.length
+    ? typeBarsHtml(entries, 'openStockTypeDetail')
+    : '<div class="empty" style="padding:24px 0;"><i class="fa-solid fa-chart-simple"></i><div>재고 데이터가 없습니다</div></div>';
+}
+function openStockTypeDetail(type) {
+  document.getElementById('stockSearch').value = '';
+  _stockTypeFilter = type; _stockShowFilter = 'remain';
+  document.querySelectorAll('#stockTypeChips .chip').forEach(c => c.classList.toggle('on', c.dataset.v === type));
+  document.querySelectorAll('#stockShowChips .chip').forEach(c => c.classList.toggle('on', c.dataset.v === 'remain'));
+  renderStock();
+  switchTab('stock');
+}
+
 // 대시보드 본 화면의 "재고 적게 남은 자재" 목록용 — 클릭하면 재고 상세를 연다(마찬가지로
 // 모달 안이 아니라 대시보드 화면에 바로 떠 있어 다른 모달과 겹치지 않는다).
 function stockMiniCardHtml(g) {
