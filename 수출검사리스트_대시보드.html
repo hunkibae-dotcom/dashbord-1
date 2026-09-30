@@ -7140,7 +7140,7 @@ function onNativeScanResult(raw) {
     // 진행상태 필터(_psSourceFilter/_psStatusFilters)를 초기화하지 않고 있었다 — 그래서 이전에
     // 수동으로 선택해둔 카테고리 필터가 다음 스캔에도 그대로 남아 결과를 몰래 걸러버리고,
     // "검색이 안 된다 / 이전 품목만 보인다 / 초기화도 안 먹힌다"처럼 보이는 원인이었다.
-    _psSourceFilter = ''; _psStatusFilters.clear();
+    _psSourceFilter = ''; _psStatusFilters.clear(); _psExactDateFilter = null;
     if (typeof _updatePsSourceButtons === 'function') _updatePsSourceButtons();
     if (typeof openProductSearch === 'function') openProductSearch();
   } catch (e) {
