@@ -225,23 +225,6 @@
   .bar-fill{height:100%;border-radius:6px;background:linear-gradient(135deg,var(--amber2),var(--amber));}
   .dash-mini-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow);cursor:pointer;}
 
-  /* 유형 아이콘 — 일자형/코너형은 폰트 아이콘 대신 실제 모양(막대 / ㄱ자)을 CSS로 직접 그린다.
-     아이콘 폰트 이름에 기대지 않고, 패드형(fa-square, 15px)과 비슷한 크기로 맞췄다. */
-  /* 둘 다 아이콘 컨테이너가 display:flex 라서 flex item 이 된다.
-     shrink 로 찌그러지지 않게 flex-shrink:0 을 주고, background 단축속성 대신
-     background-color 를 쓴다(구형 WebView 에서 단축속성+currentColor 가 안 먹는 경우가 있다). */
-  .ty-bar{
-    display:block;width:16px;height:5px;border-radius:3px;
-    background-color:currentColor;flex-shrink:0;
-  }
-  /* 코너형 = 말 그대로 ㄱ자. clip-path 는 구형 WebView 에서 통째로 무시되면
-     네모로 보이므로, 위쪽+오른쪽 테두리만 남긴 상자로 그린다(어디서나 확실히 렌더된다). */
-  .ty-corner{
-    display:block;width:14px;height:14px;box-sizing:border-box;
-    border-top:5px solid currentColor;
-    border-right:5px solid currentColor;
-    background:none;flex-shrink:0;
-  }
   .sort-btn{width:40px;flex-shrink:0;border-radius:13px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;}
   .date-range{display:flex;align-items:center;gap:9px;background:var(--panel);border:1.5px solid var(--border);border-radius:13px;padding:11px 14px;flex:1;min-width:0;}
   .date-range i{color:var(--label);font-size:13px;flex-shrink:0;}
