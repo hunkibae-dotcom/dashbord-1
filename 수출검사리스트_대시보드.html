@@ -5034,10 +5034,18 @@ function _updatePsSourceButtons() {
   }
 }
 // 드롭다운에서 검사 진행현황/검사완료현황을 바꾸면 이전 소스 기준으로 골라둔 세부상태는
-// 더 이상 의미가 없으므로 같이 초기화한다.
+// 더 이상 의미가 없으므로 같이 초기화한다. "검사완료(진행중)"는 진행중 시트(source=active)에
+// 아직 남아있지만 이미 검사가 끝난 품목만 바로 보고 싶다는 요청이 잦아서 만든 지름길 —
+// source=active로 두고 세부상태를 "검사"만으로 미리 좁혀둔 것과 완전히 같다(예전엔 이걸
+// 보려면 "검사 진행현황" 고르고 세부상태 팝업을 또 열어 "검사완료"를 체크해야 했다).
 function setPsSourceFromDropdown(value) {
-  _psSourceFilter = value;
-  _psStatusFilters.clear();
+  if (value === 'active_done') {
+    _psSourceFilter = 'active';
+    _psStatusFilters = new Set(['검사']);
+  } else {
+    _psSourceFilter = value;
+    _psStatusFilters.clear();
+  }
   _updatePsSourceButtons();
   runProductSearch();
 }
