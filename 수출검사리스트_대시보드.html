@@ -6918,7 +6918,7 @@ function confirmManualCode() {
   closeScanView();
   document.getElementById('psCode').value = code;
   document.getElementById('psColor').value = color;
-  _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
+  _psSourceFilter = ''; _psStatusFilters.clear(); _psExactDateFilter = null; _updatePsSourceButtons();
   openProductSearch();
 }
 
