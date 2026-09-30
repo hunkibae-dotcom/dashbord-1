@@ -5011,7 +5011,13 @@ function _updatePsSourceButtons() {
   // 스캔처럼 소스를 일부러 안 좁혀야 하는 흐름에서 _psSourceFilter가 ''일 수 있는데,
   // 드롭다운엔 빈 옵션이 없으니 화면상 기본값(검사 진행현황)으로만 보여준다 —
   // 실제 필터링은 여전히 _psSourceFilter(='')를 그대로 따른다.
-  if (sel) sel.value = _psSourceFilter || 'active';
+  // "검사완료(진행중)"은 별도 source 값이 아니라 source=active + 세부상태={검사} 조합의
+  // 지름길이라, 그 조합일 때만 드롭다운도 이 옵션으로 보이게 맞춰준다(세부상태 팝업에서
+  // 직접 "검사완료"만 골라도 마찬가지로 이 옵션으로 보임 — 결과는 똑같은 상태라서).
+  if (sel) {
+    sel.value = (_psSourceFilter === 'active' && _psStatusFilters.size === 1 && _psStatusFilters.has('검사'))
+      ? 'active_done' : (_psSourceFilter || 'active');
+  }
   const lbl = document.getElementById('psSrcDetailLabel');
   if (!lbl) return;
   let label = '전체';
