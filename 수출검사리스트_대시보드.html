@@ -4862,6 +4862,7 @@ function resetProductSearchFilters() {
   ['psName', 'psCode', 'psColor', 'psFrom', 'psTo'].forEach(id => { document.getElementById(id).value = ''; });
   document.getElementById('psFactory').value = '';
   _psSourceFilter = 'active'; _psStatusFilters.clear();
+  _psExactDateFilter = null;
   _updatePsSourceButtons();
   updatePsDateBtnLabel();
   runProductSearch();
