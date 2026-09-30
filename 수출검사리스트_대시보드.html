@@ -1087,7 +1087,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
         <span id="rpDateDetailInspect" style="font-size:13px;font-weight:800;color:var(--text);"></span>
       </div>
     </div>
-    <button onclick="closeRpDateDetail()" style="margin-top:16px;width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;font-size:13px;cursor:pointer;">닫기</button>
+    <button id="rpDateDetailMergeBtn" onclick="_rpOpenMergeDetailFromDate()" style="display:none;margin-top:10px;width:100%;padding:9px;border-radius:10px;border:1.5px dashed #6D5CE8;background:rgba(109,92,222,.08);color:#6D5CE8;font-weight:700;font-size:12.5px;cursor:pointer;"><i class="fa-solid fa-layer-group"></i> 포함된 차수 보기</button>
+    <button onclick="closeRpDateDetail()" style="margin-top:10px;width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;font-size:13px;cursor:pointer;">닫기</button>
   </div>
 </div>
 
