@@ -719,7 +719,7 @@ function dashLowStockDeficitList() {
 function deficitCardHtml(g) {
   return `<div class="stk-card">
     <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
-      <div class="stk-ico">${typeIconHtml(g.type)}</div>
+      ${typeIconHtml(g.type)}
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
         <div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div>
@@ -780,7 +780,7 @@ function orderInfoRowHtml(r) {
 function stockInfoRowHtml(g) {
   return `<div class="stk-card">
     <div class="stk-head" style="cursor:default;">
-      <div class="stk-ico">${typeIconHtml(g.type)}</div>
+      ${typeIconHtml(g.type)}
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
         <div class="stk-batches">${g.code || '코드 없음'}</div>
@@ -1012,7 +1012,7 @@ function openDashLowStockDetail() {
   document.getElementById('dashKpiSortBtn').style.display = 'none';
   document.getElementById('dashDetailTitle').textContent = '재고 부족 · 발주 대상 (' + deficits.length + '종)';
   document.getElementById('dashDetailBody').innerHTML = deficits.length
-    ? deficits.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')"><div class="stk-ico">${typeIconHtml(g.type)}</div><div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div><div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div></div><div class="stk-total"><b style="color:var(--warn);">${Math.round(g.deficit).toLocaleString()}</b><span>${g.unit} 부족</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
+    ? deficits.map(g => `<div class="stk-card"><div class="stk-head" onclick="closeDashDetail();openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">${typeIconHtml(g.type)}<div class="stk-mid"><div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div><div class="stk-batches">현재고 ${g.total.toLocaleString()}${g.unit} · 평균 발주량 ${Math.round(g.avgOrderQty).toLocaleString()}${g.unit}</div></div><div class="stk-total"><b style="color:var(--warn);">${Math.round(g.deficit).toLocaleString()}</b><span>${g.unit} 부족</span></div><i class="fa-solid fa-chevron-right stk-chev"></i></div></div>`).join('')
     : '<div class="empty"><i class="fa-solid fa-boxes-stacked"></i><div>부족한 자재가 없습니다</div></div>';
   document.getElementById('dashDetailModal').classList.add('open');
 }
@@ -1184,7 +1184,7 @@ function renderStock() {
   list.innerHTML = groupArr.map(([key, g, total]) => {
     return `<div class="stk-card">
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
-        <div class="stk-ico">${typeIconHtml(g.type)}</div>
+        ${typeIconHtml(g.type)}
         <div class="stk-mid">
           <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
           <div class="stk-batches">${g.code || '코드 없음'} · 배치 ${g.batches.length}건</div>
@@ -1329,7 +1329,7 @@ function renderMaster() {
 
   list.innerHTML = rows.map(r => `
     <div class="mst-row">
-      <div class="mst-ico">${typeIconHtml(r.type)}</div>
+      ${typeIconHtml(r.type)}
       <div class="mst-mid">
         <div class="mst-name">${r.name} <span class="spec">${r.spec}</span></div>
         <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
