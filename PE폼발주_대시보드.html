@@ -715,9 +715,10 @@ function dashLowStockDeficitList() {
   }).filter(g => g.orderCount >= PE_FREQUENT_MIN_ORDERS && g.total <= PE_LOW_STOCK_MAX)
     .sort((a, b) => a.total - b.total);
 }
-function deficitCardHtml(g) {
+function deficitCardHtml(g, fromDetailModal) {
+  const openCall = (fromDetailModal ? 'closeDashDetail();' : '') + "openDashStockDetail('" + g.key.replace(/'/g, "\\'") + "')";
   return `<div class="stk-card">
-    <div class="stk-head" onclick="openDashStockDetail('${g.key.replace(/'/g, "\\'")}')">
+    <div class="stk-head" onclick="${openCall}">
       ${typeIconHtml(g.type)}
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
