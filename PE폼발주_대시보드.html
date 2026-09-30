@@ -580,14 +580,25 @@ function _hidePeInitLoadingOverlay() {
 }
 
 // ── 유형별 아이콘 ──
-// 패드형/롤형은 폰트어썸 아이콘 그대로 쓰고, 일자형/코너형은 실제 모양(긴 막대 / ㄱ자)을
-// CSS로 직접 그린 도형을 쓴다 — 아이콘 폰트 이름에 기대지 않아 항상 확실히 보인다.
-const TYPE_ICON = { '패드형': 'fa-square', '롤형': 'fa-circle-notch' };
-function typeIcon(t) { return TYPE_ICON[t] || 'fa-cube'; }
-function typeIconHtml(t) {
-  if (t === '일자형') return '<span class="ty-bar"></span>';
-  if (t === '코너형') return '<span class="ty-corner"></span>';
-  return `<i class="fa-solid ${typeIcon(t)}"></i>`;
+// 회색 배경에 얇은 선 하나만 있던 예전 배지 대신, 유형별 실제 모양을 닮은 SVG 픽토그램을
+// 그 유형만의 색(은은한 톤 배경 + 그림자)을 넣은 타일에 담는다 — 색으로도, 모양으로도
+// 한눈에 구분된다. 색은 이미 있는 테마 변수를 그대로 재사용하고(코너형만 새로 추가),
+// 라이트/다크 전환은 CSS 변수가 알아서 처리하므로 여기 JS는 손댈 게 없다.
+const TYPE_COLOR_VAR = { '일자형': '--wait', '코너형': '--corner', '패드형': '--warn', '롤형': '--ok' };
+const TYPE_BG_VAR = { '일자형': '--wait-bg', '코너형': '--corner-bg', '패드형': '--warn-bg', '롤형': '--ok-bg' };
+function typeShapeSvg(t, s) {
+  if (t === '일자형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}"><rect x="3" y="9" width="18" height="6" rx="3" fill="currentColor"/></svg>`;
+  if (t === '코너형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none"><path d="M6 4v11a3 3 0 0 0 3 3h11" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></svg>`;
+  if (t === '패드형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}"><rect x="4" y="4" width="16" height="16" rx="4" fill="currentColor"/></svg>`;
+  if (t === '롤형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4.3" stroke="currentColor" stroke-width="2.4"/></svg>`;
+  return `<i class="fa-solid fa-cube" style="font-size:${Math.round(s * 0.75)}px;"></i>`; // 알 수 없는 유형 대비
+}
+function typeIconHtml(t, size) {
+  size = size || 38;
+  const colorVar = TYPE_COLOR_VAR[t] || '--label';
+  const bgVar = TYPE_BG_VAR[t] || '--icon-bg';
+  const radius = size >= 34 ? 13 : 9;
+  return `<div style="width:${size}px;height:${size}px;border-radius:${radius}px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(${bgVar});border:1px solid var(${bgVar});box-shadow:0 3px 8px rgba(0,0,0,.06);color:var(${colorVar});">${typeShapeSvg(t, Math.round(size * 0.53))}</div>`;
 }
 
 // 시트의 _peStkIsUsedUp()과 동일한 판정 — 숫자면 0 이하, 문자열이면 정확히 "소진"일 때만 소진.
