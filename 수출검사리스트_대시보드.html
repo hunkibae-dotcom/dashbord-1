@@ -4358,7 +4358,7 @@ function _rpEnsureSelected(key) {
   const d = _rpFindByKey(key);
   if (!d) return;
   _reportSelected[key] = {
-    item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null,
+    item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, written: false, cbm: null,
     // *Remote: 다른 사람이 등록해서 이 기기엔 원본(base64)이 없는 사진의 Drive 참조
     // ({fileId, viewUrl, downloadUrl}) — 화면 표시/다운로드는 viewUrl/downloadUrl로,
     // PPTX에 넣을 때만 fileId로 원본을 한 번 받아온다.
