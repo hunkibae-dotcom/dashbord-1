@@ -3607,16 +3607,17 @@ function toggleRpFilterDD(which, e) {
   if (_rpOpenFilterDD === which) { _closeRpFilterDDs(); return; }
   _rpOpenFilterDD = which;
   _renderRpFilterDD(which);
-  const openEl = document.getElementById(which === 'packer' ? 'rpPackerFilterDD' : 'rpStatusFilterDD');
-  const otherEl = document.getElementById(which === 'packer' ? 'rpStatusFilterDD' : 'rpPackerFilterDD');
-  if (openEl) openEl.style.display = 'block';
-  if (otherEl) otherEl.style.display = 'none';
+  Object.keys(RP_FILTER_DD_IDS).forEach(k => {
+    const el = document.getElementById(RP_FILTER_DD_IDS[k]);
+    if (el) el.style.display = (k === which) ? 'block' : 'none';
+  });
 }
 function _closeRpFilterDDs() {
   _rpOpenFilterDD = null;
-  const a = document.getElementById('rpPackerFilterDD'), b = document.getElementById('rpStatusFilterDD');
-  if (a) a.style.display = 'none';
-  if (b) b.style.display = 'none';
+  Object.values(RP_FILTER_DD_IDS).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 }
 document.addEventListener('click', () => { if (_rpOpenFilterDD) _closeRpFilterDDs(); });
 // 검사 상태값은 시트/필드에는 "검사"로만 저장돼 있지만(다른 화면의 상태버튼도 값은
