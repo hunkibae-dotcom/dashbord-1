@@ -1654,7 +1654,7 @@ async function loadData() {
   } catch (e) {
     console.error(e);
     setConnStatus('error');
-    document.getElementById('tableBody').innerHTML = `<tr><td colspan="11" class="text-center py-10 text-rose-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i>데이터 로드 실패: ${e.message}</td></tr>`;
+    document.getElementById('tableBody').innerHTML = `<tr><td colspan="12" class="text-center py-10 text-rose-500"><i class="fa-solid fa-triangle-exclamation mr-2"></i>데이터 로드 실패: ${e.message}</td></tr>`;
     _hideQcInitLoadingOverlay(); // 완전히 실패해도 화면이 로딩 표시로 영원히 덮여있으면 안 됨
   } finally {
     btn.disabled = false;
