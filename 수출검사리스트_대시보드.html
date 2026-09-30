@@ -2534,6 +2534,7 @@ function openQcScheduleCalendar() {
   _qcScYear = now.getFullYear();
   _qcScMonth = now.getMonth();
   _qcScSelectedDates = new Set();
+  _updateQcScFilterButtons();
   renderQcScheduleCalendar();
   document.getElementById('qcScheduleModal').style.display = 'flex';
   _armBackTrap();
