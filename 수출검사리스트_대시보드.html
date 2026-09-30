@@ -3380,12 +3380,13 @@ async function _rpFetchSharedReportData() {
         // 항목만 만들고 체크는 절대 건드리지 않는다.
         if (!_reportSelected[key]) {
           _reportSelected[key] = {
-            item: item, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, cbm: null,
+            item: item, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, written: false, cbm: null,
             productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null, _updatedAt: 0
           };
         }
         const sel = _reportSelected[key];
         sel.hasHardware = remote.hasHardware === true;
+        sel.written = remote.written === true;
         if (remote.productPhotoId) sel.productPhotoRemote = { fileId: remote.productPhotoId };
         if (remote.packagePhotoId) sel.packagePhotoRemote = { fileId: remote.packagePhotoId };
         if (remote.notePhotoId) sel.notePhotoRemote = { fileId: remote.notePhotoId };
