@@ -700,23 +700,6 @@ function remainStockList() {
   }));
 }
 
-// 대시보드 본 화면의 "발주중인 자재" 목록용 — 클릭하면 발주 상세를 연다(모달 안이 아니라
-// 대시보드 화면에 바로 떠 있는 목록이라, 다른 모달과 겹쳐서 가려질 일이 없다).
-function orderCardHtml(r) {
-  return `<div class="dash-mini-card" onclick="openOrderDetail('${r.ordNo}')">
-    <div class="card-top" style="margin-bottom:0;">
-      <div>
-        <div class="card-name" style="font-size:13.5px;">${r.name} <span class="spec">${r.spec}</span></div>
-        <span class="code-copy" onclick="event.stopPropagation();copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
-      </div>
-      <span class="pill ${pillClass(r.stat)}">${r.stat || '—'}</span>
-    </div>
-    <div class="card-bottom" style="margin-top:9px;">
-      <span>${r.date || '—'} 발주</span>
-      <span class="card-qty">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</span>
-    </div>
-  </div>`;
-}
 // 재고 부족·발주 대상 — 실제 구글시트 발주 관리에서 쓰는 방식과 똑같이 "평균 1회
 // 발주량 − 현재고"가 양수인 자재만, 부족분이 큰 순서로 보여준다. 발주 이력이 아예
 // 없는 자재는 "평균 1회 발주량" 기준 자체가 없어 판단할 수 없으므로 제외한다.
