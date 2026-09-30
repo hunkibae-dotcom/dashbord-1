@@ -2549,43 +2549,66 @@ function qcScMoveMonth(delta) {
 }
 function qcScSetFactory(key) {
   _qcScFactory = key;
-  ['all', 'cj1', 'cj2'].forEach(k => {
-    const btn = document.getElementById(k === 'all' ? 'qcScFAll' : (k === 'cj1' ? 'qcScFCj1' : 'qcScFCj2'));
-    if (!btn) return;
-    const on = k === key;
-    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
-    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
-    btn.style.color = on ? '#fff' : '#475569';
-  });
+  _updateQcScFilterButtons();
   renderQcScheduleCalendar();
 }
 function qcScSetOrderType(type) {
   _qcScOrderType = type;
-  ['all', 'export', 'domestic'].forEach(t => {
-    const btn = document.getElementById(t === 'all' ? 'qcScTAll' : (t === 'export' ? 'qcScTExport' : 'qcScTDomestic'));
-    if (!btn) return;
-    const on = t === type;
-    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
-    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
-    btn.style.color = on ? '#fff' : '#475569';
-  });
+  _updateQcScFilterButtons();
   renderQcScheduleCalendar();
 }
 function qcScSetDateType(type) {
   _qcScDateType = type;
-  ['all', 'pack', 'due'].forEach(t => {
-    const btn = document.getElementById(t === 'all' ? 'qcScDAll' : (t === 'pack' ? 'qcScDPack' : 'qcScDDue'));
-    if (!btn) return;
-    const on = t === type;
-    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
-    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
-    btn.style.color = on ? '#fff' : '#475569';
-  });
+  _updateQcScFilterButtons();
   // 날짜 종류를 바꾸면 이미 골라둔 날짜 선택은 의미가 달라지므로(예: 포장일 기준으로
   // 고른 날짜가 납기일 기준에선 다른 뜻) 같이 초기화한다.
   _qcScSelectedDates = new Set();
   renderQcScheduleCalendar();
   renderQcScheduleDayList();
+}
+
+// 공장/구분/날짜 3묶음 칩을 요약 버튼 1개씩(+미니 팝업)으로 압축한 것 — 셋 다 구조가
+// 같아서(옵션 3개 중 단일 선택) 메타 하나로 공용 팝업을 그린다.
+const QC_SC_FILTER_META = {
+  factory: { title: '공장', btnId: 'qcScFactoryBtn', prefix: '공장', options: [['all','전체'],['cj1','충주1'],['cj2','충주2']], get: () => _qcScFactory, set: qcScSetFactory },
+  type:    { title: '구분', btnId: 'qcScTypeBtn', prefix: '구분', options: [['all','전체'],['export','수출건'],['domestic','내수건']], get: () => _qcScOrderType, set: qcScSetOrderType },
+  date:    { title: '날짜', btnId: 'qcScDateBtn', prefix: '날짜', options: [['all','전체'],['pack','포장일'],['due','납기일']], get: () => _qcScDateType, set: qcScSetDateType },
+};
+let _qcScPickerKind = null;
+function _updateQcScFilterButtons() {
+  Object.keys(QC_SC_FILTER_META).forEach(kind => {
+    const meta = QC_SC_FILTER_META[kind];
+    const btn = document.getElementById(meta.btnId);
+    if (!btn) return;
+    const cur = meta.get();
+    const opt = meta.options.find(o => o[0] === cur);
+    btn.textContent = meta.prefix + ': ' + (opt ? opt[1] : '전체');
+    btn.classList.toggle('on', cur !== 'all');
+  });
+}
+function openQcScFilterPicker(kind) {
+  _qcScPickerKind = kind;
+  const meta = QC_SC_FILTER_META[kind];
+  if (!meta) return;
+  document.getElementById('qcScFilterModalTitle').textContent = meta.title;
+  const cur = meta.get();
+  document.getElementById('qcScFilterModalList').innerHTML = meta.options.map(([v, l]) => {
+    const active = v === cur;
+    return `<button onclick="_qcScPickFilterValue('${v}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : '#e2e8f0'};background:${active ? 'rgba(109,92,232,.1)' : '#f8fafc'};color:${active ? '#6D5CE8' : '#334155'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;width:100%;">
+      <span style="width:16px;height:16px;border-radius:50%;border:2px solid ${active ? '#6D5CE8' : '#cbd5e1'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<span style="width:8px;height:8px;border-radius:50%;background:#6D5CE8;"></span>' : ''}</span>
+      ${l}
+    </button>`;
+  }).join('');
+  document.getElementById('qcScFilterModal').style.display = 'flex';
+}
+function _qcScPickFilterValue(v) {
+  const meta = QC_SC_FILTER_META[_qcScPickerKind];
+  if (!meta) return;
+  meta.set(v);
+  closeQcScFilterPicker();
+}
+function closeQcScFilterPicker() {
+  document.getElementById('qcScFilterModal').style.display = 'none';
 }
 
 function _qcIsoDate(str) {
