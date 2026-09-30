@@ -4379,6 +4379,24 @@ function toggleReportHardware(key, checked) {
   if (!wasSelected) renderReportList();
 }
 
+// "작성완료"는 PPTX 대상 선택(선택 칼럼)과 완전히 별개의 개인 체크 표시라서, 여기선
+// _rpEnsureSelected를 안 쓴다(그 함수는 이미 있는 항목이어도 항상 선택 체크까지 켜버려서,
+// 작성완료만 누르려던 게 의도치 않게 PPTX 선택까지 같이 켜지는 부작용이 생긴다).
+function toggleReportWritten(key, checked) {
+  if (!_reportSelected[key]) {
+    const d = _rpFindByKey(key);
+    if (!d) return;
+    _reportSelected[key] = {
+      item: d, productPhoto: null, packagePhoto: null, note: '', notePhoto: null, hasHardware: false, written: false, cbm: null,
+      productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null, _updatedAt: 0
+    };
+  }
+  _reportSelected[key].written = checked;
+  _rpSaveToStorage();
+  _rpSyncMetaToServer(key);
+  _rpRefreshRow(key);
+}
+
 // 사진을 파일로만 받으면 원본 해상도/비율을 몰라서 PPTX에 넣을 때 억지로 늘려찍힌
 // 것처럼 보이는 문제가 있었다 — 이미지를 한 번 실제로 그려서 원본 가로/세로 비율을
 // 미리 알아두고, 슬라이드에 넣을 때 그 비율대로 정확히 맞춘다(아래 _fitRect 참고).
