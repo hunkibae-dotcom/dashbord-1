@@ -2495,6 +2495,22 @@ function qcScSetOrderType(type) {
   });
   renderQcScheduleCalendar();
 }
+function qcScSetDateType(type) {
+  _qcScDateType = type;
+  ['all', 'pack', 'due'].forEach(t => {
+    const btn = document.getElementById(t === 'all' ? 'qcScDAll' : (t === 'pack' ? 'qcScDPack' : 'qcScDDue'));
+    if (!btn) return;
+    const on = t === type;
+    btn.style.background = on ? '#6D5CE8' : '#f8fafc';
+    btn.style.borderColor = on ? '#6D5CE8' : '#e2e8f0';
+    btn.style.color = on ? '#fff' : '#475569';
+  });
+  // 날짜 종류를 바꾸면 이미 골라둔 날짜 선택은 의미가 달라지므로(예: 포장일 기준으로
+  // 고른 날짜가 납기일 기준에선 다른 뜻) 같이 초기화한다.
+  _qcScSelectedDates = new Set();
+  renderQcScheduleCalendar();
+  renderQcScheduleDayList();
+}
 
 function _qcIsoDate(str) {
   const d = parseKDate(str);
