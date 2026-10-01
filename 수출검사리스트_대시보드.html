@@ -1294,6 +1294,36 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 </div>
 
 <!-- ===== 날짜 필터 팝업 ===== -->
+<!-- ===== 제품 검색: 상세 필터 시트(색상/날짜/세부상태/초기화를 한데 모음) ===== -->
+<div id="psFilterModal" style="display:none;position:fixed;inset:0;z-index:105;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closePsFilterSheet()">
+  <div style="background:var(--panel);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 32px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:14px;font-weight:800;color:var(--text);">상세 필터</div>
+      <button onclick="closePsFilterSheet()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;-webkit-appearance:none;">
+        <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+      </button>
+    </div>
+    <input id="psColor" type="text" oninput="runProductSearchDebounced()" placeholder="색상"
+      style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+      onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+    <div style="display:flex;gap:8px;">
+      <button id="psDateBtn" onclick="openPsDatePicker()"
+        style="flex:1;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:12.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;overflow:hidden;-webkit-appearance:none;">
+        <i class="fa-solid fa-calendar-days" style="font-size:11px;flex-shrink:0;color:var(--label);"></i>
+        <span id="psDateBtnLabel" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sub);">날짜 전체</span>
+      </button>
+      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="세부 진행상태"
+        style="position:relative;flex:1;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:12.5px;font-weight:600;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:5px;">
+        <i class="fa-solid fa-sliders" style="font-size:11px;flex-shrink:0;color:var(--label);"></i> 세부상태
+        <span id="psSrcDetailDot" style="display:none;position:absolute;top:6px;right:10px;width:7px;height:7px;border-radius:50%;background:#6D5CE8;"></span>
+      </button>
+    </div>
+    <button class="ps-reset" onclick="resetProductSearchFilters()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:9px 0;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+      <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
+    </button>
+  </div>
+</div>
+
 <div id="psDateModal" style="display:none;position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closePsDatePicker()">
   <div style="background:var(--panel);border-radius:18px;width:100%;max-width:300px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
