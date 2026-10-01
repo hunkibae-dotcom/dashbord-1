@@ -574,12 +574,17 @@ function typeShapeSvg(t, s) {
   if (t === '롤형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4.3" stroke="currentColor" stroke-width="2.4"/></svg>`;
   return `<i class="fa-solid fa-cube" style="font-size:${Math.round(s * 0.75)}px;"></i>`; // 알 수 없는 유형 대비
 }
-function typeIconHtml(t, size) {
+// 유형(모양)은 알아도 두께(15T/20T 등)까지는 이 타일만 봐서 구분이 안 된다는 지적으로,
+// 모양 아이콘은 그대로 두고(바꾸면 오히려 "이게 무슨 유형이지" 다시 봐야 함) 타일 모서리에
+// 작은 숫자 배지만 얹었다(검토 받은 시안 B). thickness는 detectThickness()로 뽑은
+// "15T" 같은 문자열 — 못 찾으면(빈 문자열) 배지 자체를 안 보여준다.
+function typeIconHtml(t, size, thickness) {
   size = size || 38;
   const colorVar = TYPE_COLOR_VAR[t] || '--label';
   const bgVar = TYPE_BG_VAR[t] || '--icon-bg';
   const radius = size >= 34 ? 13 : 9;
-  return `<div style="width:${size}px;height:${size}px;border-radius:${radius}px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(${bgVar});border:1px solid var(${bgVar});box-shadow:0 3px 8px rgba(0,0,0,.06);color:var(${colorVar});">${typeShapeSvg(t, Math.round(size * 0.53))}</div>`;
+  const badge = thickness ? `<span style="position:absolute;bottom:-5px;right:-5px;padding:1px 4px;border-radius:999px;background:var(${colorVar});color:#fff;font-size:${Math.max(8, Math.round(size * 0.24))}px;font-weight:800;line-height:1.5;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3);border:1.5px solid var(--panel);">${thickness}</span>` : '';
+  return `<div style="position:relative;width:${size}px;height:${size}px;border-radius:${radius}px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(${bgVar});border:1px solid var(${bgVar});box-shadow:0 3px 8px rgba(0,0,0,.06);color:var(${colorVar});">${typeShapeSvg(t, Math.round(size * 0.53))}${badge}</div>`;
 }
 
 // 시트의 _peStkIsUsedUp()과 동일한 판정 — 숫자면 0 이하, 문자열이면 정확히 "소진"일 때만 소진.
