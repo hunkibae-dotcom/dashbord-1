@@ -6380,6 +6380,7 @@ async function _spuRunImport() {
   const btn = document.getElementById('spuUploadRunBtn');
   const resultEl = document.getElementById('spuUploadResult');
   const name = _spuUserName();
+  _spuMismatchQueue = []; // 이전 실행에서 못 다 보여준 게 남아있으면 안 되니 매번 새로 시작
 
   const jobs = ['sales_cj1', 'sales_cj2', 'process_cj1', 'process_cj2']
     .filter(key => _spuDetected[key])
