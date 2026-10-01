@@ -6069,6 +6069,7 @@
             }
 
             _pkgBulkStatus = '';
+            _pkgBulkStatusOpenGroup = null;
             document.getElementById('pkgBulkCountLabel').textContent = `선택된 품목 ${_pkgBulkItems.length}건`;
             document.getElementById('pkgBulkShipDate').value = '';
             document.getElementById('pkgBulkFeedback').textContent = '';
@@ -6082,14 +6083,13 @@
 
         function _pkgRenderBulkStatusOpts() {
             const wrap = document.getElementById('pkgBulkStatusOpts');
-            wrap.innerHTML = PKG_BULK_STATUS_OPTS.map(opt => {
-                const isCur = opt.v === _pkgBulkStatus;
-                return `<button onclick="_pkgSelectBulkStatus('${opt.v}')"
-                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?opt.c:'#e2e8f0'};background:${isCur?opt.c+'1A':'#fff'};color:${isCur?opt.c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;">
-                    <i class="fa-solid fa-circle" style="font-size:6px;color:${opt.c};opacity:.8;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
-                </button>`;
-            }).join('');
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgBulkStatus, '_pkgSelectBulkStatus', '_pkgToggleBulkStatusGroup', _pkgBulkStatusOpenGroup);
             _pkgRenderBulkPartialQtyRows();
+        }
+
+        function _pkgToggleBulkStatusGroup(key) {
+            _pkgBulkStatusOpenGroup = (_pkgBulkStatusOpenGroup === key) ? null : key;
+            _pkgRenderBulkStatusOpts();
         }
 
         function _pkgSelectBulkStatus(v) {
