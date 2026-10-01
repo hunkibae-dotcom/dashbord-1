@@ -5377,6 +5377,270 @@ function exportCSV(rows, filename, columns) {
   URL.revokeObjectURL(url);
 }
 
+// ── 데이터 출력: 기본출력/검사항목 출력/현장용 출력 선택 ───────────────
+// 포장강화 대시보드(수출포장강화_대시보드.html)의 pkgExportChoiceModal /
+// pkgRunExport 패턴을 그대로 들여온 것 — 접두사만 qc로 맞췄다.
+function qcOpenExportChoiceModal() {
+  document.getElementById('qcExportChoiceStatus').textContent = '';
+  document.getElementById('qcExportChoiceModal').classList.remove('hidden');
+}
+function qcCloseExportChoiceModal() {
+  document.getElementById('qcExportChoiceModal').classList.add('hidden');
+}
+async function qcRunExport(kind) {
+  if (kind === 'manage') {
+    qcExportStyledXls();
+    qcCloseExportChoiceModal();
+    return;
+  }
+  const statusEl = document.getElementById('qcExportChoiceStatus');
+  statusEl.textContent = 'PDF 만드는 중...';
+  try {
+    if (!displayedRows.length) { statusEl.textContent = '내보낼 데이터가 없습니다.'; return; }
+    if (kind === 'inspect') {
+      await _qcRenderInspectPdf(displayedRows);
+    } else if (kind === 'field') {
+      // 현장용 출력 — 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만. STATUS_LABEL이
+      // 쓰는 것과 같은 기준(d.검사 === '검사'만 검사완료)으로 판정한다.
+      const items = displayedRows.filter(d => d.검사 !== '검사');
+      if (!items.length) { statusEl.textContent = '검사대기 품목이 없습니다.'; return; }
+      await _qcRenderFieldPdf(items);
+    } else {
+      return;
+    }
+    qcCloseExportChoiceModal();
+  } catch (e) {
+    statusEl.textContent = '실패: ' + ((e && e.message) || e);
+  }
+}
+
+// CSV는 꾸밀 방법이 없어서(색깔/테두리/칸너비 전부 불가능) — 포장강화 쪽 exportToCSV()와
+// 같은 방식으로, 표 모양 그대로 꾸민 HTML을 ".xls"로 저장한다. 엑셀은 이 방식의 파일을
+// 열 때 HTML의 색상·테두리·칸 너비를 그대로 셀 서식으로 읽어들인다. 칼럼 구성은 기존
+// exportTableData()가 쓰던 것과 동일, 검사상태 칸 색깔은 이 파일의 기존 상태별 배지
+// 색상(statusCls/pill-* 클래스, 104~111번째 줄 CSS)과 맞췄다.
+const QC_EXPORT_COLS = [
+  { label: '공장', width: 90, align: 'center', get: d => d.공장명 },
+  { label: '건명', width: 160, align: 'left', get: d => d.건명 },
+  { label: '단품코드', width: 110, align: 'left', get: d => d.단품코드 },
+  { label: '단품명칭', width: 180, align: 'left', get: d => d.단품명칭 },
+  { label: '색상', width: 70, align: 'center', get: d => d.색상 },
+  { label: '수량', width: 60, align: 'right', get: d => d.수량 },
+  { label: 'BOM', width: 70, align: 'center', get: d => d.BOM },
+  { label: '납기일', width: 90, align: 'center', get: d => d.납기일 },
+  { label: '포장일', width: 90, align: 'center', get: d => d.포장일 },
+  { label: '검사일', width: 90, align: 'center', get: d => d.검사일 },
+  { label: '검사상태', width: 90, align: 'center', get: d => d.검사 },
+];
+function _qcStatusXlsColor(d) {
+  // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값.
+  if (d.검사 === '검사') return { bg: '#DCFCE7', color: '#15803D' };
+  if (d.검사 === '양지') return { bg: '#FEF3C7', color: '#92400E' };
+  if (d.검사 === '재투입') return { bg: '#F3E8FF', color: '#7C3AED' };
+  if (d.검사 === '미투입') return { bg: '#F1F5F9', color: '#475569' };
+  if (d.검사 === '취소') return { bg: '#E2E8F0', color: '#64748B' };
+  return { bg: '#FEE2E2', color: '#B91C1C' }; // pill-undone(미검사) 기본값
+}
+function qcExportStyledXls() {
+  const label = factoryTab === 'all' ? '전체' : (factoryTab === 'cj1' ? '충주1공장' : '충주2공장');
+  const rows = displayedRows;
+  if (!rows || !rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
+
+  const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const colgroup = QC_EXPORT_COLS.map(c => `<col style="width:${c.width}px;">`).join('');
+  const headHtml = QC_EXPORT_COLS.map(c =>
+    `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
+  ).join('');
+  const bodyHtml = rows.map((d, idx) => {
+    const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+    return '<tr>' + QC_EXPORT_COLS.map(c => {
+      const isStatus = c.label === '검사상태';
+      const sc = isStatus ? _qcStatusXlsColor(d) : null;
+      const bg = isStatus ? sc.bg : rowBg;
+      const color = isStatus ? sc.color : '#1e293b';
+      return `<td style="background:${bg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${c.align};white-space:nowrap;">${esc(c.get(d))}</td>`;
+    }).join('') + '</tr>';
+  }).join('');
+
+  const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>검사항목목록</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
+<thead><tr>${headHtml}</tr></thead>
+<tbody>${bodyHtml}</tbody>
+</table></body></html>`;
+
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `검사항목목록_${label}_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── PDF 생성(클라이언트에서 바로) ──────────────────────────────────
+// 포장강화 대시보드의 _pkgLoadPdfLibs/_pkgRenderGenericPrintPdf 패턴과 동일: 한글은
+// jsPDF 기본 폰트가 지원하지 않아 HTML/CSS로 그린 뒤 html2canvas로 캡처해 이미지로
+// 넣는다. 행 높이를 화면 밖에서 실측해 A4 한 페이지 분량만큼만 묶어 페이지를 나눈다.
+function _qcPrintEsc(v) { return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function _qcLoadPdfLibs(cb) {
+  function loadScript(src, done) {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = done;
+    s.onerror = function () { alert('PDF 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+    document.head.appendChild(s);
+  }
+  if (window.jspdf && window.html2canvas) { cb(); return; }
+  loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js', function () {
+    if (window.jspdf) { cb(); return; }
+    loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js', cb);
+  });
+}
+// 품목코드별 가로/세로/높이/중량 평균 캐시 — 포장강화의 _pkgSpecLookupCache와 같은
+// 목적. 이 파일엔 그런 전역 캐시가 따로 없었지만, runSpecLookup()이 이미 allData +
+// archiveRows 전체를 코드로 뒤져 규격을 찾는 같은 방식을 쓰고 있어 그 재료(각 행의
+// 가로/세로/높이/중량 필드)를 그대로 재사용한다 — 없는 값을 지어내는 게 아니라, 같은
+// 코드를 가진 다른 행들에 이미 기록된 실측값을 평균 낸 것이다.
+function _qcBuildSpecLookup() {
+  const pool = [...(allData || []), ...(archiveRows || [])];
+  const map = {};
+  pool.forEach(d => {
+    const code = (d.단품코드 || '').toString().trim().toUpperCase();
+    if (!code) return;
+    if (!map[code]) map[code] = { w: [], d: [], h: [], g: [] };
+    if (d.가로 > 0) map[code].w.push(d.가로);
+    if (d.세로 > 0) map[code].d.push(d.세로);
+    if (d.높이 > 0) map[code].h.push(d.높이);
+    if (d.중량 > 0) map[code].g.push(d.중량);
+  });
+  return map;
+}
+function _qcSpecForItem(d, lookup) {
+  const fb = lookup[(d.단품코드 || '').toString().trim().toUpperCase()] || { w: [], d: [], h: [], g: [] };
+  const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length).toString() : '';
+  const own = v => (v && v > 0) ? String(v) : '';
+  return {
+    w: own(d.가로) || avg(fb.w),
+    d: own(d.세로) || avg(fb.d),
+    h: own(d.높이) || avg(fb.h),
+    g: own(d.중량) || avg(fb.g),
+  };
+}
+// 공통 페이지 나누기/캡처 엔진 — opts: { title, columns, rows, filename, plain(선택,
+// 흑백 단순 표 스타일) }. columns: [{label, width, align, get(d)}].
+async function _qcRenderPrintPdf(opts) {
+  await new Promise((resolve) => _qcLoadPdfLibs(resolve));
+  if (!window.jspdf || !window.html2canvas) return;
+
+  const columns = opts.columns;
+  const rows = opts.rows || [];
+  const plain = !!opts.plain;
+  const fontSize = plain ? 11 : 10;
+  const headerFontSize = plain ? 11.5 : 10.5;
+  const headCellStyle = plain
+    ? `border:1px solid #000;background:#f1f5f9;color:#1e293b;font-weight:700;text-align:center;`
+    : `border:1px solid #334155;background:#1e293b;color:#fff;font-weight:700;text-align:center;`;
+  const bodyCellBorder = plain ? '1px solid #000' : '1px solid #cbd5e1';
+
+  const rowHtml = (d) => '<tr>' + columns.map(c => {
+    const v = c.get(d);
+    return `<td style="width:${c.width};padding:5px 6px;border:${bodyCellBorder};font-size:${fontSize}px;text-align:${c.align};word-break:break-all;color:#1e293b;background:#fff;">${_qcPrintEsc(v)}</td>`;
+  }).join('') + '</tr>';
+  const headerRowHtml = () => '<tr>' + columns.map(c =>
+    `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
+  ).join('') + '</tr>';
+
+  const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
+  const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
+  const HEADER_ROW_PX = 32;
+  const TITLE_PX = 30;
+
+  // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다.
+  const measureHost = document.createElement('div');
+  measureHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;`;
+  measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(rowHtml).join('')}</table>`;
+  document.body.appendChild(measureHost);
+  const heights = Array.from(measureHost.querySelectorAll('tr')).map(tr => tr.offsetHeight);
+  document.body.removeChild(measureHost);
+
+  // 2) 실측 높이 기준으로 페이지를 나눈다(행이 페이지 경계에서 안 잘리게).
+  const pages = [];
+  let cur = [], curH = TITLE_PX + HEADER_ROW_PX;
+  rows.forEach((item, idx) => {
+    const h = heights[idx] || 28;
+    if (cur.length && curH + h > PAGE_BUDGET_PX) { pages.push(cur); cur = []; curH = TITLE_PX + HEADER_ROW_PX; }
+    cur.push(item);
+    curH += h;
+  });
+  pages.push(cur);
+
+  // 3) 페이지마다 실제로 그려서 캔버스로 캡처 → A4 PDF 페이지에 넣는다.
+  const jsPDFCtor = window.jspdf.jsPDF;
+  const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  for (let p = 0; p < pages.length; p++) {
+    const host = document.createElement('div');
+    host.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
+    host.innerHTML = `
+      <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">${_qcPrintEsc(opts.title)}${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
+      <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
+        <thead>${headerRowHtml()}</thead>
+        <tbody>${pages[p].map(rowHtml).join('')}</tbody>
+      </table>`;
+    document.body.appendChild(host);
+    const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
+    document.body.removeChild(host);
+    const imgData = canvas.toDataURL('image/png');
+    if (p > 0) pdf.addPage();
+    const imgWmm = 190;
+    const imgHmm = canvas.height / canvas.width * imgWmm;
+    pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
+  }
+  pdf.save(opts.filename);
+}
+
+// 검사항목 출력 — 건명/단품코드/색상/수량/단품명칭/BOM/확정 납기일(=납기일 값 그대로,
+// 인쇄물에서 부르는 이름만 다름)/포장일/검사일/가로/세로/높이/중량.
+async function _qcRenderInspectPdf(rows) {
+  const lookup = _qcBuildSpecLookup();
+  const columns = [
+    { label: '건명', width: '14%', align: 'left', get: d => d.건명 || '' },
+    { label: '단품코드', width: '9%', align: 'left', get: d => d.단품코드 || '' },
+    { label: '색상', width: '6%', align: 'center', get: d => d.색상 || '' },
+    { label: '수량', width: '5%', align: 'right', get: d => d.수량 },
+    { label: '단품명칭', width: '15%', align: 'left', get: d => d.단품명칭 || '' },
+    { label: 'BOM', width: '6%', align: 'center', get: d => d.BOM || '' },
+    { label: '확정 납기일', width: '8%', align: 'center', get: d => d.납기일 || '' },
+    { label: '포장일', width: '7%', align: 'center', get: d => d.포장일 || '' },
+    { label: '검사일', width: '7%', align: 'center', get: d => d.검사일 || '' },
+    { label: '가로', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).w },
+    { label: '세로', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).d },
+    { label: '높이', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).h },
+    { label: '중량', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).g },
+  ];
+  await _qcRenderPrintPdf({ title: '검사항목 출력', columns, rows, filename: `검사항목출력_${new Date().toISOString().slice(0,10)}.pdf` });
+}
+
+// 현장용 출력 — 사용자가 준 참고 사진 그대로: 꾸미지 않은 흑백 표(얇은 검은 테두리,
+// 헤더는 연한 회색+굵은 글씨). 건명/단품코드/색상/수량/단품명칭/납기일/포장일 7개만,
+// 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만 — 현장에 붙여두는 "출고금지" 경고판.
+async function _qcRenderFieldPdf(rows) {
+  const columns = [
+    { label: '건명', width: '26%', align: 'left', get: d => d.건명 || '' },
+    { label: '단품코드', width: '14%', align: 'left', get: d => d.단품코드 || '' },
+    { label: '색상', width: '10%', align: 'center', get: d => d.색상 || '' },
+    { label: '수량', width: '8%', align: 'right', get: d => d.수량 },
+    { label: '단품명칭', width: '22%', align: 'left', get: d => d.단품명칭 || '' },
+    { label: '납기일', width: '10%', align: 'center', get: d => d.납기일 || '' },
+    { label: '포장일', width: '10%', align: 'center', get: d => d.포장일 || '' },
+  ];
+  const now = new Date();
+  const md = (now.getMonth() + 1) + '/' + now.getDate();
+  await _qcRenderPrintPdf({
+    title: `${md} 검사대기 출고금지 현황`, columns, rows, filename: `검사대기출고금지현황_${md.replace('/', '-')}.pdf`, plain: true,
+  });
+}
+
 // 예전엔 "미투입"이 여기 따로 없어서(맨 아래 default로 떨어짐) 아직 투입도 안 된
 // 품목이 화면엔 "진행중·미검사"로 보였다 — 실제 값(d.검사)은 여전히 "미투입"이라
 // 진행현황 필터를 "미검사"로 좁히면 (라벨과 달리) 정상적으로 빠졌는데, 이게 "화면엔
