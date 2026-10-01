@@ -6417,6 +6417,15 @@
                 'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
         }
 
+        // 새 액션(pkgProcessIncoming 등)을 아직 "새 버전으로 배포"하지 않은 예전 GAS가
+        // 받으면 {ok:...} 없이 {result:'error', message:'unknown action'} 형태로만
+        // 응답한다 — res.ok === false 만 보고 실패를 판정하면 이런 경우 ok가 아예
+        // undefined라서 "성공"으로 잘못 넘어가 버린다(배포 전에 눌렀을 때 아무 반영도
+        // 안 됐는데 "완료되었습니다"라고 뜨는 원인). 두 응답 형태를 다 실패로 잡는다.
+        function _pkgIsGasError(res) {
+            return !res || res.ok === false || res.result === 'error';
+        }
+
         // ── 접속현황(현재 이 대시보드를 보고 있는 사람) ─────────────────────
         // 구글시트처럼 실시간 정밀 추적은 아니고, "최근 75초 이내에 하트비트를 보낸
         // 사람"만 접속중으로 본다 — 25초마다 한 번씩 조용히(백그라운드) 보내고
