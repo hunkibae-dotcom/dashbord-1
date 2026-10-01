@@ -6118,9 +6118,18 @@
             _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
         }
 
+        // 수출현황 단계(입고/일부입고) ↔ 출고완료 단계(출고/피킹)까지 이 수정창
+        // 하나에서 다 다룰 수 있도록, 기존 재고용 _STATUS_OPTS에 출고/피킹을 더한
+        // 전용 목록을 쓴다(공용 _STATUS_OPTS 자체를 바꾸면 다른 모달에도 영향을
+        // 주므로 여기서만 쓰는 별도 배열로 둔다).
+        const _PKG_DETAIL_STATUS_OPTS = _STATUS_OPTS.concat([
+            { v: '출고', c: '#16a34a' },
+            { v: '피킹', c: '#7c3aed' }
+        ]);
+
         function _renderPkgStatusOpts() {
             const wrap = document.getElementById('pkgStatusOpts');
-            wrap.innerHTML = _STATUS_OPTS.map(opt => {
+            wrap.innerHTML = _PKG_DETAIL_STATUS_OPTS.map(opt => {
                 const isCur = opt.v === _pkgCurStatus;
                 return `<button onclick="selectPkgStatus('${opt.v}')"
                     style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?opt.c:'#e2e8f0'};background:${isCur?opt.c+'1A':'#fff'};color:${isCur?opt.c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;"
@@ -6129,6 +6138,19 @@
                     <i class="fa-solid fa-circle" style="font-size:6px;color:${opt.c};opacity:.8;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
                 </button>`;
             }).join('');
+            _pkgUpdatePartialQtyVisibility();
+        }
+
+        function _pkgUpdatePartialQtyVisibility() {
+            const wrap = document.getElementById('pkgPartialQtyWrap');
+            if (!wrap) return;
+            if (_pkgCurStatus === '일부입고') {
+                wrap.style.display = '';
+                document.getElementById('pkgPartialQtyHint').textContent =
+                    `${_pkgCode} - ${_pkgColor || ''} 의 일부입고품목의 입고 수량을 적으시오 (전체 수주수량: ${_pkgItemQty.toLocaleString()})`;
+            } else {
+                wrap.style.display = 'none';
+            }
         }
 
         function selectPkgStatus(v) {
