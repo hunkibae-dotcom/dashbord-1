@@ -1938,6 +1938,10 @@ function applyFilters() {
     } else {
       if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || !((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d))) return false; }
       else if (colInspectFilter === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
+      // "검사완료" 한 묶음이 진행중(아직 출고 안 된)·출고(이미 출고완료 시트로 넘어간) 둘을
+      // 섞어 보여줘서 "진행중인 것만 보고 싶다"는 요청이 애매했다 — 미검사와 똑같이 둘로 나눴다.
+      else if (colInspectFilter === '검사진행중') { if (d.source === 'archive' || d.검사 !== '검사') return false; }
+      else if (colInspectFilter === '검사출고') { if (d.source !== 'archive' || d.검사 !== '검사') return false; }
       // '생산중'은 실제 검사 상태값이 아니라 미검사+재투입을 묶어 보여주는 화면 전용 카테고리라,
       // 바로 아래 일반 분기(d.검사 !== colInspectFilter)로 걸러지면 그 문자열과 정확히 같은
       // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
