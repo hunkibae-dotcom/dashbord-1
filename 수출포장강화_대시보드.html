@@ -6176,7 +6176,7 @@
                         body: JSON.stringify({ action: action, items: items }),
                         signal: AbortSignal.timeout(120000)
                     }).then(r => r.json());
-                    if (!res || res.ok === false) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
                 }
 
                 fb.textContent = '✓ 적용 완료되었습니다.'; fb.style.color = '#16a34a';
