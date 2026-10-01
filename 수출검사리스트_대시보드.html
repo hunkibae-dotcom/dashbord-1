@@ -5178,6 +5178,8 @@ function runProductSearch() {
   // 소스 미선택 안내 문구로 덮어썼을 수 있으니, 매 검색마다 기본 안내 문구로 복원해둔다.
   noData.innerHTML = _PS_NODATA_DEFAULT_HTML;
 
+  _updatePsFilterDot();
+
   if (!hasFilter) {
     tbody.innerHTML = '';
     summary.innerHTML = '';
