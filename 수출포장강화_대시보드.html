@@ -6033,13 +6033,13 @@
                 </button>`;
             }).join('');
         }
-        // curValue가 속한 그룹은(지금 뭐가 골라져 있는지 접힌 채로는 안 보이니) 항상
-        // 펼쳐서 보여준다 — openKey는 사람이 직접 다른 그룹을 펼쳤을 때만 쓰인다.
+        // 어느 그룹을 펼칠지는 호출 쪽(openKey)이 전적으로 결정한다 — 모달을 처음 열 때
+        // "현재 상태가 속한 그룹"으로 한 번 맞춰두고 나면, 그 뒤로는 사람이 직접 다른
+        // 그룹을 펼치고 접는 걸 그대로 따른다(현재 값이 있다고 매번 강제로 되돌아가면
+        // 다른 그룹을 구경조차 못 하게 된다).
         function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey) {
-            const curGroup = curValue ? PKG_STATUS_GROUPS.find(g => g.statuses.includes(curValue)) : null;
-            const effectiveOpenKey = curGroup ? curGroup.key : openKey;
             return PKG_STATUS_GROUPS.map(g => {
-                const isOpen = g.key === effectiveOpenKey;
+                const isOpen = g.key === openKey;
                 return `<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
                     <button type="button" onclick="${toggleFnName}('${g.key}')"
                         style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:${isOpen?'#f8fafc':'#fff'};border:none;cursor:pointer;font-size:13px;font-weight:700;color:#334155;">
