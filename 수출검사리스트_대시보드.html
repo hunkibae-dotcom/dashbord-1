@@ -6247,8 +6247,20 @@ function _spuDateStr(v) {
   }
   const s = v.toString().trim();
   if (!s) return '';
+  // 엑셀 셀이 날짜 서식이 아니라 그냥 텍스트였던 경우(전산 시스템 추출본에서 흔함)
+  // XLSX의 cellDates 옵션도 소용없어 문자열 그대로 넘어온다 — 네이티브 new Date()
+  // 파싱은 형식에 따라 실패하거나(포장일이 아예 안 들어감) 엉뚱한 날짜로 오해석될
+  // 수 있어서, 이 코드베이스에서 흔한 "2026. 10. 2" 식 한국어 표기와 "20261002"
+  // 같은 구분자 없는 표기를 먼저 직접 알아본 뒤에만 네이티브 파싱으로 넘어간다.
+  // 끝까지 못 알아보면 빈 문자열을 돌려준다 — 예전엔 원본 문자열을 그대로 돌려줘서,
+  // GAS 쪽에서 new Date(그 문자열)이 "Invalid Date"가 되어 포장일 칸에 깨진 날짜가
+  // 그대로 쓰이는 원인이 됐었다.
+  let m = s.match(/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})/); // "2026. 10. 2" / "2026-10-02" / "2026/10/2" 등
+  if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+  m = s.match(/^(\d{4})(\d{2})(\d{2})$/); // "20261002"
+  if (m) return m[1] + '-' + m[2] + '-' + m[3];
   const d = new Date(s);
-  return isNaN(d.getTime()) ? s : (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+  return isNaN(d.getTime()) ? '' : (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
 }
 
 // 건명이 한글이면 내수건인 게 보통이지만, 내수건인데도 회사명이 영문(주로 약자)으로
