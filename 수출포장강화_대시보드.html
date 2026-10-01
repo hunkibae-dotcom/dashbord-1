@@ -6648,6 +6648,9 @@
                 if (changed.shipDate !== undefined && !migrationResult) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.date = changed.shipDate; }); });
                 }
+                if (changed.dueDate !== undefined && !migrationResult) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.dueDate = changed.dueDate; }); });
+                }
                 if (changed.regDate !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.regDate = changed.regDate; }); });
                 }
