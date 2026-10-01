@@ -475,9 +475,14 @@
                         <span id="sfDateBtnLabel">날짜 전체</span>
                     </button>
                 </div>
-                <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
-                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                    oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                    <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
+                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                </div>
                 <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
                 <!-- 실제 시트 3개(입고현황/출고/실재고)를 버튼 3개 대신 드롭다운 하나로 통합 —
                      한 번에 하나만 선택되게 해서 서로 다른 시트 항목이 섞여서 나오는 걸 원천 차단한다.
