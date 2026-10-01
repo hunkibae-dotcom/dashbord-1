@@ -928,12 +928,23 @@
                         </span>
                     </span>
                 </h3>
-                <div class="flex gap-1.5 flex-wrap">
+                <div class="flex gap-1.5 flex-wrap items-center">
                     <button onclick="setSourceFilter('all')" id="srcAll" class="tbl-src-btn">전체</button>
                     <button onclick="setSourceFilter('active')" id="srcActive" class="tbl-src-btn">입고현황</button>
                     <button onclick="setSourceFilter('stock')" id="srcStock" class="tbl-src-btn">실재고</button>
                     <button onclick="setSourceFilter('pallet')" id="srcPallet" class="tbl-src-btn">적재</button>
                     <button onclick="setSourceFilter('shipped')" id="srcShipped" class="tbl-src-btn">출고</button>
+                    <!-- 달력/카드에서 특정 건명(차수)으로 조회해둔 상태면, 카테고리를 바꿔도
+                         이 조건은 그대로 유지된다(필터가 사라진 게 아님) — 그걸 눈에 안 보이게
+                         해두면 "카테고리 누르니까 검색이 초기화됐다"로 오해하기 쉬워서 칩으로
+                         명확히 보여주고, 원하면 바로 해제할 수 있게 한다. -->
+                    <span id="cardRoundFilterChip" style="display:none;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:#ede9fe;color:#6d28d9;font-size:12px;font-weight:700;white-space:nowrap;">
+                        <i class="fa-solid fa-calendar-check" style="font-size:10px;"></i>
+                        <span id="cardRoundFilterChipText"></span>
+                        <button onclick="clearCardRoundFilter()" title="이 차수 조건만 해제" style="border:none;background:none;color:#6d28d9;cursor:pointer;padding:0;display:flex;align-items:center;">
+                            <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+                        </button>
+                    </span>
                 </div>
             </div>
             <!-- 검색 4칸 행 -->
