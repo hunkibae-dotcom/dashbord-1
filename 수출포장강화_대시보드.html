@@ -8681,7 +8681,7 @@
             파일 이름이 <b>통합품목</b>으로 시작하면 <b>분류(수주)</b>가, <b>grd_outResult</b>로 시작하면 <b>분류(입고)</b>가 자동으로 실행됩니다.
             분류(수주)는 끝난 뒤 곧바로 충주공장 재고의 납기일/상차일도 수출 현황 기준으로 자동 반영됩니다.
         </div>
-        <input type="file" id="pkgClassifyFileInput" accept=".xlsx,.xls" onchange="_pkgOnClassifyFileChosen()"
+        <input type="file" id="pkgClassifyFileInput" accept=".xlsx,.xls" multiple onchange="_pkgOnClassifyFileChosen()"
             style="width:100%;font-size:13px;color:#334155;margin-bottom:8px;">
         <div id="pkgClassifyFileDetect" style="font-size:12.5px;margin-bottom:14px;"></div>
         <div id="pkgClassifyResult" style="font-size:12.5px;color:#334155;white-space:pre-line;line-height:1.6;margin-bottom:10px;"></div>
