@@ -2107,6 +2107,11 @@ function clearQualityFilter() {
   document.getElementById('qualityFilterChip')?.classList.add('hidden');
   applyFilters();
 }
+function clearDateFilter() {
+  _tblExactDateFilter = null;
+  document.getElementById('dateFilterChip')?.classList.add('hidden');
+  applyFilters();
+}
 
 function resetFilters() {
   document.getElementById('fSearch').value = '';
@@ -2114,9 +2119,11 @@ function resetFilters() {
   ddayUrgencyFilter = null;
   pieFilter = null;
   qualityFilter = null;
+  _tblExactDateFilter = null;
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
   document.getElementById('pieFilterChip')?.classList.add('hidden');
   document.getElementById('qualityFilterChip')?.classList.add('hidden');
+  document.getElementById('dateFilterChip')?.classList.add('hidden');
   applyFilters();
 }
 
