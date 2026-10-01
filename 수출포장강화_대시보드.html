@@ -6567,17 +6567,20 @@
             const changed = {};
             const gasUrl = _pkgGasUrl();
             let migrationPromise = null; // 입고/일부입고/출고/피킹: 수출현황→재고/출고완료 실제 이동
-            let shipDatePromise = null;  // 상차일 변경: 수출현황→재고 자동 동기화까지 포함
+            let shipDatePromise = null;  // 상차일/납기일 변경: 수출현황→재고 자동 동기화까지 포함
 
-            // 상차일은 먼저 반영한다 — 출고/피킹으로 바뀌면 "수출 현황" 행 자체가
-            // 삭제되므로, 상차일을 그 전에 바꿔둬야 한다.
-            if (newShipDate !== _pkgOrigShipDate) {
+            // 상차일/납기일은 먼저 반영한다 — 출고/피킹으로 바뀌면 "수출 현황" 행 자체가
+            // 삭제되므로, 그 전에 바꿔둬야 한다. 하나만 바뀌었어도 바뀐 쪽만 보낸다
+            // (GAS 쪽에서 비어있는 값은 그대로 두고 건드리지 않는다).
+            if (newShipDate !== _pkgOrigShipDate || newDueDate !== _pkgOrigDueDate) {
+                const dateBody = { action: 'pkgUpdateShipDate', items: [{ code: _pkgCode, round: _pkgRound, color: _pkgNormColor(_pkgColor) }] };
+                if (newShipDate !== _pkgOrigShipDate) { dateBody.shipDate = newShipDate; changed.shipDate = newShipDate; }
+                if (newDueDate !== _pkgOrigDueDate) { dateBody.dueDate = newDueDate; changed.dueDate = newDueDate; }
                 shipDatePromise = fetch(gasUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'pkgUpdateShipDate', items: [{ code: _pkgCode, round: _pkgRound, color: _pkgNormColor(_pkgColor) }], shipDate: newShipDate }),
+                    body: JSON.stringify(dateBody),
                     signal: AbortSignal.timeout(30000)
                 }).then(r => r.json());
-                changed.shipDate = newShipDate;
             }
 
             if (_pkgCurStatus && _pkgCurStatus !== _pkgOrigStatus) {
