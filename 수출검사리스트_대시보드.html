@@ -2026,6 +2026,13 @@ function applyFilters() {
         if (extractCountry(d.건명) !== qualityFilter.value) return false;
       }
     }
+    if (_tblExactDateFilter) {
+      const f = _tblExactDateFilter;
+      let matched = false;
+      if (f.field !== 'due') { const iso = _qcIsoDate(d.포장일); if (iso && f.dates.has(iso)) matched = true; }
+      if (!matched && f.field !== 'pack') { const iso = _qcIsoDate(d.납기일); if (iso && f.dates.has(iso)) matched = true; }
+      if (!matched) return false;
+    }
     return true;
   }
 
