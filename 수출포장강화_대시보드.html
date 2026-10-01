@@ -6547,8 +6547,8 @@
                     const isIncoming = (_pkgCurStatus === '입고' || _pkgCurStatus === '일부입고');
                     const action = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
                     const item = isIncoming
-                        ? { code: _pkgCode, round: _pkgRound, color: _pkgColor, qty: partialQty }
-                        : { code: _pkgCode, round: _pkgRound, color: _pkgColor, status: _pkgCurStatus };
+                        ? { code: _pkgCode, round: _pkgRound, color: _pkgNormColor(_pkgColor), qty: partialQty }
+                        : { code: _pkgCode, round: _pkgRound, color: _pkgNormColor(_pkgColor), status: _pkgCurStatus };
                     migrationPromise = (shipDatePromise ? shipDatePromise : Promise.resolve())
                         .then(() => fetch(gasUrl, {
                             method: 'POST',
