@@ -472,28 +472,9 @@
                         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
                         oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <input id="sf_color" type="text" placeholder="색상"
-                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
-                    <button id="sfDateBtn" onclick="openSfDatePicker()"
-                        style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
-                        <i class="fa-solid fa-calendar-days" style="font-size:12px;color:var(--label);"></i>
-                        <span id="sfDateBtnLabel">날짜 전체</span>
-                    </button>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
-                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                        oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
-                    <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
-                        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
-                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-                </div>
-                <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
-                <!-- 실제 시트 3개(입고현황/출고/실재고)를 버튼 3개 대신 드롭다운 하나로 통합 —
-                     한 번에 하나만 선택되게 해서 서로 다른 시트 항목이 섞여서 나오는 걸 원천 차단한다.
-                     기본은 입고현황이고, 세부 진행상태를 더 좁히고 싶으면 오른쪽 버튼으로 팝업을 연다. -->
+                <!-- 색상/날짜/적재검색/국가/세부상태/초기화는 자주 안 건드리는 "추가 필터"라
+                     전엔 이게 다 펼쳐져서 화면이 테트리스처럼 빡빡했다 — 소스(어디서 찾을지)만
+                     바로 보이게 남기고, 나머지는 필터 버튼 하나(sfFilterBtn) 뒤 시트로 모았다. -->
                 <div style="display:flex;gap:8px;">
                     <div style="position:relative;flex:1;min-width:0;">
                         <select id="sfSourceSelect" onchange="setSfSourceFromDropdown(this.value)"
@@ -504,15 +485,12 @@
                         </select>
                         <i class="fa-solid fa-chevron-down" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--label);pointer-events:none;"></i>
                     </div>
-                    <button id="sfSrcDetailBtn" onclick="openSfSourcePicker(_sfSourceFilter)"
-                        style="height:44px;box-sizing:border-box;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:0 12px;font-size:11px;font-weight:700;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:66px;flex-shrink:0;line-height:1.3;">
-                        <i class="fa-solid fa-sliders" style="font-size:10.5px;color:var(--label);"></i>
-                        <span id="sfSrcDetailLabel" style="font-size:9.5px;font-weight:600;color:var(--label);">전체</span>
+                    <button id="sfFilterBtn" onclick="openSfFilterSheet()" title="색상·날짜·적재·국가·세부상태·초기화"
+                        style="position:relative;height:44px;width:44px;flex-shrink:0;box-sizing:border-box;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;">
+                        <i class="fa-solid fa-sliders" style="font-size:13px;color:var(--label);"></i>
+                        <span id="sfFilterDot" style="display:none;position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#00B0FF;"></span>
                     </button>
                 </div>
-                <button onclick="clearSearch()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:11px 0;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
-                    <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
-                </button>
             </div>
             <div style="font-size:12px;color:var(--text-sub);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0;">
