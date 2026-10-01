@@ -6117,8 +6117,9 @@
             fb.textContent = ''; fb.style.color = '';
 
             const shipDate = (document.getElementById('pkgBulkShipDate').value || '').trim();
-            if (!_pkgBulkStatus && !shipDate) {
-                fb.textContent = '진행상태 또는 상차일 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
+            const dueDate = (document.getElementById('pkgBulkDueDate').value || '').trim();
+            if (!_pkgBulkStatus && !shipDate && !dueDate) {
+                fb.textContent = '진행상태·납기일·상차일 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
                 return;
             }
 
