@@ -519,6 +519,11 @@
                     <span class="text-orange-500 font-bold text-[16px]" id="syncTimestamp">초기 로드 대기</span>
                 </div>
 
+                <div class="bg-darkBg/50 p-3 rounded-lg border border-borderSlate/60 text-[17.5px] flex flex-col gap-1">
+                    <span class="block text-[14.5px] font-semibold text-slate-500">분류 마지막 업데이트</span>
+                    <span class="text-accentGreen font-bold text-[16px]" id="pkgClassifyLastSyncLabel">기록 없음</span>
+                </div>
+
                 <div class="flex flex-col gap-2.5 pt-2">
                     <button onclick="pkgOpenClassifyUploadModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="통합품목(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
                         <i class="fa-solid fa-file-excel"></i> 분류 업로드
