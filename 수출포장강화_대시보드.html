@@ -6683,8 +6683,20 @@
                 .filter(Boolean)
                 .map(it => ({
                     round: it.round || '', code: it.code || '', color: it.color || '',
-                    qty: it.qty || '', status: it.status || '', date: it.date || '', regDate: it.regDate || ''
+                    qty: it.qty || '', status: it.status || '', date: it.date || '', regDate: it.regDate || '',
+                    pallet: it.pallet || ''
                 }));
+        }
+
+        // 선택된 품목이 있으면 적재번호를 손으로 입력받지 않고, 그 품목들이 실제로
+        // 걸려있는 적재(파렛트) 값을 그대로 큰 제목용으로 쓴다(전부 같은 적재면 그 값,
+        // 섞여있거나 없으면 빈 칸 — 어차피 선택한 품목 자체를 보고 찍는 거라 "어느
+        // 적재인지"는 부가정보일 뿐이다).
+        function _pkgDerivePalletTitleFromSelection() {
+            const pallets = Array.from(new Set(_pkgSelectedItemsForLabel()
+                .map(it => (it.pallet || '').toString().trim())
+                .filter(p => p && p !== '-')));
+            return pallets.length === 1 ? pallets[0] : '';
         }
 
         async function pkgLabelSubmitPallet() {
