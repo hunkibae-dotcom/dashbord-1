@@ -6130,6 +6130,205 @@
             }
         }
 
+        // ── 분류(수주)/분류(입고) 엑셀 업로드 ──────────────────────────────
+        // 품질검사 대시보드의 엑셀 업로드 기능(_spuRunImport 등)과 같은 방식:
+        // 브라우저 안에서 엑셀을 표로 바꿔서 필요한 값만 뽑아 구글시트로 보내고,
+        // 파일 자체는 어디에도 저장하지 않는다.
+        let _pkgClassifyFile = null;
+        let _pkgClassifyKind = null; // 'sunju' | 'ipgo'
+
+        function pkgOpenClassifyUploadModal() {
+            _pkgClassifyFile = null;
+            _pkgClassifyKind = null;
+            document.getElementById('pkgClassifyFileInput').value = '';
+            document.getElementById('pkgClassifyFileDetect').innerHTML = '';
+            document.getElementById('pkgClassifyResult').textContent = '';
+            const runBtn = document.getElementById('pkgClassifyRunBtn');
+            runBtn.disabled = true; runBtn.style.opacity = '.5';
+            runBtn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
+            runBtn.onclick = _pkgRunClassifyUpload;
+            document.getElementById('pkgClassifyUploadModal').style.display = 'flex';
+        }
+        function pkgCloseClassifyUploadModal() {
+            document.getElementById('pkgClassifyUploadModal').style.display = 'none';
+        }
+
+        function _pkgOnClassifyFileChosen() {
+            const input = document.getElementById('pkgClassifyFileInput');
+            const file = input.files && input.files[0];
+            const detectEl = document.getElementById('pkgClassifyFileDetect');
+            const runBtn = document.getElementById('pkgClassifyRunBtn');
+            _pkgClassifyFile = null; _pkgClassifyKind = null;
+            runBtn.disabled = true; runBtn.style.opacity = '.5';
+            if (!file) { detectEl.innerHTML = ''; return; }
+
+            const name = file.name || '';
+            if (/^통합품목/.test(name)) {
+                _pkgClassifyKind = 'sunju';
+                detectEl.innerHTML = `<span style="color:#16a34a;">✓ ${name} → 분류(수주)로 처리됩니다.</span>`;
+            } else if (/^grd_outResult/i.test(name)) {
+                _pkgClassifyKind = 'ipgo';
+                detectEl.innerHTML = `<span style="color:#16a34a;">✓ ${name} → 분류(입고)로 처리됩니다.</span>`;
+            } else {
+                detectEl.innerHTML = `<span style="color:#ef4444;">✗ ${name} — 파일 이름이 "통합품목" 또는 "grd_outResult"로 시작해야 합니다.</span>`;
+                return;
+            }
+            _pkgClassifyFile = file;
+            runBtn.disabled = false; runBtn.style.opacity = '1';
+        }
+
+        function _pkgLoadXlsxLib(cb) {
+            if (window.XLSX) { cb(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+            s.onload = cb;
+            s.onerror = function () { alert('엑셀 처리 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+            document.head.appendChild(s);
+        }
+        function _pkgReadFileAsGrid(file, cb) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                _pkgLoadXlsxLib(function () {
+                    try {
+                        const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+                        const ws = wb.Sheets[wb.SheetNames[0]];
+                        const grid = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+                        cb(null, grid);
+                    } catch (err) { cb(err); }
+                });
+            };
+            reader.onerror = function () { cb(new Error('파일을 읽을 수 없습니다.')); };
+            reader.readAsArrayBuffer(file);
+        }
+        function _pkgDateStr(v) {
+            if (v === '' || v == null) return '';
+            if (v instanceof Date) {
+                if (isNaN(v.getTime())) return '';
+                return v.getFullYear() + '-' + String(v.getMonth() + 1).padStart(2, '0') + '-' + String(v.getDate()).padStart(2, '0');
+            }
+            const s = v.toString().trim();
+            if (!s) return '';
+            let m = s.match(/^(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+            if (m) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+            m = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+            if (m) return m[1] + '-' + m[2] + '-' + m[3];
+            const d = new Date(s);
+            return isNaN(d.getTime()) ? '' : (d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+        }
+        // 헤더 이름으로 열을 찾는다(정확한 열 배치를 알 수 없는 외부 전산 추출본이라,
+        // 고정 열 번호 대신 헤더 문구로 유연하게 찾는다 — 이 대시보드의 mapCSVData와
+        // 같은 방식).
+        function _pkgFindCol(headers, aliases) {
+            for (const a of aliases) {
+                let idx = headers.findIndex(h => h.toLowerCase() === a.toLowerCase());
+                if (idx === -1) idx = headers.findIndex(h => h.toLowerCase().includes(a.toLowerCase()));
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        }
+        // "통합품목_*" 파일 → 분류(수주)용 6칸(제품구분,품목코드,색상,수량,수주건명,납기일).
+        // 마지막 "합계" 행은 품목코드 칸이 코드 형식이 아니라서 자연스럽게 걸러진다.
+        function _pkgExtractIntegratedRows(grid) {
+            if (!grid || grid.length < 2) return [];
+            const headers = grid[0].map(h => (h || '').toString().trim().replace(/\s+/g, ''));
+            const iType  = _pkgFindCol(headers, ['제품구분', '품목구분', '구분']);
+            const iCode  = _pkgFindCol(headers, ['품목코드', '제품코드', '코드']);
+            const iColor = _pkgFindCol(headers, ['색상', '컬러']);
+            const iQty   = _pkgFindCol(headers, ['수량']);
+            const iRound = _pkgFindCol(headers, ['수주건명', '건명', '차수']);
+            const iDue   = _pkgFindCol(headers, ['납기일', '납기']);
+
+            const rows = [];
+            for (let i = 1; i < grid.length; i++) {
+                const row = grid[i];
+                if (!row) continue;
+                const codeRaw = (iCode >= 0 ? row[iCode] : row[1]);
+                const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
+                // 합계행/요약행 제외: 품목코드 칸이 비어있거나 코드 형식(영숫자/하이픈)이 아니면 건너뜀
+                if (!codeStr || !/^[A-Za-z0-9][A-Za-z0-9\-_.]*$/.test(codeStr)) continue;
+                rows.push([
+                    iType >= 0 ? (row[iType] || '').toString().trim() : '',
+                    codeStr,
+                    iColor >= 0 ? (row[iColor] || '').toString().trim() : '',
+                    iQty >= 0 ? (row[iQty] || '').toString().trim() : '',
+                    iRound >= 0 ? (row[iRound] || '').toString().trim() : '',
+                    iDue >= 0 ? _pkgDateStr(row[iDue]) : ''
+                ]);
+            }
+            return rows;
+        }
+        // "grd_outResult_*" 파일 → 분류(입고)용 {itemCode,color,qty} (건명 칼럼은 무시).
+        function _pkgExtractOutResultEntries(grid) {
+            if (!grid || grid.length < 2) return [];
+            const headers = grid[0].map(h => (h || '').toString().trim().replace(/\s+/g, ''));
+            const iCode  = _pkgFindCol(headers, ['품목코드', '제품코드', '코드']);
+            const iColor = _pkgFindCol(headers, ['색상', '컬러']);
+            const iQty   = _pkgFindCol(headers, ['수량']);
+
+            const entries = [];
+            for (let i = 1; i < grid.length; i++) {
+                const row = grid[i];
+                if (!row) continue;
+                const codeRaw = (iCode >= 0 ? row[iCode] : row[0]);
+                const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
+                if (!codeStr) continue;
+                entries.push({
+                    itemCode: codeStr,
+                    color: iColor >= 0 ? (row[iColor] || '').toString().trim() : '',
+                    qty: iQty >= 0 ? (row[iQty] || '').toString().trim() : ''
+                });
+            }
+            return entries;
+        }
+
+        async function _pkgRunClassifyUpload() {
+            if (!_pkgClassifyFile || !_pkgClassifyKind) return;
+            const btn = document.getElementById('pkgClassifyRunBtn');
+            const resultEl = document.getElementById('pkgClassifyResult');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+            resultEl.textContent = '';
+            try {
+                const grid = await new Promise((resolve, reject) => _pkgReadFileAsGrid(_pkgClassifyFile, (err, g) => err ? reject(err) : resolve(g)));
+                const gasUrl = _pkgGasUrl();
+                let res;
+                if (_pkgClassifyKind === 'sunju') {
+                    const rows = _pkgExtractIntegratedRows(grid);
+                    if (rows.length === 0) { resultEl.textContent = '처리할 품목 데이터를 찾지 못했습니다(헤더/합계행 구성을 확인해주세요).'; return; }
+                    res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgClassifySunju', rows: rows }),
+                        signal: AbortSignal.timeout(240000)
+                    }).then(r => r.json());
+                    if (res && res.ok !== false) {
+                        resultEl.textContent = `✓ 분류(수주) 완료\n- 신규 추가: ${res.newCount || 0}건\n- 납기 변경: ${res.updatedCount || 0}건\n- 재고 납기/상차일 자동 반영: ${res.syncAppliedCount || 0}건`;
+                    } else {
+                        resultEl.textContent = '✗ 실패: ' + ((res && res.message) || '알 수 없는 오류');
+                    }
+                } else {
+                    const entries = _pkgExtractOutResultEntries(grid);
+                    if (entries.length === 0) { resultEl.textContent = '처리할 품목 데이터를 찾지 못했습니다(헤더 구성을 확인해주세요).'; return; }
+                    res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgClassifyIpgo', entries: entries }),
+                        signal: AbortSignal.timeout(240000)
+                    }).then(r => r.json());
+                    if (res && res.ok !== false) {
+                        resultEl.textContent = `✓ 분류(입고) 완료\n- 입고 처리됨: ${res.matchedCount || 0}건`;
+                    } else {
+                        resultEl.textContent = '✗ 실패: ' + ((res && res.message) || '알 수 없는 오류');
+                    }
+                }
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
+                btn.onclick = pkgCloseClassifyUploadModal;
+                syncWithGoogleSheets(false);
+            } catch (e) {
+                resultEl.textContent = '처리 실패: ' + ((e && e.message) || e);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
+            }
+        }
+
         function _pkgGasUrl() {
             return localStorage.getItem('sheet_pub_url') ||
                 'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
