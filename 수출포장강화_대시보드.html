@@ -5972,15 +5972,19 @@
         let _pkgMultiSelectMode = false;
         let _pkgSelectedKeys = new Set(); // window._pkgRowMap의 키('pkg_N') 집합
 
+        // "선택" 버튼은 오로지 선택 모드 on/off만 담당한다(눌렀다고 수정창이 뜨지
+        // 않음) — 선택한 품목으로 뭘 할지(진행상태 수정, 나중에 데이터 출력 등)는
+        // 옆의 별도 "수정" 버튼(pkgOpenBulkModal)이 맡는다. 선택 모드 중엔 버튼이
+        // "선택취소"로 바뀌고, 다시 누르면 그냥 선택만 전부 해제하고 끝난다.
         function pkgToggleMultiSelectMode() {
             if (_pkgMultiSelectMode) {
-                pkgOpenBulkModal();
+                pkgExitMultiSelectMode();
                 return;
             }
             _pkgMultiSelectMode = true;
             _pkgSelectedKeys.clear();
             const btn = document.getElementById('pkgMultiSelectBtn');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pen"></i> 상세변경';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-xmark"></i> 선택취소';
             const hcell = document.getElementById('pkgCheckboxHeaderCell');
             if (hcell) hcell.style.display = '';
             const sa = document.getElementById('pkgSelectAllChk');
@@ -5992,7 +5996,7 @@
             _pkgMultiSelectMode = false;
             _pkgSelectedKeys.clear();
             const btn = document.getElementById('pkgMultiSelectBtn');
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-list-check"></i> 다중선택';
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-list-check"></i> 선택';
             const hcell = document.getElementById('pkgCheckboxHeaderCell');
             if (hcell) hcell.style.display = 'none';
             renderTable();
