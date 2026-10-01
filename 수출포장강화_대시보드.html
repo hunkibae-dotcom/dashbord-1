@@ -986,6 +986,9 @@
                 <table class="w-full text-left border-collapse" style="min-width:1080px;">
                     <thead>
                         <tr id="mainTableHeadRow" class="text-[12px] uppercase tracking-wider select-none" style="background:#fff;color:#94a3b8;border-bottom:2px solid #f1f5f9;white-space:nowrap;position:sticky;top:0;z-index:10;">
+                            <th id="pkgCheckboxHeaderCell" class="py-2.5 px-2 font-semibold text-center" style="width:30px;display:none;">
+                                <input type="checkbox" id="pkgSelectAllChk" onchange="pkgToggleSelectAll(this.checked)" style="cursor:pointer;">
+                            </th>
                             <th class="py-2.5 px-3 font-semibold text-center" style="width:34px;">#</th>
                             <th onclick="handleSort('regDate')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
                                 등록일자(포장일) <span id="sort-icon-regDate" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
