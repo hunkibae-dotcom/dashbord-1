@@ -6080,11 +6080,16 @@
 
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
+            document.getElementById('pkgPartialQty').value = '';
             _renderPkgStatusOpts();
 
             const regDateNorm = normalizeDate(item.regDate);
             _pkgOrigRegDate = regDateNorm !== '-' ? regDateNorm : '';
             document.getElementById('pkgRegDate').value = _pkgOrigRegDate;
+
+            const shipDateNorm = normalizeDate(item.date);
+            _pkgOrigShipDate = shipDateNorm !== '-' ? shipDateNorm : '';
+            document.getElementById('pkgShipDate').value = _pkgOrigShipDate;
 
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
