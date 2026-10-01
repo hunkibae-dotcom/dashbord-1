@@ -3469,7 +3469,16 @@
                 tr.onmouseleave = function(){ this.style.background=''; };
                 const _pkgKey = 'pkg_' + _rowIdx;
                 window._pkgRowMap[_pkgKey] = item;
-                tr.addEventListener('click', () => openPkgItemDetail(_pkgKey));
+                if (_pkgMultiSelectMode) {
+                    // 다중선택 모드에서는 행 클릭으로 수정창이 뜨지 않고 체크만 토글된다.
+                    tr.addEventListener('click', (ev) => {
+                        if (ev.target && ev.target.classList && ev.target.classList.contains('pkg-row-chk')) return;
+                        const chk = tr.querySelector('.pkg-row-chk');
+                        if (chk) { chk.checked = !chk.checked; pkgToggleRowSelect(_pkgKey, chk.checked); }
+                    });
+                } else {
+                    tr.addEventListener('click', () => openPkgItemDetail(_pkgKey));
+                }
                 const _sp = _specLookup[(item.code||'').toUpperCase()] || {w:[],d:[],h:[]};
                 const _wA=_avg(_sp.w), _dA=_avg(_sp.d), _hA=_avg(_sp.h);
                 item._cbm = (_wA&&_dA&&_hA) ? (_wA*_dA*_hA)/1e9 : null;
