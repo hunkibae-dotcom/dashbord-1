@@ -54,6 +54,13 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* 수출 일정 달력의 상태/날짜 필터 — 예전엔 상태 탭 3개(전체/작업/출고)만 한 줄 꽉
+           채우고 날짜(상차일/납기일) 필터는 아예 없었다. PC 대시보드와 동일하게 "상태: 전체"
+           / "날짜: 전체" 요약 버튼 2개 + 누르면 뜨는 미니 선택 팝업(scFilterModal) 방식으로
+           맞춘다. */
+        .sc-filter-btn { flex:1; padding:9px 10px; border-radius:10px; border:1.5px solid var(--border); background:var(--icon-bg); color:var(--text-sub); font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .sc-filter-btn.on { border-color:#00E676; color:#00E676; background:rgba(0,230,118,.1); }
+
         .card {
             background: var(--panel);
             border: 1px solid var(--border);
