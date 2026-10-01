@@ -5999,14 +5999,55 @@
             });
         }
 
-        // ── 다중선택 일괄수정 모달 ──────────────────────────────────────
-        const PKG_BULK_STATUS_OPTS = [
-            { v: '입고',   c: '#38BDF8' },
-            { v: '일부입고', c: '#FBBF24' },
-            { v: '출고',   c: '#16a34a' },
-            { v: '피킹',   c: '#7c3aed' }
+        // ── 진행상태를 "수출현황/출고완료/실재고" 그룹으로 묶어서 접었다 펴는 공통 로직 ──
+        // 전엔 가능한 진행상태를 한 번에 다 나열해놔서(7개 넘게) 한눈에 복잡해 보였다는
+        // 지적 — 실제로 그 상태가 어느 시트에서 쓰이는지 기준으로 3개 그룹으로 묶고,
+        // 그룹 이름을 눌러야 그 안의 상태들이 펼쳐지게 바꿨다(단일 수정창/다중선택
+        // 일괄수정 모달 둘 다 공용). 상태값 자체의 의미·저장 로직은 전혀 안 바뀐다 —
+        // 그냥 같은 값들을 어떻게 묶어서 보여주느냐만 바뀐 것.
+        const PKG_STATUS_GROUPS = [
+            { key: 'export',  label: '수출현황', statuses: ['미입고', '입고', '출고', '피킹', '일부입고', '포장완료', '재고활용'] },
+            { key: 'shipped', label: '출고완료', statuses: ['출고', '피킹', '미포장'] },
+            { key: 'stock',   label: '실재고',   statuses: ['미확인', '포장대기', '포장완료', '철물', '미포장'] },
         ];
+        const PKG_STATUS_COLOR = {
+            '미입고': '#dc2626', '입고': '#38BDF8', '출고': '#16a34a', '피킹': '#7c3aed',
+            '일부입고': '#FBBF24', '포장완료': '#3B82F6', '재고활용': '#0d9488',
+            '미포장': '#FB923C', '미확인': '#64748B', '포장대기': '#F59E0B', '철물': '#94A3B8',
+        };
+        function _pkgStatusGroupOptionsHtml(groupKey, curValue, onPickFnName) {
+            const group = PKG_STATUS_GROUPS.find(g => g.key === groupKey);
+            if (!group) return '';
+            return group.statuses.map(v => {
+                const c = PKG_STATUS_COLOR[v] || '#64748b';
+                const isCur = v === curValue;
+                return `<button onclick="${onPickFnName}('${v}')"
+                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?c:'#e2e8f0'};background:${isCur?c+'1A':'#fff'};color:${isCur?c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;width:100%;">
+                    <i class="fa-solid fa-circle" style="font-size:6px;color:${c};opacity:.8;"></i>${v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
+                </button>`;
+            }).join('');
+        }
+        // curValue가 속한 그룹은(지금 뭐가 골라져 있는지 접힌 채로는 안 보이니) 항상
+        // 펼쳐서 보여준다 — openKey는 사람이 직접 다른 그룹을 펼쳤을 때만 쓰인다.
+        function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey) {
+            const curGroup = curValue ? PKG_STATUS_GROUPS.find(g => g.statuses.includes(curValue)) : null;
+            const effectiveOpenKey = curGroup ? curGroup.key : openKey;
+            return PKG_STATUS_GROUPS.map(g => {
+                const isOpen = g.key === effectiveOpenKey;
+                return `<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+                    <button type="button" onclick="${toggleFnName}('${g.key}')"
+                        style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:${isOpen?'#f8fafc':'#fff'};border:none;cursor:pointer;font-size:13px;font-weight:700;color:#334155;">
+                        <span>${g.label}</span>
+                        <i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:10px;color:#94a3b8;"></i>
+                    </button>
+                    ${isOpen ? `<div style="display:flex;flex-direction:column;gap:6px;padding:8px;border-top:1px solid #f1f5f9;">${_pkgStatusGroupOptionsHtml(g.key, curValue, onPickFnName)}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
+        // ── 다중선택 일괄수정 모달 ──────────────────────────────────────
         let _pkgBulkStatus = '';
+        let _pkgBulkStatusOpenGroup = null; // 사람이 직접 펼친 그룹(선택값이 없을 때만 씀)
         let _pkgBulkItems = []; // [{key, code, round, color, qty}]
 
         // 색상이 없는 품목은 화면 표시상 '-'로 저장돼 있는데(실제 시트 값은 빈 칸),
