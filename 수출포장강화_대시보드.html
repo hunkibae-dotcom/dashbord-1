@@ -6393,6 +6393,7 @@
                     }).then(r => r.json());
                     if (res && res.ok !== false) {
                         resultEl.textContent = `✓ 분류(입고) 완료\n- 입고 처리됨: ${res.matchedCount || 0}건`;
+                        _pkgMarkClassifyUpdated();
                     } else {
                         resultEl.textContent = '✗ 실패: ' + ((res && res.message) || '알 수 없는 오류');
                     }
