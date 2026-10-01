@@ -1383,6 +1383,32 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
   </div>
 </div>
 
+<!-- ===== 데이터 출력: 기본출력/검사항목 출력/현장용 출력 선택 모달 ===== -->
+<div id="qcExportChoiceModal" class="hidden fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseExportChoiceModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-1">
+      <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-file-export text-sky-600 mr-1.5"></i>데이터 출력</div>
+      <button onclick="qcCloseExportChoiceModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="text-[13px] text-slate-500 my-3">출력하실 목적을 선택해 주세요.</div>
+    <div class="flex gap-2">
+      <button onclick="qcRunExport('manage')" class="flex-1 py-4 px-2 rounded-xl border border-sky-200 bg-sky-50 text-sky-700 font-bold text-[13px] text-center">
+        <i class="fa-solid fa-table-list block text-[18px] mb-1.5"></i>기본출력
+        <div class="text-[10.5px] font-semibold text-slate-500 mt-1">전체 항목 · 엑셀(.xls)</div>
+      </button>
+      <button onclick="qcRunExport('inspect')" class="flex-1 py-4 px-2 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 font-bold text-[13px] text-center">
+        <i class="fa-solid fa-clipboard-check block text-[18px] mb-1.5"></i>검사항목 출력
+        <div class="text-[10.5px] font-semibold text-slate-500 mt-1">화면 기준 · A4 PDF</div>
+      </button>
+      <button onclick="qcRunExport('field')" class="flex-1 py-4 px-2 rounded-xl border border-slate-300 bg-slate-50 text-slate-700 font-bold text-[13px] text-center">
+        <i class="fa-solid fa-triangle-exclamation block text-[18px] mb-1.5"></i>현장용 출력
+        <div class="text-[10.5px] font-semibold text-slate-500 mt-1">검사대기만 · 흑백 A4</div>
+      </button>
+    </div>
+    <div id="qcExportChoiceStatus" class="text-[12px] text-slate-500 font-semibold min-h-[16px] mt-3.5 text-center"></div>
+  </div>
+</div>
+
 <!-- ===== 상세스펙 모달 ===== -->
 <div id="specModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeSpecModal()">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
