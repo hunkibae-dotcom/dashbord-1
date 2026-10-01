@@ -5488,7 +5488,7 @@ function _qcStatusXlsColor(d) {
 }
 function qcExportStyledXls() {
   const label = factoryTab === 'all' ? '전체' : (factoryTab === 'cj1' ? '충주1공장' : '충주2공장');
-  const rows = displayedRows;
+  const rows = _qcExportSourceRows();
   if (!rows || !rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
 
   const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
