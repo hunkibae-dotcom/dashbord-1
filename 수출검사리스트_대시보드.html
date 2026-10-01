@@ -2015,21 +2015,10 @@ function applyFilters() {
   renderMobileAll();
 }
 
+// "데이터 출력" 버튼 — 예전엔 바로 CSV를 내려받았지만, 포장강화 대시보드의
+// 기본출력/검사항목 출력 선택 모달 패턴을 그대로 들여와서 용도를 고르게 한다.
 function exportTableData() {
-  const label = factoryTab === 'all' ? '전체' : (factoryTab === 'cj1' ? '충주1공장' : '충주2공장');
-  exportCSV(displayedRows, `검사항목목록_${label}_${new Date().toISOString().slice(0,10)}.csv`, [
-    { label:'공장', get: d => d.공장명 },
-    { label:'건명', get: d => d.건명 },
-    { label:'단품코드', get: d => d.단품코드 },
-    { label:'단품명칭', get: d => d.단품명칭 },
-    { label:'색상', get: d => d.색상 },
-    { label:'수량', get: d => d.수량 },
-    { label:'BOM', get: d => d.BOM },
-    { label:'납기일', get: d => d.납기일 },
-    { label:'포장일', get: d => d.포장일 },
-    { label:'검사일', get: d => d.검사일 },
-    { label:'검사상태', get: d => d.검사 },
-  ]);
+  qcOpenExportChoiceModal();
 }
 
 function exportFactory(key) {
