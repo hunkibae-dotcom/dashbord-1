@@ -6537,26 +6537,22 @@
             resultEl.textContent = '';
             const lines = [];
             let anySuccess = false;
-            try {
-                for (let i = 0; i < _pkgClassifyFiles.length; i++) {
-                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리 중... (${i + 1}/${total})`;
-                    try {
-                        const r = await _pkgRunOneClassifyFile(_pkgClassifyFiles[i]);
-                        if (r.ok) anySuccess = true;
-                        lines.push(r.line);
-                    } catch (e) {
-                        lines.push(`✗ ${_pkgClassifyFiles[i].name} 처리 실패: ` + ((e && e.message) || e));
-                    }
-                    resultEl.textContent = lines.join('\n');
+            for (let i = 0; i < _pkgClassifyFiles.length; i++) {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리 중... (${i + 1}/${total})`;
+                try {
+                    const r = await _pkgRunOneClassifyFile(_pkgClassifyFiles[i]);
+                    if (r.ok) anySuccess = true;
+                    lines.push(r.line);
+                } catch (e) {
+                    lines.push(`✗ ${_pkgClassifyFiles[i].name} 처리 실패: ` + ((e && e.message) || e));
                 }
-                if (anySuccess) _pkgMarkClassifyUpdated();
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
-                btn.onclick = pkgCloseClassifyUploadModal;
-                syncWithGoogleSheets(false);
-            } finally {
-                btn.disabled = false;
-                if (btn.onclick !== pkgCloseClassifyUploadModal) btn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
+                resultEl.textContent = lines.join('\n');
             }
+            if (anySuccess) _pkgMarkClassifyUpdated();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
+            btn.onclick = pkgCloseClassifyUploadModal;
+            syncWithGoogleSheets(false);
         }
 
         function _pkgGasUrl() {
