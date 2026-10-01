@@ -2460,6 +2460,7 @@
             const map = {all:'srcAll',active:'srcActive',stock:'srcStock',pallet:'srcPallet',shipped:'srcShipped'};
             const target = document.getElementById(map[src]);
             if (target) target.classList.add('active');
+            _renderStatusDropdownOptions();
             applyFilters();
         }
 
