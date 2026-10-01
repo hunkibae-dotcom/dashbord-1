@@ -1983,7 +1983,8 @@ function applyFilters() {
   // 검색/필터/정렬/공장탭 중 뭐라도 바뀌면 표 페이지를 1페이지로 되돌린다 — 호출하는
   // 곳이 워낙 많아서(정렬 클릭, 탭 전환, 카드 클릭 필터 등) 매번 거기서 리셋하는 대신,
   // 여기 한 곳에서 "직전 호출 때와 조건이 달라졌는지"만 보고 판단한다.
-  const _tblSig = JSON.stringify([search, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, factoryTab, tableSortKey, tableSortDir]);
+  const _dateFilterSig = _tblExactDateFilter ? (Array.from(_tblExactDateFilter.dates).sort().join(',') + ':' + _tblExactDateFilter.field) : '';
+  const _tblSig = JSON.stringify([search, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, _dateFilterSig, factoryTab, tableSortKey, tableSortDir]);
   if (_tblSig !== _tblLastFilterSig) { _tblPage = 1; _tblLastFilterSig = _tblSig; }
 
   function matchRow(d) {
