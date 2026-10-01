@@ -6503,6 +6503,7 @@
 
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
+            _pkgStatusOpenGroup = _pkgStatusGroupKeyFor(_pkgCurStatus);
             document.getElementById('pkgPartialQty').value = '';
             _renderPkgStatusOpts();
 
