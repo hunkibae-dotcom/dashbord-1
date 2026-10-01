@@ -6042,7 +6042,7 @@
             { label: '수량', width: '5%', align: 'right', get: item => item.qty },
             { label: '수주건명', width: '13%', align: 'left', get: item => item.round || '' },
             { label: '전산상 납기', width: '7%', align: 'center', get: item => normalizeDate(item.dueDate) },
-            { label: '상차일', width: '7%', align: 'center', get: item => normalizeDate(item.date) },
+            { label: '확정 상차일', width: '7%', align: 'center', get: item => normalizeDate(item.date) },
             { label: '포장일', width: '7%', align: 'center', get: item => normalizeDate(item.regDate) },
             { label: '실물확인', width: '7%', align: 'center', get: () => '' },
             { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
