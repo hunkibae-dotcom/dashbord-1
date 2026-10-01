@@ -752,7 +752,8 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
             <span id="tableCount" class="text-[13.5px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0건</span>
           </h2>
           <div class="flex gap-2 flex-wrap">
-            <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 다중선택</button>
+            <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
+            <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
             <button onclick="setView('all')" id="tabAll" class="tab-btn active">전체</button>
             <button onclick="setView('cj1')" id="tabCj1" class="tab-btn">충주1공장</button>
             <button onclick="setView('cj2')" id="tabCj2" class="tab-btn">충주2공장</button>
