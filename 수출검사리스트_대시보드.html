@@ -5423,6 +5423,14 @@ function qcOpenExportChoiceModal() {
 function qcCloseExportChoiceModal() {
   document.getElementById('qcExportChoiceModal').classList.add('hidden');
 }
+// 다중선택 모드에서 체크된 항목이 있으면 그것만, 없으면 지금 화면에 필터링된 전체를
+// 내보낸다 — 포장강화 쪽 _pkgExportSourceItems()와 동일한 규칙(선택이 곧 우선순위).
+function _qcExportSourceRows() {
+  if (_tblMultiSelectMode && _tblSelectedKeys.size > 0) {
+    return Array.from(_tblSelectedKeys).map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  }
+  return displayedRows;
+}
 async function qcRunExport(kind) {
   if (kind === 'manage') {
     qcExportStyledXls();
@@ -5432,13 +5440,14 @@ async function qcRunExport(kind) {
   const statusEl = document.getElementById('qcExportChoiceStatus');
   statusEl.textContent = 'PDF 만드는 중...';
   try {
-    if (!displayedRows.length) { statusEl.textContent = '내보낼 데이터가 없습니다.'; return; }
+    const sourceRows = _qcExportSourceRows();
+    if (!sourceRows.length) { statusEl.textContent = '내보낼 데이터가 없습니다.'; return; }
     if (kind === 'inspect') {
-      await _qcRenderInspectPdf(displayedRows);
+      await _qcRenderInspectPdf(sourceRows);
     } else if (kind === 'field') {
       // 현장용 출력 — 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만. STATUS_LABEL이
       // 쓰는 것과 같은 기준(d.검사 === '검사'만 검사완료)으로 판정한다.
-      const items = displayedRows.filter(d => d.검사 !== '검사');
+      const items = sourceRows.filter(d => d.검사 !== '검사');
       if (!items.length) { statusEl.textContent = '검사대기 품목이 없습니다.'; return; }
       await _qcRenderFieldPdf(items);
     } else {
