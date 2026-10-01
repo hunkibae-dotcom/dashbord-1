@@ -6381,7 +6381,7 @@
                         body: JSON.stringify({ action: 'pkgClassifySunju', rows: rows }),
                         signal: AbortSignal.timeout(240000)
                     }).then(r => r.json());
-                    if (res && res.ok !== false) {
+                    if (!_pkgIsGasError(res)) {
                         resultEl.textContent = `✓ 분류(수주) 완료\n- 신규 추가: ${res.newCount || 0}건\n- 납기 변경: ${res.updatedCount || 0}건\n- 재고 납기/상차일 자동 반영: ${res.syncAppliedCount || 0}건`;
                         _pkgMarkClassifyUpdated();
                     } else {
