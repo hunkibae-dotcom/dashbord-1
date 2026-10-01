@@ -5900,6 +5900,23 @@
         }
         // ============================================================
 
+        // CSV는 글자만 쭉 나열될 뿐 꾸밀 방법이 아예 없어서("헤더도 예쁘게, 테두리도
+        // 예쁘게"가 안 됨) — 대신 표 모양 그대로 꾸민 HTML을 ".xls"로 저장한다. 엑셀은
+        // 이 방식의 파일을 열 때 HTML의 색상·테두리·굵은 글씨·칸 너비를 그대로 셀
+        // 서식으로 읽어들이기 때문에, 평범한 CSV보다 훨씬 보기 좋은 표가 나온다.
+        const _PKG_EXPORT_COLS = [
+            { label: '등록일자(포장일)', width: 110, align: 'center' },
+            { label: '건명', width: 150, align: 'left' },
+            { label: '제품코드', width: 100, align: 'left' },
+            { label: '수량', width: 70, align: 'right' },
+            { label: '납기일', width: 90, align: 'center' },
+            { label: '상차일', width: 90, align: 'center' },
+            { label: '강화(BOX)', width: 80, align: 'right' },
+            { label: '출고(BOX)', width: 80, align: 'right' },
+            { label: 'CBM', width: 80, align: 'right' },
+            { label: '적재', width: 80, align: 'center' },
+            { label: '상태', width: 90, align: 'center' },
+        ];
         function exportToCSV() {
             // "선택" 모드로 체크해둔 품목이 있으면 전체 필터 결과가 아니라 그 품목들만
             // 내보낸다 — 선택 자체가 "이 품목들만 보고 싶다/내보내고 싶다"는 용도로
@@ -5907,7 +5924,6 @@
             const _exportSource = _pkgSelectedKeys.size
                 ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
                 : state.filteredData;
-            const headers = ['등록일자(포장일)','건명','제품코드','수량','납기일','상차일','강화(BOX)','출고(BOX)','CBM','적재','상태'];
             const rows = _exportSource.map(item => [
                 normalizeDate(item.regDate), item.round, item.code, item.qty,
                 normalizeDate(item.dueDate), normalizeDate(item.date),
@@ -5916,12 +5932,34 @@
                 item.pallet || '-',
                 item.status
             ]);
-            const csvContent = [headers, ...rows].map(r => r.map(v => '"' + v + '"').join(',')).join('\n');
-            const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const colgroup = _PKG_EXPORT_COLS.map(c => `<col style="width:${c.width}px;">`).join('');
+            const headHtml = _PKG_EXPORT_COLS.map(c =>
+                `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
+            ).join('');
+            const bodyHtml = rows.map((r, idx) => {
+                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
+                return '<tr>' + r.map((v, ci) => {
+                    const col = _PKG_EXPORT_COLS[ci];
+                    const isStatus = col.label === '상태';
+                    const statusColor = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
+                    return `<td style="background:${rowBg};color:${statusColor};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${col.align};white-space:nowrap;">${esc(v)}</td>`;
+                }).join('') + '</tr>';
+            }).join('');
+
+            const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>수출포장강화</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
+<thead><tr>${headHtml}</tr></thead>
+<tbody>${bodyHtml}</tbody>
+</table></body></html>`;
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '수출포장강화_export.csv';
+            a.download = '수출포장강화_export.xls';
             a.click();
             URL.revokeObjectURL(url);
         }
