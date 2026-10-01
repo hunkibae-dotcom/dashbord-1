@@ -6060,6 +6060,10 @@
         let _pkgPageSize = 50;
         let _pkgCurrentPage = 0;
 
+        // 제품코드 → {w,d,h,g} 평균 스펙 캐시. renderTable()이 매 렌더마다 최신으로 채워두고,
+        // 행 상세수정창(openPkgItemDetail)이 그 값을 그대로 가져다 쓴다(아래 주석 참고).
+        let _pkgSpecLookupCache = {};
+
         // "선택" 버튼은 오로지 선택 모드 on/off만 담당한다(눌렀다고 수정창이 뜨지
         // 않음) — 선택한 품목으로 뭘 할지(진행상태 수정, 나중에 데이터 출력 등)는
         // 옆의 별도 "수정" 버튼(pkgOpenBulkModal)이 맡는다. 선택 모드 중엔 버튼이
