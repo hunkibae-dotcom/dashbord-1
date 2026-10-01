@@ -984,7 +984,10 @@
                     onfocus="this.style.borderColor='#38bdf8'" onblur="this.style.borderColor='#e2e8f0'">
                 <div style="margin-left:auto;display:flex;gap:8px;">
                     <button id="pkgMultiSelectBtn" onclick="pkgToggleMultiSelectMode()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
-                        <i class="fa-solid fa-list-check"></i> 다중선택
+                        <i class="fa-solid fa-list-check"></i> 선택
+                    </button>
+                    <button onclick="pkgOpenBulkModal()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                        <i class="fa-solid fa-pen"></i> 수정
                     </button>
                     <button onclick="resetFilters()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#64748b;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
                         <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
