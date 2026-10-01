@@ -6340,6 +6340,24 @@
             return entries;
         }
 
+        // 분류(수주)/분류(입고) 엑셀 업데이트를 마지막으로 언제 했는지 사이드바에
+        // 표시한다 — 브라우저에 저장해두고(localStorage) 새로고침해도 유지한다.
+        const PKG_CLASSIFY_LAST_UPDATE_KEY = 'pkg_classify_last_update';
+        function _pkgRefreshClassifyTimestampLabel() {
+            const el = document.getElementById('pkgClassifyLastSyncLabel');
+            if (!el) return;
+            const saved = localStorage.getItem(PKG_CLASSIFY_LAST_UPDATE_KEY);
+            if (!saved) { el.textContent = '기록 없음'; return; }
+            const d = new Date(saved);
+            el.textContent = isNaN(d.getTime()) ? '기록 없음' :
+                `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+        function _pkgMarkClassifyUpdated() {
+            localStorage.setItem(PKG_CLASSIFY_LAST_UPDATE_KEY, new Date().toISOString());
+            _pkgRefreshClassifyTimestampLabel();
+        }
+        window.addEventListener('DOMContentLoaded', _pkgRefreshClassifyTimestampLabel);
+
         async function _pkgRunClassifyUpload() {
             if (!_pkgClassifyFile || !_pkgClassifyKind) return;
             const btn = document.getElementById('pkgClassifyRunBtn');
