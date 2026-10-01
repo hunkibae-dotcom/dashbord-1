@@ -1877,9 +1877,24 @@ function setColInspect(val) {
   applyFilters();
 }
 
+// 이 드롭다운은 표를 감싼 overflow-auto 스크롤 영역(max-height:560px) 안의 th에
+// position:absolute로 붙어있었다 — 결과가 0건이면 표 내용물(tbody)이 거의 사라져서
+// 스크롤 영역 자체의 높이가 확 줄어들고, 그러면 그 아래로 펼쳐지는 이 팝업이 스크롤
+// 영역의 overflow에 잘려 안 보이게 된다(안 열리는 게 아니라 "열렸는데 안 보이는" 것).
+// position:fixed + 버튼 위치 기준 좌표를 직접 계산해서 그 overflow 밖으로 완전히
+// 빼내면, 결과가 0건이든 몇 건이든 항상 제대로 보인다.
 function toggleInspectDropdown(e) {
   e.stopPropagation();
   const dd = document.getElementById('inspectColDropdown');
+  const willOpen = dd.classList.contains('hidden');
+  if (willOpen) {
+    const btn = e.currentTarget || e.target.closest('.inline-flex');
+    const r = (btn || e.target).getBoundingClientRect();
+    dd.style.position = 'fixed';
+    dd.style.top = (r.bottom + 4) + 'px';
+    dd.style.left = 'auto';
+    dd.style.right = (window.innerWidth - r.right) + 'px';
+  }
   dd.classList.toggle('hidden');
 }
 
