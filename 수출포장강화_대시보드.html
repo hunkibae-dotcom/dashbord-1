@@ -5964,13 +5964,20 @@
             URL.revokeObjectURL(url);
         }
 
-        // ── 데이터 출력: 관리용/출력용 선택 ─────────────────────────────
+        // ── 데이터 출력: 기본출력/포장항목 출력/상차항목 출력 선택 ───────────
         function pkgOpenExportChoiceModal() {
             document.getElementById('pkgExportChoiceStatus').textContent = '';
             document.getElementById('pkgExportChoiceModal').style.display = 'flex';
         }
         function pkgCloseExportChoiceModal() {
             document.getElementById('pkgExportChoiceModal').style.display = 'none';
+        }
+        // 선택 모드로 체크해둔 품목이 있으면 그것만, 없으면 화면에 필터링된 전체를
+        // 대상으로 한다 — exportToCSV()와 동일한 기존 관례.
+        function _pkgExportSourceItems() {
+            return _pkgSelectedKeys.size
+                ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
+                : state.filteredData;
         }
         async function pkgRunExport(kind) {
             if (kind === 'manage') {
@@ -5981,31 +5988,34 @@
             const statusEl = document.getElementById('pkgExportChoiceStatus');
             statusEl.textContent = 'PDF 만드는 중...';
             try {
-                const items = _pkgSelectedKeys.size
-                    ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
-                    : state.filteredData;
-                await _pkgExportPrintPdf(items);
+                const baseItems = _pkgExportSourceItems();
+                if (kind === 'pack') {
+                    // 포장항목 출력(작업자용) — 실재고(충주공장 재고)에 실제로 등록된
+                    // 품목만. item.pallet은 renderTable()이 실재고 매칭 결과로 채워두며,
+                    // 매칭이 없으면 '-'이다.
+                    const items = baseItems.filter(item => item.pallet && item.pallet !== '-');
+                    if (!items.length) { statusEl.textContent = '실재고에 등록된 품목이 없습니다.'; return; }
+                    await _pkgRenderGenericPrintPdf({
+                        title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: items,
+                        filename: '수출포장강화_포장항목출력.pdf', footer: true, fontSize: 9.5, headerFontSize: 9.5,
+                    });
+                } else if (kind === 'ship') {
+                    // 상차항목 출력(수출 현황용) — 아직 출고 안 된 품목만(applyFilters의
+                    // 'active' 소스 필터와 동일한 기준: _shippedStatuses에 없는 상태).
+                    const _shippedStatuses = new Set(['출고', '피킹', '출고완료']);
+                    const items = baseItems.filter(item => !_shippedStatuses.has(item.status));
+                    if (!items.length) { statusEl.textContent = '아직 출고되지 않은 품목이 없습니다.'; return; }
+                    await _pkgRenderGenericPrintPdf({
+                        title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items,
+                        filename: '수출포장강화_상차항목출력.pdf', footer: true,
+                    });
+                }
                 pkgCloseExportChoiceModal();
             } catch (e) {
                 statusEl.textContent = '실패: ' + ((e && e.message) || e);
             }
         }
 
-        // 출력용(작업자 인쇄) — 작업에 필요한 항목만: 건명/제품코드/수량/납기일/상차일/
-        // 가로/세로/높이/중량. A4로 바로 인쇄할 수 있게 페이지를 나눠서 PDF로 만든다.
-        // 행 개수를 고정으로 자르지 않고 실제 렌더링된 행 높이를 재서 나누기 때문에,
-        // 건명이 길어 줄바꿈되는 행이 있어도 페이지 경계에서 반으로 잘리지 않는다.
-        const PKG_PRINT_COLS = [
-            { label: '건명', width: '22%', align: 'left' },
-            { label: '제품코드', width: '14%', align: 'left' },
-            { label: '수량', width: '8%', align: 'right' },
-            { label: '납기일', width: '11%', align: 'center' },
-            { label: '상차일', width: '11%', align: 'center' },
-            { label: '가로', width: '8.5%', align: 'right' },
-            { label: '세로', width: '8.5%', align: 'right' },
-            { label: '높이', width: '8.5%', align: 'right' },
-            { label: '중량', width: '8.5%', align: 'right' },
-        ];
         // _pkgSpecLookupCache(렌더링할 때마다 renderTable()이 채워둠)에서 평균 규격을
         // 가져온다 — 많은 품목이 자기 행엔 가로/세로/높이/중량 칸이 아예 없어서
         // (충주공장 재고 등) 그대로 두면 빈 칸투성이가 된다.
@@ -6021,22 +6031,63 @@
             };
         }
         function _pkgPrintEsc(v) { return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-        function _pkgPrintHeaderRowHtml() {
-            return '<tr>' + PKG_PRINT_COLS.map(c =>
-                `<th style="width:${c.width};padding:7px 6px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:11.5px;font-weight:700;text-align:center;">${c.label}</th>`
+
+        // 포장항목 출력(작업자용, 실재고 기준) — 제품구분/품목코드/색상/수량/수주건명/
+        // 전산상 납기/상차일/포장일/실물확인(현장에서 직접 체크하도록 빈 칸)/진행/
+        // 파렛트/가로/세로/높이/중량.
+        const PKG_PRINT_PACK_COLS = [
+            { label: '제품구분', width: '7%', align: 'center', get: item => item.country || '' },
+            { label: '품목코드', width: '9%', align: 'left', get: item => item.code || '' },
+            { label: '색상', width: '6%', align: 'center', get: item => (item.color && item.color !== '-') ? item.color : '' },
+            { label: '수량', width: '5%', align: 'right', get: item => item.qty },
+            { label: '수주건명', width: '13%', align: 'left', get: item => item.round || '' },
+            { label: '전산상 납기', width: '7%', align: 'center', get: item => normalizeDate(item.dueDate) },
+            { label: '상차일', width: '7%', align: 'center', get: item => normalizeDate(item.date) },
+            { label: '포장일', width: '7%', align: 'center', get: item => normalizeDate(item.regDate) },
+            { label: '실물확인', width: '7%', align: 'center', get: () => '' },
+            { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
+            { label: '파렛트', width: '6%', align: 'center', get: item => item.pallet || '' },
+            { label: '가로', width: '5%', align: 'right', get: item => _pkgSpecForPrintItem(item).w || '' },
+            { label: '세로', width: '5%', align: 'right', get: item => _pkgSpecForPrintItem(item).d || '' },
+            { label: '높이', width: '5%', align: 'right', get: item => _pkgSpecForPrintItem(item).h || '' },
+            { label: '중량', width: '5%', align: 'right', get: item => _pkgSpecForPrintItem(item).g || '' },
+        ];
+        // 상차항목 출력(수출 현황 기준) — 날짜/규격 없이 딱 5개 칼럼만.
+        const PKG_PRINT_SHIP_COLS = [
+            { label: '품목구분', width: '15%', align: 'center', get: item => item.country || '' },
+            { label: '품목코드', width: '20%', align: 'left', get: item => item.code || '' },
+            { label: '색상', width: '15%', align: 'center', get: item => (item.color && item.color !== '-') ? item.color : '' },
+            { label: '수량', width: '15%', align: 'right', get: item => item.qty },
+            { label: '수주건명', width: '35%', align: 'left', get: item => item.round || '' },
+        ];
+
+        // 예전엔 PKG_PRINT_COLS/_pkgExportPrintPdf 하나로 "출력용" 한 종류만 만들었는데,
+        // 이제 포장항목 출력/상차항목 출력 둘로 나뉘면서 칼럼·필터·제목이 서로 달라져
+        // 칼럼/행/제목/파일명을 매개변수로 받는 범용 버전으로 바꿨다. A4로 바로 인쇄할
+        // 수 있게 페이지를 나눠서 PDF로 만든다. 행 개수를 고정으로 자르지 않고 실제
+        // 렌더링된 행 높이를 재서 나누기 때문에, 건명이 길어 줄바꿈되는 행이 있어도
+        // 페이지 경계에서 반으로 잘리지 않는다.
+        function _pkgGenericHeaderRowHtml(columns, headerFontSize) {
+            return '<tr>' + columns.map(c =>
+                `<th style="width:${c.width};padding:7px 6px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:${headerFontSize}px;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</th>`
             ).join('') + '</tr>';
         }
-        function _pkgPrintRowHtml(item) {
-            const sp = _pkgSpecForPrintItem(item);
-            const cells = [item.round, item.code, item.qty, normalizeDate(item.dueDate), normalizeDate(item.date), sp.w || '-', sp.d || '-', sp.h || '-', sp.g || '-'];
-            return '<tr>' + cells.map((v, i) => {
-                const col = PKG_PRINT_COLS[i];
-                return `<td style="width:${col.width};padding:5px 6px;border:1px solid #cbd5e1;font-size:11px;text-align:${col.align};word-break:break-all;">${_pkgPrintEsc(v)}</td>`;
+        function _pkgGenericRowHtml(item, columns, fontSize) {
+            return '<tr>' + columns.map(c => {
+                const v = c.get ? c.get(item) : '';
+                return `<td style="width:${c.width};padding:5px 6px;border:1px solid #cbd5e1;font-size:${fontSize}px;text-align:${c.align};word-break:break-all;">${_pkgPrintEsc(v)}</td>`;
             }).join('') + '</tr>';
         }
-        async function _pkgExportPrintPdf(items) {
+        // opts: { title, columns, rows, filename, footer(선택), fontSize(선택), headerFontSize(선택) }
+        async function _pkgRenderGenericPrintPdf(opts) {
             await new Promise((resolve) => _pkgLoadPdfLibs(resolve));
             if (!window.jspdf || !window.html2canvas) return; // CDN 로드 실패 — _pkgLoadPdfLibs가 이미 alert로 안내함
+
+            const columns = opts.columns;
+            const rows = opts.rows || [];
+            const fontSize = opts.fontSize || 11;
+            const headerFontSize = opts.headerFontSize || 11.5;
+            const rowHtml = (item) => _pkgGenericRowHtml(item, columns, fontSize);
 
             const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
             const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
@@ -6046,7 +6097,7 @@
             // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다.
             const measureHost = document.createElement('div');
             measureHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;`;
-            measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${items.map(_pkgPrintRowHtml).join('')}</table>`;
+            measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(rowHtml).join('')}</table>`;
             document.body.appendChild(measureHost);
             const heights = Array.from(measureHost.querySelectorAll('tr')).map(tr => tr.offsetHeight);
             document.body.removeChild(measureHost);
@@ -6054,13 +6105,17 @@
             // 2) 실측 높이 기준으로 페이지를 나눈다(행이 페이지 경계에서 안 잘리게).
             const pages = [];
             let cur = [], curH = TITLE_PX + HEADER_ROW_PX;
-            items.forEach((item, idx) => {
+            rows.forEach((item, idx) => {
                 const h = heights[idx] || 28;
                 if (cur.length && curH + h > PAGE_BUDGET_PX) { pages.push(cur); cur = []; curH = TITLE_PX + HEADER_ROW_PX; }
                 cur.push(item);
                 curH += h;
             });
             pages.push(cur);
+
+            // 날짜는 출력하는 "지금"을 기준으로 매번 새로 구한다(페이지 하단 우측 문구용).
+            const _now = new Date();
+            const mmdd = String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
 
             // 3) 페이지마다 실제로 그려서 캔버스로 캡처 → A4 PDF 페이지에 넣는다.
             const jsPDFCtor = window.jspdf.jsPDF;
@@ -6069,10 +6124,10 @@
                 const host = document.createElement('div');
                 host.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
                 host.innerHTML = `
-                    <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">수출포장강화 작업지시서${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
+                    <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">${_pkgPrintEsc(opts.title)}${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
                     <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
-                        <thead>${_pkgPrintHeaderRowHtml()}</thead>
-                        <tbody>${pages[p].map(_pkgPrintRowHtml).join('')}</tbody>
+                        <thead>${_pkgGenericHeaderRowHtml(columns, headerFontSize)}</thead>
+                        <tbody>${pages[p].map(rowHtml).join('')}</tbody>
                     </table>`;
                 document.body.appendChild(host);
                 const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
@@ -6082,8 +6137,24 @@
                 const imgWmm = 190;
                 const imgHmm = canvas.height / canvas.width * imgWmm;
                 pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
+
+                // 페이지 하단 문구(모든 페이지 공통) — 표가 페이지를 다 못 채워도 항상
+                // 실제 페이지 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다.
+                if (opts.footer) {
+                    const footerHost = document.createElement('div');
+                    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
+                    footerHost.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748b;padding-top:6px;">
+                        <span>010-5667-2088 품질보증팀 배훈기</span><span>${mmdd}</span></div>`;
+                    document.body.appendChild(footerHost);
+                    const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
+                    document.body.removeChild(footerHost);
+                    const footerImgData = footerCanvas.toDataURL('image/png');
+                    const footerWmm = 190;
+                    const footerHmm = footerCanvas.height / footerCanvas.width * footerWmm;
+                    pdf.addImage(footerImgData, 'PNG', 10, 297 - 10 - footerHmm, footerWmm, footerHmm);
+                }
             }
-            pdf.save('수출포장강화_출력용.pdf');
+            pdf.save(opts.filename);
         }
 
         // ── 진행상태 편집 모달 ─────────────────────────────────────
