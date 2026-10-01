@@ -6500,27 +6500,17 @@
             _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
         }
 
-        // 수출현황 단계(입고/일부입고) ↔ 출고완료 단계(출고/피킹)까지 이 수정창
-        // 하나에서 다 다룰 수 있도록, 기존 재고용 _STATUS_OPTS에 출고/피킹을 더한
-        // 전용 목록을 쓴다(공용 _STATUS_OPTS 자체를 바꾸면 다른 모달에도 영향을
-        // 주므로 여기서만 쓰는 별도 배열로 둔다).
-        const _PKG_DETAIL_STATUS_OPTS = _STATUS_OPTS.concat([
-            { v: '출고', c: '#16a34a' },
-            { v: '피킹', c: '#7c3aed' }
-        ]);
+        let _pkgStatusOpenGroup = null; // 사람이 직접 펼친 그룹(현재 상태가 없을 때만 씀)
 
         function _renderPkgStatusOpts() {
             const wrap = document.getElementById('pkgStatusOpts');
-            wrap.innerHTML = _PKG_DETAIL_STATUS_OPTS.map(opt => {
-                const isCur = opt.v === _pkgCurStatus;
-                return `<button onclick="selectPkgStatus('${opt.v}')"
-                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?opt.c:'#e2e8f0'};background:${isCur?opt.c+'1A':'#fff'};color:${isCur?opt.c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;"
-                    onmouseenter="this.style.background='${opt.c}1A';this.style.borderColor='${opt.c}'"
-                    onmouseleave="this.style.background='${isCur?opt.c+'1A':'#fff'}';this.style.borderColor='${isCur?opt.c:'#e2e8f0'}'">
-                    <i class="fa-solid fa-circle" style="font-size:6px;color:${opt.c};opacity:.8;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
-                </button>`;
-            }).join('');
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup);
             _pkgUpdatePartialQtyVisibility();
+        }
+
+        function _pkgToggleStatusGroup(key) {
+            _pkgStatusOpenGroup = (_pkgStatusOpenGroup === key) ? null : key;
+            _renderPkgStatusOpts();
         }
 
         function _pkgUpdatePartialQtyVisibility() {
