@@ -6179,6 +6179,13 @@ function _gasUrlForFactory(factoryKey) {
 let _spuMode = 'sales'; // 'sales' | 'process' | 'both'
 let _spuMismatchFactory = null;
 let _spuMismatchItems = null;
+// 충주1/충주2를 같은 배치로 한꺼번에 업로드했을 때, 둘 다 "확인 필요"(needsReview)
+// 항목이 있으면 모달을 바로바로 두 번 열게 되어 먼저 뜬 쪽(예: 충주1) 내용이 사람이
+// 보기도 전에 나중 것(충주2)으로 덮어써져 버리는 문제가 있었다 — 그 공장의 확인
+// 필요 항목은 로그에 "확인창에서 골라주세요"라고 떠놓고 실제로는 확인할 기회조차
+// 없이 사라지는 셈이었다. 이제 바로 열지 않고 큐에 쌓아뒀다가, 한 번에 하나씩만
+// 열고 그 모달을 닫아야(반영完료 또는 취소) 다음 공장 것이 이어서 뜨게 한다.
+let _spuMismatchQueue = []; // [{factory, pending}, ...] — 아직 안 보여준 것들
 
 function openSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'flex'; }
 function closeSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'none'; }
