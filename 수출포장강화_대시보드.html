@@ -6423,14 +6423,19 @@
                 const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
                 // 합계행/요약행 제외: 품목코드 칸이 비어있거나 코드 형식(영숫자/하이픈)이 아니면 건너뜀
                 if (!codeStr || !/^[A-Za-z0-9][A-Za-z0-9\-_.]*$/.test(codeStr)) continue;
+                const typeVal  = (iType  >= 0 ? row[iType]  : row[0]);
+                const colorVal = (iColor >= 0 ? row[iColor] : row[2]);
+                const qtyVal   = (iQty   >= 0 ? row[iQty]   : row[3]);
+                const roundVal = (iRound >= 0 ? row[iRound] : row[4]);
+                const dueVal   = (iDue   >= 0 ? row[iDue]   : row[5]);
                 rows.push([
-                    (iType >= 0 ? row[iType] : row[0]) ?? '',
+                    (typeVal == null ? '' : typeVal.toString()).trim(),
                     codeStr,
-                    ((iColor >= 0 ? row[iColor] : row[2]) || '').toString().trim(),
-                    ((iQty >= 0 ? row[iQty] : row[3]) ?? '').toString().trim(),
-                    ((iRound >= 0 ? row[iRound] : row[4]) || '').toString().trim(),
-                    _pkgDateStr(iDue >= 0 ? row[iDue] : row[5])
-                ].map((v, idx) => idx === 0 ? (v || '').toString().trim() : v));
+                    (colorVal == null ? '' : colorVal.toString()).trim(),
+                    (qtyVal == null ? '' : qtyVal.toString()).trim(),
+                    (roundVal == null ? '' : roundVal.toString()).trim(),
+                    _pkgDateStr(dueVal)
+                ]);
             }
             return rows;
         }
