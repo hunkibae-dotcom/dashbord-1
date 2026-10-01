@@ -5943,7 +5943,12 @@
         let _pkgOrigPallet = '';
         let _pkgOrigRegDate = '';
         let _pkgOrigShipDate = '';
+        let _pkgItemQty = 0;
         let _pkgOrigW = '', _pkgOrigD = '', _pkgOrigH = '', _pkgOrigG = '';
+        // 단일 수정창에서 진행상태를 "입고"/"일부입고"/"출고"/"피킹"으로 바꿀 때는
+        // 기존 updateStatus(충주공장 재고 전용)가 아니라, 수출 현황→충주공장 재고/
+        // 출고완료로 실제 데이터를 옮기는 새 액션(웹 대시보드 전용)을 호출해야 한다.
+        const PKG_MIGRATION_STATUSES = ['입고', '일부입고', '출고', '피킹'];
 
         // ── 다중선택 모드(수출포장 관리현황 카드) ──────────────────────────
         // "다중선택" 버튼을 누르면 행 클릭 시 뜨던 수정창은 멈추고 체크박스만
