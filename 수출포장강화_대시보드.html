@@ -5995,6 +5995,138 @@
             });
         }
 
+        // ── 다중선택 일괄수정 모달 ──────────────────────────────────────
+        const PKG_BULK_STATUS_OPTS = [
+            { v: '입고',   c: '#38BDF8' },
+            { v: '일부입고', c: '#FBBF24' },
+            { v: '출고',   c: '#16a34a' },
+            { v: '피킹',   c: '#7c3aed' }
+        ];
+        let _pkgBulkStatus = '';
+        let _pkgBulkItems = []; // [{key, code, round, color, qty}]
+
+        function pkgOpenBulkModal() {
+            _pkgBulkItems = Array.from(_pkgSelectedKeys).map(key => {
+                const item = window._pkgRowMap && window._pkgRowMap[key];
+                if (!item) return null;
+                return { key: key, code: item.code || '', round: item.round || '', color: item.color || '', qty: parseFloat(item.qty) || 0 };
+            }).filter(Boolean);
+
+            if (_pkgBulkItems.length === 0) {
+                alert('먼저 품목을 하나 이상 선택해주세요.');
+                return;
+            }
+
+            _pkgBulkStatus = '';
+            document.getElementById('pkgBulkCountLabel').textContent = `선택된 품목 ${_pkgBulkItems.length}건`;
+            document.getElementById('pkgBulkShipDate').value = '';
+            document.getElementById('pkgBulkFeedback').textContent = '';
+            _pkgRenderBulkStatusOpts();
+            document.getElementById('pkgBulkModal').style.display = 'flex';
+        }
+
+        function pkgCloseBulkModal() {
+            document.getElementById('pkgBulkModal').style.display = 'none';
+        }
+
+        function _pkgRenderBulkStatusOpts() {
+            const wrap = document.getElementById('pkgBulkStatusOpts');
+            wrap.innerHTML = PKG_BULK_STATUS_OPTS.map(opt => {
+                const isCur = opt.v === _pkgBulkStatus;
+                return `<button onclick="_pkgSelectBulkStatus('${opt.v}')"
+                    style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?opt.c:'#e2e8f0'};background:${isCur?opt.c+'1A':'#fff'};color:${isCur?opt.c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;">
+                    <i class="fa-solid fa-circle" style="font-size:6px;color:${opt.c};opacity:.8;"></i>${opt.v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
+                </button>`;
+            }).join('');
+            _pkgRenderBulkPartialQtyRows();
+        }
+
+        function _pkgSelectBulkStatus(v) {
+            _pkgBulkStatus = (_pkgBulkStatus === v) ? '' : v; // 다시 누르면 선택 해제("변경 안 함")
+            _pkgRenderBulkStatusOpts();
+        }
+
+        function _pkgRenderBulkPartialQtyRows() {
+            const listWrap = document.getElementById('pkgBulkPartialQtyList');
+            const rowsWrap = document.getElementById('pkgBulkPartialQtyRows');
+            if (_pkgBulkStatus !== '일부입고') { listWrap.style.display = 'none'; return; }
+            listWrap.style.display = '';
+            rowsWrap.innerHTML = _pkgBulkItems.map(it => `
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="flex:1;font-size:12.5px;color:#1e293b;font-family:monospace;">${it.code} / ${it.round}${it.color && it.color !== '-' ? ' / ' + it.color : ''} <span style="color:#92400e;">(전체 ${it.qty.toLocaleString()})</span></div>
+                    <input type="number" class="pkg-bulk-partial-qty" data-key="${it.key}" placeholder="입고수량"
+                        style="width:110px;background:#fff;border:1.5px solid #fbbf24;border-radius:8px;padding:6px 10px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;">
+                </div>`).join('');
+        }
+
+        async function pkgBulkApply() {
+            const fb = document.getElementById('pkgBulkFeedback');
+            const btn = document.getElementById('pkgBulkApplyBtn');
+            fb.textContent = ''; fb.style.color = '';
+
+            const shipDate = (document.getElementById('pkgBulkShipDate').value || '').trim();
+            if (!_pkgBulkStatus && !shipDate) {
+                fb.textContent = '진행상태 또는 상차일 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
+                return;
+            }
+
+            let partialQtyByKey = null;
+            if (_pkgBulkStatus === '일부입고') {
+                partialQtyByKey = {};
+                const inputs = Array.from(document.querySelectorAll('.pkg-bulk-partial-qty'));
+                for (const inp of inputs) {
+                    const v = (inp.value || '').trim();
+                    if (!v || isNaN(Number(v))) {
+                        fb.textContent = '일부입고로 바꾸는 모든 품목에 수량을 입력해주세요.'; fb.style.color = '#dc2626';
+                        return;
+                    }
+                    partialQtyByKey[inp.dataset.key] = Number(v);
+                }
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+            const gasUrl = _pkgGasUrl();
+            try {
+                // 상차일부터 먼저 반영(출고/피킹으로 바뀌면 수출현황 행 자체가 삭제되므로).
+                if (shipDate) {
+                    const items = _pkgBulkItems.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                    const res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgUpdateShipDate', items: items, shipDate: shipDate }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (!res || res.ok === false) throw new Error((res && res.message) || '상차일 반영 실패');
+                }
+
+                if (_pkgBulkStatus) {
+                    const isIncoming = (_pkgBulkStatus === '입고' || _pkgBulkStatus === '일부입고');
+                    const action = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
+                    const items = _pkgBulkItems.map(it => isIncoming
+                        ? { code: it.code, round: it.round, color: it.color, qty: partialQtyByKey ? partialQtyByKey[it.key] : null }
+                        : { code: it.code, round: it.round, color: it.color, status: _pkgBulkStatus });
+                    const res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: action, items: items }),
+                        signal: AbortSignal.timeout(120000)
+                    }).then(r => r.json());
+                    if (!res || res.ok === false) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
+                }
+
+                fb.textContent = '✓ 적용 완료되었습니다.'; fb.style.color = '#16a34a';
+                setTimeout(() => {
+                    pkgCloseBulkModal();
+                    pkgExitMultiSelectMode();
+                    syncWithGoogleSheets(false);
+                }, 600);
+            } catch (e) {
+                fb.textContent = '처리 실패: ' + (e.message || '오류'); fb.style.color = '#dc2626';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> 적용';
+            }
+        }
+
         function _pkgGasUrl() {
             return localStorage.getItem('sheet_pub_url') ||
                 'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
