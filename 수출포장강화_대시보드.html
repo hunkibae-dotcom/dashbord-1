@@ -6076,6 +6076,7 @@
             const item = window._pkgRowMap && window._pkgRowMap[key];
             if (!item) return;
             _pkgCode = item.code || ''; _pkgRound = item.round || ''; _pkgColor = item.color || '';
+            _pkgItemQty = parseFloat(item.qty) || 0;
             document.getElementById('pkgCodeLabel').textContent = _pkgCode || '—';
             document.getElementById('pkgRoundLabel').textContent = _pkgRound || '—';
             document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
