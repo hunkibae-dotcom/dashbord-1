@@ -2481,6 +2481,7 @@
             const dd = document.getElementById('statusDropdown');
             const arrow = document.getElementById('statusDropdownArrow');
             const isOpen = !dd.classList.contains('hidden');
+            if (!dd.childElementCount) _renderStatusDropdownOptions(); // 아직 한 번도 안 그려졌으면 지금 그린다
             dd.classList.toggle('hidden');
             arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
         }
