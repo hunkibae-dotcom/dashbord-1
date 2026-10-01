@@ -6404,6 +6404,10 @@
         function _pkgExtractIntegratedRows(grid) {
             if (!grid || grid.length < 2) return [];
             const headers = grid[0].map(h => (h || '').toString().trim().replace(/\s+/g, ''));
+            // 헤더 문구로 못 찾으면("수량" 비슷한 말도 없는 경우 등) 통합품목 파일의
+            // 정해진 열 순서(제품구분,품목코드,색상,수량,수주건명,납기일)로 되돌아간다 —
+            // 전에는 품목코드만 이 fallback이 있어서, 다른 칸(특히 수량)은 헤더 매칭에
+            // 실패하면 그냥 통째로 빈 값이 되어 "수량이 안 들어간다"는 문제가 있었다.
             const iType  = _pkgFindCol(headers, ['제품구분', '품목구분', '구분']);
             const iCode  = _pkgFindCol(headers, ['품목코드', '제품코드', '코드']);
             const iColor = _pkgFindCol(headers, ['색상', '컬러']);
@@ -6420,13 +6424,13 @@
                 // 합계행/요약행 제외: 품목코드 칸이 비어있거나 코드 형식(영숫자/하이픈)이 아니면 건너뜀
                 if (!codeStr || !/^[A-Za-z0-9][A-Za-z0-9\-_.]*$/.test(codeStr)) continue;
                 rows.push([
-                    iType >= 0 ? (row[iType] || '').toString().trim() : '',
+                    (iType >= 0 ? row[iType] : row[0]) ?? '',
                     codeStr,
-                    iColor >= 0 ? (row[iColor] || '').toString().trim() : '',
-                    iQty >= 0 ? (row[iQty] || '').toString().trim() : '',
-                    iRound >= 0 ? (row[iRound] || '').toString().trim() : '',
-                    iDue >= 0 ? _pkgDateStr(row[iDue]) : ''
-                ]);
+                    ((iColor >= 0 ? row[iColor] : row[2]) || '').toString().trim(),
+                    ((iQty >= 0 ? row[iQty] : row[3]) ?? '').toString().trim(),
+                    ((iRound >= 0 ? row[iRound] : row[4]) || '').toString().trim(),
+                    _pkgDateStr(iDue >= 0 ? row[iDue] : row[5])
+                ].map((v, idx) => idx === 0 ? (v || '').toString().trim() : v));
             }
             return rows;
         }
