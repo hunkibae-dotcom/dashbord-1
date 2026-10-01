@@ -6499,53 +6499,63 @@
             }
         }
 
+        // 선택된 파일 하나를 분류(수주)/분류(입고) 액션으로 보내고 결과 한 줄을 돌려준다.
+        // 여러 파일 처리(_pkgRunClassifyUpload)와 재사용하기 위해 따로 뺐다.
+        async function _pkgRunOneClassifyFile(entry) {
+            const gasUrl = _pkgGasUrl();
+            const grid = await new Promise((resolve, reject) => _pkgReadFileAsGrid(entry.file, (err, g) => err ? reject(err) : resolve(g)));
+            if (entry.kind === 'sunju') {
+                const rows = _pkgExtractIntegratedRows(grid);
+                if (rows.length === 0) return { ok: false, line: `✗ ${entry.name}: 처리할 품목 데이터를 찾지 못했습니다(헤더/합계행 구성을 확인해주세요).` };
+                const res = await fetch(gasUrl, {
+                    method: 'POST', body: JSON.stringify({ action: 'pkgClassifySunju', rows: rows }),
+                    signal: AbortSignal.timeout(240000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) return { ok: false, line: `✗ ${entry.name} 실패: ` + ((res && res.message) || '알 수 없는 오류') };
+                return { ok: true, line: `✓ ${entry.name} → 분류(수주) 완료 — 신규 ${res.newCount || 0}건, 납기변경 ${res.updatedCount || 0}건, 재고 자동반영 ${res.syncAppliedCount || 0}건` };
+            } else {
+                const entries = _pkgExtractOutResultEntries(grid);
+                if (entries.length === 0) return { ok: false, line: `✗ ${entry.name}: 처리할 품목 데이터를 찾지 못했습니다(헤더 구성을 확인해주세요).` };
+                const res = await fetch(gasUrl, {
+                    method: 'POST', body: JSON.stringify({ action: 'pkgClassifyIpgo', entries: entries }),
+                    signal: AbortSignal.timeout(240000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) return { ok: false, line: `✗ ${entry.name} 실패: ` + ((res && res.message) || '알 수 없는 오류') };
+                return { ok: true, line: `✓ ${entry.name} → 분류(입고) 완료 — 입고처리 ${res.matchedCount || 0}건` };
+            }
+        }
+
+        // 선택한 파일 전부를 하나씩 순서대로 처리한다(동시에 보내면 구글시트 쪽 락이
+        // 걸려 있어서 서로 기다리기만 하고, 결과도 뒤섞여 보여주기 어렵다 — 순서대로
+        // 보내고 끝나는 대로 한 줄씩 쌓아 보여주는 게 사람이 보기에도 더 명확하다).
         async function _pkgRunClassifyUpload() {
-            if (!_pkgClassifyFile || !_pkgClassifyKind) return;
+            if (!_pkgClassifyFiles.length) return;
             const btn = document.getElementById('pkgClassifyRunBtn');
             const resultEl = document.getElementById('pkgClassifyResult');
+            const total = _pkgClassifyFiles.length;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
             resultEl.textContent = '';
+            const lines = [];
+            let anySuccess = false;
             try {
-                const grid = await new Promise((resolve, reject) => _pkgReadFileAsGrid(_pkgClassifyFile, (err, g) => err ? reject(err) : resolve(g)));
-                const gasUrl = _pkgGasUrl();
-                let res;
-                if (_pkgClassifyKind === 'sunju') {
-                    const rows = _pkgExtractIntegratedRows(grid);
-                    if (rows.length === 0) { resultEl.textContent = '처리할 품목 데이터를 찾지 못했습니다(헤더/합계행 구성을 확인해주세요).'; return; }
-                    res = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'pkgClassifySunju', rows: rows }),
-                        signal: AbortSignal.timeout(240000)
-                    }).then(r => r.json());
-                    if (!_pkgIsGasError(res)) {
-                        resultEl.textContent = `✓ 분류(수주) 완료\n- 신규 추가: ${res.newCount || 0}건\n- 납기 변경: ${res.updatedCount || 0}건\n- 재고 납기/상차일 자동 반영: ${res.syncAppliedCount || 0}건`;
-                        _pkgMarkClassifyUpdated();
-                    } else {
-                        resultEl.textContent = '✗ 실패: ' + ((res && res.message) || '알 수 없는 오류');
+                for (let i = 0; i < _pkgClassifyFiles.length; i++) {
+                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리 중... (${i + 1}/${total})`;
+                    try {
+                        const r = await _pkgRunOneClassifyFile(_pkgClassifyFiles[i]);
+                        if (r.ok) anySuccess = true;
+                        lines.push(r.line);
+                    } catch (e) {
+                        lines.push(`✗ ${_pkgClassifyFiles[i].name} 처리 실패: ` + ((e && e.message) || e));
                     }
-                } else {
-                    const entries = _pkgExtractOutResultEntries(grid);
-                    if (entries.length === 0) { resultEl.textContent = '처리할 품목 데이터를 찾지 못했습니다(헤더 구성을 확인해주세요).'; return; }
-                    res = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'pkgClassifyIpgo', entries: entries }),
-                        signal: AbortSignal.timeout(240000)
-                    }).then(r => r.json());
-                    if (!_pkgIsGasError(res)) {
-                        resultEl.textContent = `✓ 분류(입고) 완료\n- 입고 처리됨: ${res.matchedCount || 0}건`;
-                        _pkgMarkClassifyUpdated();
-                    } else {
-                        resultEl.textContent = '✗ 실패: ' + ((res && res.message) || '알 수 없는 오류');
-                    }
+                    resultEl.textContent = lines.join('\n');
                 }
+                if (anySuccess) _pkgMarkClassifyUpdated();
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
                 btn.onclick = pkgCloseClassifyUploadModal;
                 syncWithGoogleSheets(false);
-            } catch (e) {
-                resultEl.textContent = '처리 실패: ' + ((e && e.message) || e);
+            } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
+                if (btn.onclick !== pkgCloseClassifyUploadModal) btn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
             }
         }
 
