@@ -6646,6 +6646,20 @@
             return s;
         }
 
+        // "선택" 모드로 체크해둔 품목이 있으면 적재번호로 "충주공장 재고"를 다시
+        // 조회하지 않고 그 품목들을 그대로 쓴다(데이터 출력의 선택 우선 방식과 동일).
+        // 적재번호 입력칸은 그대로 두되, 이 경우엔 조회 키가 아니라 큰 제목/라벨
+        // 문구용으로만 쓰인다.
+        function _pkgSelectedItemsForLabel() {
+            return Array.from(_pkgSelectedKeys)
+                .map(k => window._pkgRowMap && window._pkgRowMap[k])
+                .filter(Boolean)
+                .map(it => ({
+                    round: it.round || '', code: it.code || '', color: it.color || '',
+                    qty: it.qty || '', status: it.status || '', date: it.date || '', regDate: it.regDate || ''
+                }));
+        }
+
         async function pkgLabelSubmitPallet() {
             const raw = document.getElementById('pkgLabelPalletInput').value;
             const fb = document.getElementById('pkgLabelPalletFeedback');
@@ -6656,30 +6670,36 @@
             const origHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+            const useSelection = _pkgSelectedKeys.size > 0;
             try {
                 if (_pkgLabelState.kind === 'stock') {
+                    const body = useSelection
+                        ? { action: 'pkgPrintStockLabelSelected', palletNumber: palletNumber, items: _pkgSelectedItemsForLabel() }
+                        : { action: 'pkgPrintStockLabel', palletNumber: palletNumber };
                     const res = await fetch(_pkgGasUrl(), {
-                        method: 'POST',
-                        body: JSON.stringify({ action: 'pkgPrintStockLabel', palletNumber: palletNumber }),
-                        signal: AbortSignal.timeout(60000)
+                        method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고용 인식표 생성에 실패했습니다.');
                     await _pkgGenerateStockLabelPdf(res);
                 } else {
-                    const res = await fetch(_pkgGasUrl(), {
-                        method: 'POST',
-                        body: JSON.stringify({
-                            action: 'pkgPrintShipLabel',
-                            palletNumber: palletNumber,
-                            labelType: _pkgLabelState.shipType,
-                            customRound: _pkgLabelState.customRound,
+                    const body = useSelection
+                        ? {
+                            action: 'pkgPrintShipLabelSelected', palletNumber: palletNumber,
+                            labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
+                            customName: _pkgLabelState.customName, items: _pkgSelectedItemsForLabel()
+                          }
+                        : {
+                            action: 'pkgPrintShipLabel', palletNumber: palletNumber,
+                            labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
                             customName: _pkgLabelState.customName
-                        }),
-                        signal: AbortSignal.timeout(60000)
+                          };
+                    const res = await fetch(_pkgGasUrl(), {
+                        method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '출고용 인식표 생성에 실패했습니다.');
                     await _pkgGenerateShipLabelPdf(res);
                 }
+                if (useSelection) pkgExitMultiSelectMode();
                 syncWithGoogleSheets(false);
                 pkgCloseLabelModal();
             } catch (e) {
