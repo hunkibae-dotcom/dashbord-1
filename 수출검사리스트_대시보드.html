@@ -784,6 +784,11 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           <span id="qualityFilterLabel" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-bold text-white">—</span>
           <button onclick="clearQualityFilter()" class="text-[11px] text-slate-400 hover:text-slate-600 underline">필터 해제</button>
         </div>
+        <div id="dateFilterChip" class="hidden mb-3 flex items-center gap-2 flex-wrap">
+          <span class="text-[12px] text-slate-400 font-medium">달력 조회 필터:</span>
+          <span id="dateFilterLabel" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11.5px] font-bold text-white" style="background:#6D5CE8;">—</span>
+          <button onclick="clearDateFilter()" class="text-[11px] text-slate-400 hover:text-slate-600 underline">필터 해제</button>
+        </div>
 
         <div class="overflow-auto" style="max-height:560px">
           <table class="w-full text-[14.5px]" style="min-width:1000px">
