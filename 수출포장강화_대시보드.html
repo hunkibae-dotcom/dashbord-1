@@ -5851,8 +5851,14 @@
         // ============================================================
 
         function exportToCSV() {
+            // "선택" 모드로 체크해둔 품목이 있으면 전체 필터 결과가 아니라 그 품목들만
+            // 내보낸다 — 선택 자체가 "이 품목들만 보고 싶다/내보내고 싶다"는 용도로
+            // 만든 기능이라(선택 버튼 도입 시 안내한 목적) 자연스러운 확장.
+            const _exportSource = _pkgSelectedKeys.size
+                ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
+                : state.filteredData;
             const headers = ['등록일자(포장일)','건명','제품코드','수량','납기일','상차일','강화(BOX)','출고(BOX)','CBM','적재','상태'];
-            const rows = state.filteredData.map(item => [
+            const rows = _exportSource.map(item => [
                 normalizeDate(item.regDate), item.round, item.code, item.qty,
                 normalizeDate(item.dueDate), normalizeDate(item.date),
                 item.strengthenedQty, item.shippedQty,
