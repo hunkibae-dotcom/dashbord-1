@@ -7937,6 +7937,32 @@
     </div>
 </div>
 
+<!-- ── 분류(수주)/분류(입고) 엑셀 업로드 모달 ──────────────────────── -->
+<div id="pkgClassifyUploadModal" onclick="if(event.target===this)pkgCloseClassifyUploadModal()"
+    style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:460px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:16px;font-weight:800;color:#1e293b;">분류 엑셀 업로드</div>
+            <button onclick="pkgCloseClassifyUploadModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:12.5px;color:#64748b;margin:10px 0 16px;line-height:1.6;">
+            파일 이름이 <b>통합품목</b>으로 시작하면 <b>분류(수주)</b>가, <b>grd_outResult</b>로 시작하면 <b>분류(입고)</b>가 자동으로 실행됩니다.
+            분류(수주)는 끝난 뒤 곧바로 충주공장 재고의 납기일/상차일도 수출 현황 기준으로 자동 반영됩니다.
+        </div>
+        <input type="file" id="pkgClassifyFileInput" accept=".xlsx,.xls" onchange="_pkgOnClassifyFileChosen()"
+            style="width:100%;font-size:13px;color:#334155;margin-bottom:8px;">
+        <div id="pkgClassifyFileDetect" style="font-size:12.5px;margin-bottom:14px;"></div>
+        <div id="pkgClassifyResult" style="font-size:12.5px;color:#334155;white-space:pre-line;line-height:1.6;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
+            <button onclick="pkgCloseClassifyUploadModal()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">닫기</button>
+            <button onclick="_pkgRunClassifyUpload()" id="pkgClassifyRunBtn" disabled
+                style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.5;">
+                <i class="fa-solid fa-upload"></i> 업데이트 실행
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="statusEditModal" onclick="if(event.target===this)closeStatusEdit()"
     style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
     <div style="background:#1E293B;border:1px solid #334155;border-radius:16px;padding:28px 32px;width:360px;max-width:94vw;position:relative;">
