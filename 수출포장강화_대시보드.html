@@ -2523,7 +2523,6 @@
             } else {
                 const list = Array.from(activeStatusFilters);
                 const c = PKG_STATUS_COLOR[list[0]] || '#0ea5e9';
-                label.removeAttribute('class');
                 label.className = 'font-bold';
                 label.style.color = c;
                 label.textContent = list.length > 1 ? (list[0] + ' 외 ' + (list.length - 1)) : list[0];
