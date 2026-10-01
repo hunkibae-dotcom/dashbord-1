@@ -6166,18 +6166,58 @@
 
             let newRegDate = (document.getElementById('pkgRegDate').value || '').trim();
             if (_pkgCurStatus === '포장완료' && !newRegDate) newRegDate = normalizeDate(new Date());
+            const newShipDate = (document.getElementById('pkgShipDate').value || '').trim();
             const newPalletRaw = (document.getElementById('pkgPallet').value || '').trim();
             const newW = (document.getElementById('pkgW').value || '').trim();
             const newD = (document.getElementById('pkgD').value || '').trim();
             const newH = (document.getElementById('pkgH').value || '').trim();
             const newG = (document.getElementById('pkgG').value || '').trim();
 
+            // "일부입고"로 바꾸려면 구글시트의 일부입고 팝업과 똑같이 실제 입고 수량을
+            // 반드시 입력해야 한다.
+            let partialQty = null;
+            if (_pkgCurStatus === '일부입고' && _pkgCurStatus !== _pkgOrigStatus) {
+                const qv = (document.getElementById('pkgPartialQty').value || '').trim();
+                if (!qv || isNaN(Number(qv))) {
+                    fb.textContent = '일부입고 수량을 숫자로 입력해주세요.'; fb.style.color = '#dc2626';
+                    return;
+                }
+                partialQty = Number(qv);
+            }
+
             const tasks = [];
             const changed = {};
             const gasUrl = _pkgGasUrl();
+            let migrationPromise = null; // 입고/일부입고/출고/피킹: 수출현황→재고/출고완료 실제 이동
+            let shipDatePromise = null;  // 상차일 변경: 수출현황→재고 자동 동기화까지 포함
+
+            // 상차일은 먼저 반영한다 — 출고/피킹으로 바뀌면 "수출 현황" 행 자체가
+            // 삭제되므로, 상차일을 그 전에 바꿔둬야 한다.
+            if (newShipDate !== _pkgOrigShipDate) {
+                shipDatePromise = fetch(gasUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgUpdateShipDate', items: [{ code: _pkgCode, round: _pkgRound, color: _pkgColor }], shipDate: newShipDate }),
+                    signal: AbortSignal.timeout(30000)
+                }).then(r => r.json());
+                changed.shipDate = newShipDate;
+            }
 
             if (_pkgCurStatus && _pkgCurStatus !== _pkgOrigStatus) {
-                tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateStatus', code:_pkgCode, round:_pkgRound, color:_pkgColor, status:_pkgCurStatus }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                if (PKG_MIGRATION_STATUSES.includes(_pkgCurStatus)) {
+                    const isIncoming = (_pkgCurStatus === '입고' || _pkgCurStatus === '일부입고');
+                    const action = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
+                    const item = isIncoming
+                        ? { code: _pkgCode, round: _pkgRound, color: _pkgColor, qty: partialQty }
+                        : { code: _pkgCode, round: _pkgRound, color: _pkgColor, status: _pkgCurStatus };
+                    migrationPromise = (shipDatePromise ? shipDatePromise : Promise.resolve())
+                        .then(() => fetch(gasUrl, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: action, items: [item] }),
+                            signal: AbortSignal.timeout(60000)
+                        }).then(r => r.json()));
+                } else {
+                    tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateStatus', code:_pkgCode, round:_pkgRound, color:_pkgColor, status:_pkgCurStatus }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                }
                 changed.status = _pkgCurStatus;
             }
             if (newPalletRaw !== _pkgOrigPallet) {
