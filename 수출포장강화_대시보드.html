@@ -6480,6 +6480,10 @@
             _pkgOrigShipDate = shipDateNorm !== '-' ? shipDateNorm : '';
             document.getElementById('pkgShipDate').value = _pkgOrigShipDate;
 
+            const dueDateNorm = normalizeDate(item.dueDate);
+            _pkgOrigDueDate = dueDateNorm !== '-' ? dueDateNorm : '';
+            document.getElementById('pkgDueDate').value = _pkgOrigDueDate;
+
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
 
