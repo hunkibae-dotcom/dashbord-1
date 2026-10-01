@@ -2412,6 +2412,7 @@
         const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo || _sfStatusFilters.size || _sfSourceFilter);
         if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
         if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
+        _updateSfFilterDot();
         if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
             document.getElementById('srCount').textContent = '0';
             const qtyEl0 = document.getElementById('srQtySum');
