@@ -3462,18 +3462,23 @@
                 return;
             }
 
-            // 제품코드별 스펙 룩업 맵 (CBM용)
-            const _specLookup = {};
+            // 제품코드별 스펙 룩업 맵(CBM용) — 품목 자기 행(예: 충주공장 재고)엔 W/D/H/G
+            // 칸이 아예 없는 경우가 많아서, 로드된 모든 시트(datasetMap 전체)를 뒤져 같은
+            // 코드를 가진 다른 행의 값을 평균낸다. 수정창(openPkgItemDetail)의 규격 입력란도
+            // 같은 값을 그대로 쓰도록 전역(_pkgSpecLookupCache)에도 남겨둔다.
+            _pkgSpecLookupCache = {};
+            const _specLookup = _pkgSpecLookupCache;
             const _su = v => { if (!v || v === '-') return NaN; return parseFloat(v.toString().replace(/[a-zA-Z가-힣\s]+$/g, '')); };
             Object.keys(datasetMap).forEach(k => {
                 (datasetMap[k] || []).forEach(si => {
                     if (!si.code) return;
                     const c = si.code.toUpperCase();
-                    if (!_specLookup[c]) _specLookup[c] = { w:[], d:[], h:[] };
-                    const w=_su(si.specW), d=_su(si.specD), h=_su(si.specH);
+                    if (!_specLookup[c]) _specLookup[c] = { w:[], d:[], h:[], g:[] };
+                    const w=_su(si.specW), d=_su(si.specD), h=_su(si.specH), g=_su(si.specG);
                     if (!isNaN(w)&&w>0) _specLookup[c].w.push(w);
                     if (!isNaN(d)&&d>0) _specLookup[c].d.push(d);
                     if (!isNaN(h)&&h>0) _specLookup[c].h.push(h);
+                    if (!isNaN(g)&&g>0) _specLookup[c].g.push(g);
                 });
             });
             const _avg = arr => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
