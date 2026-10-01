@@ -1326,12 +1326,14 @@
     let _scYear, _scMonth, _scEventsCache = { byDate: {}, roundInfo: {} };
     let _scSelectedDates = new Set();
     let _scStatusType = 'all'; // 'all' | 'working' | 'shipped'
+    let _scDateType = 'all'; // 'all' | 'load'(상차일) | 'due'(납기일)
 
     function openScheduleCalendar() {
         const now = new Date();
         _scYear = now.getFullYear();
         _scMonth = now.getMonth();
         _scSelectedDates = new Set();
+        _updateScFilterButtons();
         renderScheduleCalendar();
         document.getElementById('scheduleCalendarModal').style.display = 'flex';
         _armBackTrap();
