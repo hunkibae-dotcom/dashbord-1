@@ -6008,11 +6008,17 @@
         let _pkgBulkStatus = '';
         let _pkgBulkItems = []; // [{key, code, round, color, qty}]
 
+        // 색상이 없는 품목은 화면 표시상 '-'로 저장돼 있는데(실제 시트 값은 빈 칸),
+        // 그대로 백엔드로 보내면 "색상=-"로 정확매칭을 시도해 빈 칸 행과 어긋난다 —
+        // 새로 추가한 액션들(입고/출고/상차일 변경)에 넘기기 전에는 항상 이 함수로
+        // '-'를 빈 문자열로 되돌려서 보낸다.
+        function _pkgNormColor(c) { return (c && c !== '-') ? c : ''; }
+
         function pkgOpenBulkModal() {
             _pkgBulkItems = Array.from(_pkgSelectedKeys).map(key => {
                 const item = window._pkgRowMap && window._pkgRowMap[key];
                 if (!item) return null;
-                return { key: key, code: item.code || '', round: item.round || '', color: item.color || '', qty: parseFloat(item.qty) || 0 };
+                return { key: key, code: item.code || '', round: item.round || '', color: _pkgNormColor(item.color), qty: parseFloat(item.qty) || 0 };
             }).filter(Boolean);
 
             if (_pkgBulkItems.length === 0) {
