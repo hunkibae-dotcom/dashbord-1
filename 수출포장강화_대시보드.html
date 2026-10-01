@@ -6556,6 +6556,249 @@
             return !res || res.ok === false || res.result === 'error';
         }
 
+        // ── "인식표 출력" 버튼 ───────────────────────────────────────────
+        // 구글시트 관리메뉴의 "인식표 생성"(showLabelInput → generateLabelData /
+        // generateStockLabelData)과 완전히 같은 매칭 로직을 웹에서 그대로 호출해서
+        // "인식표"/"출력물" 시트는 기존처럼 채우고, 동시에 그 데이터로 화면에서
+        // 바로 PDF를 그려 다운로드한다(시트를 열어볼 필요 없이 한 번의 클릭으로).
+        //
+        // 모달 체인: 1단계(재고용/출고용) → 2단계(재고용=적재번호 / 출고용=4종류
+        // 선택) → (사전조립만) 건명+성함 입력 → (출고용 전체 공통) 적재번호 입력.
+        let _pkgLabelState = { kind: null, shipType: null, customRound: '', customName: '' };
+
+        function _pkgLabelShowStep(id) {
+            ['pkgLabelStep1', 'pkgLabelStepShipType', 'pkgLabelStepPrep', 'pkgLabelStepPallet'].forEach(function (s) {
+                document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+            });
+        }
+
+        function pkgOpenLabelModal() {
+            _pkgLabelState = { kind: null, shipType: null, customRound: '', customName: '' };
+            document.getElementById('pkgLabelPrepRound').value = '';
+            document.getElementById('pkgLabelPrepName').value = '';
+            document.getElementById('pkgLabelPalletInput').value = '';
+            document.getElementById('pkgLabelPrepFeedback').textContent = '';
+            document.getElementById('pkgLabelPalletFeedback').textContent = '';
+            _pkgLabelShowStep('pkgLabelStep1');
+            document.getElementById('pkgLabelModal').style.display = 'flex';
+        }
+        function pkgCloseLabelModal() {
+            document.getElementById('pkgLabelModal').style.display = 'none';
+        }
+        function pkgLabelChooseKind(kind) {
+            _pkgLabelState.kind = kind;
+            if (kind === 'stock') {
+                document.getElementById('pkgLabelPalletTitle').textContent = '재고용 인식표 — 적재번호를 입력하세요.';
+                _pkgLabelShowStep('pkgLabelStepPallet');
+            } else {
+                _pkgLabelShowStep('pkgLabelStepShipType');
+            }
+        }
+        function pkgLabelBackToStep1() {
+            _pkgLabelState.kind = null;
+            _pkgLabelState.shipType = null;
+            _pkgLabelShowStep('pkgLabelStep1');
+        }
+        function pkgLabelChooseShipType(type) {
+            _pkgLabelState.shipType = type;
+            if (type === 'prep') {
+                _pkgLabelShowStep('pkgLabelStepPrep');
+                return;
+            }
+            const labelMap = { kim: '김효진님', choi: '최필재님', yangji: '양지출고' };
+            document.getElementById('pkgLabelPalletTitle').textContent = (labelMap[type] || '') + ' 인식표 — 적재번호를 입력하세요.';
+            _pkgLabelShowStep('pkgLabelStepPallet');
+        }
+        function pkgLabelBackToShipType() {
+            _pkgLabelShowStep('pkgLabelStepShipType');
+        }
+        function pkgLabelSubmitPrep() {
+            const round = document.getElementById('pkgLabelPrepRound').value.trim();
+            const name = document.getElementById('pkgLabelPrepName').value.trim();
+            const fb = document.getElementById('pkgLabelPrepFeedback');
+            if (!round || !name) { fb.textContent = '건명과 성함을 모두 입력해주세요.'; return; }
+            fb.textContent = '';
+            _pkgLabelState.customRound = round;
+            _pkgLabelState.customName = name;
+            document.getElementById('pkgLabelPalletTitle').textContent = '사전조립 인식표 — 적재번호를 입력하세요.';
+            _pkgLabelShowStep('pkgLabelStepPallet');
+        }
+        function pkgLabelBackFromPallet() {
+            if (_pkgLabelState.kind === 'stock') {
+                _pkgLabelShowStep('pkgLabelStep1');
+            } else if (_pkgLabelState.shipType === 'prep') {
+                _pkgLabelShowStep('pkgLabelStepPrep');
+            } else {
+                _pkgLabelShowStep('pkgLabelStepShipType');
+            }
+        }
+        // 구글시트 메뉴의 showLabelInput()과 동일한 규칙: 숫자만 입력하면 자동으로
+        // "적재 " 접두사를 붙인다(그래야 "충주공장 재고" K열의 "적재 N" 값과 매칭됨).
+        function _pkgNormalizePalletNumber(raw) {
+            let s = (raw || '').toString().trim();
+            if (s !== '' && !isNaN(s)) s = '적재 ' + s;
+            return s;
+        }
+
+        async function pkgLabelSubmitPallet() {
+            const raw = document.getElementById('pkgLabelPalletInput').value;
+            const fb = document.getElementById('pkgLabelPalletFeedback');
+            const palletNumber = _pkgNormalizePalletNumber(raw);
+            if (!palletNumber) { fb.textContent = '적재번호를 입력해주세요.'; return; }
+            fb.textContent = '';
+            const btn = document.getElementById('pkgLabelPalletSubmitBtn');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+            try {
+                if (_pkgLabelState.kind === 'stock') {
+                    const res = await fetch(_pkgGasUrl(), {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgPrintStockLabel', palletNumber: palletNumber }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고용 인식표 생성에 실패했습니다.');
+                    await _pkgGenerateStockLabelPdf(res);
+                } else {
+                    const res = await fetch(_pkgGasUrl(), {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            action: 'pkgPrintShipLabel',
+                            palletNumber: palletNumber,
+                            labelType: _pkgLabelState.shipType,
+                            customRound: _pkgLabelState.customRound,
+                            customName: _pkgLabelState.customName
+                        }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '출고용 인식표 생성에 실패했습니다.');
+                    await _pkgGenerateShipLabelPdf(res);
+                }
+                syncWithGoogleSheets(false);
+                pkgCloseLabelModal();
+            } catch (e) {
+                fb.textContent = (e && e.message) || String(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+        }
+
+        // ── PDF 생성(클라이언트에서 바로) ────────────────────────────────
+        // xlsx 라이브러리의 지연로딩 패턴(_pkgLoadXlsxLib)과 동일하게, 처음 PDF를
+        // 만들 때만 html2canvas/jsPDF를 CDN에서 불러온다. 한글은 jsPDF 기본 폰트가
+        // 지원하지 않으므로, HTML/CSS로 라벨을 그린 뒤 html2canvas로 화면 그대로
+        // 캡처해서 이미지로 PDF에 넣는 방식을 쓴다(브라우저 폰트 렌더링을 그대로
+        // 활용 — 한글 폰트 임베딩 없이도 정확하게 나옴).
+        function _pkgLoadPdfLibs(cb) {
+            function loadScript(src, done) {
+                const s = document.createElement('script');
+                s.src = src;
+                s.onload = done;
+                s.onerror = function () { alert('PDF 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+                document.head.appendChild(s);
+            }
+            if (window.jspdf && window.html2canvas) { cb(); return; }
+            loadScript('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js', function () {
+                if (window.jspdf) { cb(); return; }
+                loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js', cb);
+            });
+        }
+
+        // 구글시트 "수출 표준품 인식표" 양식과 비슷한 느낌으로: 상단 제목, 왼쪽
+        // 큰 제목/중간줄/아랫줄 박스(보라색 큰 글씨 + 주황색 아랫줄), 오른쪽에
+        // "확정 납기일"/"검사 완료일" 빈 박스 2개(이번 기능에서는 안 채움), 그
+        // 아래 품목 표. 재고용/출고용 둘 다 상차일·포장완료일만 채운다.
+        function _pkgBuildLabelHtml(opts) {
+            const esc = function (s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
+            const headers = opts.columns;
+            const headHtml = headers.map(function (h) {
+                return '<th style="padding:8px 10px;border:1px solid #cbd5e1;background:#ede9fe;color:#5b21b6;font-size:12.5px;font-weight:700;">' + esc(h) + '</th>';
+            }).join('');
+            const rowsHtml = (opts.items || []).map(function (r) {
+                return '<tr>' + r.map(function (c) {
+                    return '<td style="padding:8px 10px;border:1px solid #cbd5e1;font-size:13px;color:#1e293b;text-align:center;">' + esc(c) + '</td>';
+                }).join('') + '</tr>';
+            }).join('');
+
+            return '<div style="width:860px;background:#fff;font-family:\'Malgun Gothic\',\'Apple SD Gothic Neo\',sans-serif;padding:28px;box-sizing:border-box;color:#1e293b;">'
+                + '<div style="text-align:center;font-size:22px;font-weight:800;letter-spacing:.05em;color:#1e293b;margin-bottom:18px;">수출 표준품 인식표</div>'
+                + '<div style="display:flex;gap:16px;margin-bottom:20px;">'
+                + '<div style="flex:1;border:2px solid #7c3aed;border-radius:14px;padding:18px 20px;background:#faf5ff;">'
+                + '<div style="font-size:30px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;">' + esc(opts.mainTitle || '') + '</div>'
+                + (opts.midLine ? '<div style="font-size:17px;font-weight:700;color:#6d28d9;text-align:center;margin-top:8px;">' + esc(opts.midLine) + '</div>' : '')
+                + (opts.bottomLine ? '<div style="margin-top:14px;background:#f97316;color:#fff;text-align:center;font-size:15px;font-weight:700;padding:8px;border-radius:8px;">' + esc(opts.bottomLine) + '</div>' : '')
+                + '<div style="display:flex;gap:14px;margin-top:16px;">'
+                + '<div style="flex:1;font-size:12px;color:#64748b;"><div style="font-weight:700;margin-bottom:2px;">상차일</div><div style="font-size:14px;color:#1e293b;font-weight:700;">' + esc(opts.loadingDate || '-') + '</div></div>'
+                + '<div style="flex:1;font-size:12px;color:#64748b;"><div style="font-weight:700;margin-bottom:2px;">포장완료일</div><div style="font-size:14px;color:#1e293b;font-weight:700;">' + esc(opts.packingDate || '-') + '</div></div>'
+                + '</div></div>'
+                + '<div style="width:180px;display:flex;flex-direction:column;gap:12px;">'
+                + '<div style="flex:1;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;"><div style="font-size:11.5px;color:#64748b;font-weight:700;">확정 납기일</div></div>'
+                + '<div style="flex:1;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;display:flex;align-items:center;justify-content:center;"><div style="font-size:11.5px;color:#64748b;font-weight:700;">검사 완료일</div></div>'
+                + '</div></div>'
+                + '<table style="width:100%;border-collapse:collapse;"><thead><tr>' + headHtml + '</tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+                + '</div>';
+        }
+
+        function _pkgRenderLabelToPdf(opts, filename) {
+            return new Promise(function (resolve, reject) {
+                _pkgLoadPdfLibs(function () {
+                    try {
+                        const host = document.createElement('div');
+                        host.style.position = 'fixed';
+                        host.style.left = '-99999px';
+                        host.style.top = '0';
+                        host.innerHTML = _pkgBuildLabelHtml(opts);
+                        document.body.appendChild(host);
+                        const target = host.firstElementChild;
+                        window.html2canvas(target, { scale: 2, backgroundColor: '#ffffff' }).then(function (canvas) {
+                            document.body.removeChild(host);
+                            const imgData = canvas.toDataURL('image/png');
+                            const jsPDF = window.jspdf.jsPDF;
+                            const pxToMm = 0.264583;
+                            const wMm = canvas.width * pxToMm / 2;
+                            const hMm = canvas.height * pxToMm / 2;
+                            const pdf = new jsPDF({ orientation: wMm > hMm ? 'landscape' : 'portrait', unit: 'mm', format: [wMm, hMm] });
+                            pdf.addImage(imgData, 'PNG', 0, 0, wMm, hMm);
+                            pdf.save(filename);
+                            resolve();
+                        }).catch(function (err) {
+                            if (host.parentNode) document.body.removeChild(host);
+                            reject(err);
+                        });
+                    } catch (err) { reject(err); }
+                });
+            });
+        }
+
+        async function _pkgGenerateStockLabelPdf(res) {
+            // res.items: [NO, 건명, 단품코드, 색상, 수량, 비고] (출력물 시트와 동일)
+            await _pkgRenderLabelToPdf({
+                isStock: true,
+                mainTitle: res.palletNumber,
+                midLine: '',
+                bottomLine: '',
+                loadingDate: res.loadingDate,
+                packingDate: res.packingDate,
+                columns: ['NO', '건명', '단품코드', '색상', '수량', '비고'],
+                items: res.items
+            }, '인식표_재고용_' + (res.palletNumber || '') + '.pdf');
+        }
+
+        async function _pkgGenerateShipLabelPdf(res) {
+            // res.items: [건명, 단품코드, 색상, 수량, 구분] (인식표 시트 A20:E31과 동일)
+            await _pkgRenderLabelToPdf({
+                isStock: false,
+                mainTitle: res.mainTitle,
+                midLine: res.midLine,
+                bottomLine: res.bottomLine,
+                loadingDate: res.loadingDate,
+                packingDate: res.packingDate,
+                columns: ['수주건명', '단품코드', '색상', '수량', '구분'],
+                items: res.items
+            }, '인식표_출고용_' + (res.palletNumber || '') + '.pdf');
+        }
+
         // ── 접속현황(현재 이 대시보드를 보고 있는 사람) ─────────────────────
         // 구글시트처럼 실시간 정밀 추적은 아니고, "최근 75초 이내에 하트비트를 보낸
         // 사람"만 접속중으로 본다 — 25초마다 한 번씩 조용히(백그라운드) 보내고
