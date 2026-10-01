@@ -3520,7 +3520,11 @@
                     badgeStyle = 'background:#ccfbf1;color:#0d9488;font-weight:700;';
                 }
 
+                const _chkCellHtml = _pkgMultiSelectMode
+                    ? `<td style="padding:10px 8px;text-align:center;" onclick="event.stopPropagation();"><input type="checkbox" class="pkg-row-chk" data-pkg-key="${_pkgKey}" ${_pkgSelectedKeys.has(_pkgKey) ? 'checked' : ''} onchange="pkgToggleRowSelect('${_pkgKey}', this.checked)" style="cursor:pointer;"></td>`
+                    : '';
                 tr.innerHTML = `
+                    ${_chkCellHtml}
                     <td style="padding:10px 12px;text-align:center;color:#94a3b8;font-size:12px;font-weight:500;">${_rowIdx + 1}</td>
                     <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${normalizeDate(item.regDate)}</td>
                     <td style="padding:10px 12px;text-align:left;color:#1e293b;font-size:13px;font-weight:600;">${item.round}</td>
