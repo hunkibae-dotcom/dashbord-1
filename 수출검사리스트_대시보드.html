@@ -2460,7 +2460,7 @@ function _updateTblMultiBtn() {
   const btn = document.getElementById('tblMultiBtn');
   if (!btn) return;
   if (_tblMultiSelectMode) {
-    btn.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i> 조회하기${_tblSelectedKeys.size ? ' (' + _tblSelectedKeys.size + ')' : ''}`;
+    btn.innerHTML = `<i class="fa-solid fa-pen"></i> 상세변경${_tblSelectedKeys.size ? ' (' + _tblSelectedKeys.size + ')' : ''}`;
     btn.style.background = '#6D5CE8';
     btn.style.color = '#fff';
     btn.style.borderColor = '#6D5CE8';
