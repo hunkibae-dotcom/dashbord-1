@@ -1189,7 +1189,7 @@ function renderStock() {
   list.innerHTML = groupArr.map(([key, g, total]) => {
     return `<div class="stk-card">
       <div class="stk-head" onclick="openStockDetail('${key.replace(/'/g, "\\'")}')">
-        ${typeIconHtml(g.type)}
+        ${typeIconHtml(g.type, null, detectThickness(g))}
         <div class="stk-mid">
           <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
           <div class="stk-batches">${g.code || '코드 없음'} · 배치 ${g.batches.length}건</div>
