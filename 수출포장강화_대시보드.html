@@ -6141,15 +6141,18 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
             const gasUrl = _pkgGasUrl();
             try {
-                // 상차일부터 먼저 반영(출고/피킹으로 바뀌면 수출현황 행 자체가 삭제되므로).
-                if (shipDate) {
+                // 납기일/상차일부터 먼저 반영(출고/피킹으로 바뀌면 수출현황 행 자체가 삭제되므로).
+                if (shipDate || dueDate) {
                     const items = _pkgBulkItems.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                    const dateBody = { action: 'pkgUpdateShipDate', items: items };
+                    if (shipDate) dateBody.shipDate = shipDate;
+                    if (dueDate) dateBody.dueDate = dueDate;
                     const res = await fetch(gasUrl, {
                         method: 'POST',
-                        body: JSON.stringify({ action: 'pkgUpdateShipDate', items: items, shipDate: shipDate }),
+                        body: JSON.stringify(dateBody),
                         signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
-                    if (!res || res.ok === false) throw new Error((res && res.message) || '상차일 반영 실패');
+                    if (!res || res.ok === false) throw new Error((res && res.message) || '납기일/상차일 반영 실패');
                 }
 
                 if (_pkgBulkStatus) {
