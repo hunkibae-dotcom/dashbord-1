@@ -1906,6 +1906,16 @@ function setSortColumn(key) {
 }
 
 function setColInspect(val) {
+  // matchRow()는 pieFilter → ddayUrgencyFilter → colInspectFilter 순으로 딱 하나만
+  // 적용되는 구조다(if/else-if) — 그런데 이 함수는 지금까지 colInspectFilter만
+  // 바꾸고 앞의 두 개를 그대로 둬서, D-day 카드 등을 먼저 눌러 ddayUrgencyFilter가
+  // 걸려있던 채로 KPI 카드의 "상세보기"를 누르면 그 if/else-if에서 ddayUrgencyFilter
+  // 쪽이 먼저 걸려 colInspectFilter가 통째로 무시됐다("필터링이 전혀 안 된다"던
+  // 증상의 원인). 이 필터를 쓰겠다는 건 곧 다른 두 필터는 그만 쓰겠다는 뜻이므로
+  // 같이 해제한다.
+  pieFilter = null;
+  ddayUrgencyFilter = null;
+  document.getElementById('ddayFilterChip')?.classList.add('hidden');
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
