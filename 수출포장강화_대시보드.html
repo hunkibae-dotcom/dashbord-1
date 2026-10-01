@@ -6623,7 +6623,7 @@
                 return;
             }
             const labelMap = { kim: '김효진님', choi: '최필재님', yangji: '양지출고' };
-            document.getElementById('pkgLabelPalletTitle').textContent = (labelMap[type] || '') + ' 인식표 — 적재번호를 입력하세요.';
+            _pkgSetLabelPalletTitle((labelMap[type] || '') + ' 인식표 — 적재번호를 입력하세요.');
             _pkgLabelShowStep('pkgLabelStepPallet');
         }
         function pkgLabelBackToShipType() {
