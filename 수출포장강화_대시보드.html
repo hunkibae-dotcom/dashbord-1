@@ -6021,6 +6021,10 @@
             '일부입고': '#FBBF24', '포장완료': '#3B82F6', '재고활용': '#0d9488',
             '미포장': '#FB923C', '미확인': '#64748B', '포장대기': '#F59E0B', '철물': '#94A3B8',
         };
+        function _pkgStatusGroupKeyFor(v) {
+            const g = v ? PKG_STATUS_GROUPS.find(gr => gr.statuses.includes(v)) : null;
+            return g ? g.key : null;
+        }
         function _pkgStatusGroupOptionsHtml(groupKey, curValue, onPickFnName) {
             const group = PKG_STATUS_GROUPS.find(g => g.key === groupKey);
             if (!group) return '';
