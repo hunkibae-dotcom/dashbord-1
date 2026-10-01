@@ -507,6 +507,45 @@
         </div>
     </div>
 
+    <!-- ── 제품 검색: 상세 필터 시트(색상/날짜/적재/국가/세부상태/초기화를 한데 모음) ──── -->
+    <div id="sfFilterModal" style="display:none;position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center;" onclick="if(event.target===this)closeSfFilterSheet()">
+        <div style="background:var(--panel);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;box-shadow:0 -8px 32px rgba(0,0,0,.35);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="font-size:14px;font-weight:800;color:var(--text);">상세 필터</div>
+                <button onclick="closeSfFilterSheet()" style="width:28px;height:28px;border:none;background:var(--icon-bg);border-radius:8px;cursor:pointer;color:var(--text-sub);display:flex;align-items:center;justify-content:center;-webkit-appearance:none;">
+                    <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
+                </button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <input id="sf_color" type="text" placeholder="색상"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+                <button id="sfDateBtn" onclick="openSfDatePicker()"
+                    style="background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
+                    <i class="fa-solid fa-calendar-days" style="font-size:12px;color:var(--label);"></i>
+                    <span id="sfDateBtnLabel">날짜 전체</span>
+                </button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 검색 (예: 1, A-1)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                    oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
+                <input id="sf_country" type="text" placeholder="국가 / 구분 (예: FAM, NY)"
+                    style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+                    oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+            <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
+            <button id="sfSrcDetailBtn" onclick="openSfSourcePicker(_sfSourceFilter)"
+                style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;font-weight:700;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fa-solid fa-sliders" style="font-size:12px;color:var(--label);"></i> 세부 진행상태
+                <span id="sfSrcDetailLabel" style="font-size:12px;font-weight:600;color:var(--label);">전체</span>
+            </button>
+            <button class="sf-reset" onclick="clearSearch()" style="width:100%;background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;padding:11px 0;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;-webkit-appearance:none;">
+                <i class="fa-solid fa-arrow-rotate-left" style="font-size:11px;"></i> 필터 및 검색 초기화
+            </button>
+        </div>
+    </div>
+
     <!-- ── 제품 검색: 날짜 필터 팝업 (품질검사 앱과 동일 스타일 + 기준 필드 선택) ──── -->
     <div id="sfDateModal" style="display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeSfDatePicker()">
         <div style="background:var(--panel);border-radius:18px;width:100%;max-width:300px;padding:20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
