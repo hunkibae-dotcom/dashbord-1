@@ -8182,10 +8182,17 @@
             <div id="pkgBulkPartialQtyRows" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
-        <div style="margin-bottom:10px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">상차일 (선택한 품목 전체에 동일하게 적용, 비워두면 변경 안 함)</div>
-            <input id="pkgBulkShipDate" type="date"
-                style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+        <div style="margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">납기일 (전체 동일 적용, 비워두면 변경 안 함)</div>
+                <input id="pkgBulkDueDate" type="date"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">상차일 (전체 동일 적용, 비워두면 변경 안 함)</div>
+                <input id="pkgBulkShipDate" type="date"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+            </div>
         </div>
 
         <div id="pkgBulkFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin:12px 0;"></div>
