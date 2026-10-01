@@ -6608,15 +6608,15 @@
             document.getElementById('pkgLabelModal').style.display = 'none';
         }
         // 체크(선택)된 품목이 있으면 적재번호를 물어볼 필요가 없다 — 어차피 선택한
-        // 품목만 쓸 거니까. 입력칸 자체를 숨기고, 큰 제목은 선택된 품목들의 적재값을
-        // 그대로 자동으로 채워넣는다(섞여있으면 빈 채로 둠).
+        // 품목만 쓸 거니까. 입력칸을 통째로 숨기고, 큰 제목에 적재번호를 억지로
+        // 채워넣지도 않는다(요청한 적 없는 동작) — 그냥 빈 채로 둔다.
         function _pkgSetLabelPalletTitle(baseText) {
             const el = document.getElementById('pkgLabelPalletTitle');
             const inputWrap = document.getElementById('pkgLabelPalletInputWrap');
             if (_pkgSelectedKeys.size > 0) {
-                el.innerHTML = baseText + '<br><span style="color:#16a34a;font-weight:700;">체크해둔 ' + _pkgSelectedKeys.size + '건 품목으로 바로 생성됩니다.</span>';
+                el.innerHTML = '<span style="color:#16a34a;font-weight:700;">체크해둔 ' + _pkgSelectedKeys.size + '건 품목으로 바로 생성됩니다.</span>';
                 inputWrap.style.display = 'none';
-                document.getElementById('pkgLabelPalletInput').value = _pkgDerivePalletTitleFromSelection();
+                document.getElementById('pkgLabelPalletInput').value = '';
             } else {
                 el.textContent = baseText;
                 inputWrap.style.display = '';
