@@ -520,6 +520,10 @@
                 </div>
 
                 <div class="flex flex-col gap-2.5 pt-2">
+                    <button onclick="pkgOpenClassifyUploadModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="통합품목(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
+                        <i class="fa-solid fa-file-excel"></i> 분류 업로드
+                    </button>
+
                     <label class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-semibold text-center">
                         <i class="fa-solid fa-file-import"></i> CSV 파일 업로드
                         <input type="file" id="csvFileInput" accept=".csv" multiple class="hidden" onchange="handleCsvUpload(event)">
