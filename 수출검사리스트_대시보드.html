@@ -5090,15 +5090,11 @@ function _updatePsSourceButtons() {
     sel.value = (_psSourceFilter === 'active' && _psStatusFilters.size === 1 && _psStatusFilters.has('검사'))
       ? 'active_done' : (_psSourceFilter || 'active');
   }
-  const lbl = document.getElementById('psSrcDetailLabel');
-  if (!lbl) return;
-  let label = '전체';
-  if (_psStatusFilters.size) {
-    const arr = [..._psStatusFilters];
-    label = arr.length > 1 ? arr[0] + ' 외 ' + (arr.length - 1) : arr[0];
-  }
-  lbl.textContent = label;
-  lbl.style.color = _psStatusFilters.size ? '#6D5CE8' : 'var(--label)';
+  // 세부상태 버튼이 아이콘 전용으로 바뀌면서, 어떤 상태가 걸려있는지 글자로 보여주는
+  // 대신(공간이 없다) 뭔가 좁혀져 있다는 것만 작은 점으로 표시한다 — 정확히 뭐가
+  // 걸려있는지는 버튼을 눌러 팝업을 열면 그 안에서 체크 표시로 바로 보인다.
+  const dot = document.getElementById('psSrcDetailDot');
+  if (dot) dot.style.display = _psStatusFilters.size ? 'block' : 'none';
   const detailBtn = document.getElementById('psSrcDetailBtn');
   if (detailBtn) {
     detailBtn.style.borderColor = _psStatusFilters.size ? '#6D5CE8' : 'var(--border)';
