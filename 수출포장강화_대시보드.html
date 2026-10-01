@@ -2484,6 +2484,46 @@
             arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
         }
 
+        // 카테고리(입고현황/실재고/적재/출고)마다 실제로 그 시트에서 나오는 상태만 보여준다.
+        // 예전엔 카테고리를 뭘 고르든 상태 목록이 똑같았는데(심지어 "미확인"은 아예 빠져있었음),
+        // 그러면 카테고리를 구분하는 의미가 없다는 지적 — 수정창(openPkgItemDetail)에서 이미
+        // 쓰고 있는 PKG_STATUS_GROUPS(수출현황/출고완료/실재고)를 그대로 재사용해서 일관되게
+        // 맞춘다. "적재"는 실재고를 적재번호 기준으로 더 좁힌 것뿐이라 실재고와 같은 목록을 쓴다.
+        function _pkgStatusListForSource(src) {
+            const byKey = key => (PKG_STATUS_GROUPS.find(g => g.key === key) || {}).statuses || [];
+            if (src === 'active') return byKey('export');
+            if (src === 'stock' || src === 'pallet') return byKey('stock');
+            if (src === 'shipped') return byKey('shipped');
+            // 'all'(전체) — 모든 그룹을 합치되 중복은 한 번만.
+            const seen = new Set();
+            const all = [];
+            PKG_STATUS_GROUPS.forEach(g => g.statuses.forEach(s => { if (!seen.has(s)) { seen.add(s); all.push(s); } }));
+            return all;
+        }
+        function _renderStatusDropdownOptions() {
+            const dd = document.getElementById('statusDropdown');
+            if (!dd) return;
+            const list = _pkgStatusListForSource(_activeSourceFilter);
+            const optsHtml = list.map(s => {
+                const c = PKG_STATUS_COLOR[s] || '#64748b';
+                return `<button onclick="toggleStatusFilter('${s}')" id="sf-${s}" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:${c};border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='${c}1A'" onmouseout="this.style.background=this.classList.contains('bg-slate-700/60')?'':'none'">
+                    <i class="fa-solid fa-circle" style="font-size:9px;"></i> ${s}
+                </button>`;
+            }).join('');
+            dd.innerHTML = `
+                <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#475569;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=this.classList.contains('bg-slate-700/60')?'':'none'">
+                    <i class="fa-solid fa-list" style="font-size:10px;color:#94a3b8;"></i> 전체
+                </button>
+                <div style="border-top:1px solid #f1f5f9;margin:2px 0;"></div>
+                ${optsHtml}`;
+            // 카테고리를 바꿔서 지금 걸려있는 상태 필터가 이 목록에 없으면(예: 실재고 보다가
+            // 출고로 바꿨는데 "일부입고"가 걸려있던 경우) 혼란스러우니 "전체"로 되돌린다.
+            const validSet = new Set(['전체', ...list]);
+            const stale = Array.from(activeStatusFilters).some(v => !validSet.has(v));
+            if (stale) activeStatusFilters = new Set(['전체']);
+            _syncStatusFilterUI();
+        }
+
         // 진행 상태 필터는 여러 개를 동시에 켜둘 수 있다 (같은 버튼을 다시 누르면 그 상태만 취소).
         // "전체"를 누르면 나머지 선택은 모두 지워지고, 특정 상태를 하나라도 고르면 "전체"는 자동으로 해제된다.
         function toggleStatusFilter(value) {
@@ -2498,23 +2538,31 @@
                 }
                 if (activeStatusFilters.size === 0) activeStatusFilters = new Set(['전체']);
             }
-
-            // 헤더 레이블 업데이트 (상태별 색상 일치)
+            _syncStatusFilterUI();
+            applyFilters();
+        }
+        // 헤더 레이블 색/문구 + 드롭다운 안 선택 강조 + 사이드바 버튼 강조를 현재
+        // activeStatusFilters 기준으로 다시 그린다 — toggleStatusFilter(사람이 클릭)와
+        // _renderStatusDropdownOptions(카테고리 전환으로 목록 자체가 바뀜) 둘 다 공유.
+        function _syncStatusFilterUI() {
             const label = document.getElementById('statusFilterLabel');
-            const colorMap = { '출고': 'text-green-400', '피킹': 'text-purple-400', '포장완료': 'text-accentBlue', '포장대기': 'text-amber-400', '미포장': 'text-orange-400', '일부입고': 'text-yellow-400', '철물': 'text-slate-400', '미입고': 'text-red-400', '재고활용': 'text-teal-400' };
             if (activeStatusFilters.has('전체')) {
                 label.classList.add('hidden');
             } else {
                 const list = Array.from(activeStatusFilters);
-                label.className = 'font-bold ' + (colorMap[list[0]] || 'text-accentBlue');
+                const c = PKG_STATUS_COLOR[list[0]] || '#0ea5e9';
+                label.removeAttribute('class');
+                label.className = 'font-bold';
+                label.style.color = c;
                 label.textContent = list.length > 1 ? (list[0] + ' 외 ' + (list.length - 1)) : list[0];
                 label.classList.remove('hidden');
             }
 
-            // 선택된 항목 강조 (헤더 드롭다운) — 여러 개 동시에 강조될 수 있음
-            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고','재고활용'].forEach(s => {
-                const btn = document.getElementById('sf-' + s);
-                if (btn) btn.classList.toggle('bg-slate-700/60', activeStatusFilters.has(s));
+            // 선택된 항목 강조 (헤더 드롭다운) — 여러 개 동시에 강조될 수 있음. 지금
+            // 드롭다운에 실제로 그려진 버튼만 대상으로 한다(카테고리마다 목록이 다름).
+            document.querySelectorAll('#statusDropdown button[id^="sf-"]').forEach(btn => {
+                const s = btn.id.slice(3);
+                btn.classList.toggle('bg-slate-700/60', activeStatusFilters.has(s));
             });
             // 사이드바 버튼 강조
             document.querySelectorAll('.sidebar-sf-btn').forEach(btn => {
@@ -2523,8 +2571,6 @@
                 btn.style.color       = active ? '#fff'     : '#94A3B8';
                 btn.style.borderColor = active ? '#3B82F6'  : '#334155';
             });
-
-            applyFilters();
         }
 
         // 드롭다운 외부 클릭 시 닫기
