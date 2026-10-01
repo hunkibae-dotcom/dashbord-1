@@ -5138,6 +5138,28 @@ function resetProductSearchFilters() {
   runProductSearch();
 }
 
+// 색상/날짜/세부상태 입력칸을 psFilterModal 시트 뒤로 숨기면서, 지금 뭔가 걸려있는지는
+// psFilterBtn 모서리의 점 하나로만 보여준다(안을 열어야 뭐가 걸렸는지 정확히 보임).
+function openPsFilterSheet() {
+  document.getElementById('psFilterModal').style.display = 'flex';
+  _armBackTrap();
+}
+function closePsFilterSheet() {
+  document.getElementById('psFilterModal').style.display = 'none';
+}
+function _updatePsFilterDot() {
+  const color = document.getElementById('psColor').value.trim();
+  const hasDate = !!(_psExactDateFilter || document.getElementById('psFrom').value || document.getElementById('psTo').value);
+  const on = !!(color || hasDate || _psStatusFilters.size);
+  const dot = document.getElementById('psFilterDot');
+  if (dot) dot.style.display = on ? 'block' : 'none';
+  const btn = document.getElementById('psFilterBtn');
+  if (btn) {
+    btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
+    btn.style.background  = on ? 'rgba(109,92,232,.1)' : 'var(--input-bg)';
+  }
+}
+
 const _PS_NODATA_DEFAULT_HTML = '<i class="fa-solid fa-magnifying-glass" style="font-size:30px;display:block;margin-bottom:12px;color:var(--border);"></i><div style="font-size:13px;font-weight:500;">단품코드, 건명, 날짜, 공장으로 검색해 보세요.</div>';
 function runProductSearch() {
   const code = document.getElementById('psCode').value.trim().toLowerCase();
