@@ -6658,10 +6658,17 @@
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
 
-            _pkgOrigW = (item.specW || '').toString().replace(/[^0-9.]/g, '');
-            _pkgOrigD = (item.specD || '').toString().replace(/[^0-9.]/g, '');
-            _pkgOrigH = (item.specH || '').toString().replace(/[^0-9.]/g, '');
-            _pkgOrigG = (item.specG || '').toString().replace(/[^0-9.]/g, '');
+            // item.specW 등은 "같은 코드의 다른 행"이 state.data 안에 있을 때만 채워지는데
+            // (backfillSpecs), 충주공장 재고처럼 스펙 칸 자체가 없는 시트 품목이 다른 활성
+            // 주문 없이 재고로만 남아있으면 그 백필 대상이 아예 없어서 빈 채로 남는다 —
+            // renderTable()이 만들어둔 전역 평균 캐시(_pkgSpecLookupCache, 로드된 모든 시트를
+            // 다 훑어서 같은 코드를 찾음)를 fallback으로 써서 이 경우도 채운다.
+            const _pkgSpecFallback = _pkgSpecLookupCache[(item.code || '').toUpperCase()] || { w:[], d:[], h:[], g:[] };
+            const _pkgAvg = arr => arr.length ? (arr.reduce((a,b)=>a+b,0)/arr.length).toString() : '';
+            _pkgOrigW = (item.specW || '').toString().replace(/[^0-9.]/g, '') || _pkgAvg(_pkgSpecFallback.w);
+            _pkgOrigD = (item.specD || '').toString().replace(/[^0-9.]/g, '') || _pkgAvg(_pkgSpecFallback.d);
+            _pkgOrigH = (item.specH || '').toString().replace(/[^0-9.]/g, '') || _pkgAvg(_pkgSpecFallback.h);
+            _pkgOrigG = (item.specG || '').toString().replace(/[^0-9.]/g, '') || _pkgAvg(_pkgSpecFallback.g);
             document.getElementById('pkgW').value = _pkgOrigW;
             document.getElementById('pkgD').value = _pkgOrigD;
             document.getElementById('pkgH').value = _pkgOrigH;
