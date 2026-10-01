@@ -6306,12 +6306,10 @@
         // 품질검사 대시보드의 엑셀 업로드 기능(_spuRunImport 등)과 같은 방식:
         // 브라우저 안에서 엑셀을 표로 바꿔서 필요한 값만 뽑아 구글시트로 보내고,
         // 파일 자체는 어디에도 저장하지 않는다.
-        let _pkgClassifyFile = null;
-        let _pkgClassifyKind = null; // 'sunju' | 'ipgo'
+        let _pkgClassifyFiles = []; // [{file, kind:'sunju'|'ipgo', name}] — 여러 개 동시 업로드 지원
 
         function pkgOpenClassifyUploadModal() {
-            _pkgClassifyFile = null;
-            _pkgClassifyKind = null;
+            _pkgClassifyFiles = [];
             document.getElementById('pkgClassifyFileInput').value = '';
             document.getElementById('pkgClassifyFileDetect').innerHTML = '';
             document.getElementById('pkgClassifyResult').textContent = '';
@@ -6325,28 +6323,31 @@
             document.getElementById('pkgClassifyUploadModal').style.display = 'none';
         }
 
+        // 여러 파일을 한번에 선택할 수 있다(통합품목/grd_outResult 섞어서 동시에
+        // 올려도 됨) — 파일마다 이름으로 분류(수주)/분류(입고)를 따로 판정하고,
+        // 이름 규칙에 안 맞는 파일만 목록에서 "처리 안 됨"으로 표시하고 건너뛴다.
         function _pkgOnClassifyFileChosen() {
             const input = document.getElementById('pkgClassifyFileInput');
-            const file = input.files && input.files[0];
+            const files = Array.from(input.files || []);
             const detectEl = document.getElementById('pkgClassifyFileDetect');
             const runBtn = document.getElementById('pkgClassifyRunBtn');
-            _pkgClassifyFile = null; _pkgClassifyKind = null;
+            _pkgClassifyFiles = [];
             runBtn.disabled = true; runBtn.style.opacity = '.5';
-            if (!file) { detectEl.innerHTML = ''; return; }
+            if (!files.length) { detectEl.innerHTML = ''; return; }
 
-            const name = file.name || '';
-            if (/^통합품목/.test(name)) {
-                _pkgClassifyKind = 'sunju';
-                detectEl.innerHTML = `<span style="color:#16a34a;">✓ ${name} → 분류(수주)로 처리됩니다.</span>`;
-            } else if (/^grd_outResult/i.test(name)) {
-                _pkgClassifyKind = 'ipgo';
-                detectEl.innerHTML = `<span style="color:#16a34a;">✓ ${name} → 분류(입고)로 처리됩니다.</span>`;
-            } else {
-                detectEl.innerHTML = `<span style="color:#ef4444;">✗ ${name} — 파일 이름이 "통합품목" 또는 "grd_outResult"로 시작해야 합니다.</span>`;
-                return;
-            }
-            _pkgClassifyFile = file;
-            runBtn.disabled = false; runBtn.style.opacity = '1';
+            const lines = files.map(file => {
+                const name = file.name || '';
+                if (/^통합품목/.test(name)) {
+                    _pkgClassifyFiles.push({ file, kind: 'sunju', name });
+                    return `<div style="color:#16a34a;">✓ ${name} → 분류(수주)</div>`;
+                } else if (/^grd_outResult/i.test(name)) {
+                    _pkgClassifyFiles.push({ file, kind: 'ipgo', name });
+                    return `<div style="color:#16a34a;">✓ ${name} → 분류(입고)</div>`;
+                }
+                return `<div style="color:#ef4444;">✗ ${name} — 이름이 "통합품목" 또는 "grd_outResult"로 시작해야 함(건너뜀)</div>`;
+            });
+            detectEl.innerHTML = lines.join('');
+            if (_pkgClassifyFiles.length) { runBtn.disabled = false; runBtn.style.opacity = '1'; }
         }
 
         function _pkgLoadXlsxLib(cb) {
