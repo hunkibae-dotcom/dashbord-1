@@ -6544,6 +6544,7 @@
             let newRegDate = (document.getElementById('pkgRegDate').value || '').trim();
             if (_pkgCurStatus === '포장완료' && !newRegDate) newRegDate = normalizeDate(new Date());
             const newShipDate = (document.getElementById('pkgShipDate').value || '').trim();
+            const newDueDate = (document.getElementById('pkgDueDate').value || '').trim();
             const newPalletRaw = (document.getElementById('pkgPallet').value || '').trim();
             const newW = (document.getElementById('pkgW').value || '').trim();
             const newD = (document.getElementById('pkgD').value || '').trim();
