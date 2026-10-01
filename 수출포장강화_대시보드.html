@@ -3480,7 +3480,17 @@
             // 이동)과는 별개 동작이라 그쪽은 event.stopPropagation()으로 행 클릭이 겹치지 않게 뺀다.
             window._pkgRowMap = {};
 
-            state.filteredData.forEach((item, _rowIdx) => {
+            // 50행씩 페이지로 끊어서 보여준다 — _rowIdx는 (선택/수정 로직이 그대로 쓰는)
+            // 전체 결과 기준 절대 인덱스를 유지하고, 실제로 화면에 그리는 건 그 페이지
+            // 분량(pageData)만큼만 한다.
+            const _pkgTotalPages = Math.max(1, Math.ceil(state.filteredData.length / _pkgPageSize));
+            if (_pkgCurrentPage >= _pkgTotalPages) _pkgCurrentPage = _pkgTotalPages - 1;
+            if (_pkgCurrentPage < 0) _pkgCurrentPage = 0;
+            const _pkgPageStart = _pkgCurrentPage * _pkgPageSize;
+            const pageData = state.filteredData.slice(_pkgPageStart, _pkgPageStart + _pkgPageSize);
+
+            pageData.forEach((item, _pageIdx) => {
+                const _rowIdx = _pkgPageStart + _pageIdx;
                 const tr = document.createElement('tr');
                 tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;';
                 tr.onmouseenter = function(){ this.style.background='#f8fafc'; };
