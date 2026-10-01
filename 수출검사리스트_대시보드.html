@@ -6435,6 +6435,15 @@ async function _spuRunImport() {
   btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
   btn.onclick = closeSpuUploadModal;
   _spuLoadStatus();
+  _spuDrainMismatchQueue();
+}
+
+// 쌓아둔 확인창 큐에서 하나를 꺼내 연다 — 한 번에 하나씩만, 그 모달이 닫혀야
+// (반영 완료 또는 취소) 다음 것이 이어서 열린다(closeSpuMismatchModal 참고).
+function _spuDrainMismatchQueue() {
+  if (_spuMismatchQueue.length === 0) return;
+  const next = _spuMismatchQueue.shift();
+  _spuOpenMismatchModal(next.factory, next.pending);
 }
 
 // 공정진행정보에서 "어느 차수인지 자동으로 확정 못한" 항목만 여기로 넘어온다 —
