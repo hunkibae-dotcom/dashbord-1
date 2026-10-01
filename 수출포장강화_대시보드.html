@@ -6288,9 +6288,21 @@
                             (iCol < 0 || rColor === _pkgColor)) { r[10] = changed.pallet; break; }
                     }
                 }
-                fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#16a34a';
+                let okMsg = '✓ 저장되었습니다.';
+                if (migrationResult) {
+                    if (migrationResult.insertedCount !== undefined) okMsg = `✓ 충주공장 재고에 입고 처리되었습니다.`;
+                    else if (migrationResult.movedCount !== undefined) okMsg = `✓ 출고 완료로 이동되었습니다.`;
+                    if (migrationResult.notFound && migrationResult.notFound.length) okMsg += ` (매칭 실패: ${migrationResult.notFound.join(', ')})`;
+                }
+                fb.textContent = okMsg; fb.style.color = '#16a34a';
                 setTimeout(() => {
                     closePkgItemDetail();
+                    if (migrationResult) {
+                        // 품목이 시트를 넘나들며 실제로 이동했으므로(수출현황→재고/출고완료)
+                        // 화면도 구글시트에서 다시 전부 받아와 정확하게 맞춘다.
+                        syncWithGoogleSheets(false);
+                        return;
+                    }
                     const exactCode = (document.getElementById('productCodeFilter')?.value || '').trim();
                     if (exactCode) renderProductDetailTable(exactCode);
                     else renderTable();
