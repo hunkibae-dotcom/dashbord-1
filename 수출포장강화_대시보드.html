@@ -6671,13 +6671,13 @@
                 let migrationResult = null;
                 if (migrationPromise) {
                     migrationResult = await migrationPromise;
-                    if (!migrationResult || migrationResult.ok === false) {
+                    if (_pkgIsGasError(migrationResult)) {
                         throw new Error((migrationResult && migrationResult.message) || '처리 중 오류가 발생했습니다.');
                     }
                 } else if (shipDatePromise) {
                     const shipResult = await shipDatePromise;
-                    if (!shipResult || shipResult.ok === false) {
-                        throw new Error((shipResult && shipResult.message) || '상차일 반영 중 오류가 발생했습니다.');
+                    if (_pkgIsGasError(shipResult)) {
+                        throw new Error((shipResult && shipResult.message) || '납기일/상차일 반영 중 오류가 발생했습니다.');
                     }
                 }
 
