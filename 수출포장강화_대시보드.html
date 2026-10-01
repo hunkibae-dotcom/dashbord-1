@@ -2636,9 +2636,30 @@
         }
 
         // 필터링 적용 (하이브리드 결합 방식)
+        // 달력/카드에서 걸어둔 차수(건명) 조건이 지금 살아있는지 칩으로 보여준다 —
+        // 카테고리(입고현황/실재고/적재/출고) 버튼을 눌러도 이 조건 자체는 그대로
+        // 남아있다(의도된 동작: 그 차수 안에서 시트별로 좁혀보는 것).
+        function _updateCardRoundFilterChip() {
+            const chip = document.getElementById('cardRoundFilterChip');
+            if (!chip) return;
+            if (!cardRoundFilter || cardRoundFilter.size === 0) {
+                chip.style.display = 'none';
+                return;
+            }
+            const list = Array.from(cardRoundFilter);
+            document.getElementById('cardRoundFilterChipText').textContent =
+                '조회 중: ' + list[0] + (list.length > 1 ? ' 외 ' + (list.length - 1) + '건' : '');
+            chip.style.display = 'inline-flex';
+        }
+        function clearCardRoundFilter() {
+            cardRoundFilter = null;
+            applyFilters();
+        }
+
         function applyFilters() {
             try {
                 _pkgCurrentPage = 0; // 필터가 바뀌면 결과 자체가 달라지므로 1페이지로 되돌린다.
+                _updateCardRoundFilterChip();
                 const roundQuery = (document.getElementById('roundFilter')?.value || '').toLowerCase().trim();
                 const productCodeQuery = (document.getElementById('productCodeFilter')?.value || '').toLowerCase().trim();
                 const colorQuery = (document.getElementById('colorFilter')?.value || '').toLowerCase().trim();
