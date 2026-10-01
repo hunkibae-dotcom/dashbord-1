@@ -6662,6 +6662,7 @@
             _pkgLabelState.customName = name;
             _pkgSetLabelPalletTitle('사전조립 인식표 — 적재번호를 입력하세요.');
             _pkgLabelShowStep('pkgLabelStepPallet');
+            if (_pkgSelectedKeys.size > 0) pkgLabelSubmitPallet();
         }
         function pkgLabelBackFromPallet() {
             if (_pkgLabelState.kind === 'stock') {
