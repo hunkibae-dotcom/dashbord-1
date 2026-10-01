@@ -6234,7 +6234,7 @@
                 tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateSpec', code:_pkgCode, round:_pkgRound, color:_pkgColor, w:newW, d:newD, h:newH, g:newG }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
                 changed.spec = true;
             }
-            if (!tasks.length) {
+            if (!tasks.length && !migrationPromise && !shipDatePromise) {
                 fb.textContent = '변경사항이 없습니다.'; fb.style.color = '#64748b';
                 return;
             }
@@ -6242,9 +6242,30 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
             try {
                 await Promise.all(tasks);
+
+                let migrationResult = null;
+                if (migrationPromise) {
+                    migrationResult = await migrationPromise;
+                    if (!migrationResult || migrationResult.ok === false) {
+                        throw new Error((migrationResult && migrationResult.message) || '처리 중 오류가 발생했습니다.');
+                    }
+                } else if (shipDatePromise) {
+                    const shipResult = await shipDatePromise;
+                    if (!shipResult || shipResult.ok === false) {
+                        throw new Error((shipResult && shipResult.message) || '상차일 반영 중 오류가 발생했습니다.');
+                    }
+                }
+
                 const _pkgMatch = it => (it.code||'').toUpperCase() === _pkgCode.toUpperCase() && (it.round||'') === _pkgRound && (it.color||'') === _pkgColor;
-                if (changed.status) {
+                // 입고/일부입고/출고/피킹은 시트 간 실제 이동이 일어나므로(수출현황→재고,
+                // 또는 수출현황→출고완료) 화면의 낱개 patch로는 정확히 못 맞춘다 — 아래에서
+                // 전체 재동기화를 한다. 그 외(포장대기/포장완료/미포장/철물 등 재고 내부
+                // 전이)만 기존처럼 화면을 즉시 patch한다.
+                if (changed.status && !migrationResult) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.status = changed.status; }); });
+                }
+                if (changed.shipDate !== undefined && !migrationResult) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.date = changed.shipDate; }); });
                 }
                 if (changed.regDate !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.regDate = changed.regDate; }); });
