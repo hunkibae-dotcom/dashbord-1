@@ -4549,6 +4549,7 @@
         });
 
         function resetFilters() {
+            if (typeof pkgExitMultiSelectMode === 'function') pkgExitMultiSelectMode();
             cardRoundFilter = null;
             const _clr = id => { const el = document.getElementById(id); if (el) el.value = ''; };
             _clr('roundFilter'); _clr('productCodeFilter'); _clr('colorFilter'); _clr('palletFilter');
