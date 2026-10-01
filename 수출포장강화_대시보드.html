@@ -765,6 +765,10 @@
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-[13px] font-semibold flex items-center gap-1.5" style="color:#0F172A;line-height:1;">
                                     <i class="fa-solid fa-pallet text-[11px]" style="display:flex;align-items:center;"></i> 충주공장 파렛트 현황
+                                    <button id="pkgReorderPalletsBtn" onclick="event.stopPropagation();pkgRunReorderPallets()" title="적재정렬 — 비어있는 번호를 당겨서 순서대로 다시 매긴다"
+                                        style="margin-left:2px;width:18px;height:18px;border-radius:6px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+                                        <i class="fa-solid fa-arrow-up-short-wide" style="font-size:9px;"></i>
+                                    </button>
                                 </span>
                                 <span id="palletTotalBadge" class="text-[11px] bg-sky-500/15 text-sky-400 px-1.5 py-0.5 rounded-full font-bold" style="display:none;"></span>
                             </div>
