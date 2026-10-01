@@ -1334,7 +1334,7 @@ function renderMaster() {
 
   list.innerHTML = rows.map(r => `
     <div class="mst-row">
-      ${typeIconHtml(r.type)}
+      ${typeIconHtml(r.type, null, detectThickness(r))}
       <div class="mst-mid">
         <div class="mst-name">${r.name} <span class="spec">${r.spec}</span></div>
         <span class="code-copy" onclick="copyCode(this,'${r.code}')"><i class="fa-regular fa-copy"></i> ${r.code}</span>
