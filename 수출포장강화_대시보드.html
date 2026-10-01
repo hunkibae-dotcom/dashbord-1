@@ -6536,7 +6536,7 @@
             if (newShipDate !== _pkgOrigShipDate) {
                 shipDatePromise = fetch(gasUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ action: 'pkgUpdateShipDate', items: [{ code: _pkgCode, round: _pkgRound, color: _pkgColor }], shipDate: newShipDate }),
+                    body: JSON.stringify({ action: 'pkgUpdateShipDate', items: [{ code: _pkgCode, round: _pkgRound, color: _pkgNormColor(_pkgColor) }], shipDate: newShipDate }),
                     signal: AbortSignal.timeout(30000)
                 }).then(r => r.json());
                 changed.shipDate = newShipDate;
