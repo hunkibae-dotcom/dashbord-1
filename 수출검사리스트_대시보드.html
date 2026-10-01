@@ -6471,7 +6471,12 @@ function _spuOpenMismatchModal(factoryKey, pending) {
   }).join('');
   document.getElementById('spuMismatchModal').style.display = 'flex';
 }
-function closeSpuMismatchModal() { document.getElementById('spuMismatchModal').style.display = 'none'; }
+function closeSpuMismatchModal() {
+  document.getElementById('spuMismatchModal').style.display = 'none';
+  // 이 모달이 닫히는 시점(취소든 반영 완료든)에 큐에 남은 다른 공장 확인 항목이
+  // 있으면 이어서 열어준다.
+  _spuDrainMismatchQueue();
+}
 async function _spuApplyMismatches() {
   const checked = Array.from(document.querySelectorAll('.spu-mismatch-chk')).filter(c => c.checked).map(c => Number(c.dataset.idx));
   const url = _gasUrlForFactory(_spuMismatchFactory);
