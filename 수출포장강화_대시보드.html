@@ -8097,11 +8097,19 @@
                 onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
             <div style="font-size:11px;color:#94a3b8;margin-top:6px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
         </div>
-        <div style="margin-bottom:20px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">상차일</div>
-            <input id="pkgShipDate" type="date"
-                style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+        <div style="margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">납기일</div>
+                <input id="pkgDueDate" type="date"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <div>
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">상차일</div>
+                <input id="pkgShipDate" type="date"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
         </div>
         <div style="margin-bottom:20px;">
             <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">적재번호</div>
