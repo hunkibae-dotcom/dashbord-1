@@ -6395,7 +6395,7 @@
                         body: JSON.stringify({ action: 'pkgClassifyIpgo', entries: entries }),
                         signal: AbortSignal.timeout(240000)
                     }).then(r => r.json());
-                    if (res && res.ok !== false) {
+                    if (!_pkgIsGasError(res)) {
                         resultEl.textContent = `✓ 분류(입고) 완료\n- 입고 처리됨: ${res.matchedCount || 0}건`;
                         _pkgMarkClassifyUpdated();
                     } else {
