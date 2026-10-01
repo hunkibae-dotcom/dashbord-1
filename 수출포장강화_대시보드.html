@@ -3599,7 +3599,44 @@
             const _tblQty = state.filteredData.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
             const _rcEl = document.getElementById('tableRoundCount'); if (_rcEl) _rcEl.textContent = _tblRounds.size;
             const _tqEl = document.getElementById('tableTotalQty');   if (_tqEl) _tqEl.textContent = _tblQty.toLocaleString();
+
+            _pkgRenderPagination(state.filteredData.length, _pkgTotalPages);
         }
+
+        // 처음/이전/다음/끝 버튼 + "N~M / 총 T건" 안내를 그린다. 결과가 비어있거나
+        // 1페이지뿐이면 굳이 보여줄 필요가 없어 통째로 숨긴다.
+        function _pkgRenderPagination(totalCount, totalPages) {
+            const bar = document.getElementById('pkgPaginationBar');
+            if (!bar) return;
+            if (totalCount === 0 || totalPages <= 1) { bar.style.display = 'none'; return; }
+            bar.style.display = 'flex';
+            const from = _pkgCurrentPage * _pkgPageSize + 1;
+            const to = Math.min(totalCount, (_pkgCurrentPage + 1) * _pkgPageSize);
+            document.getElementById('pkgPageRangeLabel').textContent = `${from.toLocaleString()}–${to.toLocaleString()} / 총 ${totalCount.toLocaleString()}건`;
+            document.getElementById('pkgPageNumLabel').textContent = `${_pkgCurrentPage + 1} / ${totalPages}`;
+            const atFirst = _pkgCurrentPage === 0;
+            const atLast = _pkgCurrentPage === totalPages - 1;
+            ['pkgPageFirstBtn', 'pkgPagePrevBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.disabled = atFirst; el.style.opacity = atFirst ? '.4' : '1'; el.style.cursor = atFirst ? 'default' : 'pointer'; }
+            });
+            ['pkgPageNextBtn', 'pkgPageLastBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.disabled = atLast; el.style.opacity = atLast ? '.4' : '1'; el.style.cursor = atLast ? 'default' : 'pointer'; }
+            });
+        }
+
+        // 페이지를 넘기면 화면에 없는 품목에 대한 체크가 남아 헷갈리지 않도록 선택을
+        // 비운다(선택 모드 자체는 유지 — 그 페이지에서 다시 체크하면 됨).
+        function _pkgGoToPage(p) {
+            _pkgCurrentPage = p;
+            _pkgSelectedKeys.clear();
+            renderTable();
+        }
+        function pkgGoFirstPage() { _pkgGoToPage(0); }
+        function pkgGoPrevPage()  { _pkgGoToPage(_pkgCurrentPage - 1); }
+        function pkgGoNextPage()  { _pkgGoToPage(_pkgCurrentPage + 1); }
+        function pkgGoLastPage()  { _pkgGoToPage(Math.max(0, Math.ceil(state.filteredData.length / _pkgPageSize) - 1)); }
 
         // 차트 가공 렌더러
         function renderCharts() {
