@@ -2602,6 +2602,7 @@
         // 필터링 적용 (하이브리드 결합 방식)
         function applyFilters() {
             try {
+                _pkgCurrentPage = 0; // 필터가 바뀌면 결과 자체가 달라지므로 1페이지로 되돌린다.
                 const roundQuery = (document.getElementById('roundFilter')?.value || '').toLowerCase().trim();
                 const productCodeQuery = (document.getElementById('productCodeFilter')?.value || '').toLowerCase().trim();
                 const colorQuery = (document.getElementById('colorFilter')?.value || '').toLowerCase().trim();
