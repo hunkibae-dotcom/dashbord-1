@@ -885,28 +885,29 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
          "어디서 찾을지" 범위 필터라 성격이 다르다 — 옅은 구분선으로 두 묶음을 나눠서
          한눈에 구조가 보이게 한다. -->
     <div style="border-top:1px solid var(--border);margin-top:2px;padding-top:12px;display:flex;flex-direction:column;gap:10px;">
-    <select id="psFactory" onchange="runProductSearch()"
-      style="background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:600;cursor:pointer;outline:none;width:100%;box-sizing:border-box;">
-      <option value="">사업장 전체</option>
-      <option value="cj1">충주1공장</option>
-      <option value="cj2">충주2공장</option>
-    </select>
-    <!-- 검사 진행현황/검사완료현황 버튼 2개를 매번 눌러서 골라야 했던 걸 드롭다운 하나로 —
-         기본은 검사 진행현황·전체 상태이고, 오른쪽 버튼으로 세부 진행상태 팝업을 연다.
-         사업장 선택과 한 줄에 욱여넣었더니 글자가 9px까지 작아져서 안 예쁘고 안 읽혔다 —
-         이 둘만 따로 한 줄을 온전히 쓰게 분리해서 다른 입력칸들과 같은 글자 크기로 맞췄다. -->
+    <!-- 사업장 한 줄 + (소스 드롭다운 + 세부버튼) 한 줄, 이렇게 두 줄이던 걸 한 줄로 더
+         압축했다 — 전엔 텍스트 라벨 달린 버튼 3개를 욱여넣어서 9px까지 작아졌었는데,
+         세부버튼을 아이콘 전용(동그란 버튼)으로 바꾸니 사업장·소스 두 드롭다운은 그대로
+         읽기 편한 크기를 유지하면서 한 줄에 다 들어간다. 세부 상태가 걸려있을 때만
+         아이콘에 작은 점으로 표시해서, 글자 없이도 "뭔가 좁혀져 있다"는 건 알 수 있다. -->
     <div class="ps-row ps-row-3" style="display:flex;gap:8px;">
+      <select id="psFactory" onchange="runProductSearch()"
+        style="flex:1;min-width:0;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13.5px;font-weight:600;cursor:pointer;outline:none;box-sizing:border-box;">
+        <option value="">사업장 전체</option>
+        <option value="cj1">충주1공장</option>
+        <option value="cj2">충주2공장</option>
+      </select>
       <div style="position:relative;flex:1;min-width:0;">
         <select id="psSourceSelect" onchange="setPsSourceFromDropdown(this.value)"
-          style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 30px 11px 14px;font-size:13.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
+          style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 26px 11px 10px;font-size:13.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
           <option value="active">검사 진행현황</option>
           <option value="active_done">검사완료(진행중)</option>
           <option value="archive">검사완료현황(출고)</option>
         </select>
-        <i class="fa-solid fa-chevron-down" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--label);pointer-events:none;"></i>
+        <i class="fa-solid fa-chevron-down" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
       </div>
-      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')"
-        style="flex-shrink:0;min-width:78px;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:0 12px;font-size:11px;font-weight:700;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.3;">
+      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="세부 진행상태"
+        style="position:relative;flex-shrink:0;width:42px;height:42px;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;">
         <i class="fa-solid fa-sliders" style="font-size:11px;color:var(--label);"></i>
         <span id="psSrcDetailLabel" style="font-size:10px;font-weight:600;color:var(--label);">전체</span>
       </button>
