@@ -2809,18 +2809,25 @@ function qcScClearDaySelection() {
 // 예전엔 선택한 날짜들 중 가장 빠른/늦은 날짜만 psFrom/psTo에 넣었는데, 그러면 연속되지
 // 않은 날짜를 골랐을 때(예: 3일 + 20일만, 그 사이는 안 고름) "범위 검색"이 되어버려서
 // 사이에 낀 날짜(4~19일)까지 결과에 같이 나왔다 — "가끔 원하는 대로 조회가 안 된다"던
-// 원인. _psExactDateFilter에 고른 날짜만 정확히 담아서, 그 날짜들만 결과에 나오게 한다.
+// 원인. _tblExactDateFilter에 고른 날짜만 정확히 담아서, 그 날짜들만 결과에 나오게 한다.
+// 예전엔 이 결과를 "필터 검색"(product search) 팝업으로만 넘겼는데, 정작 보고 있던
+// "제품 상태 현황" 메인 표는 그대로라 "달력으로 조회했는데 안 걸러진다"는 지적을 받아
+// ddayUrgencyFilter/pieFilter와 같은 방식(메인 표를 직접 거르고 칩으로 표시)으로 바꿨다.
 function qcScRunDayQuery() {
   if (!_qcScSelectedDates.size) return;
   const dates = Array.from(_qcScSelectedDates).sort();
   closeQcScheduleCalendar();
-  document.getElementById('psFrom').value = dates[0];
-  document.getElementById('psTo').value = dates[dates.length - 1];
-  document.getElementById('psFactory').value = (_qcScFactory === 'all') ? '' : _qcScFactory;
-  _psExactDateFilter = { dates: new Set(dates), field: _qcScDateType };
-  _psSourceFilter = ''; _psStatusFilters.clear(); _updatePsSourceButtons();
-  updatePsDateBtnLabel();
-  openProductSearch();
+  _tblExactDateFilter = { dates: new Set(dates), field: _qcScDateType };
+  if (_qcScFactory !== 'all') setFactoryTab(_qcScFactory);
+  const fieldLabel = _qcScDateType === 'due' ? '납기일' : _qcScDateType === 'pack' ? '포장일' : '납기/포장일';
+  const chip = document.getElementById('dateFilterChip');
+  const lbl = document.getElementById('dateFilterLabel');
+  if (chip && lbl) {
+    lbl.textContent = `${fieldLabel} · ${dates.length}일(${dates[0]}${dates.length > 1 ? ' 외' : ''})`;
+    chip.classList.remove('hidden');
+  }
+  applyFilters();
+  setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
 }
 
 function renderQcScheduleDayList() {
