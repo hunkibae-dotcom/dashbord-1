@@ -1061,39 +1061,9 @@
                                     상태 <span id="statusFilterLabel" class="font-bold hidden" style="color:#0ea5e9;"></span>
                                     <i class="fa-solid fa-chevron-down" style="font-size:9px;margin-left:2px;" id="statusDropdownArrow"></i>
                                 </button>
-                                <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 py-1.5" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.11);min-width:128px;text-align:left;">
-                                    <button onclick="toggleStatusFilter('전체')" id="sf-전체" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#475569;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-list" style="font-size:10px;color:#94a3b8;"></i> 전체
-                                    </button>
-                                    <div style="border-top:1px solid #f1f5f9;margin:2px 0;"></div>
-                                    <button onclick="toggleStatusFilter('출고')" id="sf-출고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#16a34a;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 출고
-                                    </button>
-                                    <button onclick="toggleStatusFilter('피킹')" id="sf-피킹" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#7c3aed;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#faf5ff'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 피킹
-                                    </button>
-                                    <button onclick="toggleStatusFilter('포장완료')" id="sf-포장완료" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#0284c7;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 포장완료
-                                    </button>
-                                    <button onclick="toggleStatusFilter('미포장')" id="sf-미포장" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#ea580c;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fff7ed'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 미포장
-                                    </button>
-                                    <button onclick="toggleStatusFilter('포장대기')" id="sf-포장대기" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#b45309;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 포장대기
-                                    </button>
-                                    <button onclick="toggleStatusFilter('일부입고')" id="sf-일부입고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#ca8a04;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fefce8'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 일부입고
-                                    </button>
-                                    <button onclick="toggleStatusFilter('철물')" id="sf-철물" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#64748b;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 철물
-                                    </button>
-                                    <button onclick="toggleStatusFilter('미입고')" id="sf-미입고" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#dc2626;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 미입고
-                                    </button>
-                                    <button onclick="toggleStatusFilter('재고활용')" id="sf-재고활용" class="w-full flex items-center gap-2 transition-colors" style="padding:7px 12px;font-size:13px;font-weight:600;color:#0d9488;border:none;background:none;cursor:pointer;text-align:left;" onmouseover="this.style.background='#f0fdfa'" onmouseout="this.style.background='none'">
-                                        <i class="fa-solid fa-circle" style="font-size:9px;"></i> 재고활용
-                                    </button>
-                                </div>
+                                <!-- 내용은 전부 JS가 채운다(_renderStatusDropdownOptions) — 지금 고른
+                                     카테고리(입고현황/실재고/적재/출고)에 실제로 있는 상태만 보여준다. -->
+                                <div id="statusDropdown" class="hidden absolute right-0 top-full mt-1 z-50 py-1.5" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.11);min-width:128px;text-align:left;"></div>
                             </th>
                         </tr>
                     </thead>
