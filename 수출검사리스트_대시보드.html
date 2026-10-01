@@ -6416,7 +6416,9 @@ async function _spuRunImport() {
         // 확인창에서 따로 고르면 된다 — 둘 다 보여줘야 "왜 여기만 숫자가 안 나오냐"는
         // 혼란이 없다.
         logs.push(`⚠ ${label}\n${json.message || ''}\n확인 필요 항목 ${json.pending.length}건 — 잠시 후 뜨는 확인창에서 골라주세요.`);
-        _spuOpenMismatchModal(job.factory, json.pending);
+        // 즉시 열지 않고 큐에 쌓아둔다 — 이 배치에 다른 공장도 확인 필요 항목이
+        // 있으면 그쪽 모달에 덮어써지지 않도록, 전부 다 처리된 뒤 하나씩 순서대로 연다.
+        _spuMismatchQueue.push({ factory: job.factory, pending: json.pending });
       } else {
         logs.push(`✗ ${label} 실패: ${json.message || '알 수 없는 오류'}`);
       }
