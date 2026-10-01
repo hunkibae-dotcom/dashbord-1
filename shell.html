@@ -779,10 +779,9 @@
                 </button>
             </div>
 
-            <div style="display:flex;gap:6px;">
-                <button onclick="scSetStatusType('all')" id="scTAll" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid #00E676;background:#00E676;color:#0B0F19;font-size:12px;font-weight:700;cursor:pointer;">전체</button>
-                <button onclick="scSetStatusType('working')" id="scTWorking" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;font-weight:700;cursor:pointer;">작업</button>
-                <button onclick="scSetStatusType('shipped')" id="scTShipped" class="sch-cal-tab" style="flex:1;padding:8px;border-radius:9px;border:1.5px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;font-weight:700;cursor:pointer;">출고</button>
+            <div style="display:flex;gap:8px;">
+                <button onclick="openScFilterPicker('status')" id="scStatusBtn" class="sc-filter-btn">상태: 전체</button>
+                <button onclick="openScFilterPicker('date')" id="scDateBtn" class="sc-filter-btn">날짜: 전체</button>
             </div>
 
             <div style="display:flex;align-items:center;justify-content:space-between;">
