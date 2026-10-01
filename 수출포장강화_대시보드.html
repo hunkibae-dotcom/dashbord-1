@@ -6366,6 +6366,33 @@
         }
         window.addEventListener('DOMContentLoaded', _pkgRefreshClassifyTimestampLabel);
 
+        // "파렛트 현황" 카드의 적재정렬 버튼 — 구글시트 관리메뉴의 "적재정렬"(reorderPallets)과
+        // 완전히 같은 결과를 웹에서 바로 실행한다(비어있는 번호를 당겨서 순서대로 재배정).
+        async function pkgRunReorderPallets() {
+            if (!confirm('충주공장 재고의 적재 번호를 순서대로 다시 정렬합니다(빈 번호는 당겨집니다).\n계속할까요?')) return;
+            const btn = document.getElementById('pkgReorderPalletsBtn');
+            const origIcon = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:9px;"></i>';
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgReorderPallets' }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '적재정렬 중 오류가 발생했습니다.');
+                let msg = `✔ 적재정렬 완료\n변경된 파렛트: ${res.updateCount || 0}개 행`;
+                if (res.changeDescriptions && res.changeDescriptions.length) msg += '\n\n번호 변경 내역:\n' + res.changeDescriptions.join('\n');
+                alert(msg);
+                syncWithGoogleSheets(false);
+            } catch (e) {
+                alert('적재정렬 실패: ' + ((e && e.message) || e));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origIcon;
+            }
+        }
+
         async function _pkgRunClassifyUpload() {
             if (!_pkgClassifyFile || !_pkgClassifyKind) return;
             const btn = document.getElementById('pkgClassifyRunBtn');
