@@ -6627,6 +6627,8 @@
             if (kind === 'stock') {
                 _pkgSetLabelPalletTitle('재고용 인식표 — 적재번호를 입력하세요.');
                 _pkgLabelShowStep('pkgLabelStepPallet');
+                // 선택된 품목이 있으면 물어볼 것 없이 바로 생성한다.
+                if (_pkgSelectedKeys.size > 0) pkgLabelSubmitPallet();
             } else {
                 _pkgLabelShowStep('pkgLabelStepShipType');
             }
