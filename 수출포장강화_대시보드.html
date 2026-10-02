@@ -3759,7 +3759,9 @@
                     ${_chkCellHtml}
                     <td style="padding:10px 12px;text-align:center;color:#94a3b8;font-size:12px;font-weight:500;">${_rowIdx + 1}</td>
                     <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${normalizeDate(item.regDate)}</td>
-                    <td style="padding:10px 12px;text-align:left;color:#1e293b;font-size:13px;font-weight:600;cursor:pointer;" title="클릭하여 복사" onclick="event.stopPropagation();copyCellText('${_jsAttr(item.round)}', event)">${item.round}</td>
+                    <td style="padding:10px 12px;text-align:left;color:#1e293b;font-size:13px;font-weight:600;">
+                        <span style="cursor:pointer;" title="클릭하여 복사" onclick="event.stopPropagation();copyCellText('${_jsAttr(item.round)}', event)">${item.round}</span>
+                    </td>
                     <td style="padding:10px 12px;text-align:left;">
                         <span style="color:#0284c7;font-size:13px;font-weight:600;cursor:pointer;transition:color .12s;" title="클릭하여 복사" onmouseenter="this.style.color='#38bdf8'" onmouseleave="this.style.color='#0284c7'" onclick="event.stopPropagation();copyCellText('${_jsAttr(item.code)}', event)">${item.code}</span>
                     </td>
