@@ -4671,6 +4671,7 @@ function toggleReportWritten(key, checked) {
   // 전에 _rpFetchSharedReportData()가 끼어들어 방금 체크한 "작성완료"를 도로
   // 초기화해버리는 걸 막는다.
   _reportSelected[key]._updatedAt = Date.now();
+  _rpDirtyMetaKeys.add(key);
   _rpSaveToStorage();
   _rpSyncMetaToServer(key);
   // 작성완료 필터가 걸려있으면 이 행 자체가 목록에서 빠지거나 들어와야 하고, 방금 선택도
