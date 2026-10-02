@@ -3450,6 +3450,12 @@ window.addEventListener('keydown', (e) => {
 // 별도 작업이고, 지금은 파일 선택으로 테스트한다.
 // ═══════════════════════════════════════════════════════════════
 let _reportSelected = {}; // _miKey(d) → { item, productPhoto, packagePhoto, note, hasHardware } — 등록한 사진·입력값을 담는 저장소, 체크 해제해도 안 지워짐
+// "작성완료"를 체크한 시점의 날짜 — 납기일/포장일/검사일과 같은 "YYYY. M. D" 표기로
+// 맞춰서, 상세 날짜 팝업에 "보고서 작성일"로 같이 보여준다.
+function _rpTodayDisplayStr() {
+  const now = new Date();
+  return now.getFullYear() + '. ' + (now.getMonth() + 1) + '. ' + now.getDate();
+}
 let _reportChecked = new Set(); // 지금 PPTX 생성 대상으로 체크된 키만 담는 집합 — 체크박스 해제는 이 집합에서만 빠짐
 
 // 보고서는 하루만에 다 채우기 어려워서, 오늘 등록한 사진을 닫았다 다시 열어도(하루
