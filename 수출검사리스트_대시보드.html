@@ -8502,7 +8502,7 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 품목 상세/수정 (모바일 리스트 항목 클릭 시) ===== -->
-<div id="mItemDetailModal" style="display:none;position:fixed;inset:0;z-index:130;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+<div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div style="min-width:0;">
