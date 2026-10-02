@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>PE폼 발주</title>
+<script>
+// 다크모드 저장값을 최대한 일찍(바디가 그려지기도 전에) 적용 — 안 그러면 로딩 중 화면이
+// 잠깐 라이트 배경으로 떴다가 나중에야 다크로 바뀌는 깜빡임이 생긴다.
+try {
+  const t = localStorage.getItem('pe_theme');
+  const dark = t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (dark) document.documentElement.classList.add('dark');
+} catch (e) {}
+</script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   :root {

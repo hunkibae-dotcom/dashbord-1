@@ -10,6 +10,13 @@
 if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1280');
 }
+// 다크모드 저장값을 최대한 일찍(바디가 그려지기도 전에) 적용 — 안 그러면 로딩 오버레이가
+// 잠깐 라이트 배경으로 떴다가 나중에야 다크로 바뀌는 깜빡임이 생긴다.
+try {
+    if ((localStorage.getItem('shell_theme') || 'light') === 'dark') {
+        document.documentElement.classList.add('dark');
+    }
+} catch (e) {}
 </script>
 <title>품질검사 대시보드</title>
 <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjEwMCUiPjxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMzNEQzOTkiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiMyMkQzRUUiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIyIiBmaWxsPSJ1cmwoI2cpIi8+PGNpcmNsZSBjeD0iNDMiIGN5PSI0MyIgcj0iMTgiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiLz48bGluZSB4MT0iNTUiIHkxPSI1NSIgeDI9IjcyIiB5Mj0iNzIiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMTAiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==">
@@ -322,7 +329,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 <!-- 처음 열었을 때 데이터가 도착하기 전까진 화면이 텅 비어(또는 "—") 보여서, 다 불러온
      줄 알고 눌렀다가 헷갈리는 경우가 있었다 — 첫 로딩에서만 뜨고, 새로고침 버튼으로
      다시 불러올 땐 이미 화면에 내용이 있으니 다시 덮지 않는다. -->
-<div id="qcInitLoadingOverlay" style="position:fixed;inset:0;z-index:99999;background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+<div id="qcInitLoadingOverlay" style="position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
   <i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:#6D5CE8;"></i>
   <div style="font-size:13px;color:#64748b;font-weight:700;">불러오는 중...</div>
 </div>
@@ -435,7 +442,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
       <span class="flex-1">보고서</span>
     </div>
 
-    <div class="nav-item w-full" id="navSalesProcessUpdate" onclick="openSpuChoiceModal()">
+    <div class="nav-item w-full" id="navSalesProcessUpdate" onclick="openSpuUploadModal('both')">
       <i class="fa-solid fa-file-arrow-up w-4 text-center"></i>
       <span class="flex-1">수주 · 공정 업데이트</span>
     </div>
@@ -510,7 +517,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           </div>
           <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
             <div id="kpiPackedDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <button onclick="viewDetailInTable('금일포장')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
@@ -533,7 +540,7 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
           </div>
           <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
             <div id="kpiWaitDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('미검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <button onclick="viewDetailInTable('진행_미검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
@@ -1924,7 +1931,8 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '생산완료 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '생산완료 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : '검사상태';
+
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
@@ -2022,6 +2030,17 @@ function applyFilters() {
       else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
       // '생산완료' 카드는 화면 전용 이름을 쓰지만 실제로는 검사 칼럼의 "포장대기" 상태값 하나다.
       else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || d.검사 !== '포장대기') return false; }
+      // '금일 포장' 카드 — renderKPIs()의 packedToday/모바일 setMStatus('금일포장')과 똑같은
+      // 정의(미검사 또는 재투입대기 + 포장일이 오늘 이하)를 그대로 따른다. 예전엔 이 카드가
+      // colInspectFilter=''(빈 문자열)을 넘겨서 "필터 없음"과 구분이 안 됐고, 그 결과 상세보기를
+      // 눌러도 표가 그냥 전체(236건)를 보여줬다 — KPI 숫자(예: 85건)와 안 맞던 원인.
+      else if (colInspectFilter === '금일포장') {
+        if (d.source === 'archive') return false;
+        if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
+        if (!d.포장일) return false;
+        const dd2 = ddayInfo(d.포장일);
+        if (dd2 === null || dd2 > 0) return false;
+      }
       else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
@@ -5604,6 +5623,21 @@ function _qcSpecForItem(d, lookup) {
     g: own(d.중량) || avg(fb.g),
   };
 }
+// 인쇄물 날짜 표기 — "2026. 10. 13" 같은 원본을 "10월 13일"로 줄인다(연도까지 다
+// 적으면 너무 길어진다는 요청, 포장강화 쪽 인쇄물과 같은 표기 방식).
+function _qcPrintMonthDay(str) {
+  const d = parseKDate(str);
+  if (!d) return str || '';
+  return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+}
+// 단품명칭 표기 간소화 — "FAC9110NO-형태-W1600*D600 행잉상판"처럼 "-"로 구분된 뒤쪽에
+// 규격/제품명까지 길게 붙는 경우가 많아, 앞의 두 토큰("FAC9110NO-형태")만 남긴다.
+function _qcSimplifyName(name) {
+  const s = (name || '').toString().trim();
+  if (!s) return '';
+  const parts = s.split('-');
+  return parts.length > 2 ? parts.slice(0, 2).join('-') : s;
+}
 // 공통 페이지 나누기/캡처 엔진 — opts: { title, columns, rows, filename, plain(선택,
 // 흑백 단순 표 스타일) }. columns: [{label, width, align, get(d)}].
 async function _qcRenderPrintPdf(opts) {
@@ -5622,10 +5656,11 @@ async function _qcRenderPrintPdf(opts) {
 
   const rowHtml = (d) => '<tr>' + columns.map(c => {
     const v = c.get(d);
-    return `<td style="width:${c.width};padding:5px 6px;border:${bodyCellBorder};font-size:${fontSize}px;text-align:${c.align};word-break:break-all;color:#1e293b;background:#fff;">${_qcPrintEsc(v)}</td>`;
+    const wrap = c.wrap ? 'white-space:normal;word-break:break-all;' : 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+    return `<td style="width:${c.width};padding:6px 6px;border:${bodyCellBorder};font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};${wrap}color:#1e293b;background:#fff;">${_qcPrintEsc(v)}</td>`;
   }).join('') + '</tr>';
   const headerRowHtml = () => '<tr>' + columns.map(c =>
-    `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
+    `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
   ).join('') + '</tr>';
 
   const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
@@ -5676,24 +5711,23 @@ async function _qcRenderPrintPdf(opts) {
   pdf.save(opts.filename);
 }
 
-// 검사항목 출력 — 건명/단품코드/색상/수량/단품명칭/BOM/확정 납기일(=납기일 값 그대로,
-// 인쇄물에서 부르는 이름만 다름)/포장일/검사일/가로/세로/높이/중량.
+// 검사항목 출력 — 건명/단품코드/색상/수량/단품명칭/확정 납기일(=납기일 값 그대로,
+// 인쇄물에서 부르는 이름만 다름)/포장일/가로/세로/높이/중량. BOM·검사일은 출력에서
+// 제외해달라는 요청으로 뺐고, 그만큼 건명/단품코드 폭을 넓혀서 한 줄에 들어가게 했다.
 async function _qcRenderInspectPdf(rows) {
   const lookup = _qcBuildSpecLookup();
   const columns = [
-    { label: '건명', width: '14%', align: 'left', get: d => d.건명 || '' },
-    { label: '단품코드', width: '9%', align: 'left', get: d => d.단품코드 || '' },
+    { label: '건명', width: '19%', align: 'left', wrap: true, get: d => d.건명 || '' },
+    { label: '단품코드', width: '12%', align: 'left', get: d => d.단품코드 || '' },
     { label: '색상', width: '6%', align: 'center', get: d => d.색상 || '' },
     { label: '수량', width: '5%', align: 'right', get: d => d.수량 },
-    { label: '단품명칭', width: '15%', align: 'left', get: d => d.단품명칭 || '' },
-    { label: 'BOM', width: '6%', align: 'center', get: d => d.BOM || '' },
-    { label: '확정 납기일', width: '8%', align: 'center', get: d => d.납기일 || '' },
-    { label: '포장일', width: '7%', align: 'center', get: d => d.포장일 || '' },
-    { label: '검사일', width: '7%', align: 'center', get: d => d.검사일 || '' },
-    { label: '가로', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).w },
-    { label: '세로', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).d },
-    { label: '높이', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).h },
-    { label: '중량', width: '5.75%', align: 'right', get: d => _qcSpecForItem(d, lookup).g },
+    { label: '단품명칭', width: '12%', align: 'left', get: d => _qcSimplifyName(d.단품명칭) },
+    { label: '확정 납기일', width: '9%', align: 'center', get: d => _qcPrintMonthDay(d.납기일) },
+    { label: '포장일', width: '8%', align: 'center', get: d => _qcPrintMonthDay(d.포장일) },
+    { label: '가로', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).w },
+    { label: '세로', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).d },
+    { label: '높이', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).h },
+    { label: '중량', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).g },
   ];
   await _qcRenderPrintPdf({ title: '검사항목 출력', columns, rows, filename: `검사항목출력_${new Date().toISOString().slice(0,10)}.pdf` });
 }
@@ -5703,13 +5737,13 @@ async function _qcRenderInspectPdf(rows) {
 // 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만 — 현장에 붙여두는 "출고금지" 경고판.
 async function _qcRenderFieldPdf(rows) {
   const columns = [
-    { label: '건명', width: '26%', align: 'left', get: d => d.건명 || '' },
+    { label: '건명', width: '26%', align: 'left', wrap: true, get: d => d.건명 || '' },
     { label: '단품코드', width: '14%', align: 'left', get: d => d.단품코드 || '' },
     { label: '색상', width: '10%', align: 'center', get: d => d.색상 || '' },
     { label: '수량', width: '8%', align: 'right', get: d => d.수량 },
-    { label: '단품명칭', width: '22%', align: 'left', get: d => d.단품명칭 || '' },
-    { label: '납기일', width: '10%', align: 'center', get: d => d.납기일 || '' },
-    { label: '포장일', width: '10%', align: 'center', get: d => d.포장일 || '' },
+    { label: '단품명칭', width: '22%', align: 'left', get: d => _qcSimplifyName(d.단품명칭) },
+    { label: '납기일', width: '10%', align: 'center', get: d => _qcPrintMonthDay(d.납기일) },
+    { label: '포장일', width: '10%', align: 'center', get: d => _qcPrintMonthDay(d.포장일) },
   ];
   const now = new Date();
   const md = (now.getMonth() + 1) + '/' + now.getDate();
@@ -5958,7 +5992,9 @@ function applyMTheme(dark) {
 function toggleMTheme() {
   applyMTheme(document.getElementById('mThemeCheck').checked);
 }
-applyMTheme(false);
+// 예전엔 항상 false(라이트)로 시작해서, <head>의 이른 적용 스크립트가 바디에 .dark를
+// 미리 걸어둬도 여기서 곧바로 라이트로 덮어썼다 — 저장된 값을 그대로 따르도록 수정.
+applyMTheme((localStorage.getItem('shell_theme') || 'light') === 'dark');
 
 // ── 설정 (모바일) ──
 function openMSettings() {
@@ -6523,18 +6559,64 @@ function closeSpuChoiceModal() { document.getElementById('spuChoiceModal').style
 const _SPU_SALES_DESC = '업로드하면 새로 들어온 수주 건은 검사항목 리스트에 새로 추가되고, 이미 있는 항목은 납기일 · BOM확정이 바뀐 경우만 자동으로 반영됩니다. 내수건(한글 건명)은 수주량 50개 이상인 것만 반영되고, 그 미만은 제외됩니다. 업로드한 파일 내용은 반영 후 남겨두지 않습니다.';
 const _SPU_PROCESS_DESC = '업로드하면 포장계획일 · 공정진행률이 검사항목 리스트에 반영되고, 공정진행률이 95% 이상이면 검사 상태가 "포장대기"로 자동 전환됩니다. 어느 차수인지 확실하지 않은 항목은 업로드 뒤 별도 확인창에서 직접 골라 반영합니다.';
 
-// 파일마다 따로 선택칸을 두니 4칸을 일일이 눌러야 해서 번거롭다는 피드백을 받고,
-// 한 번에 여러 파일을 같이 선택하면 파일 이름(수주1/수주2/공정1/공정2가 들어있는지)
-// 만 보고 자동으로 구분하는 방식으로 바꿨다.
-let _spuDetected = {}; // "sales_cj1" 등 → File
+// 파일마다 따로 선택칸을 두니 4칸을 일일이 눌러야 해서 번거롭다는 피드백을 받고
+// "수주1/수주2/공정1/공정2" 파일 이름 규칙으로 바꿨었는데, 매번 이름을 그렇게 바꿔
+// 올리는 것도 번거롭다는 추가 피드백으로 이름은 아무거나 올리고 — 파일 "내용"에서
+// 공장을 자동으로 읽어내도록 바꿨다. 수주내역은 AB열(제품구분, index 27), 공정진행정보는
+// 헤더에서 찾은 "생산라인" 칼럼 값이 "충주2공장"이면 충주2공장, 그 외(충주1제품/
+// 우레탄제품/목제제품/베트남상품 등)는 전부 충주1공장으로 본다.
+let _spuDetected = {}; // "sales_cj1" 등 → { file, grid }
 
-function _spuDetectFileKind(filename) {
-  const n = filename || '';
-  if (n.includes('수주1')) return { type: 'sales', factory: 'cj1' };
-  if (n.includes('수주2')) return { type: 'sales', factory: 'cj2' };
-  if (n.includes('공정1')) return { type: 'process', factory: 'cj1' };
-  if (n.includes('공정2')) return { type: 'process', factory: 'cj2' };
-  return null;
+// 값 하나가 충주2공장 소속인지 — 두 파일 종류(수주내역의 제품구분 / 공정진행정보의
+// 생산라인) 모두 같은 규칙: "충주2"가 들어있으면 2공장, 그 외는 전부 1공장.
+function _spuIsCj2Value(v) { return /충주\s*2/.test((v || '').toString()); }
+
+// 헤더행(grid[0])에서 이름으로 칼럼 위치를 찾는다 — 공정진행정보 파일의 "생산라인"처럼
+// 정확한 열 번호가 안 알려진 칼럼을 찾을 때 쓴다(포장강화 분류 업로드의 _pkgFindCol과
+// 같은 방식).
+function _spuFindHeaderCol(grid, aliases) {
+  const headers = ((grid && grid[0]) || []).map(h => (h || '').toString().trim());
+  for (const a of aliases) {
+    let idx = headers.findIndex(h => h === a);
+    if (idx === -1) idx = headers.findIndex(h => h.includes(a));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+// grid만 보고 수주내역/공정진행정보 중 어느 쪽인지 + 어느 공장 소속인지를 한 번에
+// 판단한다. 헤더 문구로 먼저 종류를 가른 뒤(수주내역엔 "제품구분"/"수주량", 공정진행
+// 정보엔 "생산라인"/"공정진행률"이 있음), 각 종류가 쓰는 공장 판정 칼럼의 값들을 쭉
+// 살펴 다수결로 공장을 정한다(행 하나하나가 섞여 있을 리는 없지만, 빈 칸/오타 행이
+// 섞여도 흔들리지 않게).
+function _spuDetectFileKindFromGrid(grid) {
+  if (!grid || grid.length < 2) return null;
+  const iProcessLine = _spuFindHeaderCol(grid, ['생산라인']);
+  const iProcessRate = _spuFindHeaderCol(grid, ['공정진행률']);
+  const iSalesGroup  = _spuFindHeaderCol(grid, ['제품구분']);
+  const iSalesQty    = _spuFindHeaderCol(grid, ['수주량']);
+
+  let type = null, factoryColIdx = -1;
+  if (iProcessLine !== -1 || iProcessRate !== -1) {
+    type = 'process';
+    factoryColIdx = iProcessLine !== -1 ? iProcessLine : 26; // 헤더로 못 찾으면 기존 AA=26 자리
+  } else if (iSalesGroup !== -1 || iSalesQty !== -1) {
+    type = 'sales';
+    factoryColIdx = iSalesGroup !== -1 ? iSalesGroup : 27; // 헤더로 못 찾으면 기존 AB=27 자리
+  } else {
+    return null; // 둘 중 어느 파일인지 헤더로 구분 못함
+  }
+
+  let cj2Votes = 0, cj1Votes = 0;
+  for (let i = 1; i < grid.length; i++) {
+    const row = grid[i];
+    if (!row) continue;
+    const v = (row[factoryColIdx] || '').toString().trim();
+    if (!v) continue;
+    if (_spuIsCj2Value(v)) cj2Votes++; else cj1Votes++;
+  }
+  if (cj2Votes === 0 && cj1Votes === 0) return null; // 공장 판정 칼럼이 통째로 비어있음
+  return { type: type, factory: cj2Votes > cj1Votes ? 'cj2' : 'cj1' };
 }
 
 function openSpuUploadModal(mode) {
@@ -6550,7 +6632,7 @@ function openSpuUploadModal(mode) {
 
   document.getElementById('spuUploadBody').innerHTML = `
     <div style="margin-bottom:14px;">
-      <div style="font-size:12.5px;color:#475569;margin-bottom:8px;">파일 이름에 "수주1 · 수주2 · 공정1 · 공정2"가 들어있으면 자동으로 구분합니다 — 한 번에 여러 개를 같이 선택하세요.</div>
+      <div style="font-size:12.5px;color:#475569;margin-bottom:8px;">파일 이름은 아무거나 괜찮습니다 — 내용(제품구분/생산라인 칼럼)을 보고 충주1·충주2공장을 자동으로 구분합니다. 한 번에 여러 개를 같이 선택하세요.</div>
       <input type="file" id="spuFileMulti" accept=".xlsx,.xls" multiple onchange="_spuOnFilesChosen()" style="width:100%;font-size:12.5px;">
       <div id="spuFileDetectList" style="margin-top:10px;font-size:12px;line-height:1.7;"></div>
     </div>
@@ -6566,29 +6648,40 @@ function openSpuUploadModal(mode) {
 }
 function closeSpuUploadModal() { document.getElementById('spuUploadModal').style.display = 'none'; }
 
-function _spuOnFilesChosen() {
+async function _spuOnFilesChosen() {
   const input = document.getElementById('spuFileMulti');
   _spuDetected = {};
+  const files = Array.from((input && input.files) || []);
+  const listEl = document.getElementById('spuFileDetectList');
+  listEl.innerHTML = '<div style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> 파일 내용 확인 중...</div>';
+
   const rows = [];
-  Array.from((input && input.files) || []).forEach(file => {
-    const kind = _spuDetectFileKind(file.name);
+  for (const file of files) {
+    let grid;
+    try {
+      grid = await new Promise((resolve, reject) => _spuReadFileAsGrid(file, (err, g) => err ? reject(err) : resolve(g)));
+    } catch (e) {
+      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 파일을 읽지 못했습니다(${(e && e.message) || e}).</div>`);
+      continue;
+    }
+    const kind = _spuDetectFileKindFromGrid(grid);
     if (!kind) {
-      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 이름에서 수주1/수주2/공정1/공정2를 찾지 못했습니다.</div>`);
-      return;
+      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 내용에서 수주내역/공정진행정보 여부나 공장을 구분하지 못했습니다(헤더에 제품구분·수주량·생산라인·공정진행률 칼럼이 있는지 확인해주세요).</div>`);
+      continue;
     }
     if (_spuMode === 'sales' && kind.type !== 'sales') {
-      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 지금은 수주내역만 처리하는 중이라 건너뜁니다.</div>`);
-      return;
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 공정진행정보 파일로 보여서, 지금은 수주내역만 처리하는 중이라 건너뜁니다.</div>`);
+      continue;
     }
     if (_spuMode === 'process' && kind.type !== 'process') {
-      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
-      return;
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 수주내역 파일로 보여서, 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
+      continue;
     }
-    _spuDetected[kind.type + '_' + kind.factory] = file;
+    _spuDetected[kind.type + '_' + kind.factory] = { file: file, grid: grid };
     const label = (kind.factory === 'cj1' ? '충주1 ' : '충주2 ') + (kind.type === 'sales' ? '수주내역' : '공정진행정보');
     rows.push(`<div style="color:#16a34a;">✓ ${file.name} → ${label}</div>`);
-  });
-  document.getElementById('spuFileDetectList').innerHTML = rows.join('') || '';
+  }
+  listEl.innerHTML = rows.join('') || '';
 }
 
 // 엑셀 파일을 브라우저 안에서 바로 열어 표(2차원 배열)로 바꿔주는 라이브러리를
@@ -6716,9 +6809,9 @@ async function _spuRunImport() {
     .filter(key => _spuDetected[key])
     .map(key => {
       const [type, factory] = key.split('_');
-      return { type: type, factory: factory, file: _spuDetected[key] };
+      return { type: type, factory: factory, file: _spuDetected[key].file, grid: _spuDetected[key].grid };
     });
-  if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요 (파일 이름에 수주1/수주2/공정1/공정2가 포함되어야 합니다).'; return; }
+  if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요(내용에서 자동으로 구분됩니다).'; return; }
 
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
@@ -6726,10 +6819,11 @@ async function _spuRunImport() {
 
   const logs = [];
   for (const job of jobs) {
-    const file = job.file;
     const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : '공정진행정보');
     try {
-      const grid = await new Promise((resolve, reject) => _spuReadFileAsGrid(file, (err, g) => err ? reject(err) : resolve(g)));
+      // 파일 선택 시(_spuOnFilesChosen) 이미 한 번 읽어서 공장/종류를 가렸으므로, 같은
+      // 파일을 두 번 읽지 않고 그때 캐시해둔 grid를 그대로 쓴다.
+      const grid = job.grid || await new Promise((resolve, reject) => _spuReadFileAsGrid(job.file, (err, g) => err ? reject(err) : resolve(g)));
       const rows = job.type === 'sales' ? _spuExtractSalesRows(grid) : _spuExtractProcessRows(grid);
       const url = _gasUrlForFactory(job.factory);
       const action = job.type === 'sales' ? 'importSalesOrders' : 'importProcessProgress';
@@ -7896,12 +7990,7 @@ function onNativeScanResult(raw) {
       </span>
       <span style="font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;color:var(--text);">품질검사 대시보드</span>
     </div>
-    <div style="display:flex;justify-content:flex-end;align-items:center;">
-      <label class="theme-toggle">
-        <input type="checkbox" id="mThemeCheck" onchange="toggleMTheme()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
+    <div></div>
   </header>
 
   <!-- Tab Content -->
@@ -8293,12 +8382,16 @@ function onNativeScanResult(raw) {
         웹으로 열기 (PC 대시보드)
         <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></i>
       </button>
-      <button onclick="loadData()"
-         style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:14px;font-weight:700;color:var(--text);width:100%;text-align:left;">
-        <i class="fa-solid fa-arrows-rotate" style="color:#00B0FF;font-size:18px;width:22px;"></i>
-        지금 새로고침
-        <span id="mSettingsSyncTime" style="font-size:11px;color:var(--text-sub);margin-left:auto;"></span>
-      </button>
+      <!-- 라이트/다크 토글 — 예전엔 헤더 우측에 있었는데, 설정 화면 안으로 옮겨달라는
+      요청으로 이동시킴(포장강화 shell.html과 저장키를 공유하는 같은 토글, toggleMTheme()). -->
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:15px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);">
+        <i class="fa-solid fa-circle-half-stroke" style="color:#6D5CE8;font-size:18px;width:22px;"></i>
+        다크 모드
+        <label class="theme-toggle" style="margin-left:auto;">
+          <input type="checkbox" id="mThemeCheck" onchange="toggleMTheme()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
     </div>
   </div>
 </div>
