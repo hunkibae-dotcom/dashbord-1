@@ -7414,7 +7414,7 @@
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
 
-            const _pkgOrigPe = _pkgGetPeType(item);
+            const _pkgOrigPe = _pkgEffectivePeType(item);
             _pkgOrigPeType = _pkgOrigPe.type;
             _pkgOrigPeSpec = _pkgOrigPe.spec;
             document.getElementById('pkgPeType').value = _pkgOrigPeType;
