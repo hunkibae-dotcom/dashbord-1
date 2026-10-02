@@ -7376,6 +7376,12 @@
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
 
+            const _pkgOrigPe = _pkgGetPeType(item);
+            _pkgOrigPeType = _pkgOrigPe.type;
+            _pkgOrigPeSpec = _pkgOrigPe.spec;
+            document.getElementById('pkgPeType').value = _pkgOrigPeType;
+            _pkgRenderPeSpecOptions(_pkgOrigPeType, _pkgOrigPeSpec);
+
             // item.specW 등은 "같은 코드의 다른 행"이 state.data 안에 있을 때만 채워지는데
             // (backfillSpecs), 충주공장 재고처럼 스펙 칸 자체가 없는 시트 품목이 다른 활성
             // 주문 없이 재고로만 남아있으면 그 백필 대상이 아예 없어서 빈 채로 남는다 —
