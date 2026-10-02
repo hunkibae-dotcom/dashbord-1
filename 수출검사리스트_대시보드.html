@@ -3598,6 +3598,7 @@ async function _rpFetchSharedReportData() {
         const remote = json.items[key];
         const item = _rpFindByKey(key);
         if (!item) return; // 지금 화면에 없는(이관/삭제된) 품목은 건너뛴다
+        if (_rpDirtyMetaKeys.has(key)) return; // 서버가 아직 못 받아간 내 변경이 있으면 무조건 보호
         const localUpdatedAt = (_reportSelected[key] && _reportSelected[key]._updatedAt) || 0;
         if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) return; // 내 로컬이 더 최신
         // 체크 여부는 새로고침해도 유지하지 말고 매번 0개로 시작하라는 요청이라, 여기서는
