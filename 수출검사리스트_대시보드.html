@@ -8015,6 +8015,10 @@ async function _presenceTick() {
 // ===== INIT =====
 var _scanCodeHandled = false;
 loadData();
+// 5분 주기 자동 갱신 — 포장강화 대시보드와 같은 주기. loadData()는 검색어·필터·다중선택·
+// 페이지 같은 화면 상태는 안 건드리고 데이터만 새로 받아 applyFilters()로 다시 그리기만
+// 하므로, 보고 있던 화면이 조용히 초기화되는 일은 없다.
+setInterval(() => loadData(), 5 * 60 * 1000);
 _presenceInit();
 _spuLoadStatus();
 
