@@ -4126,6 +4126,9 @@ function openRpDateDetail(key) {
   document.getElementById('rpDateDetailDue').textContent = d.납기일 || '—';
   document.getElementById('rpDateDetailPack').textContent = d.포장일 || '—';
   document.getElementById('rpDateDetailInspect').textContent = d.검사일 || '—';
+  const _rpdSel = _reportSelected[key];
+  document.getElementById('rpDateDetailWrittenRow').style.display = (_rpdSel && _rpdSel.writtenAt) ? 'flex' : 'none';
+  document.getElementById('rpDateDetailWritten').textContent = (_rpdSel && _rpdSel.writtenAt) || '';
   // "VAN외2차수"처럼 병합된 건명이면 — 보고서 이력엔 그대로 병합 표기를 유지하되(PPTX도
   // 대표 차수 하나만 쓰는 기존 방식 그대로), 이 상세보기 팝업에서만 실제로 어떤 차수들이
   // 합쳐진 건지 추가로 확인할 수 있게 버튼을 보여준다.
