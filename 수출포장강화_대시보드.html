@@ -1686,6 +1686,47 @@
         };
         let _currentDetailProductCode = '';
 
+        // onclick 속성 문자열 안에 안전하게 끼워 넣기 위한 간단한 이스케이프(품질검사
+        // 대시보드의 _jsAttr과 동일한 방식) — 건명/제품코드에 작은따옴표가 섞여 있어도
+        // onclick="...('${...}')"가 안 깨지게 한다.
+        function _jsAttr(s) { return (s || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+        // 건명/제품코드 글자를 누르면 상세스펙창을 열던 것 대신 바로 복사되게 — 품질검사
+        // 대시보드의 copyCellText와 완전히 같은 방식.
+        function copyCellText(text, e) {
+            if (e) { e.stopPropagation(); e.preventDefault(); }
+            const val = (text || '').toString().trim();
+            if (!val || val === '-' || val === '—') return;
+            const showToast = () => {
+                const toast = document.createElement('div');
+                toast.textContent = '"' + (val.length > 24 ? val.slice(0, 24) + '…' : val) + '" 복사됨';
+                toast.style.cssText = 'position:fixed;z-index:99999;background:#1E293B;color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:8px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .35s,transform .35s;opacity:1;white-space:nowrap;';
+                const x = e ? e.clientX : window.innerWidth / 2, y = e ? e.clientY : window.innerHeight / 2;
+                toast.style.left = Math.min(Math.max(x, 80), window.innerWidth - 80) + 'px';
+                toast.style.top = Math.max(y - 40, 8) + 'px';
+                toast.style.transform = 'translate(-50%,0)';
+                document.body.appendChild(toast);
+                requestAnimationFrame(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%,-8px)'; });
+                setTimeout(() => toast.remove(), 550);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(val).then(showToast).catch(() => _copyCellTextFallback(val, showToast));
+            } else {
+                _copyCellTextFallback(val, showToast);
+            }
+        }
+        function _copyCellTextFallback(val, cb) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = val;
+                ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+                document.body.appendChild(ta);
+                ta.focus(); ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                cb();
+            } catch (e) { /* 복사 실패는 조용히 무시 */ }
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             initCard1();
             _presenceInit();
