@@ -4712,6 +4712,7 @@ function toggleRpHeaderBulk(kind) {
       _reportSelected[key].hasHardware = newVal;
     }
     _reportSelected[key]._updatedAt = Date.now(); // 위 toggleReportWritten/toggleReportHardware와 동일한 이유
+    _rpDirtyMetaKeys.add(key);
   });
   _rpSaveToStorage();
   keys.forEach(key => _rpSyncMetaToServer(key));
