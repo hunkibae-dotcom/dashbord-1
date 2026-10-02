@@ -5987,38 +5987,57 @@
                 ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
                 : state.filteredData;
         }
-        async function pkgRunExport(kind) {
+        // 기본/포장항목/상차항목 중 어떤 걸 고르든 "XLS로 받을지 PDF로 받을지"를 한 번 더
+        // 물어본다 — 이전엔 기본출력=XLS 고정/포장·상차=PDF 고정이었는데, 상황에 따라
+        // 둘 다 필요하다는 요청으로 형식 선택 단계를 추가했다. 칼럼 정의(PKG_EXPORT_BASIC_COLS/
+        // PKG_PRINT_PACK_COLS/PKG_PRINT_SHIP_COLS)가 전부 get 기반으로 통일돼 있어서
+        // _pkgRenderGenericXls/_pkgRenderGenericPrintPdf 어느 쪽에도 그대로 넘길 수 있다.
+        let _pkgExportPendingKind = null;
+        function pkgChooseExportKind(kind) {
+            _pkgExportPendingKind = kind;
+            document.getElementById('pkgExportKindStep').style.display = 'none';
+            document.getElementById('pkgExportFormatStep').style.display = 'block';
+        }
+        function pkgBackToExportKind() {
+            _pkgExportPendingKind = null;
+            document.getElementById('pkgExportChoiceStatus').textContent = '';
+            document.getElementById('pkgExportFormatStep').style.display = 'none';
+            document.getElementById('pkgExportKindStep').style.display = 'block';
+        }
+        function _pkgExportKindMeta(kind, baseItems) {
             if (kind === 'manage') {
-                exportToCSV();
-                pkgCloseExportChoiceModal();
-                return;
+                return { title: '수출포장강화', columns: PKG_EXPORT_BASIC_COLS, rows: baseItems, filenameBase: '수출포장강화_export' };
             }
+            if (kind === 'pack') {
+                // 포장항목 출력(작업자용) — 실재고(충주공장 재고)에 실제로 등록된 품목만.
+                // item.pallet은 renderTable()이 실재고 매칭 결과로 채워두며, 매칭이 없으면 '-'이다.
+                const items = baseItems.filter(item => item.pallet && item.pallet !== '-');
+                return { title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: items, filenameBase: '수출포장강화_포장항목출력', emptyMsg: '실재고에 등록된 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10, headerFontSize: 10.5 } };
+            }
+            if (kind === 'ship') {
+                // 상차항목 출력(수출 현황용) — 아직 출고 안 된 품목만(applyFilters의 'active'
+                // 소스 필터와 동일한 기준: _shippedStatuses에 없는 상태).
+                const _shippedStatuses = new Set(['출고', '피킹', '출고완료']);
+                const items = baseItems.filter(item => !_shippedStatuses.has(item.status));
+                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items, filenameBase: '수출포장강화_상차항목출력', emptyMsg: '아직 출고되지 않은 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
+            }
+            return null;
+        }
+        async function pkgRunExport(format) {
+            const kind = _pkgExportPendingKind;
+            if (!kind) return;
             const statusEl = document.getElementById('pkgExportChoiceStatus');
-            statusEl.textContent = 'PDF 만드는 중...';
+            const meta = _pkgExportKindMeta(kind, _pkgExportSourceItems());
+            if (!meta || !meta.rows.length) { statusEl.textContent = (meta && meta.emptyMsg) || '내보낼 데이터가 없습니다.'; return; }
             try {
-                const baseItems = _pkgExportSourceItems();
-                if (kind === 'pack') {
-                    // 포장항목 출력(작업자용) — 실재고(충주공장 재고)에 실제로 등록된
-                    // 품목만. item.pallet은 renderTable()이 실재고 매칭 결과로 채워두며,
-                    // 매칭이 없으면 '-'이다.
-                    const items = baseItems.filter(item => item.pallet && item.pallet !== '-');
-                    if (!items.length) { statusEl.textContent = '실재고에 등록된 품목이 없습니다.'; return; }
-                    await _pkgRenderGenericPrintPdf({
-                        title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: items,
-                        filename: '수출포장강화_포장항목출력.pdf', footer: true, fontSize: 10, headerFontSize: 10.5,
-                    });
-                } else if (kind === 'ship') {
-                    // 상차항목 출력(수출 현황용) — 아직 출고 안 된 품목만(applyFilters의
-                    // 'active' 소스 필터와 동일한 기준: _shippedStatuses에 없는 상태).
-                    const _shippedStatuses = new Set(['출고', '피킹', '출고완료']);
-                    const items = baseItems.filter(item => !_shippedStatuses.has(item.status));
-                    if (!items.length) { statusEl.textContent = '아직 출고되지 않은 품목이 없습니다.'; return; }
-                    await _pkgRenderGenericPrintPdf({
-                        title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items,
-                        filename: '수출포장강화_상차항목출력.pdf', footer: true, fontSize: 10.5, headerFontSize: 11,
-                    });
+                if (format === 'xls') {
+                    _pkgRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls' });
+                    pkgCloseExportChoiceModal();
+                } else {
+                    statusEl.textContent = 'PDF 만드는 중...';
+                    await _pkgRenderGenericPrintPdf(Object.assign({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf' }, meta.pdfOpts || {}));
+                    pkgCloseExportChoiceModal();
                 }
-                pkgCloseExportChoiceModal();
             } catch (e) {
                 statusEl.textContent = '실패: ' + ((e && e.message) || e);
             }
