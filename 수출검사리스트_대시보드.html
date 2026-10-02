@@ -6633,7 +6633,7 @@ function _spuDetectFileKindFromGrid(grid) {
     if (!row) continue;
     const v = (row[factoryColIdx] || '').toString().trim();
     if (!v) continue;
-    if (_spuIsCj2Value(v)) cj2Votes++; else cj1Votes++;
+    if (isCj2Value(v)) cj2Votes++; else cj1Votes++;
   }
   if (cj2Votes === 0 && cj1Votes === 0) return null; // 공장 판정 칼럼이 통째로 비어있음
   return { type: type, factory: cj2Votes > cj1Votes ? 'cj2' : 'cj1' };
