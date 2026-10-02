@@ -8458,7 +8458,7 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 설정 (모바일, 포장강화 shell.html 설정모달과 동일 구성) ===== -->
-<div id="mSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+<div id="mSettingsModal" onclick="if(event.target===this)closeMSettings()" class="hidden" style="position:fixed;inset:0;z-index:120;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
