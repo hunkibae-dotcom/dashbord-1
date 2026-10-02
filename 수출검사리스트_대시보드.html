@@ -4721,7 +4721,7 @@ function toggleRpHeaderBulk(kind) {
     if (!_reportSelected[key]) return;
     if (kind === 'written') {
       _reportSelected[key].written = newVal;
-      if (newVal) _reportChecked.add(key);
+      if (newVal) { _reportChecked.add(key); _reportSelected[key].writtenAt = _rpTodayDisplayStr(); }
     } else {
       _reportSelected[key].hasHardware = newVal;
     }
