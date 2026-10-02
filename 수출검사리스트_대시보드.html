@@ -3634,7 +3634,7 @@ async function _rpFetchSharedReportData() {
         if (!sel) return;
         sel.hasHardware = remote.hasHardware === true;
         sel.written = remote.written === true;
-        if (remote.writtenAt) sel.writtenAt = remote.writtenAt;
+        if (remote.writtenAt) sel.writtenAt = _rpFormatWrittenAt(remote.writtenAt);
         if (remote.productPhotoId) sel.productPhotoRemote = { fileId: remote.productPhotoId };
         if (remote.packagePhotoId) sel.packagePhotoRemote = { fileId: remote.packagePhotoId };
         if (remote.notePhotoId) sel.notePhotoRemote = { fileId: remote.notePhotoId };
