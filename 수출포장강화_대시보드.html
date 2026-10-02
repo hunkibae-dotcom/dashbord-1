@@ -502,7 +502,7 @@
     <!-- 모바일에선 예전처럼 숨겨둔 슬라이드 드로어(햄버거로 토글), lg 이상에서는 QC
          대시보드의 좌측 사이드바(aside)처럼 항상 떠 있는 고정 칸으로 바뀐다 — lg: 쪽
          클래스만 덧붙였고 모바일 동작(열기/닫기)은 그대로다. -->
-    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-1 p-3 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out lg:static lg:translate-x-0 lg:w-[250px] lg:max-w-none lg:h-auto lg:min-h-screen lg:shrink-0 lg:shadow-none lg:transition-none">
+    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-1 p-3 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out lg:static lg:translate-x-0 lg:w-[250px] lg:max-w-none lg:h-auto lg:min-h-screen lg:shrink-0 lg:shadow-none lg:transition-none lg:overflow-visible">
         <div class="flex items-center justify-between px-1 pb-2 lg:hidden">
             <span class="text-[15px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-accentBlue"></i>메뉴</span>
             <button onclick="closeFilterDrawer()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-[18px]"></i></button>
