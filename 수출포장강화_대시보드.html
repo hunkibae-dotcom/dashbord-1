@@ -2355,7 +2355,7 @@
             sortConfig.direction = 'desc';
             updateSortHeaders();
 
-            autoAdjustDateFilters();
+            autoAdjustDateFilters(true); // 명시적 초기화 버튼 — 강제로 전체 기간으로
             applyFilters();
             showNotification('대시보드 초기화 완료', '모든 로컬 업로드 파일이 소멸되었으며 데모 데이터셋으로 안전 복원되었습니다.', 'success');
         }
