@@ -4035,8 +4035,8 @@ function _rpRowHtmlDesktop(d, checkedOrderMap) {
       <td style="padding:8px 6px;">${_rpPhotoBox(safeKey, 'package', sel)}</td>
       <td style="padding:6px 4px;">${_rpCbmCell(safeKey, d, sel)}</td>
       <td style="padding:6px 4px;">${_rpNoteCell(safeKey, sel)}</td>
-      <td style="padding:10px 6px;text-align:center;"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;" title="철물 유무"></td>
-      <td style="padding:10px 6px;text-align:center;white-space:nowrap;"><input type="checkbox" ${written ? 'checked' : ''} onchange="toggleReportWritten('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#22C55E;vertical-align:middle;" title="보고서 작성완료"></td>
+      <td style="padding:10px 6px;text-align:center;white-space:nowrap;vertical-align:middle;"><input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#F97316;vertical-align:middle;" title="철물 유무"></td>
+      <td style="padding:10px 6px;text-align:center;white-space:nowrap;vertical-align:middle;"><input type="checkbox" ${written ? 'checked' : ''} onchange="toggleReportWritten('${safeKey}', this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#22C55E;vertical-align:middle;" title="보고서 작성완료"></td>
     </tr>`;
 }
 
