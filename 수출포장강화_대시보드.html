@@ -3276,6 +3276,27 @@
             switchToProductDetailView(code);
         }
 
+        // 좌측 사이드바 "상세스펙" — 표에서 제품코드를 눌러 들어가던 걸 대신한다(그 글자는
+        // 이제 클릭하면 복사됨). 펼치고/접고 + 입력한 코드로 바로 조회.
+        function togglePkgSpecQuickSearch() {
+            const box = document.getElementById('pkgSpecQuickSearch');
+            const chevron = document.getElementById('pkgSpecQuickChevron');
+            const willOpen = box.classList.contains('hidden');
+            box.classList.toggle('hidden');
+            if (chevron) chevron.style.transform = willOpen ? 'rotate(180deg)' : '';
+            if (willOpen) setTimeout(() => document.getElementById('pkgSpecQuickCode')?.focus(), 50);
+        }
+        function runPkgSpecQuickSearch() {
+            const fb = document.getElementById('pkgSpecQuickFeedback');
+            const code = (document.getElementById('pkgSpecQuickCode').value || '').trim();
+            fb.textContent = '';
+            if (!code) { fb.textContent = '제품코드를 입력해주세요.'; return; }
+            const exists = (state.data || []).some(item => item.code && item.code.toLowerCase() === code.toLowerCase());
+            if (!exists) { fb.textContent = '일치하는 제품코드가 없습니다.'; return; }
+            switchToProductDetailView(code);
+            if (window.innerWidth < 1024) closeFilterDrawer(); // 모바일에선 드로어를 닫아 바로 보이게
+        }
+
         function startEditProductCode() {
             const label = document.getElementById('detailProductCode');
             const input = document.getElementById('detailProductCodeInput');
