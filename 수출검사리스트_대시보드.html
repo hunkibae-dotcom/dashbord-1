@@ -6483,7 +6483,8 @@ function openMItemDetail(key) {
   _miOriginalStatus = d.검사;
   const saveBtn = document.getElementById('miSaveBtn');
   if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
-  document.getElementById('miTitle').textContent = d.건명 || '—';
+  const _miCountry = _rpCountryLabel(d.건명);
+  document.getElementById('miTitle').textContent = (d.건명 || '—') + (_miCountry ? ` (${_miCountry})` : '');
   document.getElementById('miSub').innerHTML = `<b style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</b> · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
   _refreshMiStatusButtons(d.검사);
   _refreshMiReinspectReason(d.검사);
