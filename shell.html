@@ -1264,7 +1264,9 @@
             const code   = r[iCode]   ? r[iCode].toString().trim()   : '';
             const qty    = parseInt((r[iQty]||'').toString().replace(/[^0-9]/g,'')) || 0;
             if (!code && qty === 0) continue;
-            const status = r[iStatus] ? r[iStatus].toString().trim() : '미입고';
+            // 실재고(stock) 시트는 "미입고"라는 상태 자체가 없다(PKG_STATUS_GROUPS의 stock 그룹:
+            // 미확인/포장대기/포장완료/철물/미포장) — 진행 칸이 비어있는 새 행은 "미확인"이 맞다.
+            const status = r[iStatus] ? r[iStatus].toString().trim() : (srcTag === 'stock' ? '미확인' : '미입고');
             const date   = r[iDate]   ? r[iDate].toString().trim()   : '-';
             const regDate= r[iReg]    ? r[iReg].toString().trim()    : date;
             const round  = r[iRound]  ? r[iRound].toString().trim()  : '-';
