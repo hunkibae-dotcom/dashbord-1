@@ -62,14 +62,15 @@
         }
 
         /* ── 라이트 모드 ── */
-        /* 품질검사 대시보드에 비해 밋밋하다는 지적으로, 무채색에 가깝던 바탕(#EEF2F7)을
-           더 밝고 은은한 라벤더 톤 파스텔로 살짝 바꿨다 — 이 변수가 페이지 배경뿐 아니라
-           카드 안쪽 보조 배경(bg-darkBg/40~60)에도 두루 쓰여서, 여기 하나만 바꿔도 화면
-           전체 톤이 같이 은은해진다. 패널(panelBg)은 흰색 그대로 둬서 카드 대비는 유지. */
+        /* 품질검사 대시보드와 아예 같은 바탕색(#F8FAFC)으로 맞췄다 — 전엔 "비슷하지만
+           다른" 라벤더 파스텔(#F1F0FB)을 썼는데, 그게 오히려 대시보드끼리 색이 안
+           맞아 보인다는 지적으로 동일하게 통일함. 이 변수가 페이지 배경뿐 아니라 카드
+           안쪽 보조 배경(bg-darkBg/40~60)에도 두루 쓰여서, 여기 하나만 바꿔도 화면
+           전체 톤이 같이 바뀐다. 패널(panelBg)은 흰색 그대로 둬서 카드 대비는 유지. */
         html[data-theme="light"] {
-            --c-darkBg:  #F1F0FB;
+            --c-darkBg:  #F8FAFC;
             --c-panelBg: #FFFFFF;
-            --c-border:  #CBD5E1;
+            --c-border:  #E2E8F0;
         }
 
         body { background-color: var(--c-darkBg); color: #F1F5F9; transition: background-color 0.25s, color 0.25s; word-break: keep-all; overflow-wrap: normal; }
