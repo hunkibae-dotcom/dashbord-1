@@ -5566,20 +5566,23 @@ function _qcStatusXlsColor(d) {
   if (d.검사 === '취소') return { bg: '#E2E8F0', color: '#64748B' };
   return { bg: '#FEE2E2', color: '#B91C1C' }; // pill-undone(미검사) 기본값
 }
-function qcExportStyledXls() {
-  const label = factoryTab === 'all' ? '전체' : (factoryTab === 'cj1' ? '충주1공장' : '충주2공장');
-  const rows = _qcExportSourceRows();
-  if (!rows || !rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
+// columns는 get 기반(QC_EXPORT_COLS와 동일 모양)이라 검사항목/현장용 출력도
+// "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다. isStatus 플래그가 있는 칼럼만
+// _qcStatusXlsColor로 배지 색을 입힌다.
+function _qcRenderGenericXls(opts) {
+  const columns = opts.columns;
+  const rows = opts.rows || [];
+  if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
 
   const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const colgroup = QC_EXPORT_COLS.map(c => `<col style="width:${c.width}px;">`).join('');
-  const headHtml = QC_EXPORT_COLS.map(c =>
+  const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
+  const headHtml = columns.map(c =>
     `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
   ).join('');
   const bodyHtml = rows.map((d, idx) => {
     const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-    return '<tr>' + QC_EXPORT_COLS.map(c => {
-      const isStatus = c.label === '검사상태';
+    return '<tr>' + columns.map(c => {
+      const isStatus = !!c.isStatus;
       const sc = isStatus ? _qcStatusXlsColor(d) : null;
       const bg = isStatus ? sc.bg : rowBg;
       const color = isStatus ? sc.color : '#1e293b';
@@ -5588,7 +5591,7 @@ function qcExportStyledXls() {
   }).join('');
 
   const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>검사항목목록</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '검사항목목록')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
 <body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
 <thead><tr>${headHtml}</tr></thead>
 <tbody>${bodyHtml}</tbody>
@@ -5598,7 +5601,7 @@ function qcExportStyledXls() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `검사항목목록_${label}_${new Date().toISOString().slice(0,10)}.xls`;
+  a.download = opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`;
   a.click();
   URL.revokeObjectURL(url);
 }
