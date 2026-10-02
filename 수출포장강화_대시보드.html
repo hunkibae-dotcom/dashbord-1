@@ -6095,11 +6095,12 @@
                 `<th style="width:${c.width};padding:7px 6px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</th>`
             ).join('') + '</tr>';
         }
+        // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
+        // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
         function _pkgGenericRowHtml(item, columns, fontSize) {
             return '<tr>' + columns.map(c => {
                 const v = c.get ? c.get(item) : '';
-                const wrap = c.wrap ? 'white-space:normal;word-break:break-all;' : 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-                return `<td style="width:${c.width};padding:6px 6px;border:1px solid #cbd5e1;font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};${wrap}">${_pkgPrintEsc(v)}</td>`;
+                return `<td style="width:${c.width};padding:6px 6px;border:1px solid #cbd5e1;font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;">${_pkgPrintEsc(v)}</td>`;
             }).join('') + '</tr>';
         }
         // opts: { title, columns, rows, filename, footer(선택), fontSize(선택), headerFontSize(선택) }
