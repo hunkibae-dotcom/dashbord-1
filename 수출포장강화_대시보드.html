@@ -2121,7 +2121,11 @@
             
             let fieldMap = {
                 date: ['상차일', 'date'], regDate: ['포장일', '등록일자', 'regDate'], round: ['수주건명', '건명', '차수', 'round'],
-                qty: ['수량', 'qty'], dueDate: ['전산상납기', '전산 납기', '납기일', '납기', 'dueDate'], country: ['제품 구분', '제품구분', 'country'],
+                qty: ['수량', 'qty'], dueDate: ['전산상납기', '전산 납기', '납기일', '납기', 'dueDate'],
+                // "충주공장 재고" 시트는 이 칸 헤더가 "제품구분"이 아니라 그냥 "구분"이라, 이전엔
+                // 못 찾고 기본값 'DOMESTIC'으로 떨어졌었다(기본출력 제품구분 칸이 전부 DOMESTIC으로만
+                // 나오던 원인) — 짧은 별칭 "구분"을 추가해서 두 시트 다 잡히게 했다.
+                country: ['제품 구분', '제품구분', '구분', 'country'],
                 targetQty: ['대상(EA)', 'targetQty'], strengthenedQty: ['강화(EA)', '강화', 'strengthenedQty'], shippedQty: ['출고(EA)', '출고', 'shippedQty'],
                 cost: ['강화비용', 'cost'], status: ['진행', '진행상태', '상태', 'status'], code: ['품목코드', '제품코드', 'code'], color: ['색상', '컬러', 'color'],
                 // 알파벳 한 글자짜리 별칭(W/D/H/G)은 부분일치라 "TOTAL CODE"처럼 전혀 다른 헤더에
