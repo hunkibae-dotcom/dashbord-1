@@ -577,34 +577,43 @@
             <span class="flex-1">F.WORK 앱 다운로드</span>
         </a>
 
-        <!-- 연동 상태 미니 카드 -->
-        <div class="bg-panelBg border border-borderSlate rounded-xl p-3 flex flex-col gap-2 mt-2">
-            <div class="flex items-center justify-between">
-                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">연동 상태</span>
-                <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-7 h-7 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
-                    <i class="fa-solid fa-arrows-rotate text-[14px]" id="syncIcon"></i>
-                </button>
+        <!-- 연동 · 업데이트 상태 — 품질검사 대시보드와 같은 방식: 평소엔 점(dot) 하나만
+             보이는 한 줄짜리 메뉴 항목이고, 마우스를 올리면(hover) 자세한 내용이 팝업으로
+             옆에 뜬다. 전엔 이 내용 전체가 항상 펼쳐진 큼직한 카드였다. -->
+        <div class="relative group w-full">
+            <div class="pkg-nav-item w-full">
+                <i class="fa-solid fa-plug w-4 text-center"></i>
+                <span class="flex-1">연동 · 업데이트 상태</span>
+                <span id="pkgSyncDot" class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
             </div>
-            <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20">
-                <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
-                연동 대기 중
-            </div>
-            <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-500 font-semibold">동기화</span>
-                <span class="text-orange-500 font-bold" id="syncTimestamp">초기 로드 대기</span>
-            </div>
-            <div class="flex items-center justify-between text-[11px]">
-                <span class="text-slate-500 font-semibold">분류 업데이트</span>
-                <span class="text-accentGreen font-bold" id="pkgClassifyLastSyncLabel">기록 없음</span>
-            </div>
-            <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-2 rounded-lg border border-slate-700/60 text-[11px] space-y-1">
-                <div class="flex items-center justify-between font-bold text-slate-400 uppercase tracking-wider">
-                    <span>사용중 데이터 탭</span>
-                    <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;">
-                        <i class="fa-solid fa-trash-can"></i>
+            <div class="absolute left-full top-0 w-72 bg-panelBg border border-borderSlate rounded-2xl shadow-2xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px;">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">연동 상태</span>
+                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
+                        <i class="fa-solid fa-arrows-rotate text-[14px]" id="syncIcon"></i>
                     </button>
                 </div>
-                <div class="text-slate-300 break-all leading-normal" id="loadedFilesList">대기 중</div>
+                <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20 mb-3">
+                    <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
+                    연동 대기 중
+                </div>
+                <div class="flex items-center justify-between text-[12px] mb-1.5">
+                    <span class="text-slate-500 font-semibold">동기화</span>
+                    <span class="text-orange-500 font-bold" id="syncTimestamp">초기 로드 대기</span>
+                </div>
+                <div class="flex items-center justify-between text-[12px]">
+                    <span class="text-slate-500 font-semibold">분류 업데이트</span>
+                    <span class="text-accentGreen font-bold" id="pkgClassifyLastSyncLabel">기록 없음</span>
+                </div>
+                <div id="loadedFilesContainer" class="hidden bg-darkBg/60 p-2 rounded-lg border border-borderSlate/60 text-[11px] space-y-1 mt-3">
+                    <div class="flex items-center justify-between font-bold text-slate-400 uppercase tracking-wider">
+                        <span>사용중 데이터 탭</span>
+                        <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <div class="text-slate-300 break-all leading-normal" id="loadedFilesList">대기 중</div>
+                </div>
             </div>
         </div>
     </div><!-- /sidebarWrapper -->
