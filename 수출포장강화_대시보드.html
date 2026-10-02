@@ -9072,20 +9072,36 @@
             <div style="font-size:16px;font-weight:800;color:#1e293b;"><i class="fa-solid fa-file-export" style="color:#0284c7;margin-right:6px;"></i>데이터 출력</div>
             <button onclick="pkgCloseExportChoiceModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="font-size:13px;color:#64748b;margin:14px 0;">출력하실 목적을 선택해 주세요.</div>
-        <div style="display:flex;gap:8px;">
-            <button onclick="pkgRunExport('manage')" style="flex:1;padding:16px 6px;border:1.5px solid #bae6fd;border-radius:12px;background:#eff6ff;color:#0369a1;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
-                <i class="fa-solid fa-table-list" style="display:block;font-size:18px;margin-bottom:6px;"></i>기본출력
-                <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">전체 항목 · 엑셀(.xls)</div>
-            </button>
-            <button onclick="pkgRunExport('pack')" style="flex:1;padding:16px 6px;border:1.5px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
-                <i class="fa-solid fa-box" style="display:block;font-size:18px;margin-bottom:6px;"></i>포장항목 출력
-                <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">실재고 품목만 · A4 PDF</div>
-            </button>
-            <button onclick="pkgRunExport('ship')" style="flex:1;padding:16px 6px;border:1.5px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#15803d;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
-                <i class="fa-solid fa-truck-fast" style="display:block;font-size:18px;margin-bottom:6px;"></i>상차항목 출력
-                <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">미출고 품목만 · A4 PDF</div>
-            </button>
+        <div id="pkgExportKindStep">
+            <div style="font-size:13px;color:#64748b;margin:14px 0;">출력하실 목적을 선택해 주세요.</div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="pkgChooseExportKind('manage')" style="flex:1;padding:16px 6px;border:1.5px solid #bae6fd;border-radius:12px;background:#eff6ff;color:#0369a1;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-table-list" style="display:block;font-size:18px;margin-bottom:6px;"></i>기본출력
+                    <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">전체 항목</div>
+                </button>
+                <button onclick="pkgChooseExportKind('pack')" style="flex:1;padding:16px 6px;border:1.5px solid #fde68a;border-radius:12px;background:#fffbeb;color:#92400e;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-box" style="display:block;font-size:18px;margin-bottom:6px;"></i>포장항목 출력
+                    <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">실재고 품목만</div>
+                </button>
+                <button onclick="pkgChooseExportKind('ship')" style="flex:1;padding:16px 6px;border:1.5px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#15803d;font-weight:700;font-size:13px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-truck-fast" style="display:block;font-size:18px;margin-bottom:6px;"></i>상차항목 출력
+                    <div style="font-size:10.5px;font-weight:600;color:#64748b;margin-top:4px;">미출고 품목만</div>
+                </button>
+            </div>
+        </div>
+        <div id="pkgExportFormatStep" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;margin:14px 0;">
+                <button onclick="pkgBackToExportKind()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:13px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div style="font-size:13px;color:#64748b;">어떤 형식으로 받으실까요?</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="pkgRunExport('xls')" style="flex:1;padding:18px 6px;border:1.5px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#15803d;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-excel" style="display:block;font-size:20px;margin-bottom:6px;"></i>엑셀(.xls)
+                </button>
+                <button onclick="pkgRunExport('pdf')" style="flex:1;padding:18px 6px;border:1.5px solid #fecaca;border-radius:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:20px;margin-bottom:6px;"></i>PDF
+                </button>
+            </div>
         </div>
         <div id="pkgExportChoiceStatus" style="font-size:12px;color:#64748b;font-weight:600;min-height:16px;margin-top:14px;text-align:center;"></div>
     </div>
