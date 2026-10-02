@@ -499,8 +499,11 @@
         </div>
 
         <div id="sidebarBottom" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl flex flex-col gap-4">
-                <h2 class="text-[14.5px] font-bold text-white mb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-server text-accentGreen"></i> 데이터 연동 제어
+                <h2 class="text-[14.5px] font-bold text-white mb-2 flex items-center justify-between gap-2">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-server text-accentGreen"></i> 데이터 연동 제어</span>
+                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
+                        <i class="fa-solid fa-arrows-rotate text-[16px]" id="syncIcon"></i>
+                    </button>
                 </h2>
 
                 <div class="space-y-1">
