@@ -2820,12 +2820,17 @@
 
                 if (hasExactCodeMatch) {
                     switchToProductDetailView(exactProductCode);
+                } else if (_currentDetailProductCode && !exactProductCode) {
+                    // 사이드바에서 상세스펙을 열어둔 채로 배경 동기화/필터 재계산이 일어난
+                    // 경우 — productCodeFilter 입력칸과 무관하게 열려있으므로, 예전처럼
+                    // 무조건 일반 화면으로 튕겨내지 않고 보던 코드로 내용만 새로 고친다.
+                    switchToProductDetailView(_currentDetailProductCode);
                 } else {
                     switchToGeneralDashboardView();
                     updateKPIs();
                     renderTable();
                     renderCharts();
-                    updateSortHeaders(); 
+                    updateSortHeaders();
                 }
                 updateNearestSchedule();
                 updateCard1Stats();
