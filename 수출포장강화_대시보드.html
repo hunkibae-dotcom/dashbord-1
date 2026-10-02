@@ -445,6 +445,14 @@
         body.shell-mode #chartRow > div   { padding: 14px 10px !important; }
         body.shell-mode #chartRow h3      { font-size: 16px !important; }
         body.shell-mode #chartRow .h-72   { flex: 1 1 0 !important; height: auto !important; min-height: 0 !important; }
+
+        /* ── 좌측 사이드바 메뉴 항목(품질검사 대시보드의 .nav-item과 같은 모양, 이
+             다크 테마에 맞춘 색만 다름) — 전엔 버튼마다 따로 테두리·배경을 넣은 큼직한
+             박스를 위아래로 쌓아놔서 밋밋하고 촌스러웠다는 지적으로 통일했다. ── */
+        .pkg-nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:11px 12px; border-radius:10px; cursor:pointer; color:#CBD5E1; transition:all .15s; font-size:14px; font-weight:600; white-space:nowrap; border:none; background:none; text-align:left; }
+        .pkg-nav-item:hover { background:rgba(255,255,255,.07); color:#fff; }
+        .pkg-nav-item.danger { color:#FCA5A5; }
+        .pkg-nav-item.danger:hover { background:rgba(248,113,113,.12); color:#F87171; }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
