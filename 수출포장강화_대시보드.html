@@ -4992,9 +4992,19 @@
         function filterByWorkLog(rounds) {
             if (!rounds || !rounds.length) return;
             const roundSet = new Set(rounds);
-            const exportKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
-            const baseData = exportKey ? (datasetMap[exportKey] || []) : [];
-            state.filteredData = baseData.filter(item => item.round && roundSet.has(item.round));
+            // "전일 포장완료 내역"은 updatePrevDayCard()가 출고완료·충주공장재고 두 시트를
+            // 직접 뒤져서 만든 목록이라(위 주석 참고), 완료된 품목은 이미 수출 현황 시트에서
+            // 넘어가고 없는 경우가 흔하다 — 수출 현황만 뒤지면 개별 건 클릭 시 0건이 되는
+            // 원인이었다("전체보기는 되는데 건별로는 안 된다"던 것도, 묶어서 찾을 때 우연히
+            // 아직 안 넘어간 다른 색상/코드가 섞여 있어서 운 좋게 걸린 것뿐). 세 시트를 다
+            // 합친 풀에서 찾는다.
+            const pool = [];
+            Object.keys(datasetMap).forEach(k => {
+                if (k.includes('수출 현황') || k.includes('출고 완료') || k.includes('충주공장 재고')) {
+                    pool.push(...(datasetMap[k] || []));
+                }
+            });
+            state.filteredData = pool.filter(item => item.round && roundSet.has(item.round));
             sortData();
             switchToGeneralDashboardView();
             updateKPIs();
