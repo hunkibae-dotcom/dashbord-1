@@ -1952,6 +1952,14 @@
         }
 
         // 연동된 시트들의 이름을 화면에 표시해주는 UI 바인더
+        // 사이드바 "연동 · 업데이트 상태" 한 줄짜리 메뉴 항목의 점 색 — 평소엔 안 펼쳐진
+        // 채로도 지금 연동이 잘 돼있는지 한눈에 보이게(품질검사의 syncDot과 같은 역할).
+        function _pkgSetSyncDot(color) {
+            const dot = document.getElementById('pkgSyncDot');
+            if (!dot) return;
+            const map = { green: 'bg-green-500', blue: 'bg-accentBlue', amber: 'bg-amber-400' };
+            dot.className = 'w-2 h-2 rounded-full shrink-0 ' + (map[color] || map.amber);
+        }
         function updateFileBadges() {
             const container = document.getElementById('loadedFilesContainer');
             const listSpan = document.getElementById('loadedFilesList');
