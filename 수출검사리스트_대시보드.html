@@ -5229,6 +5229,28 @@ function _updatePsSourceAllBtn() {
 function closePsSourcePicker() {
   document.getElementById('psSourceModal').style.display = 'none';
 }
+
+// 데이터시트 바로가기 — 1공장/2공장 중 열고 싶은 시트를 고른다(복수 선택 가능).
+const QC_SHEET_URLS = {
+  cj1: 'https://docs.google.com/spreadsheets/d/1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U/edit#gid=1420932673',
+  cj2: 'https://docs.google.com/spreadsheets/d/1Gy1jIbw7j4t2A2B0N3-cwrqwCQMXd1M-S4oROGk-hg8/edit#gid=0'
+};
+function openQcSheetPicker() {
+  document.getElementById('qcSheetPickCj1').checked = false;
+  document.getElementById('qcSheetPickCj2').checked = false;
+  document.getElementById('qcSheetPickerModal').style.display = 'flex';
+}
+function closeQcSheetPicker() {
+  document.getElementById('qcSheetPickerModal').style.display = 'none';
+}
+function applyQcSheetPicker() {
+  const wantCj1 = document.getElementById('qcSheetPickCj1').checked;
+  const wantCj2 = document.getElementById('qcSheetPickCj2').checked;
+  if (!wantCj1 && !wantCj2) { alert('공장을 하나 이상 선택해주세요.'); return; }
+  if (wantCj1) window.open(QC_SHEET_URLS.cj1, '_blank');
+  if (wantCj2) window.open(QC_SHEET_URLS.cj2, '_blank');
+  closeQcSheetPicker();
+}
 function applyPsSourcePicker() {
   _psSourceFilter = _psPickerSource;
   _psStatusFilters = new Set(_psPickerStatuses);
