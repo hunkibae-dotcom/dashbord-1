@@ -6476,6 +6476,27 @@
           if (!pe.type) return '';
           return pe.spec ? (pe.type + ' ' + pe.spec) : pe.type;
         }
+        // 유형 드롭다운이 바뀔 때마다 규격 드롭다운 옵션을 그 유형 전용 목록으로 다시
+        // 채운다 — selectedSpec을 주면(수정창을 열 때 기존값 복원용) 그 값을 바로 선택해둔다.
+        function _pkgRenderPeSpecOptions(type, selectedSpec) {
+          const specSel = document.getElementById('pkgPeSpec');
+          const specs = PKG_PE_TYPE_SPECS[type] || [];
+          if (!type) {
+            specSel.innerHTML = '<option value="">유형을 먼저 고르세요</option>';
+            specSel.disabled = true;
+            return;
+          }
+          specSel.disabled = false;
+          const opts = ['<option value="">선택 안 함</option>'].concat(
+            specs.map(s => `<option value="${s.replace(/"/g,'&quot;')}">${s}</option>`)
+          );
+          specSel.innerHTML = opts.join('');
+          if (selectedSpec && specs.includes(selectedSpec)) specSel.value = selectedSpec;
+        }
+        function _pkgOnPeTypeChange() {
+          const type = document.getElementById('pkgPeType').value;
+          _pkgRenderPeSpecOptions(type, '');
+        }
 
         // ── 진행상태를 "수출현황/출고완료/실재고" 그룹으로 묶어서 접었다 펴는 공통 로직 ──
         // 전엔 가능한 진행상태를 한 번에 다 나열해놔서(7개 넘게) 한눈에 복잡해 보였다는
