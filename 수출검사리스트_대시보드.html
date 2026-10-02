@@ -3480,7 +3480,7 @@ function _rpSaveToStorage(photosChanged) {
       for (const k in _reportSelected) {
         const s = _reportSelected[k];
         metaOnly[k] = {
-          item: s.item, note: s.note, hasHardware: s.hasHardware, written: s.written, cbm: s.cbm,
+          item: s.item, note: s.note, hasHardware: s.hasHardware, written: s.written, writtenAt: s.writtenAt, cbm: s.cbm,
           productPhotoRemote: s.productPhotoRemote, packagePhotoRemote: s.packagePhotoRemote, notePhotoRemote: s.notePhotoRemote,
           _updatedAt: s._updatedAt
         };
