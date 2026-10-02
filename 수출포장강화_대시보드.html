@@ -6084,7 +6084,7 @@
             { label: '수량', width: '5%', align: 'right', get: item => item.qty },
             { label: '전산상 납기', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.dueDate) },
             { label: '확정 상차일', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.date) },
-            { label: '유형', width: '7%', align: 'center', get: () => '' },
+            { label: '유형', width: '7%', align: 'center', get: item => _pkgPeTypeDisplay(item) },
             { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
             { label: '파렛트', width: '6%', align: 'center', get: item => item.pallet || '' },
             { label: '가로', width: '5.75%', align: 'right', get: () => '' },
