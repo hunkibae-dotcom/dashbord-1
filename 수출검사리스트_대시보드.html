@@ -3456,6 +3456,16 @@ function _rpTodayDisplayStr() {
   const now = new Date();
   return now.getFullYear() + '. ' + (now.getMonth() + 1) + '. ' + now.getDate();
 }
+// 구글시트 칸이 "2026. 10. 2" 같은 문자열을 날짜로 자동 인식해버리면, 나중에 그 칸을
+// 다시 읽어올 때 ISO 타임스탬프("2026-10-01T15:00:00.000Z")로 돌아온다 — 화면엔
+// 항상 "YYYY. M. D"만 보이도록 여기서 한 번 더 정리한다(이미 날짜 서식으로 바뀐
+// 예전 데이터도 이걸 거치면 자동으로 정상 표기로 고쳐진다).
+function _rpFormatWrittenAt(v) {
+  if (!v) return '';
+  const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})T/);
+  if (m) return m[1] + '. ' + parseInt(m[2], 10) + '. ' + parseInt(m[3], 10);
+  return v;
+}
 let _reportChecked = new Set(); // 지금 PPTX 생성 대상으로 체크된 키만 담는 집합 — 체크박스 해제는 이 집합에서만 빠짐
 
 // 보고서는 하루만에 다 채우기 어려워서, 오늘 등록한 사진을 닫았다 다시 열어도(하루
