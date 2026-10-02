@@ -5927,7 +5927,7 @@
             { label: 'CBM', width: '8%', align: 'right', get: item => item._cbm != null ? item._cbm.toFixed(4) : '-' },
             { label: '적재', width: '8%', align: 'center', get: item => item.pallet || '-' },
             { label: '상태', width: '9%', align: 'center', isStatus: true, get: item => item.status },
-            { label: '유형', width: '9%', align: 'center', get: () => '' },
+            { label: '유형', width: '9%', align: 'center', get: item => _pkgPeTypeDisplay(item) },
         ];
         // 기본출력(관리용) 전용 — 꾸민 HTML을 ".xls"로 저장한다. 엑셀은 이 방식의 파일을
         // 열 때 HTML의 색상·테두리·굵은 글씨·칸 너비를 그대로 셀 서식으로 읽어들이기
