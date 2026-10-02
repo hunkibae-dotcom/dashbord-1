@@ -454,6 +454,13 @@
         .pkg-nav-item:hover { background:rgba(255,255,255,.07); color:#fff; }
         .pkg-nav-item.danger { color:#FCA5A5; }
         .pkg-nav-item.danger:hover { background:rgba(248,113,113,.12); color:#F87171; }
+        /* 라이트 모드에서 어두운 배경용 연한 글자색(#CBD5E1)을 그대로 쓰면 흰 바탕에
+           거의 안 보였다("버튼들이 너무 연해서 안 보인다") — 품질검사 .nav-item과 같은
+           짙은 회색 계열로 바꾼다. */
+        html[data-theme="light"] .pkg-nav-item { color:#475569; }
+        html[data-theme="light"] .pkg-nav-item:hover { background:#F1F5F9; color:#1E293B; }
+        html[data-theme="light"] .pkg-nav-item.danger { color:#DC2626; }
+        html[data-theme="light"] .pkg-nav-item.danger:hover { background:#FEF2F2; color:#B91C1C; }
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
