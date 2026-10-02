@@ -5482,29 +5482,55 @@ function _qcExportSourceRows() {
   }
   return displayedRows;
 }
-async function qcRunExport(kind) {
+// 기본/검사항목/현장용 중 어떤 걸 고르든 "XLS로 받을지 PDF로 받을지"를 한 번 더
+// 물어본다(포장강화 쪽과 동일한 2단계 흐름) — 칼럼 정의가 전부 get 기반으로 통일돼
+// 있어서 _qcRenderGenericXls/_qcRenderPrintPdf 어느 쪽에도 그대로 넘길 수 있다.
+let _qcExportPendingKind = null;
+function qcChooseExportKind(kind) {
+  _qcExportPendingKind = kind;
+  document.getElementById('qcExportKindStep').classList.add('hidden');
+  document.getElementById('qcExportFormatStep').classList.remove('hidden');
+}
+function qcBackToExportKind() {
+  _qcExportPendingKind = null;
+  document.getElementById('qcExportChoiceStatus').textContent = '';
+  document.getElementById('qcExportFormatStep').classList.add('hidden');
+  document.getElementById('qcExportKindStep').classList.remove('hidden');
+}
+function _qcExportKindMeta(kind, sourceRows) {
   if (kind === 'manage') {
-    qcExportStyledXls();
-    qcCloseExportChoiceModal();
-    return;
+    return { title: '검사항목목록', columns: QC_EXPORT_COLS, rows: sourceRows, filenameBase: `검사항목목록_${new Date().toISOString().slice(0,10)}` };
   }
+  if (kind === 'inspect') {
+    return { title: '검사항목 출력', columns: _qcInspectColumns(), rows: sourceRows, filenameBase: `검사항목출력_${new Date().toISOString().slice(0,10)}` };
+  }
+  if (kind === 'field') {
+    // 현장용 출력 — 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만. STATUS_LABEL이
+    // 쓰는 것과 같은 기준(d.검사 === '검사'만 검사완료)으로 판정한다.
+    const items = sourceRows.filter(d => d.검사 !== '검사');
+    const now = new Date();
+    const md = (now.getMonth() + 1) + '/' + now.getDate();
+    return { title: `${md} 검사대기 출고금지 현황`, columns: _qcFieldColumns(), rows: items, filenameBase: `검사대기출고금지현황_${md.replace('/', '-')}`, emptyMsg: '검사대기 품목이 없습니다.', plain: true };
+  }
+  return null;
+}
+async function qcRunExport(format) {
+  const kind = _qcExportPendingKind;
+  if (!kind) return;
   const statusEl = document.getElementById('qcExportChoiceStatus');
-  statusEl.textContent = 'PDF 만드는 중...';
+  const sourceRows = _qcExportSourceRows();
+  if (!sourceRows.length) { statusEl.textContent = '내보낼 데이터가 없습니다.'; return; }
+  const meta = _qcExportKindMeta(kind, sourceRows);
+  if (!meta || !meta.rows.length) { statusEl.textContent = (meta && meta.emptyMsg) || '내보낼 데이터가 없습니다.'; return; }
   try {
-    const sourceRows = _qcExportSourceRows();
-    if (!sourceRows.length) { statusEl.textContent = '내보낼 데이터가 없습니다.'; return; }
-    if (kind === 'inspect') {
-      await _qcRenderInspectPdf(sourceRows);
-    } else if (kind === 'field') {
-      // 현장용 출력 — 아직 검사가 끝나지 않은(검사완료가 아닌) 품목만. STATUS_LABEL이
-      // 쓰는 것과 같은 기준(d.검사 === '검사'만 검사완료)으로 판정한다.
-      const items = sourceRows.filter(d => d.검사 !== '검사');
-      if (!items.length) { statusEl.textContent = '검사대기 품목이 없습니다.'; return; }
-      await _qcRenderFieldPdf(items);
+    if (format === 'xls') {
+      _qcRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls' });
+      qcCloseExportChoiceModal();
     } else {
-      return;
+      statusEl.textContent = 'PDF 만드는 중...';
+      await _qcRenderPrintPdf({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf', plain: !!meta.plain });
+      qcCloseExportChoiceModal();
     }
-    qcCloseExportChoiceModal();
   } catch (e) {
     statusEl.textContent = '실패: ' + ((e && e.message) || e);
   }
