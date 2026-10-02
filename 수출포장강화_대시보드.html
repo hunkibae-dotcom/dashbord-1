@@ -478,7 +478,7 @@
 </div>
 
     <header class="bg-darkBg py-4 flex items-center justify-center sticky top-0 z-50" style="position:relative;padding-left:16px;padding-right:16px;">
-        <button onclick="openFilterDrawer()" id="sidebarToggleBtn" class="flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" title="검색·필터 / 데이터 연동">
+        <button onclick="openFilterDrawer()" id="sidebarToggleBtn" class="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);" title="검색·필터 / 데이터 연동">
             <i class="fa-solid fa-bars text-[18px]"></i>
         </button>
         <div id="headerTitleGroup" class="flex items-center gap-2 cursor-pointer" onclick="resetFilters();document.getElementById('tablePanel').classList.remove('mobile-table-open');document.getElementById('mbBtnTable')&&document.getElementById('mbBtnTable').classList.remove('mb-primary');window.scrollTo({top:0,behavior:'smooth'});" title="초기화면으로">
