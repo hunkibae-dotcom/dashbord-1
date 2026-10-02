@@ -3853,6 +3853,7 @@ function _rpFilteredRows() {
   // 고르게 하던 상단 선택버튼은 없앴다 — 항상 두 공장을 같이 보여주고, 대신 포장처/
   // 진행상태 칼럼의 드롭다운으로 필요한 만큼만 좁혀본다.
   let rows = [...allData, ...archiveRows];
+  rows = rows.filter(d => !_spuIsDomesticRound(d.건명)); // 보고서는 내수건 제외 — 수출건만 대상
   if (_rpPackerFilter) rows = rows.filter(d => d.포장처 === _rpPackerFilter);
   if (_rpStatusFilter) rows = rows.filter(d => d.검사 === _rpStatusFilter);
   if (_rpWrittenFilter) rows = rows.filter(d => {
