@@ -6761,10 +6761,12 @@
                 const codeRaw = (iCode >= 0 ? row[iCode] : row[2]);
                 const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
                 if (!codeStr) continue;
+                const colorRaw = (iColor >= 0 ? row[iColor] : row[3]);
+                const qtyRaw = (iQty >= 0 ? row[iQty] : row[4]);
                 entries.push({
                     itemCode: codeStr,
-                    color: (iColor >= 0 ? row[iColor] : row[3] || '').toString().trim(),
-                    qty: (iQty >= 0 ? row[iQty] : row[4] || '').toString().trim()
+                    color: (colorRaw == null ? '' : colorRaw.toString()).trim(),
+                    qty: (qtyRaw == null ? '' : qtyRaw.toString()).trim()
                 });
             }
             return entries;
