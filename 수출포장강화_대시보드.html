@@ -5975,6 +5975,9 @@
         // ── 데이터 출력: 기본출력/포장항목 출력/상차항목 출력 선택 ───────────
         function pkgOpenExportChoiceModal() {
             document.getElementById('pkgExportChoiceStatus').textContent = '';
+            _pkgExportPendingKind = null;
+            document.getElementById('pkgExportFormatStep').style.display = 'none';
+            document.getElementById('pkgExportKindStep').style.display = 'block';
             document.getElementById('pkgExportChoiceModal').style.display = 'flex';
         }
         function pkgCloseExportChoiceModal() {
