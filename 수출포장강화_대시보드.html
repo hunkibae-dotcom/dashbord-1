@@ -2319,7 +2319,7 @@
 
                 combineDatasets();
                 updateFileBadges();
-                autoAdjustDateFilters();
+                autoAdjustDateFilters(true); // 사용자가 직접 새 파일을 올린 것이므로 그 데이터 기준으로 강제 갱신
                 applyFilters();
             } catch (err) {
                 console.error(err);
