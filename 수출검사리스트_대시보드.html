@@ -6652,7 +6652,9 @@ function _spuLooksLikeSalesGrid(grid) {
     if (!row) continue;
     const round = (row[11] || '').toString().trim();
     const qtyRaw = (row[18] || '').toString().trim();
-    if (round && qtyRaw && !isNaN(Number(qtyRaw.replace(/,/g, '')))) plausible++;
+    // round(수주건명)는 "FAM-NY-50/26"처럼 글자가 섞인 텍스트라 — 순수 숫자뿐인 값(공정
+    // 파일의 계획량 등을 잘못 집었을 경우)은 걸러서 오판정을 줄인다.
+    if (round && /[A-Za-z가-힣]/.test(round) && qtyRaw && !isNaN(Number(qtyRaw.replace(/,/g, '')))) plausible++;
   }
   return plausible >= 1;
 }
