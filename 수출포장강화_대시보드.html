@@ -1976,7 +1976,7 @@
                                         }
                                     } else if (ALLOWED_SHEETS.some(name => sheetName.includes(name))) {
                                         const sheetRows = jsonObj[sheetName];
-                                        const parsedSheetData = mapCSVData(sheetRows);
+                                        const parsedSheetData = mapCSVData(sheetRows, sheetName.includes('충주공장 재고') ? 'stock' : undefined);
                                         datasetMap['sheet_' + sheetName] = parsedSheetData;
                                         if (sheetName.includes('수출 현황')) {
                                             state.rawCsvRows = sheetRows;
