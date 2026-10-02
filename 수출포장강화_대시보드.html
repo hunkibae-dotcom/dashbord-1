@@ -6073,9 +6073,10 @@
         }
 
         // 포장항목 출력(작업자용, 실재고 기준) — 수주건명을 맨 왼쪽에 두고 품목코드/색상/
-        // 수량/전산상 납기/확정 상차일/실물확인(현장에서 직접 체크하도록 빈 칸)/진행/파렛트
-        // 순. 제품구분·포장일 칼럼은 제외했고, 가로/세로/높이/중량은 작업자가 현장에서 직접
-        // 수기로 적는 칸이라 일부러 공백으로 비워둔다(스펙 조회값을 자동으로 채우지 않음).
+        // 수량/전산상 납기/확정 상차일/유형(어떤 PE폼 유형을 쓸지 — 자동 판정 로직은 아직
+        // 없어서 현장에서 직접 적도록 빈 칸)/진행/파렛트 순. 제품구분·포장일 칼럼은
+        // 제외했고, 가로/세로/높이/중량은 작업자가 현장에서 직접 수기로 적는 칸이라
+        // 일부러 공백으로 비워둔다(스펙 조회값을 자동으로 채우지 않음).
         const PKG_PRINT_PACK_COLS = [
             { label: '수주건명', width: '20%', align: 'left', wrap: true, get: item => item.round || '' },
             { label: '품목코드', width: '11%', align: 'left', get: item => item.code || '' },
@@ -6083,7 +6084,7 @@
             { label: '수량', width: '5%', align: 'right', get: item => item.qty },
             { label: '전산상 납기', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.dueDate) },
             { label: '확정 상차일', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.date) },
-            { label: '실물확인', width: '7%', align: 'center', get: () => '' },
+            { label: '유형', width: '7%', align: 'center', get: () => '' },
             { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
             { label: '파렛트', width: '6%', align: 'center', get: item => item.pallet || '' },
             { label: '가로', width: '5.75%', align: 'right', get: () => '' },
