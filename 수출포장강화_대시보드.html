@@ -2110,7 +2110,12 @@
         }
 
         // [동적 지능형 시트 데이터 매퍼]
-        function mapCSVData(csvRows) {
+        // sheetHint: '충주공장 재고'(실재고) 시트를 매핑할 때만 'stock'을 넘긴다 — 진행 칸이
+        // 비어있거나(새로 들어온 행) 알아볼 수 없는 값이면 "미입고"(입고현황 시트 전용 상태)로
+        // 잘못 디폴트되던 걸 막는다. 실재고 시트엔 "미입고"라는 상태 자체가 없고(PKG_STATUS_GROUPS의
+        // stock 그룹: 미확인/포장대기/포장완료/철물/미포장), 분류가 아직 안 된 행은 "미확인"이 맞다.
+        function mapCSVData(csvRows, sheetHint) {
+            const emptyStatusDefault = sheetHint === 'stock' ? '미확인' : '미입고';
             if (csvRows.length < 2) return [];
             let headers = csvRows[0].map(h => h ? h.toString().trim().replace(/\s+/g, '') : '');
             
