@@ -9055,20 +9055,18 @@
         <div style="margin-bottom:20px;">
             <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">PE폼 유형</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <select id="pkgPeType" onchange="_pkgOnPeTypeChange()"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;cursor:pointer;">
-                    <option value="">선택 안 함</option>
-                    <option value="일자형">일자형</option>
-                    <option value="코너형">코너형</option>
-                    <option value="패드형">패드형</option>
-                    <option value="롤형">롤형</option>
-                </select>
-                <select id="pkgPeSpec"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;cursor:pointer;">
-                    <option value="">유형을 먼저 고르세요</option>
-                </select>
+                <input id="pkgPeType" type="text" list="pkgPeTypeOptions" placeholder="예: 일자형" onchange="_pkgOnPeTypeChange()"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                <datalist id="pkgPeTypeOptions">
+                    <option value="일자형"><option value="코너형"><option value="패드형"><option value="롤형">
+                </datalist>
+                <input id="pkgPeSpec" type="text" list="pkgPeSpecOptions" placeholder="목록에서 고르거나 직접 입력"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                <datalist id="pkgPeSpecOptions"></datalist>
             </div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">이 선택은 구글시트에는 반영되지 않고 이 대시보드(이 브라우저)에만 기억됩니다.</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">목록에 없으면 직접 입력해도 됩니다. 이 선택은 구글시트에는 반영되지 않고 이 대시보드(이 브라우저)에만 기억됩니다.</div>
         </div>
         <div style="margin-bottom:22px;">
             <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">규격 (CBM)</div>
