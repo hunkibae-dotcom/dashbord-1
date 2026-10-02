@@ -3656,7 +3656,8 @@ function _rpSyncMetaToServer(key) {
       action: 'saveReportMeta', key: key,
       checked: _reportChecked.has(key) ? '1' : '0',
       hasHardware: sel.hasHardware ? '1' : '0',
-      written: sel.written ? '1' : '0'
+      written: sel.written ? '1' : '0',
+      writtenAt: sel.writtenAt || ''
     }, _gasQcSyncParams(sel.item));
     try {
       await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
