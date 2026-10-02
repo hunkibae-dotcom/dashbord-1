@@ -7521,7 +7521,10 @@
                 tasks.push(fetch(gasUrl + '?' + new URLSearchParams({ action:'updateSpec', code:_pkgCode, round:_pkgRound, color:_pkgColor, w:newW, d:newD, h:newH, g:newG }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
                 changed.spec = true;
             }
-            if (!tasks.length && !migrationPromise && !shipDatePromise) {
+            // PE폼 유형/규격은 구글시트와 무관하게 이 브라우저에만 저장하는 값이라 네트워크
+            // 요청이 필요 없다 — 다른 변경사항과 별개로 바로 기억해둔다.
+            if (peChanged) _pkgSetPeType(_pkgCode, _pkgRound, _pkgColor, newPeType, newPeSpec);
+            if (!tasks.length && !migrationPromise && !shipDatePromise && !peChanged) {
                 fb.textContent = '변경사항이 없습니다.'; fb.style.color = '#64748b';
                 return;
             }
