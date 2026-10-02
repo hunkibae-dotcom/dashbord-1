@@ -3231,6 +3231,7 @@
             panel.classList.remove('translate-x-0');
             backdrop.classList.add('hidden');
             document.getElementById('productCodeFilter').value = '';
+            _currentDetailProductCode = ''; // 명시적으로 닫은 것 — applyFilters()가 이 뒤로 다시 안 열게
             applyFilters();
         }
 
