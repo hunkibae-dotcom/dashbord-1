@@ -5913,54 +5913,51 @@
         // 예쁘게"가 안 됨) — 대신 표 모양 그대로 꾸민 HTML을 ".xls"로 저장한다. 엑셀은
         // 이 방식의 파일을 열 때 HTML의 색상·테두리·굵은 글씨·칸 너비를 그대로 셀
         // 서식으로 읽어들이기 때문에, 평범한 CSV보다 훨씬 보기 좋은 표가 나온다.
-        const _PKG_EXPORT_COLS = [
-            { label: '제품구분', width: 90, align: 'center' },
-            { label: '등록일자(포장일)', width: 110, align: 'center' },
-            { label: '건명', width: 150, align: 'left' },
-            { label: '제품코드', width: 100, align: 'left' },
-            { label: '수량', width: 70, align: 'right' },
-            { label: '납기일', width: 90, align: 'center' },
-            { label: '상차일', width: 90, align: 'center' },
-            { label: '강화(BOX)', width: 80, align: 'right' },
-            { label: '출고(BOX)', width: 80, align: 'right' },
-            { label: 'CBM', width: 80, align: 'right' },
-            { label: '적재', width: 80, align: 'center' },
-            { label: '상태', width: 90, align: 'center' },
+        // 강화(BOX)/출고(BOX)는 제외하고, 상태 오른쪽에 "유형"(어떤 PE폼 유형을 쓸지 — 아직
+        // 자동 판정 로직은 없어 공란으로 두고 수기로 적는 칸)을 추가했다. get 기반이라
+        // XLS/PDF 어느 형식으로 내보내든 같은 칼럼 정의를 그대로 재사용한다.
+        const PKG_EXPORT_BASIC_COLS = [
+            { label: '제품구분', width: '8%', align: 'center', get: item => _pkgPrintCountry(item) },
+            { label: '등록일자(포장일)', width: '10%', align: 'center', get: item => normalizeDate(item.regDate) },
+            { label: '건명', width: '14%', align: 'left', wrap: true, get: item => item.round || '' },
+            { label: '제품코드', width: '10%', align: 'left', get: item => item.code || '' },
+            { label: '수량', width: '6%', align: 'right', get: item => item.qty },
+            { label: '납기일', width: '9%', align: 'center', get: item => normalizeDate(item.dueDate) },
+            { label: '상차일', width: '9%', align: 'center', get: item => normalizeDate(item.date) },
+            { label: 'CBM', width: '8%', align: 'right', get: item => item._cbm != null ? item._cbm.toFixed(4) : '-' },
+            { label: '적재', width: '8%', align: 'center', get: item => item.pallet || '-' },
+            { label: '상태', width: '9%', align: 'center', isStatus: true, get: item => item.status },
+            { label: '유형', width: '9%', align: 'center', get: () => '' },
         ];
-        function exportToCSV() {
-            // "선택" 모드로 체크해둔 품목이 있으면 전체 필터 결과가 아니라 그 품목들만
-            // 내보낸다 — 선택 자체가 "이 품목들만 보고 싶다/내보내고 싶다"는 용도로
-            // 만든 기능이라(선택 버튼 도입 시 안내한 목적) 자연스러운 확장.
-            const _exportSource = _pkgSelectedKeys.size
-                ? Array.from(_pkgSelectedKeys).map(k => window._pkgRowMap && window._pkgRowMap[k]).filter(Boolean)
-                : state.filteredData;
-            const rows = _exportSource.map(item => [
-                _pkgPrintCountry(item),
-                normalizeDate(item.regDate), item.round, item.code, item.qty,
-                normalizeDate(item.dueDate), normalizeDate(item.date),
-                item.strengthenedQty, item.shippedQty,
-                item._cbm != null ? item._cbm.toFixed(4) : '-',
-                item.pallet || '-',
-                item.status
-            ]);
+        // 기본출력(관리용) 전용 — 꾸민 HTML을 ".xls"로 저장한다. 엑셀은 이 방식의 파일을
+        // 열 때 HTML의 색상·테두리·굵은 글씨·칸 너비를 그대로 셀 서식으로 읽어들이기
+        // 때문에, 평범한 CSV보다 훨씬 보기 좋은 표가 나온다. columns는 get 기반(위
+        // PKG_EXPORT_BASIC_COLS/PKG_PRINT_PACK_COLS/PKG_PRINT_SHIP_COLS와 동일 모양)이라
+        // 포장항목/상차항목 출력도 "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다.
+        function _pkgRenderGenericXls(opts) {
+            const columns = opts.columns;
+            const rows = opts.rows || [];
+            if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
 
             const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            const colgroup = _PKG_EXPORT_COLS.map(c => `<col style="width:${c.width}px;">`).join('');
-            const headHtml = _PKG_EXPORT_COLS.map(c =>
+            // PDF 쪽과 칼럼 정의(퍼센트 폭)를 공유하기 위해, 엑셀 칸 너비는 퍼센트를 적당한
+            // 픽셀값으로 환산해서 쓴다(표 전체 폭을 대략 1000px로 가정).
+            const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
+            const headHtml = columns.map(c =>
                 `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
             ).join('');
-            const bodyHtml = rows.map((r, idx) => {
+            const bodyHtml = rows.map((item, idx) => {
                 const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-                return '<tr>' + r.map((v, ci) => {
-                    const col = _PKG_EXPORT_COLS[ci];
-                    const isStatus = col.label === '상태';
-                    const statusColor = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
-                    return `<td style="background:${rowBg};color:${statusColor};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${col.align};white-space:nowrap;">${esc(v)}</td>`;
+                return '<tr>' + columns.map(c => {
+                    const v = c.get ? c.get(item) : '';
+                    const isStatus = !!c.isStatus;
+                    const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
+                    return `<td style="background:${rowBg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${c.align};white-space:nowrap;">${esc(v)}</td>`;
                 }).join('') + '</tr>';
             }).join('');
 
             const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>수출포장강화</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '수출포장강화')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
 <body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
 <thead><tr>${headHtml}</tr></thead>
 <tbody>${bodyHtml}</tbody>
@@ -5970,7 +5967,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = '수출포장강화_export.xls';
+            a.download = opts.filename || '수출포장강화_export.xls';
             a.click();
             URL.revokeObjectURL(url);
         }
