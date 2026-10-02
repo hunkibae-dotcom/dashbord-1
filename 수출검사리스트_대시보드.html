@@ -6665,10 +6665,19 @@ function _spuDetectFileKindFromGrid(grid) {
     isCj2Value = _spuIsCj2ProcessLine;
   } else if (iSalesGroup !== -1 || iSalesQty !== -1) {
     type = 'sales';
-    factoryColIdx = iSalesGroup !== -1 ? iSalesGroup : 27; // 헤더로 못 찾으면 기존 AB=27 자리
+    factoryColIdx = iSalesGroup !== -1 ? iSalesGroup : 27;
+    isCj2Value = _spuIsCj2Value;
+  } else if (_spuLooksLikeSalesGrid(grid)) {
+    // grd_Group_* 원본은 1행이 제목줄일 뿐 실제 칼럼 헤더가 아예 없어서(헤더 문구로는
+    // 절대 못 찾음 — "수주내역은 AB열에서 보면 된다"던 지적대로 애초에 헤더가 아니라
+    // 고정 위치였다), 위 헤더 검색이 항상 실패했었다. L=11(수주건명)·S=18(수주량) 자리에
+    // 그럴듯한 값(건명 텍스트 + 숫자 수량)이 실제로 있는지로 수주내역 파일인지를 판정하고,
+    // 공장 판정은 기존처럼 AB=27(제품구분) 고정 위치를 쓴다.
+    type = 'sales';
+    factoryColIdx = 27;
     isCj2Value = _spuIsCj2Value;
   } else {
-    return null; // 둘 중 어느 파일인지 헤더로 구분 못함
+    return null; // 둘 중 어느 파일인지 구분 못함
   }
 
   let cj2Votes = 0, cj1Votes = 0;
