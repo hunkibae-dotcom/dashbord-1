@@ -6488,9 +6488,10 @@
           let spec = stored.spec;
           if ((item.round || '').toString().includes('FVN1')) type = '일자형';
           if (!spec) {
-            const h = Number(_pkgSpecForPrintItem(item).h);
-            // PE폼 규격은 10 단위로만 끊어서 쓰기 때문에(33 → 40, 499 → 500처럼 10 단위
-            // 올림) 실측 높이를 그대로 쓰지 않고 10 단위로 올림해서 기본값을 만든다.
+            // 소수점 이하는 버리고(33.6 → 33) 정수 부분만 쓴 뒤, PE폼 규격은 10 단위로만
+            // 끊어서 쓰기 때문에(33 → 40, 499 → 500처럼 10 단위 올림) 그 정수를 10 단위로
+            // 올림해서 기본값을 만든다.
+            const h = Math.floor(Number(_pkgSpecForPrintItem(item).h));
             if (h > 0) spec = (Math.ceil(h / 10) * 10).toString();
           }
           return { type: type, spec: spec };
