@@ -489,11 +489,21 @@
         </div>
     </header>
 
-    <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300" onclick="closeFilterDrawer()"></div>
-    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-4 p-4 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out">
-        <div class="flex items-center justify-between">
-            <span class="text-[15px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-accentBlue"></i>검색 · 데이터 연동</span>
+    <div class="lg:flex lg:items-start lg:flex-1 lg:min-h-0">
+    <div id="sidebarBackdrop" class="hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:!hidden" onclick="closeFilterDrawer()"></div>
+    <!-- 모바일에선 예전처럼 숨겨둔 슬라이드 드로어(햄버거로 토글), lg 이상에서는 QC
+         대시보드의 좌측 사이드바(aside)처럼 항상 떠 있는 고정 칸으로 바뀐다 — lg: 쪽
+         클래스만 덧붙였고 모바일 동작(열기/닫기)은 그대로다. -->
+    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-1 p-3 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-out lg:static lg:translate-x-0 lg:w-[250px] lg:max-w-none lg:h-auto lg:min-h-screen lg:shrink-0 lg:shadow-none lg:transition-none">
+        <div class="flex items-center justify-between px-1 pb-2 lg:hidden">
+            <span class="text-[15px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-accentBlue"></i>메뉴</span>
             <button onclick="closeFilterDrawer()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-[18px]"></i></button>
+        </div>
+        <div class="hidden lg:flex items-center gap-2.5 px-2 pb-4">
+            <span class="w-8 h-8 rounded-lg text-darkBg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
+                <i class="fa-solid fa-box text-[14px]"></i>
+            </span>
+            <span class="text-[15px] font-extrabold text-white">포장강화 메뉴</span>
         </div>
 
         <!-- hidden: 스케줄 카드용 spans + 더 이상 사이드바에 없는 필터 입력값 DOM 유지 -->
@@ -506,79 +516,92 @@
                 <span id="dateRangeLabel"></span>
         </div>
 
-        <div id="sidebarBottom" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-xl flex flex-col gap-4">
-                <h2 class="text-[14.5px] font-bold text-white mb-2 flex items-center justify-between gap-2">
-                    <span class="flex items-center gap-2"><i class="fa-solid fa-server text-accentGreen"></i> 데이터 연동 제어</span>
-                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
-                        <i class="fa-solid fa-arrows-rotate text-[16px]" id="syncIcon"></i>
+        <!-- 상세스펙 — 전엔 표에서 제품코드 글자를 눌러야만 열렸는데(그래서 그 글자를
+             누르면 복사되게 바꾸면서 갈 곳이 없어졌다), 코드를 직접 입력해 바로 조회할
+             수 있게 여기로 옮겼다. -->
+        <button type="button" class="pkg-nav-item" onclick="togglePkgSpecQuickSearch()">
+            <i class="fa-solid fa-ruler-combined w-4 text-center"></i>
+            <span class="flex-1">상세스펙</span>
+            <i class="fa-solid fa-chevron-down text-[11px]" id="pkgSpecQuickChevron"></i>
+        </button>
+        <div id="pkgSpecQuickSearch" class="hidden flex items-center gap-1.5 px-2 pb-2">
+            <input type="text" id="pkgSpecQuickCode" placeholder="제품코드 입력" onkeydown="if(event.key==='Enter')runPkgSpecQuickSearch()"
+                style="flex:1;min-width:0;background:#0B0F19;border:1px solid #334155;border-radius:8px;padding:7px 10px;font-size:13px;color:#E2E8F0;outline:none;">
+            <button onclick="runPkgSpecQuickSearch()" style="flex-shrink:0;background:#0284c7;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;">조회</button>
+        </div>
+        <div id="pkgSpecQuickFeedback" class="px-2 text-[11.5px] text-red-400" style="min-height:14px;"></div>
+
+        <div class="border-t border-borderSlate/50 my-1.5"></div>
+
+        <button type="button" class="pkg-nav-item" onclick="pkgOpenClassifyUploadModal()" title="통합품목(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
+            <i class="fa-solid fa-file-excel w-4 text-center"></i>
+            <span class="flex-1">분류 업로드</span>
+            <span class="text-[10.5px] font-normal text-slate-500">수정중</span>
+        </button>
+
+        <label class="pkg-nav-item" style="cursor:pointer;">
+            <i class="fa-solid fa-file-import w-4 text-center"></i>
+            <span class="flex-1">CSV 파일 업로드</span>
+            <input type="file" id="csvFileInput" accept=".csv" multiple class="hidden" onchange="handleCsvUpload(event)">
+        </label>
+
+        <button type="button" class="pkg-nav-item" onclick="openSettingsModal()" title="구글 시트 연동 설정">
+            <i class="fa-solid fa-cog w-4 text-center"></i>
+            <span class="flex-1">연동 설정</span>
+        </button>
+
+        <!-- 연동 초기화만 되돌리기 어려운 위험 동작이라 의도적으로 빨간색을 남겨둠 -->
+        <button type="button" class="pkg-nav-item danger" onclick="confirmResetConnection()" title="저장된 연동 설정 초기화">
+            <i class="fa-solid fa-power-off w-4 text-center"></i>
+            <span class="flex-1">연동 초기화</span>
+        </button>
+
+        <div class="border-t border-borderSlate/50 my-1.5"></div>
+
+        <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
+           target="_blank" class="pkg-nav-item">
+            <i class="fa-solid fa-file-excel w-4 text-center"></i>
+            <span class="flex-1">강화포장 데이터시트</span>
+            <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
+        </a>
+        <a href="https://hunkibae-dotcom.github.io/dashbord-1/F.WORK.apk" download="F.WORK.apk" class="pkg-nav-item">
+            <i class="fa-brands fa-android w-4 text-center"></i>
+            <span class="flex-1">F.WORK 앱 다운로드</span>
+        </a>
+
+        <!-- 연동 상태 미니 카드 -->
+        <div class="bg-panelBg border border-borderSlate rounded-xl p-3 flex flex-col gap-2 mt-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">연동 상태</span>
+                <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-7 h-7 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
+                    <i class="fa-solid fa-arrows-rotate text-[14px]" id="syncIcon"></i>
+                </button>
+            </div>
+            <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20">
+                <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
+                연동 대기 중
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-500 font-semibold">동기화</span>
+                <span class="text-orange-500 font-bold" id="syncTimestamp">초기 로드 대기</span>
+            </div>
+            <div class="flex items-center justify-between text-[11px]">
+                <span class="text-slate-500 font-semibold">분류 업데이트</span>
+                <span class="text-accentGreen font-bold" id="pkgClassifyLastSyncLabel">기록 없음</span>
+            </div>
+            <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-2 rounded-lg border border-slate-700/60 text-[11px] space-y-1">
+                <div class="flex items-center justify-between font-bold text-slate-400 uppercase tracking-wider">
+                    <span>사용중 데이터 탭</span>
+                    <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;">
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
-                </h2>
-
-                <div class="space-y-1">
-                    <span class="block text-[13.5px] font-bold text-slate-400 uppercase tracking-wider">시스템 연결 상태</span>
-                    <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-3 py-2 rounded-lg text-[16px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20">
-                        <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
-                        연동 대기 중
-                    </div>
                 </div>
-
-                <div class="bg-darkBg/50 p-3 rounded-lg border border-borderSlate/60 text-[17.5px] flex flex-col gap-1">
-                    <span class="block text-[14.5px] font-semibold text-slate-500">동기화 시각</span>
-                    <span class="text-orange-500 font-bold text-[16px]" id="syncTimestamp">초기 로드 대기</span>
-                </div>
-
-                <div class="bg-darkBg/50 p-3 rounded-lg border border-borderSlate/60 text-[17.5px] flex flex-col gap-1">
-                    <span class="block text-[14.5px] font-semibold text-slate-500">분류 마지막 업데이트</span>
-                    <span class="text-accentGreen font-bold text-[16px]" id="pkgClassifyLastSyncLabel">기록 없음</span>
-                </div>
-
-                <div class="flex flex-col gap-2.5 pt-2">
-                    <button onclick="pkgOpenClassifyUploadModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="통합품목(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
-                        <i class="fa-solid fa-file-excel"></i> 분류 업로드 <span class="text-[12px] font-normal text-slate-400">(수정중)</span>
-                    </button>
-
-                    <label class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer font-semibold text-center">
-                        <i class="fa-solid fa-file-import"></i> CSV 파일 업로드
-                        <input type="file" id="csvFileInput" accept=".csv" multiple class="hidden" onchange="handleCsvUpload(event)">
-                    </label>
-
-                    <button onclick="openSettingsModal()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-3 rounded-lg border border-slate-300 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="구글 시트 연동 설정">
-                        <i class="fa-solid fa-cog"></i> 연동 설정
-                    </button>
-
-                    <!-- 연동 초기화만 되돌리기 어려운 위험 동작이라 의도적으로 빨간색을 남겨둠 -->
-                    <button onclick="confirmResetConnection()" class="w-full bg-red-900/20 hover:bg-red-900/40 text-red-400 text-[17.5px] px-4 py-3 rounded-lg border border-red-900/30 flex items-center justify-center gap-2 transition-all active:scale-95 font-semibold" title="저장된 연동 설정 초기화">
-                        <i class="fa-solid fa-power-off"></i> 연동 초기화
-                    </button>
-                </div>
-
-                <div id="loadedFilesContainer" class="hidden bg-slate-900/60 p-3 rounded-lg border border-slate-700/60 text-[17.5px] space-y-1.5">
-                    <div class="flex items-center justify-between text-[13.5px] font-bold text-slate-400 uppercase tracking-wider">
-                        <span>현재 사용중인 데이터 탭</span>
-                        <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;" onmouseenter="this.style.transform='scale(1.18)'" onmouseleave="this.style.transform='scale(1)'">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                    <div class="text-slate-300 text-[14.5px] break-all leading-normal" id="loadedFilesList">대기 중</div>
-                </div>
-
-                <!-- 바로가기 버튼 -->
-                <div class="flex flex-col gap-2 pt-1">
-                    <a href="https://docs.google.com/spreadsheets/d/1Utm_IuDQkguqvX8-zhfVtfMMQVb_n7SOJ3A7_fVPx54/edit?gid=1357513790#gid=1357513790"
-                       target="_blank"
-                       class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 text-[17.5px] px-4 py-2.5 rounded-lg border border-slate-300 font-semibold flex items-center justify-center gap-2 transition-all active:scale-95">
-                        <i class="fa-solid fa-file-excel"></i> 강화포장 데이터시트
-                    </a>
-                    <a href="https://hunkibae-dotcom.github.io/dashbord-1/F.WORK.apk"
-                       download="F.WORK.apk"
-                       class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-slate-300 font-semibold text-[17.5px] transition-all active:scale-95">
-                        <i class="fa-brands fa-android"></i> F.WORK 앱 다운로드
-                    </a>
-                </div>
+                <div class="text-slate-300 break-all leading-normal" id="loadedFilesList">대기 중</div>
+            </div>
         </div>
     </div><!-- /sidebarWrapper -->
 
-    <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start">
+    <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start lg:min-w-0">
 
         <div id="generalDashboardView" class="flex flex-col gap-4 lg:col-start-1 lg:col-span-4 lg:row-start-1">
             <div class="mobile-carousel-box">
