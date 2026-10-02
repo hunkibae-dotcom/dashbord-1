@@ -6508,11 +6508,10 @@
         }
         function _pkgOnPeTypeChange() {
           const type = (document.getElementById('pkgPeType').value || '').trim();
-          // 유형을 바꾸면 그 유형 추천 목록으로 다시 채우되, 직접 입력해둔 규격까지
-          // 지우면 번거로우니 기존 값이 새 유형 목록에도 있을 때만 유지한다.
+          // 유형을 바꾸면 추천 목록만 그 유형 걸로 다시 채운다 — 자유 입력칸이라 이미
+          // 적어둔 규격 글자는 그대로 두고(지우지 않음) 추천만 갱신한다.
           const curSpec = (document.getElementById('pkgPeSpec').value || '').trim();
-          const specs = PKG_PE_TYPE_SPECS[type] || [];
-          _pkgRenderPeSpecOptions(type, specs.includes(curSpec) ? curSpec : curSpec);
+          _pkgRenderPeSpecOptions(type, curSpec);
         }
 
         // ── 진행상태를 "수출현황/출고완료/실재고" 그룹으로 묶어서 접었다 펴는 공통 로직 ──
