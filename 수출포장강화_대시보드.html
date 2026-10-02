@@ -2163,11 +2163,11 @@
                 let dueDateVal = indices.dueDate !== -1 && indices.dueDate < row.length && row[indices.dueDate] ? normalizeDate(row[indices.dueDate]) : '-';
 
                 let statusVal = indices.status !== -1 && indices.status < row.length && row[indices.status] ? row[indices.status].toString().trim() : '';
-                if (statusVal === '') statusVal = '미입고';
+                if (statusVal === '') statusVal = emptyStatusDefault;
                 let rawStatusNorm = statusVal.toString().replace(/\s+/g, '').toLowerCase();
 
-                let statusDisplay = '미입고';
-                let statusCategory = '미입고';
+                let statusDisplay = emptyStatusDefault;
+                let statusCategory = emptyStatusDefault;
 
                 if (rawStatusNorm.includes('일부입고')) {
                     statusDisplay = statusVal;
