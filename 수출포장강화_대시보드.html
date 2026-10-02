@@ -6075,7 +6075,12 @@
         }
         function _pkgExportKindMeta(kind, baseItems) {
             if (kind === 'manage') {
-                return { title: '수출포장강화', columns: PKG_EXPORT_BASIC_COLS, rows: baseItems, filenameBase: '수출포장강화_export' };
+                // 파일명만 봐도 몇 품목·몇 건·총 몇 BOX인지 바로 보이게 — 품목 수(rows.length)·
+                // 건명(수주건명) 중복 제거한 건수·수량 합계 BOX.
+                const roundCount = new Set(baseItems.map(it => it.round).filter(Boolean)).size;
+                const totalQty = baseItems.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
+                const fname = `수출포장강화_${baseItems.length}항목_${roundCount}건_${totalQty}BOX`;
+                return { title: '수출포장강화', columns: PKG_EXPORT_BASIC_COLS, rows: baseItems, filenameBase: fname };
             }
             if (kind === 'pack') {
                 // 포장항목 출력(작업자용) — 실재고(충주공장 재고)에 실제로 등록된 품목만.
