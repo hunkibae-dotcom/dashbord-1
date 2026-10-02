@@ -1606,7 +1606,7 @@ try {
 </div>
 
 <!-- 바코드 직접 입력 모달 -->
-<div id="manualCodeModal" class="hidden fixed inset-0 z-[120] flex items-end justify-center" style="background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+<div id="manualCodeModal" onclick="if(event.target===this)closeManualCodeModal()" class="hidden fixed inset-0 z-[120] flex items-end justify-center" style="background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
   <div class="bg-white rounded-t-3xl p-5 w-full flex flex-col gap-3" style="max-width:520px;">
     <div class="flex items-center justify-between">
       <span class="text-[16px] font-extrabold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-keyboard text-indigo-500"></i> 직접 입력</span>
