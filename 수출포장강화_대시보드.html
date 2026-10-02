@@ -6534,7 +6534,7 @@
         function _pkgRenderPeSpecOptions(type, selectedSpec) {
           const specInput = document.getElementById('pkgPeSpec');
           const specList = document.getElementById('pkgPeSpecOptions');
-          const specs = PKG_PE_TYPE_SPECS[type] || [];
+          const specs = _pkgPeSpecHistory()[type] || [];
           specList.innerHTML = specs.map(s => `<option value="${s.replace(/"/g,'&quot;')}">`).join('');
           specInput.value = selectedSpec || '';
         }
