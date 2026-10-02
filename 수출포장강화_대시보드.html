@@ -6497,24 +6497,22 @@
         }
         // 유형 드롭다운이 바뀔 때마다 규격 드롭다운 옵션을 그 유형 전용 목록으로 다시
         // 채운다 — selectedSpec을 주면(수정창을 열 때 기존값 복원용) 그 값을 바로 선택해둔다.
+        // 유형/규격 둘 다 <input list=...>(datalist)라서 목록에 없는 값도 직접 타이핑해서
+        // 넣을 수 있다 — datalist는 어디까지나 추천 목록일 뿐, 입력 자체를 막지 않는다.
         function _pkgRenderPeSpecOptions(type, selectedSpec) {
-          const specSel = document.getElementById('pkgPeSpec');
+          const specInput = document.getElementById('pkgPeSpec');
+          const specList = document.getElementById('pkgPeSpecOptions');
           const specs = PKG_PE_TYPE_SPECS[type] || [];
-          if (!type) {
-            specSel.innerHTML = '<option value="">유형을 먼저 고르세요</option>';
-            specSel.disabled = true;
-            return;
-          }
-          specSel.disabled = false;
-          const opts = ['<option value="">선택 안 함</option>'].concat(
-            specs.map(s => `<option value="${s.replace(/"/g,'&quot;')}">${s}</option>`)
-          );
-          specSel.innerHTML = opts.join('');
-          if (selectedSpec && specs.includes(selectedSpec)) specSel.value = selectedSpec;
+          specList.innerHTML = specs.map(s => `<option value="${s.replace(/"/g,'&quot;')}">`).join('');
+          specInput.value = selectedSpec || '';
         }
         function _pkgOnPeTypeChange() {
-          const type = document.getElementById('pkgPeType').value;
-          _pkgRenderPeSpecOptions(type, '');
+          const type = (document.getElementById('pkgPeType').value || '').trim();
+          // 유형을 바꾸면 그 유형 추천 목록으로 다시 채우되, 직접 입력해둔 규격까지
+          // 지우면 번거로우니 기존 값이 새 유형 목록에도 있을 때만 유지한다.
+          const curSpec = (document.getElementById('pkgPeSpec').value || '').trim();
+          const specs = PKG_PE_TYPE_SPECS[type] || [];
+          _pkgRenderPeSpecOptions(type, specs.includes(curSpec) ? curSpec : curSpec);
         }
 
         // ── 진행상태를 "수출현황/출고완료/실재고" 그룹으로 묶어서 접었다 펴는 공통 로직 ──
