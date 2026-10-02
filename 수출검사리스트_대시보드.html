@@ -6642,6 +6642,21 @@ function _spuFindHeaderCol(grid, aliases) {
   return -1;
 }
 
+// grd_Group_*(수주내역) 원본은 헤더 행 자체가 없어서(1행이 제목줄) _spuFindHeaderCol로는
+// 못 찾는다 — 대신 고정 위치(L=11 수주건명, S=18 수주량)에 2행째부터 실제로 "건명 텍스트
+// + 숫자 수량"이 그럴듯하게 들어있는지를 몇 행 살펴보고 판단한다.
+function _spuLooksLikeSalesGrid(grid) {
+  let plausible = 0;
+  for (let i = 1; i < grid.length && i < 20; i++) {
+    const row = grid[i];
+    if (!row) continue;
+    const round = (row[11] || '').toString().trim();
+    const qtyRaw = (row[18] || '').toString().trim();
+    if (round && qtyRaw && !isNaN(Number(qtyRaw.replace(/,/g, '')))) plausible++;
+  }
+  return plausible >= 1;
+}
+
 // grid만 보고 수주내역/공정진행정보 중 어느 쪽인지 + 어느 공장 소속인지를 한 번에
 // 판단한다. 헤더 문구로 먼저 종류를 가른 뒤(수주내역엔 "제품구분"/"수주량", 공정진행
 // 정보엔 "생산라인"/"공정진행률"이 있음), 각 종류가 쓰는 공장 판정 칼럼의 값들을 쭉
