@@ -5469,6 +5469,9 @@ function exportCSV(rows, filename, columns) {
 // pkgRunExport 패턴을 그대로 들여온 것 — 접두사만 qc로 맞췄다.
 function qcOpenExportChoiceModal() {
   document.getElementById('qcExportChoiceStatus').textContent = '';
+  _qcExportPendingKind = null;
+  document.getElementById('qcExportFormatStep').classList.add('hidden');
+  document.getElementById('qcExportKindStep').classList.remove('hidden');
   document.getElementById('qcExportChoiceModal').classList.remove('hidden');
 }
 function qcCloseExportChoiceModal() {
