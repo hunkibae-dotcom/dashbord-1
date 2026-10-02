@@ -3540,6 +3540,8 @@ function _rpLoadFromStorage() {
       item: m.item,
       note: m.note || '',
       hasHardware: m.hasHardware === true,
+      written: m.written === true,
+      writtenAt: m.writtenAt || null,
       cbm: m.cbm || null,
       productPhoto: p.productPhoto || null,
       packagePhoto: p.packagePhoto || null,
