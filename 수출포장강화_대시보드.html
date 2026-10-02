@@ -572,6 +572,13 @@
             <span class="flex-1">강화포장 데이터시트</span>
             <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-slate-500"></i>
         </a>
+        <!-- 새로고침 — 품질검사 대시보드와 같은 위치(연동·업데이트 상태 바로 위)에 독립된
+             한 줄 메뉴로 둔다. 전엔 이 버튼이 아래 연동 상태 팝업 안에 있었다. -->
+        <button id="syncBtn" onclick="syncWithGoogleSheets()" class="pkg-nav-item w-full">
+            <i class="fa-solid fa-arrows-rotate w-4 text-center" id="syncIcon"></i>
+            <span class="flex-1 text-left">새로고침</span>
+        </button>
+
         <!-- 연동 · 업데이트 상태 — 품질검사 대시보드와 같은 방식: 평소엔 점(dot) 하나만
              보이는 한 줄짜리 메뉴 항목이고, 마우스를 올리면(hover) 자세한 내용이 팝업으로
              옆에 뜬다. 전엔 이 내용 전체가 항상 펼쳐진 큼직한 카드였다. -->
@@ -584,9 +591,6 @@
             <div class="absolute left-full top-0 w-72 bg-panelBg border border-borderSlate rounded-2xl shadow-2xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px;">
                 <div class="flex items-center justify-between mb-3">
                     <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">연동 상태</span>
-                    <button onclick="syncWithGoogleSheets()" id="syncBtn" class="flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/40 transition-colors shrink-0" title="실시간 시트 갱신">
-                        <i class="fa-solid fa-arrows-rotate text-[14px]" id="syncIcon"></i>
-                    </button>
                 </div>
                 <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20 mb-3">
                     <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
