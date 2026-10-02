@@ -4648,8 +4648,10 @@ function toggleReportHardware(key, checked) {
   // 서버로 보내는 저장은 400ms 디바운스된 뒤 네트워크 왕복까지 걸리는데, 그 사이에
   // _rpFetchSharedReportData()(보고서 열 때/주기 동기화 때)가 한 번 더 돌면 서버는
   // 아직 옛 값 그대로라 "내 로컬이 더 최신"이라는 걸 timestamp로 증명 못 하면 방금
-  // 누른 체크가 옛 값으로 되돌려진다 — 그래서 여기서 바로(낙관적으로) 갱신해둔다.
+  // 누른 체크가 옛 값으로 되돌려진다 — 그래서 여기서 바로(낙관적으로) 갱신해두고,
+  // 서버가 실제로 받아갈 때까지는 dirty 표시로 아예 덮어쓰기 대상에서 뺀다.
   _reportSelected[key]._updatedAt = Date.now();
+  _rpDirtyMetaKeys.add(key);
   _rpSaveToStorage();
   _rpSyncMetaToServer(key);
   _rpRefreshRow(key);
