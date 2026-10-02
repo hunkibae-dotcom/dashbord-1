@@ -6740,10 +6740,14 @@
             return rows;
         }
         // "grd_outResult_*" 파일 → 분류(입고)용 {itemCode,color,qty} (건명 칼럼은 무시).
+        // 실제 원본 열 배치(0-based): C=2 단품코드, D=3 색상, E=4 수량, K=10 배송지/비고 —
+        // "충주반송-김기원님앞 (포장 강화)"처럼 K열에 "포장 강화"라고 적힌 행만 포함한다
+        // (그 외 행은 포장강화 대상이 아닌 입고 건이라 전부 제외). 헤더 문구로 먼저 찾아보고,
+        // 못 찾으면(헤더 이름이 안 맞거나 없으면) 이 고정 열 자리를 그대로 쓴다.
         function _pkgExtractOutResultEntries(grid) {
             if (!grid || grid.length < 2) return [];
             const headers = grid[0].map(h => (h || '').toString().trim().replace(/\s+/g, ''));
-            const iCode  = _pkgFindCol(headers, ['품목코드', '제품코드', '코드']);
+            const iCode  = _pkgFindCol(headers, ['단품코드', '품목코드', '제품코드', '코드']);
             const iColor = _pkgFindCol(headers, ['색상', '컬러']);
             const iQty   = _pkgFindCol(headers, ['수량']);
 
@@ -6751,13 +6755,16 @@
             for (let i = 1; i < grid.length; i++) {
                 const row = grid[i];
                 if (!row) continue;
-                const codeRaw = (iCode >= 0 ? row[iCode] : row[0]);
+                // K열에 "포장 강화"(공백 유무 무관)가 없으면 포장강화 대상이 아닌 입고 건이므로 건너뜀.
+                const markRaw = (row[10] || '').toString().replace(/\s+/g, '');
+                if (!markRaw.includes('포장강화')) continue;
+                const codeRaw = (iCode >= 0 ? row[iCode] : row[2]);
                 const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
                 if (!codeStr) continue;
                 entries.push({
                     itemCode: codeStr,
-                    color: iColor >= 0 ? (row[iColor] || '').toString().trim() : '',
-                    qty: iQty >= 0 ? (row[iQty] || '').toString().trim() : ''
+                    color: (iColor >= 0 ? row[iColor] : row[3] || '').toString().trim(),
+                    qty: (iQty >= 0 ? row[iQty] : row[4] || '').toString().trim()
                 });
             }
             return entries;
