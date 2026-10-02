@@ -2254,9 +2254,18 @@
         }
 
         // 날짜 필터 제어 — date/dueDate/regDate 세 컬럼 전체 포함하여 범위 계산 (행 누락 방지)
-        function autoAdjustDateFilters() {
+        function autoAdjustDateFilters(force) {
             try {
                 if (!state.data || state.data.length === 0) return;
+                if (!force) {
+                    // 사용자가 이미 직접 골라둔 기간이 있으면(시작·종료 중 하나라도 값이 있으면)
+                    // 5분마다 돌아가는 자동 동기화가 조용히 "전체 기간"으로 되돌려버리면 안 된다
+                    // — "동기화할 때마다 보던 기간이 초기화된다"던 원인. 명시적으로 초기화
+                    // 버튼을 누른 경우(force=true)만 무조건 전체 기간으로 되돌린다.
+                    const curStart = document.getElementById('startDateFilter').value;
+                    const curEnd = document.getElementById('endDateFilter').value;
+                    if (curStart || curEnd) return;
+                }
                 const isValid = d => d && typeof d === 'string' && d !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(d);
                 const allDates = [];
                 state.data.forEach(item => {
