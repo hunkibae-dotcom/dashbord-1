@@ -4748,7 +4748,7 @@
             });
             const _srcAllBtn = document.getElementById('srcAll');
             if (_srcAllBtn) _srcAllBtn.classList.add('active');
-            autoAdjustDateFilters();
+            autoAdjustDateFilters(true); // "초기화" 버튼 — 강제로 전체 기간으로
             applyFilters();
         }
 
