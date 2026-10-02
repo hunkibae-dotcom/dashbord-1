@@ -6096,7 +6096,7 @@
                 // 소스 필터와 동일한 기준: _shippedStatuses에 없는 상태).
                 const _shippedStatuses = new Set(['출고', '피킹', '출고완료']);
                 const items = baseItems.filter(item => !_shippedStatuses.has(item.status));
-                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items, filenameBase: '수출포장강화_상차항목출력', emptyMsg: '아직 출고되지 않은 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
+                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items, filenameBase: _pkgExportFname('수출포장강화_상차항목출력', items), emptyMsg: '아직 출고되지 않은 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
             }
             return null;
         }
