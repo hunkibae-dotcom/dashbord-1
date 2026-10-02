@@ -5516,17 +5516,17 @@ async function qcRunExport(kind) {
 // exportTableData()가 쓰던 것과 동일, 검사상태 칸 색깔은 이 파일의 기존 상태별 배지
 // 색상(statusCls/pill-* 클래스, 104~111번째 줄 CSS)과 맞췄다.
 const QC_EXPORT_COLS = [
-  { label: '공장', width: 90, align: 'center', get: d => d.공장명 },
-  { label: '건명', width: 160, align: 'left', get: d => d.건명 },
-  { label: '단품코드', width: 110, align: 'left', get: d => d.단품코드 },
-  { label: '단품명칭', width: 180, align: 'left', get: d => d.단품명칭 },
-  { label: '색상', width: 70, align: 'center', get: d => d.색상 },
-  { label: '수량', width: 60, align: 'right', get: d => d.수량 },
-  { label: 'BOM', width: 70, align: 'center', get: d => d.BOM },
-  { label: '납기일', width: 90, align: 'center', get: d => d.납기일 },
-  { label: '포장일', width: 90, align: 'center', get: d => d.포장일 },
-  { label: '검사일', width: 90, align: 'center', get: d => d.검사일 },
-  { label: '검사상태', width: 90, align: 'center', get: d => d.검사 },
+  { label: '공장', width: '8%', align: 'center', get: d => d.공장명 },
+  { label: '건명', width: '16%', align: 'left', wrap: true, get: d => d.건명 },
+  { label: '단품코드', width: '10%', align: 'left', get: d => d.단품코드 },
+  { label: '단품명칭', width: '16%', align: 'left', get: d => d.단품명칭 },
+  { label: '색상', width: '6%', align: 'center', get: d => d.색상 },
+  { label: '수량', width: '5%', align: 'right', get: d => d.수량 },
+  { label: 'BOM', width: '6%', align: 'center', get: d => d.BOM },
+  { label: '납기일', width: '9%', align: 'center', get: d => d.납기일 },
+  { label: '포장일', width: '8%', align: 'center', get: d => d.포장일 },
+  { label: '검사일', width: '8%', align: 'center', get: d => d.검사일 },
+  { label: '검사상태', width: '8%', align: 'center', isStatus: true, get: d => d.검사 },
 ];
 function _qcStatusXlsColor(d) {
   // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값.
