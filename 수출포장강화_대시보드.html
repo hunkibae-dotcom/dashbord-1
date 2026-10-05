@@ -6997,14 +6997,14 @@
 
             const lines = files.map(file => {
                 const name = file.name || '';
-                if (/^통합품목/.test(name)) {
+                if (/^통합품목/.test(name) || /^grd_Group/i.test(name)) {
                     _pkgClassifyFiles.push({ file, kind: 'sunju', name });
                     return `<div style="color:#16a34a;">✓ ${name} → 분류(수주)</div>`;
                 } else if (/^grd_outResult/i.test(name)) {
                     _pkgClassifyFiles.push({ file, kind: 'ipgo', name });
                     return `<div style="color:#16a34a;">✓ ${name} → 분류(입고)</div>`;
                 }
-                return `<div style="color:#ef4444;">✗ ${name} — 이름이 "통합품목" 또는 "grd_outResult"로 시작해야 함(건너뜀)</div>`;
+                return `<div style="color:#ef4444;">✗ ${name} — 이름이 "통합품목"/"grd_Group" 또는 "grd_outResult"로 시작해야 함(건너뜀)</div>`;
             });
             detectEl.innerHTML = lines.join('');
             if (_pkgClassifyFiles.length) { runBtn.disabled = false; runBtn.style.opacity = '1'; }
