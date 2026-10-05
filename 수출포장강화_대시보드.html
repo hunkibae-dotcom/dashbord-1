@@ -2895,19 +2895,13 @@
 
                 sortData();
 
-                // 제품 코드를 부분적으로만 입력해도(예: 전체 코드의 일부) 위에서 이미 matchesCode로
-                // 걸러진 목록이 나오도록, 시트에 실제로 존재하는 코드와 "정확히" 일치할 때만
-                // 상세 이력 화면으로 전환한다. 그렇지 않으면 다른 필터(날짜/차수/상태 등)를 무시하고
-                // 무조건 상세 화면으로 넘어가버려서 "검색이 안 된다"고 느껴지는 문제가 있었다.
-                const exactProductCode = document.getElementById('productCodeFilter').value.trim();
-                const hasExactCodeMatch = exactProductCode !== '' &&
-                    state.data.some(item => item.code && item.code.toLowerCase() === exactProductCode.toLowerCase());
-
-                if (hasExactCodeMatch) {
-                    switchToProductDetailView(exactProductCode);
-                } else if (_currentDetailProductCode && !exactProductCode) {
+                // 예전엔 제품코드 입력칸에 정확히 일치하는 코드를 치면 바로 상세스펙 이력
+                // 화면으로 넘어갔는데, 상세스펙은 이제 사이드바의 전용 검색으로 열게 되면서
+                // 이 입력칸은 그냥 표 필터(부분 일치도 포함)로만 쓰고 싶다는 요청으로 바뀌었다
+                // — 여기선 더 이상 상세화면으로 튕기지 않고 항상 일반 표를 필터링한다.
+                if (_currentDetailProductCode) {
                     // 사이드바에서 상세스펙을 열어둔 채로 배경 동기화/필터 재계산이 일어난
-                    // 경우 — productCodeFilter 입력칸과 무관하게 열려있으므로, 예전처럼
+                    // 경우만 — productCodeFilter 입력칸과 무관하게 열려있으므로, 예전처럼
                     // 무조건 일반 화면으로 튕겨내지 않고 보던 코드로 내용만 새로 고친다.
                     switchToProductDetailView(_currentDetailProductCode);
                 } else {
