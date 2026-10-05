@@ -629,6 +629,18 @@
             <span class="flex-1">F.WORK 앱 다운로드</span>
         </a>
     </div><!-- /sidebarWrapper -->
+    </div><!-- /pkgSidebarCollapseBox -->
+
+    <!-- 사이드바를 접었을 때만(데스크톱) 보이는 중앙 상단 로고 — 다시 펼치는 버튼도 같이 둔다 -->
+    <div id="pkgCenterHeader" class="hidden lg:items-center lg:justify-center gap-2.5 py-3.5 border-b border-borderSlate/70 bg-darkBg relative lg:col-span-4" style="display:none;">
+        <span class="w-9 h-9 rounded-xl text-darkBg flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
+            <i class="fa-solid fa-box text-[16.5px]"></i>
+        </span>
+        <span class="text-[18.5px] font-extrabold text-white" style="letter-spacing:-0.3px;">포장강화 대시보드</span>
+        <button onclick="togglePkgSidebar()" title="사이드바 펼치기" class="hover:bg-white/10" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-angles-right text-[13px]"></i>
+        </button>
+    </div>
 
     <main id="mainGrid" class="flex-grow px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start lg:min-w-0">
 
