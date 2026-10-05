@@ -353,12 +353,16 @@ try {
 <div class="flex min-h-screen">
 
   <!-- ===== SIDEBAR ===== -->
-  <aside class="w-[260px] bg-white border-r border-slate-200 flex flex-col shrink-0 relative">
+  <aside id="qcSidebarAside" class="w-[260px] bg-white border-r border-slate-200 flex flex-col shrink-0 relative" style="transition:width .28s cubic-bezier(.4,0,.2,1), border-color .28s;">
+   <div id="qcSidebarInner" style="width:260px;display:flex;flex-direction:column;min-height:100%;flex-shrink:0;">
     <div id="logoWrap" class="w-full flex items-center gap-2.5 px-5 pt-6 pb-2 shrink-0">
       <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
         <i class="fa-solid fa-magnifying-glass text-[16.5px]"></i>
       </span>
-      <div class="text-[18.5px] font-extrabold text-slate-900 font-sans" style="letter-spacing:-0.3px;">품질검사 대시보드</div>
+      <div class="text-[18.5px] font-extrabold text-slate-900 font-sans flex-1" style="letter-spacing:-0.3px;">품질검사 대시보드</div>
+      <button onclick="toggleQcSidebar()" title="사이드바 접기" class="w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0" style="border:none;background:transparent;cursor:pointer;">
+        <i class="fa-solid fa-angles-left text-[13px]"></i>
+      </button>
     </div>
 
     <div class="flex flex-col gap-2.5 w-full px-3 pt-5 pb-5">
@@ -492,10 +496,22 @@ try {
         <span class="flex-1">F.WORK 앱 다운로드</span>
       </a>
     </div>
+   </div><!-- /qcSidebarInner -->
   </aside>
 
   <!-- ===== MAIN ===== -->
   <div class="flex-1 min-w-0">
+    <!-- 사이드바를 접었을 때만 보이는 중앙 상단 로고 — 접힌 상태에서도 다시 펼 수 있는
+         버튼을 여기에 둔다(사이드바 자체가 접히면 그 안의 펼치기 버튼도 같이 사라지므로). -->
+    <div id="qcCenterHeader" style="display:none;align-items:center;justify-content:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;background:#fff;position:relative;">
+      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
+        <i class="fa-solid fa-magnifying-glass text-[16.5px]"></i>
+      </span>
+      <div class="text-[18.5px] font-extrabold text-slate-900 font-sans" style="letter-spacing:-0.3px;">품질검사 대시보드</div>
+      <button onclick="toggleQcSidebar()" title="사이드바 펼치기" class="hover:bg-slate-100" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-angles-right text-[13px]"></i>
+      </button>
+    </div>
     <main class="max-w-[1500px] mx-auto w-full p-5 pt-8 flex flex-col gap-5">
 
       <div id="loadWarning" class="hidden bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-xl p-3"></div>
@@ -6125,6 +6141,25 @@ function initMobile() {
   document.body.classList.toggle('m-lock', mob);
 }
 window.addEventListener('resize', initMobile);
+
+// ── 사이드바 접기/펼치기(PC 웹 전용) — 기본은 항상 펼쳐짐, 접으면 로고·제목이 중앙
+// 상단으로 옮겨간다. 너비를 애니메이션으로 줄여서(overflow:hidden) 스르륵 사라지는
+// 느낌을 주고, 안쪽 내용은 고정 너비를 유지해 글자가 찌그러지며 줄바꿈되지 않는다.
+const QC_SIDEBAR_COLLAPSE_KEY = 'qc_sidebar_collapsed';
+function _qcApplySidebarCollapsed(collapsed) {
+  const aside = document.getElementById('qcSidebarAside');
+  const center = document.getElementById('qcCenterHeader');
+  if (!aside) return;
+  aside.style.width = collapsed ? '0px' : '260px';
+  aside.style.borderRightColor = collapsed ? 'transparent' : '';
+  if (center) center.style.display = collapsed ? 'flex' : 'none';
+}
+function toggleQcSidebar() {
+  const next = localStorage.getItem(QC_SIDEBAR_COLLAPSE_KEY) !== '1';
+  localStorage.setItem(QC_SIDEBAR_COLLAPSE_KEY, next ? '1' : '0');
+  _qcApplySidebarCollapsed(next);
+}
+_qcApplySidebarCollapsed(localStorage.getItem(QC_SIDEBAR_COLLAPSE_KEY) === '1');
 
 // ── 테마 (포장강화 shell.html과 동일 시스템/저장키 — 두 대시보드가 설정을 공유) ──
 function applyMTheme(dark) {
