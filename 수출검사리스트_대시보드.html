@@ -4056,6 +4056,7 @@ function _rpRowHtmlDesktop(d, checkedOrderMap) {
   const checked = _reportChecked.has(key);
   const hasHardware = sel ? sel.hasHardware === true : false;
   const written = sel ? sel.written === true : false;
+  const writtenAt = sel ? sel.writtenAt : null;
   const safeKey = key.replace(/'/g, "\\'");
   const attrKey = key.replace(/"/g, '&quot;');
   const orderNum = checkedOrderMap.get(key);
