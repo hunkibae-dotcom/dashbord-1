@@ -4735,6 +4735,14 @@ function toggleReportWritten(key, checked) {
   else _rpRefreshRow(key);
 }
 
+// 체크박스를 없애고 "작성완료" 버튼 한 방향(누르면 완료, 되돌릴 방법 없음)으로 바꾸면서
+// 생긴 유일한 구멍 — 잘못 눌렀을 때 고칠 방법이 아예 없으면 안 되니, 완료 배지 자체를
+// 눌러서 되돌릴 수 있게 하되 실수로 풀리지 않도록 확인 한 번은 받는다.
+function undoReportWritten(key) {
+  if (!confirm('작성완료를 취소할까요?')) return;
+  toggleReportWritten(key, false);
+}
+
 // 헤더 클릭 일괄 토글 — 지금 필터/검색 조건에 맞는(화면에 보이는) 행 전체를 대상으로,
 // 하나라도 안 켜져있으면 전부 켜고, 이미 다 켜져있으면 전부 끈다(선택/작성완료/철물
 // 세 헤더 공통 로직). 페이지네이션과 무관하게 "조건에 맞는 전체"가 대상이다.
