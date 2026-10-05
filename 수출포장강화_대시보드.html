@@ -4754,6 +4754,52 @@
             document.getElementById('sidebarBackdrop').classList.add('hidden');
         }
 
+        // ── 사이드바 접기/펼치기(PC 웹, lg 이상 전용) — 품질검사 대시보드와 같은 방식.
+        // sidebarWrapper 자체가 아니라 그걸 감싸는 바깥 박스(pkgSidebarCollapseBox)의
+        // 너비만 0으로 줄여서 슬라이드시킨다 — sidebarWrapper는 모바일 드로어 동작과
+        // "연동 상태" 호버 팝업(overflow:visible 필요)을 그대로 유지해야 하기 때문이다.
+        // 모바일 폭에서는 이 기능을 아예 건드리지 않는다(sidebarWrapper가 position:fixed라
+        // 바깥 박스 너비와 무관하게 동작하므로 손댈 필요도 없음).
+        const PKG_SIDEBAR_COLLAPSE_KEY = 'pkg_sidebar_collapsed';
+        let _pkgSidebarAnimTimer = null;
+        function _pkgIsDesktopWidth() { return window.innerWidth >= 1024; }
+        function _pkgSetSidebar(collapsed, animated) {
+            if (!_pkgIsDesktopWidth()) return;
+            const box = document.getElementById('pkgSidebarCollapseBox');
+            const center = document.getElementById('pkgCenterHeader');
+            if (!box) return;
+            clearTimeout(_pkgSidebarAnimTimer);
+            box.style.transition = 'width .28s cubic-bezier(.4,0,.2,1)';
+            box.style.width = collapsed ? '0px' : '250px';
+            if (center) center.style.display = collapsed ? 'flex' : 'none';
+            if (collapsed) {
+                box.style.overflow = 'hidden';
+            } else if (animated) {
+                box.style.overflow = 'hidden';
+                _pkgSidebarAnimTimer = setTimeout(() => { box.style.overflow = 'visible'; }, 300);
+            } else {
+                box.style.overflow = 'visible';
+            }
+        }
+        function togglePkgSidebar() {
+            const next = localStorage.getItem(PKG_SIDEBAR_COLLAPSE_KEY) !== '1';
+            localStorage.setItem(PKG_SIDEBAR_COLLAPSE_KEY, next ? '1' : '0');
+            _pkgSetSidebar(next, true);
+        }
+        // 데스크톱 폭으로 들어오거나 나갈 때(창 크기 조절)마다 다시 맞춘다 — 모바일로
+        // 좁아지면 인라인 스타일을 지워서 모바일 드로어 CSS가 그대로 적용되게 둔다.
+        window.addEventListener('resize', () => {
+            const box = document.getElementById('pkgSidebarCollapseBox');
+            if (!_pkgIsDesktopWidth()) {
+                if (box) { box.style.width = ''; box.style.overflow = ''; box.style.transition = ''; }
+                const center = document.getElementById('pkgCenterHeader');
+                if (center) center.style.display = 'none';
+                return;
+            }
+            _pkgSetSidebar(localStorage.getItem(PKG_SIDEBAR_COLLAPSE_KEY) === '1', false);
+        });
+        _pkgSetSidebar(localStorage.getItem(PKG_SIDEBAR_COLLAPSE_KEY) === '1', false);
+
         // 모바일 캐러셀(카드/차트) 스와이프 위치 점 표시기
         const safeLocalStorage = {
             getItem: function(key) {
