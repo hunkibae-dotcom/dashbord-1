@@ -7059,6 +7059,14 @@
             }
             return -1;
         }
+        // 포장강화 분류(수주)는 북미(미국+멕시코) 건만 대상이다 — 그 외 국가 건은 이
+        // 공장에서 처리하는 수주가 아니라서 섞여 들어오면 안 된다. 건명 맨 앞 거래처
+        // 코드로 판정한다(품질검사 보고서의 RP_COUNTRY_CODE_MAP과 같은 코드 기준).
+        const PKG_NORTH_AMERICA_CODES = ['NY', 'IMA', 'GUAM', 'LA', 'MAV', 'TOF', 'BIF', 'CLE', 'JIMP', 'SDA', 'FAM', 'INICS'];
+        function _pkgIsNorthAmericaRound(roundName) {
+            const code = (roundName || '').toString().split('-')[0].trim().toUpperCase();
+            return PKG_NORTH_AMERICA_CODES.includes(code);
+        }
         // "통합품목_*" 파일 → 분류(수주)용 6칸(제품구분,품목코드,색상,수량,수주건명,납기일).
         // 마지막 "합계" 행은 품목코드 칸이 코드 형식이 아니라서 자연스럽게 걸러진다.
         function _pkgExtractIntegratedRows(grid) {
