@@ -4147,9 +4147,10 @@ function _rpRowHtmlMobile(d, checkedOrderMap) {
         <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);">
           <input type="checkbox" ${hasHardware ? 'checked' : ''} onchange="toggleReportHardware('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#F97316;"> 철물
         </label>
-        <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--text-sub);">
-          <input type="checkbox" ${written ? 'checked' : ''} onchange="toggleReportWritten('${safeKey}', this.checked)" style="width:17px;height:17px;cursor:pointer;accent-color:#22C55E;"> 작성완료
-        </label>
+        ${written
+          ? `<span onclick="undoReportWritten('${safeKey}')" style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#16a34a;cursor:pointer;" title="${writtenAt ? _rpFormatWrittenAt(writtenAt) + ' 작성완료 — 클릭하면 취소' : '클릭하면 취소'}"><i class="fa-solid fa-circle-check"></i>작성완료</span>`
+          : `<button onclick="toggleReportWritten('${safeKey}', true)" style="padding:6px 14px;border-radius:10px;border:1.5px solid #22C55E;background:transparent;color:#16a34a;font-size:12.5px;font-weight:700;cursor:pointer;">작성완료 처리</button>`
+        }
       </div>
     </div>`;
 }
