@@ -7102,6 +7102,7 @@
                 const colorVal = (iColor >= 0 ? row[iColor] : row[2]);
                 const qtyVal   = (iQty   >= 0 ? row[iQty]   : row[3]);
                 const roundVal = (iRound >= 0 ? row[iRound] : row[4]);
+                if (!_pkgIsNorthAmericaRound(roundVal)) continue; // 북미(미국+멕시코) 건만 포함
                 const dueVal   = (iDue   >= 0 ? row[iDue]   : row[5]);
                 rows.push([
                     (typeVal == null ? '' : typeVal.toString()).trim(),
