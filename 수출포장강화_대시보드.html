@@ -7077,7 +7077,10 @@
             // 값(품목구분 등)이 있어서 수량 칸에 엉뚱한 값이 들어가던 원인. "수주량"을 먼저 찾는다.
             const iQty   = _pkgFindCol(headers, ['수주량', '수량']);
             const iRound = _pkgFindCol(headers, ['수주건명', '건명', '차수']);
-            const iDue   = _pkgFindCol(headers, ['납기일', '납기']);
+            // grd_Group 형식 파일은 "가능납기/최초납기/확정납기"처럼 "납기"가 들어간 칸이
+            // 여러 개라 느슨한 별칭("납기"만)으로 찾으면 맨 앞에 있는 엉뚱한 칸(가능납기)이
+            // 먼저 걸린다 — 실제로 써야 하는 "확정납기"를 가장 먼저 정확히 찾도록 둔다.
+            const iDue   = _pkgFindCol(headers, ['확정납기', '납기일', '납기']);
 
             const rows = [];
             for (let i = 1; i < grid.length; i++) {
