@@ -4102,6 +4102,7 @@ function _rpRowHtmlMobile(d, checkedOrderMap) {
   const sel = _reportSelected[key];
   const hasHardware = sel ? sel.hasHardware === true : false;
   const written = sel ? sel.written === true : false;
+  const writtenAt = sel ? sel.writtenAt : null;
   const safeKey = key.replace(/'/g, "\\'");
   const attrKey = key.replace(/"/g, '&quot;');
   const pillCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
