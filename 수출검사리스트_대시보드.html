@@ -6283,11 +6283,14 @@ let _qcSidebarAnimTimer = null;
 function _qcSetSidebar(collapsed, animated) {
   const aside = document.getElementById('qcSidebarAside');
   const center = document.getElementById('qcCenterHeader');
+  const expandBtn = document.getElementById('qcExpandBtn');
   if (!aside) return;
   clearTimeout(_qcSidebarAnimTimer);
   aside.style.width = collapsed ? '0px' : '260px';
   aside.style.borderRightColor = collapsed ? 'transparent' : '';
+  aside.style.borderRightWidth = collapsed ? '0px' : '';
   if (center) center.style.display = collapsed ? 'flex' : 'none';
+  if (expandBtn) expandBtn.style.display = collapsed ? 'flex' : 'none';
   if (collapsed) {
     aside.style.overflow = 'hidden';
   } else if (animated) {
