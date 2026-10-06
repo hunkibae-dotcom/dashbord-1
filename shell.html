@@ -789,14 +789,23 @@
                     <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
                         <i class="fa-solid fa-ship" style="color:#00E676;"></i> 수출 일정 조회
                     </span>
-                    <span id="scheduleRoundDateLabel" style="font-size:11px;color:var(--text-sub);margin-top:2px;display:block;"></span>
                 </div>
                 <button onclick="closeScheduleRoundPicker()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <!-- 월 이동 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:var(--icon-bg);border-radius:10px;padding:6px 8px;">
+                <button onclick="prevSchPickerMonth()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--panel);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-chevron-left" style="font-size:12px;"></i>
+                </button>
+                <span id="scheduleRoundDateLabel" style="font-size:13.5px;font-weight:800;color:var(--text);"></span>
+                <button onclick="nextSchPickerMonth()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--panel);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+                    <i class="fa-solid fa-chevron-right" style="font-size:12px;"></i>
+                </button>
+            </div>
             <div style="font-size:11.5px;color:var(--text-sub);background:var(--icon-bg);border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:6px;">
-                <i class="fa-solid fa-circle-info" style="color:#38BDF8;"></i> 조회할 건명을 선택하세요. 복수 선택 가능합니다.
+                <i class="fa-solid fa-circle-info" style="color:#38BDF8;"></i> 조회할 건명을 선택하세요. 복수 선택 가능하고, 달을 넘겨도 선택은 유지됩니다.
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <span style="font-size:12px;font-weight:700;color:var(--text-sub);">건명 목록</span>
