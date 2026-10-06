@@ -4802,6 +4802,8 @@
                 if (wrapper) { wrapper.style.width = ''; wrapper.style.overflow = ''; wrapper.style.borderRightColor = ''; wrapper.style.paddingLeft = ''; wrapper.style.paddingRight = ''; wrapper.style.borderRightWidth = ''; }
                 const center = document.getElementById('pkgCenterHeader');
                 if (center) center.style.display = 'none';
+                const expandBtn = document.getElementById('pkgExpandBtn');
+                if (expandBtn) expandBtn.style.display = 'none';
                 return;
             }
             _pkgSetSidebar(localStorage.getItem(PKG_SIDEBAR_COLLAPSE_KEY) === '1', false);
