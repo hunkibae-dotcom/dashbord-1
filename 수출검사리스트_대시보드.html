@@ -508,10 +508,12 @@ try {
         <i class="fa-solid fa-magnifying-glass text-[16.5px]"></i>
       </span>
       <div class="text-[18.5px] font-extrabold text-slate-900 font-sans" style="letter-spacing:-0.3px;">품질검사 대시보드</div>
-      <button onclick="toggleQcSidebar()" title="사이드바 펼치기" class="hover:bg-slate-100" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-        <i class="fa-solid fa-angles-right text-[13px]"></i>
-      </button>
     </div>
+
+    <!-- 사이드바 펼치기 버튼 — 화면 좌상단 고정, 접혔을 때만 보임 -->
+    <button id="qcExpandBtn" onclick="toggleQcSidebar()" title="사이드바 펼치기" style="display:none;position:fixed;top:16px;left:16px;width:34px;height:34px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;color:#94a3b8;cursor:pointer;align-items:center;justify-content:center;z-index:60;box-shadow:0 2px 8px rgba(0,0,0,.12);">
+      <i class="fa-solid fa-angles-right text-[14px]"></i>
+    </button>
     <main class="max-w-[1500px] mx-auto w-full p-5 pt-8 flex flex-col gap-5">
 
       <div id="loadWarning" class="hidden bg-amber-50 border border-amber-200 text-amber-700 text-[13px] rounded-xl p-3"></div>
