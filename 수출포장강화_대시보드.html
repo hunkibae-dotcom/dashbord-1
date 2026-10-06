@@ -638,10 +638,12 @@
             <i class="fa-solid fa-box text-[16.5px]"></i>
         </span>
         <span class="text-[18.5px] font-extrabold text-white" style="letter-spacing:-0.3px;">포장강화 대시보드</span>
-        <button onclick="togglePkgSidebar()" title="사이드바 펼치기" class="hover:bg-white/10" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:flex;align-items:center;justify-content:center;">
-            <i class="fa-solid fa-angles-right text-[13px]"></i>
-        </button>
     </div>
+
+    <!-- 사이드바 펼치기 버튼 — 화면 좌상단 고정, 접혔을 때만 보임 -->
+    <button id="pkgExpandBtn" onclick="togglePkgSidebar()" title="사이드바 펼치기" style="display:none;position:fixed;top:16px;left:16px;width:34px;height:34px;border-radius:9px;border:1px solid rgba(100,116,139,.3);background:var(--c-panelBg);color:#94a3b8;cursor:pointer;align-items:center;justify-content:center;z-index:60;box-shadow:0 2px 8px rgba(0,0,0,.12);">
+        <i class="fa-solid fa-angles-right text-[14px]"></i>
+    </button>
 
     <main id="mainGrid" class="px-2 py-2 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-4 lg:grid-rows-[auto_1fr] gap-4 relative items-start lg:min-w-0">
 
