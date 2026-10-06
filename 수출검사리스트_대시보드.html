@@ -6973,11 +6973,24 @@ const _SPU_PROCESS_DESC = '업로드하면 포장계획일 · 공정진행률이
 // 공장을 자동으로 읽어내도록 바꿨다. 수주내역은 AB열(제품구분, index 27), 공정진행정보는
 // 헤더에서 찾은 "생산라인" 칼럼 값이 "충주2공장"이면 충주2공장, 그 외(충주1제품/
 // 우레탄제품/목제제품/베트남상품 등)는 전부 충주1공장으로 본다.
-let _spuDetected = {}; // "sales_cj1" 등 → { file, grid }
+// "sales_cj1"/"sales_cj2" → { rows } (행 단위로 이미 공장별로 나눠놓은 결과),
+// "process_cj1"/"process_cj2" → { file, grid } (공정진행정보는 기존처럼 파일 전체가
+// 한 공장).
+let _spuDetected = {};
 
-// 수주내역의 "제품구분" 값 — 충주1제품/충주2공장/우레탄제품/목제제품/베트남상품처럼
-// 쓰여있어서 "충주2"가 들어있으면 2공장, 그 외는 전부 1공장으로 본다.
-function _spuIsCj2Value(v) { return /충주\s*2/.test((v || '').toString()); }
+// 수주내역의 "제품구분" 값으로 행 하나하나의 소속 공장을 정한다 — 예전엔 파일 전체를
+// 다수결로 한 공장으로 봤는데, 충주1/충주2 데이터가 섞인 파일 하나를 통째로 올리면
+// (예: 둘 다 올 수도, 하나로 합쳐서 올 수도 있다는 요청) 소수 쪽 공장 행이 전부 다수
+// 쪽 공장으로 잘못 들어가 버렸다. 이제 행마다 이 화이트리스트로 직접 판정한다 —
+// 목록에 없는 제품구분(목제상품/철물류 등)은 어느 공장도 아니므로 통째로 제외한다.
+const SPU_SALES_CJ1_GROUPS = ['충주1제품', '베트남상품', 'F우레탄제품'].map(s => s.replace(/\s+/g, ''));
+const SPU_SALES_CJ2_GROUPS = ['충주2제품'].map(s => s.replace(/\s+/g, ''));
+function _spuSalesRowFactory(productGroup) {
+  const v = (productGroup || '').toString().replace(/\s+/g, '');
+  if (SPU_SALES_CJ1_GROUPS.includes(v)) return 'cj1';
+  if (SPU_SALES_CJ2_GROUPS.includes(v)) return 'cj2';
+  return null; // 화이트리스트에 없으면 제외
+}
 
 // 공정진행정보의 "생산라인" 값은 "충주1/충주2" 같은 글자가 아니라 실제 라인 이름
 // ("성형 포장-1" 등)이라 위 규칙으로는 못 가린다 — 2공장 생산라인 이름을 정확히
@@ -7023,11 +7036,14 @@ function _spuLooksLikeSalesGrid(grid) {
   return plausible >= 1;
 }
 
-// grid만 보고 수주내역/공정진행정보 중 어느 쪽인지 + 어느 공장 소속인지를 한 번에
-// 판단한다. 헤더 문구로 먼저 종류를 가른 뒤(수주내역엔 "제품구분"/"수주량", 공정진행
-// 정보엔 "생산라인"/"공정진행률"이 있음), 각 종류가 쓰는 공장 판정 칼럼의 값들을 쭉
-// 살펴 다수결로 공장을 정한다(행 하나하나가 섞여 있을 리는 없지만, 빈 칸/오타 행이
-// 섞여도 흔들리지 않게).
+// grid만 보고 수주내역/공정진행정보 중 어느 쪽인지 판단한다(헤더 문구로 먼저 종류를
+// 가른다 — 수주내역엔 "제품구분"/"수주량", 공정진행정보엔 "생산라인"/"공정진행률").
+//
+// 공정진행정보는 기존처럼 파일 전체가 한 공장이라고 보고 다수결로 공장을 정한다(이
+// 부분은 이번 요청 범위가 아니라 그대로 둔다). 수주내역은 더 이상 파일 전체를 한
+// 공장으로 보지 않는다 — 충주1/충주2 데이터가 섞인 파일을 통째로 올릴 수도 있다는
+// 요청이라, 공장 구분은 _spuExtractSalesRows에서 행(제품구분)마다 따로 한다. 여기선
+// "수주내역 파일이다"만 판정해서 돌려준다(factory 없음).
 function _spuDetectFileKindFromGrid(grid) {
   if (!grid || grid.length < 2) return null;
   const iProcessLine = _spuFindHeaderCol(grid, ['생산라인']);
@@ -7035,42 +7051,29 @@ function _spuDetectFileKindFromGrid(grid) {
   const iSalesGroup  = _spuFindHeaderCol(grid, ['제품구분']);
   const iSalesQty    = _spuFindHeaderCol(grid, ['수주량']);
 
-  let type = null, factoryColIdx = -1, isCj2Value = null;
   if (iProcessLine !== -1 || iProcessRate !== -1) {
-    type = 'process';
     // 생산라인 헤더를 못 찾으면 공장 판정을 할 수가 없다(정확한 열 번호를 모름) — 억지로
     // 다른 칸을 짐작해서 쓰면 엉뚱한 공장 시트로 잘못 들어갈 수 있어, 차라리 "구분 못함"
     // 오류로 처리한다.
     if (iProcessLine === -1) return null;
-    factoryColIdx = iProcessLine;
-    isCj2Value = _spuIsCj2ProcessLine;
-  } else if (iSalesGroup !== -1 || iSalesQty !== -1) {
-    type = 'sales';
-    factoryColIdx = iSalesGroup !== -1 ? iSalesGroup : 27;
-    isCj2Value = _spuIsCj2Value;
-  } else if (_spuLooksLikeSalesGrid(grid)) {
-    // grd_Group_* 원본은 1행이 제목줄일 뿐 실제 칼럼 헤더가 아예 없어서(헤더 문구로는
-    // 절대 못 찾음 — "수주내역은 AB열에서 보면 된다"던 지적대로 애초에 헤더가 아니라
-    // 고정 위치였다), 위 헤더 검색이 항상 실패했었다. L=11(수주건명)·S=18(수주량) 자리에
-    // 그럴듯한 값(건명 텍스트 + 숫자 수량)이 실제로 있는지로 수주내역 파일인지를 판정하고,
-    // 공장 판정은 기존처럼 AB=27(제품구분) 고정 위치를 쓴다.
-    type = 'sales';
-    factoryColIdx = 27;
-    isCj2Value = _spuIsCj2Value;
-  } else {
-    return null; // 둘 중 어느 파일인지 구분 못함
+    let cj2Votes = 0, cj1Votes = 0;
+    for (let i = 1; i < grid.length; i++) {
+      const row = grid[i];
+      if (!row) continue;
+      const v = (row[iProcessLine] || '').toString().trim();
+      if (!v) continue;
+      if (_spuIsCj2ProcessLine(v)) cj2Votes++; else cj1Votes++;
+    }
+    if (cj2Votes === 0 && cj1Votes === 0) return null; // 공장 판정 칼럼이 통째로 비어있음
+    return { type: 'process', factory: cj2Votes > cj1Votes ? 'cj2' : 'cj1' };
   }
-
-  let cj2Votes = 0, cj1Votes = 0;
-  for (let i = 1; i < grid.length; i++) {
-    const row = grid[i];
-    if (!row) continue;
-    const v = (row[factoryColIdx] || '').toString().trim();
-    if (!v) continue;
-    if (isCj2Value(v)) cj2Votes++; else cj1Votes++;
-  }
-  if (cj2Votes === 0 && cj1Votes === 0) return null; // 공장 판정 칼럼이 통째로 비어있음
-  return { type: type, factory: cj2Votes > cj1Votes ? 'cj2' : 'cj1' };
+  if (iSalesGroup !== -1 || iSalesQty !== -1) return { type: 'sales' };
+  // grd_Group_* 원본은 1행이 제목줄일 뿐 실제 칼럼 헤더가 아예 없어서(헤더 문구로는
+  // 절대 못 찾음 — 애초에 헤더가 아니라 고정 위치였다), L=11(수주건명)·S=18(수주량)
+  // 자리에 그럴듯한 값(건명 텍스트 + 숫자 수량)이 실제로 있는지로 수주내역 파일인지를
+  // 판정한다.
+  if (_spuLooksLikeSalesGrid(grid)) return { type: 'sales' };
+  return null; // 둘 중 어느 파일인지 구분 못함
 }
 
 function openSpuUploadModal(mode) {
@@ -7110,6 +7113,11 @@ async function _spuOnFilesChosen() {
   listEl.innerHTML = '<div style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> 파일 내용 확인 중...</div>';
 
   const rows = [];
+  // 수주내역은 충주1/충주2 행이 섞인 파일 하나로 올 수도, 공장별로 따로따로 여러 파일로
+  // 올 수도 있다 — 어느 쪽이든 파일마다 행 단위로 나눠서 같은 풀에 누적해 합친다(파일별로
+  // 덮어쓰지 않음).
+  const salesAccum = { cj1: [], cj2: [], excludedCount: 0 };
+  let hasSales = false;
   for (const file of files) {
     let grid;
     try {
@@ -7120,7 +7128,7 @@ async function _spuOnFilesChosen() {
     }
     const kind = _spuDetectFileKindFromGrid(grid);
     if (!kind) {
-      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 내용에서 수주내역/공정진행정보 여부나 공장을 구분하지 못했습니다(헤더에 제품구분·수주량·생산라인·공정진행률 칼럼이 있는지 확인해주세요).</div>`);
+      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 내용에서 수주내역/공정진행정보 여부를 구분하지 못했습니다(헤더에 제품구분·수주량·생산라인·공정진행률 칼럼이 있는지 확인해주세요).</div>`);
       continue;
     }
     if (_spuMode === 'sales' && kind.type !== 'sales') {
@@ -7131,9 +7139,27 @@ async function _spuOnFilesChosen() {
       rows.push(`<div style="color:#94a3b8;">– ${file.name} — 수주내역 파일로 보여서, 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
       continue;
     }
-    _spuDetected[kind.type + '_' + kind.factory] = { file: file, grid: grid };
-    const label = (kind.factory === 'cj1' ? '충주1 ' : '충주2 ') + (kind.type === 'sales' ? '수주내역' : '공정진행정보');
-    rows.push(`<div style="color:#16a34a;">✓ ${file.name} → ${label}</div>`);
+    if (kind.type === 'sales') {
+      hasSales = true;
+      const split = _spuExtractSalesRows(grid);
+      salesAccum.cj1.push(...split.cj1);
+      salesAccum.cj2.push(...split.cj2);
+      salesAccum.excludedCount += split.excludedCount;
+      const parts = [];
+      if (split.cj1.length) parts.push(`충주1 ${split.cj1.length}건`);
+      if (split.cj2.length) parts.push(`충주2 ${split.cj2.length}건`);
+      if (split.excludedCount) parts.push(`제외 ${split.excludedCount}건`);
+      rows.push(`<div style="color:#16a34a;">✓ ${file.name} → 수주내역(${parts.join(' · ') || '해당 품목 없음'})</div>`);
+    } else {
+      // 공정진행정보는 기존과 동일하게 파일 전체를 한 공장으로 본다.
+      _spuDetected[kind.type + '_' + kind.factory] = { file: file, grid: grid };
+      const label = (kind.factory === 'cj1' ? '충주1 ' : '충주2 ') + '공정진행정보';
+      rows.push(`<div style="color:#16a34a;">✓ ${file.name} → ${label}</div>`);
+    }
+  }
+  if (hasSales) {
+    if (salesAccum.cj1.length) _spuDetected['sales_cj1'] = { rows: salesAccum.cj1 };
+    if (salesAccum.cj2.length) _spuDetected['sales_cj2'] = { rows: salesAccum.cj2 };
   }
   listEl.innerHTML = rows.join('') || '';
 }
@@ -7204,8 +7230,11 @@ function _spuIsDomesticRound(roundName) {
 // 구글시트 안(충주1 수주내역)의 "6행 헤더, 7행부터" 규칙과는 다르므로 헷갈리지 않게.
 // 열 배치(0-based): L=11 수주건명, P=15 확정납기, Q=16 단품코드, R=17 색상, S=18 수주량,
 // X=23 BOM확정, AB=27 제품구분, AD=29 단품명칭.
+// 반환값 { cj1: [...], cj2: [...], excludedCount } — 제품구분(행마다 값이 다를 수
+// 있음)으로 공장을 나누고, 화이트리스트(SPU_SALES_CJ1_GROUPS/SPU_SALES_CJ2_GROUPS)에
+// 없는 제품구분(목제상품/철물류 등)은 excludedCount만 올리고 양쪽 다 포함하지 않는다.
 function _spuExtractSalesRows(grid) {
-  const rows = [];
+  const result = { cj1: [], cj2: [], excludedCount: 0 };
   for (let i = 1; i < grid.length; i++) {
     const row = grid[i];
     if (!row) continue;
@@ -7214,18 +7243,21 @@ function _spuExtractSalesRows(grid) {
     const isDomestic = _spuIsDomesticRound(roundName);
     const qty = Number(row[18]) || 0;
     if (isDomestic && qty < 50) continue; // 내수건은 수주량 50개 미만 제외
-    rows.push({
+    const productGroup = (row[27] || '').toString().trim();
+    const factory = _spuSalesRowFactory(productGroup);
+    if (!factory) { result.excludedCount++; continue; }
+    result[factory].push({
       roundName: roundName,
       dueDate: _spuDateStr(row[15]),
       itemCode: (row[16] || '').toString().trim(),
       color: (row[17] || '').toString().trim(),
       qty: qty,
       bom: (row[23] || '').toString().trim(),
-      productGroup: (row[27] || '').toString().trim(),
+      productGroup: productGroup,
       itemName: (row[29] || '').toString().trim()
     });
   }
-  return rows;
+  return result;
 }
 // 실제 원본 파일(grd_List_*)을 직접 확인한 결과도 1행 제목줄, 2행부터 진짜 내용.
 // 열 배치(0-based): I=8 품목코드, K=10 색상, L=11 계획량, O=14 포장계획일, R=17 건명,
@@ -7263,7 +7295,7 @@ async function _spuRunImport() {
     .filter(key => _spuDetected[key])
     .map(key => {
       const [type, factory] = key.split('_');
-      return { type: type, factory: factory, file: _spuDetected[key].file, grid: _spuDetected[key].grid };
+      return { type: type, factory: factory, file: _spuDetected[key].file, grid: _spuDetected[key].grid, rows: _spuDetected[key].rows };
     });
   if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요(내용에서 자동으로 구분됩니다).'; return; }
 
@@ -7275,10 +7307,16 @@ async function _spuRunImport() {
   for (const job of jobs) {
     const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : '공정진행정보');
     try {
-      // 파일 선택 시(_spuOnFilesChosen) 이미 한 번 읽어서 공장/종류를 가렸으므로, 같은
-      // 파일을 두 번 읽지 않고 그때 캐시해둔 grid를 그대로 쓴다.
-      const grid = job.grid || await new Promise((resolve, reject) => _spuReadFileAsGrid(job.file, (err, g) => err ? reject(err) : resolve(g)));
-      const rows = job.type === 'sales' ? _spuExtractSalesRows(grid) : _spuExtractProcessRows(grid);
+      // 수주내역은 파일 선택 시(_spuOnFilesChosen)에 이미 행 단위로 공장별로 나눠서
+      // job.rows에 담아뒀다(여러 파일이어도 이미 합쳐짐) — 공정진행정보만 기존처럼
+      // 여기서 grid를 다시 읽어 추출한다(같은 파일을 두 번 읽지 않도록 캐시해둔 grid 사용).
+      let rows;
+      if (job.type === 'sales') {
+        rows = job.rows || [];
+      } else {
+        const grid = job.grid || await new Promise((resolve, reject) => _spuReadFileAsGrid(job.file, (err, g) => err ? reject(err) : resolve(g)));
+        rows = _spuExtractProcessRows(grid);
+      }
       const url = _gasUrlForFactory(job.factory);
       const action = job.type === 'sales' ? 'importSalesOrders' : 'importProcessProgress';
       const res = await fetch(url, {
