@@ -4769,6 +4769,12 @@
             clearTimeout(_pkgSidebarAnimTimer);
             wrapper.style.width = collapsed ? '0px' : '250px';
             wrapper.style.borderRightColor = collapsed ? 'transparent' : '';
+            // box-sizing:border-box라도 padding·border는 width:0으로 못 밀어낸다 — 패딩(12px*2)
+            // +테두리(1px)만큼은 항상 남아서, 접어도 왼쪽에 색칠된 띠가 계속 보였다. 접을 때는
+            // 패딩·테두리 두께까지 같이 0으로 줄여야 진짜로 완전히 사라진다.
+            wrapper.style.paddingLeft = collapsed ? '0px' : '';
+            wrapper.style.paddingRight = collapsed ? '0px' : '';
+            wrapper.style.borderRightWidth = collapsed ? '0px' : '';
             if (center) center.style.display = collapsed ? 'flex' : 'none';
             if (collapsed) {
                 wrapper.style.overflow = 'hidden';
