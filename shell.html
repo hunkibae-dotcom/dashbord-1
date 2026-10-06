@@ -1360,6 +1360,9 @@
             const nearDate = _nd(field === 'date' ? nearest.date : nearest.dueDate);
             const same = notDone.filter(d => (d.status||'').trim() !== '피킹' && _nd(field === 'date' ? d.date : d.dueDate) === nearDate);
             _schSameItems = same;
+            _schFullList = notDone.slice();
+            const nearDateObj = new Date(field === 'date' ? nearest.date : nearest.dueDate);
+            _schNearestDateObj = isNaN(nearDateObj.getTime()) ? new Date() : new Date(nearDateObj.getFullYear(), nearDateObj.getMonth(), nearDateObj.getDate());
 
             // 건명 (중복 제거)
             const rounds = [];
