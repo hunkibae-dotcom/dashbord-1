@@ -4872,22 +4872,6 @@
             // 건명이 몇 개든 항상 선택 팝업을 띄운다 — 월별로 다른 건명도 넘겨볼 수 있어야
             // 하므로, 오늘 건이 1개뿐이어도 곧바로 표로 넘기지 않고 팝업을 거친다.
             openCard4RoundPicker();
-            return;
-
-            _ensureSourceFilterSelected();
-            // 건명 1개 — 정확히 그 건명만 남기는 필터를 걸고, 다른 필터(상태/소스/날짜)는
-            // applyFilters()가 항상 하던 대로 함께 반영되게 한다.
-            if (_card4SameDateRounds.length === 1) {
-                cardRoundFilter = new Set(_card4SameDateRounds);
-                document.getElementById('roundFilter').value = '';
-            } else {
-                cardRoundFilter = null;
-                document.getElementById('roundFilter').value = el.dataset.primaryRound || roundName;
-            }
-            applyFilters();
-
-            const tableEl = document.getElementById('tablePanel');
-            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         // ── 날짜 팝업 ──────────────────────────────────────────────────
