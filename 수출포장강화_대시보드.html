@@ -1726,6 +1726,13 @@
         let _card4NearestDate = '';
         let _card4NearestField = 'date';  // 'date'(상차일) 또는 'dueDate'(납기일, 상차일 없을 때 대체)
         let _card4SameDateRounds = [];
+        // 건명 선택 팝업에서 월별로 넘겨볼 수 있게, "오늘과 같은 날짜" 묶음이 아니라
+        // 수출 현황 시트 전체(_card4FullList)를 따로 들고 있다가 그중 보고 있는
+        // 달(_card4PickerYear/_card4PickerMonth)만 걸러서 보여준다.
+        let _card4FullList = [];
+        let _card4NearestDateObj = null; // 팝업을 처음 열 때 어느 달부터 보여줄지 기준
+        let _card4PickerYear = null, _card4PickerMonth = null; // 0-based month
+        let _card4PickerMonthRounds = []; // 지금 보고 있는 달에 실제로 표시된 건명 목록(정렬된 순서)
 
         // Chart.js 전역 그리드 기본값 덮어쓰기 (모든 차트에 적용)
         (function applyChartDefaults() {
