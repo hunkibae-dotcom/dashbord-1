@@ -1696,40 +1696,76 @@
 
     function openScheduleRoundPicker() {
         if (!_schSameRounds.length) return;
-        // 예전엔 같은 상차일의 차수를 전부 미리 체크해둬서, 카드에 표시된 차수만 보려고
-        // 바로 "확인"을 누르면 나머지 차수까지 같이 검색됐다 — 카드에 실제로 표시된
-        // 차수(_schPrimaryRound) 하나만 기본 선택하고, 나머지는 필요할 때 직접 추가 체크하게 한다.
-        _schPickerSelected = new Set([_schPrimaryRound]);
-        const fieldLabel = _schNearestField === 'dueDate' ? '납기일' : '상차일';
-        const dateVal = _schNearestField === 'dueDate'
-            ? document.getElementById('nearestDueDate').textContent
-            : document.getElementById('nearestLoadDate').textContent;
-        const dateEl = document.getElementById('scheduleRoundDateLabel');
-        if (dateEl) dateEl.textContent = dateVal && dateVal !== '—' ? fieldLabel + ' ' + dateVal : '';
-
-        const roundMap = {};
-        _schSameItems.forEach(item => {
-            const rk = item.round || '-';
-            if (!roundMap[rk]) roundMap[rk] = { qty: 0, dueDate: item.dueDate || '' };
-            roundMap[rk].qty += parseInt(item.qty) || 0;
-        });
-        const chipList = document.getElementById('scheduleRoundChipList');
-        chipList.innerHTML = _schSameRounds.map((r, i) => {
-            const info = roundMap[r] || {};
-            return `<button id="schChip_${i}" onclick="toggleScheduleChip(${i},'${r.replace(/'/g,"\\'")}')"
-                style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #00B0FF;background:rgba(0,176,255,.1);cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;">
-                <span id="schChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid #00B0FF;background:#00B0FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>
-                </span>
-                <span style="flex:1;min-width:0;text-align:left;">
-                    <span style="display:block;font-size:13.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
-                    ${info.qty ? `<span style="font-size:11px;color:var(--text-sub);margin-top:1px;display:block;">수량 <strong style="color:#00B0FF;">${info.qty.toLocaleString()}</strong> BOX · 납기 ${fmtKr(info.dueDate) || '—'}</span>` : ''}
-                </span>
-            </button>`;
-        }).join('');
-        _updateScheduleRoundAllBtn();
+        // 기본 선택은 메인 화면 카드에 적혀있는 건명(_schSameRounds, "외 N건" 포함된 전체) —
+        // 달을 넘겨서 다른 건이 보여도 그 선택 자체는 유지된다(PC 웹 대시보드와 동일 기능).
+        _schPickerSelected = new Set(_schSameRounds);
+        const base = _schNearestDateObj || new Date();
+        _schPickerYear = base.getFullYear();
+        _schPickerMonth = base.getMonth();
+        _renderSchPickerMonth();
         document.getElementById('scheduleRoundModal').style.display = 'flex';
         _armBackTrap();
+    }
+    function prevSchPickerMonth() {
+        _schPickerMonth--;
+        if (_schPickerMonth < 0) { _schPickerMonth = 11; _schPickerYear--; }
+        _renderSchPickerMonth();
+    }
+    function nextSchPickerMonth() {
+        _schPickerMonth++;
+        if (_schPickerMonth > 11) { _schPickerMonth = 0; _schPickerYear++; }
+        _renderSchPickerMonth();
+    }
+    // 보고 있는 달(_schPickerYear/_schPickerMonth)에 속하는 건명만 걸러서, 건명별로 수량
+    // 합계+그 달 안에서 가장 빠른 날짜(상차일 우선, 없으면 납기일)를 구하고, 그 날짜
+    // 기준 오름차순(촉박한 순서)으로 정렬해 보여준다.
+    function _renderSchPickerMonth() {
+        const dateField = _schNearestField; // 'date'(상차일) 또는 'dueDate'(납기일)
+        const fieldLabel = dateField === 'dueDate' ? '납기' : '상차';
+        const y = _schPickerYear, m = _schPickerMonth;
+
+        const roundMap = {}; // round → { qty, earliestDate(로컬 Date), earliestRaw }
+        (_schFullList || []).forEach(item => {
+            if ((item.status || '').trim() === '피킹') return;
+            const raw = dateField === 'dueDate' ? item.dueDate : item.date;
+            const nd = _nd(raw);
+            if (!nd) return;
+            const d = new Date(nd);
+            if (isNaN(d.getTime())) return;
+            const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            if (local.getFullYear() !== y || local.getMonth() !== m) return;
+            const rk = item.round || '-';
+            if (!roundMap[rk]) roundMap[rk] = { qty: 0, earliestDate: local, earliestRaw: nd };
+            roundMap[rk].qty += parseInt(item.qty) || 0;
+            if (local.getTime() < roundMap[rk].earliestDate.getTime()) { roundMap[rk].earliestDate = local; roundMap[rk].earliestRaw = nd; }
+        });
+
+        const rounds = Object.keys(roundMap).sort((a, b) => roundMap[a].earliestDate.getTime() - roundMap[b].earliestDate.getTime());
+        _schPickerMonthRounds = rounds;
+
+        const chipList = document.getElementById('scheduleRoundChipList');
+        if (rounds.length) {
+            chipList.innerHTML = rounds.map((r, i) => {
+                const info = roundMap[r];
+                const checked = _schPickerSelected.has(r);
+                return `<button id="schChip_${i}" onclick="toggleScheduleChip(${i},'${r.replace(/'/g,"\\'")}')"
+                    style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid ${checked ? '#00B0FF' : 'var(--border)'};background:${checked ? 'rgba(0,176,255,.1)' : 'var(--icon-bg)'};cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;">
+                    <span id="schChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid ${checked ? '#00B0FF' : 'var(--border)'};background:${checked ? '#00B0FF' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        ${checked ? '<i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>' : ''}
+                    </span>
+                    <span style="flex:1;min-width:0;text-align:left;">
+                        <span style="display:block;font-size:13.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
+                        <span style="font-size:11px;color:var(--text-sub);margin-top:1px;display:block;">수량 <strong style="color:#00B0FF;">${info.qty.toLocaleString()}</strong> BOX · ${fieldLabel} ${fmtKr(info.earliestRaw) || '—'}</span>
+                    </span>
+                </button>`;
+            }).join('');
+        } else {
+            chipList.innerHTML = `<div style="text-align:center;color:var(--text-sub);font-size:12.5px;padding:20px 0;">이 달엔 조회할 건명이 없습니다.</div>`;
+        }
+
+        const dateEl = document.getElementById('scheduleRoundDateLabel');
+        if (dateEl) dateEl.textContent = `${y}년 ${m + 1}월`;
+        _updateScheduleRoundAllBtn();
     }
     function closeScheduleRoundPicker() {
         document.getElementById('scheduleRoundModal').style.display = 'none';
@@ -1748,10 +1784,11 @@
         }
         _updateScheduleRoundAllBtn();
     }
+    // "전체 선택/해제"는 지금 보고 있는 달(_schPickerMonthRounds)에 한해서만 토글한다 —
+    // 다른 달에서 이미 체크해둔 건명은 그대로 둔다.
     function toggleScheduleRoundAll() {
-        const allSelected = _schPickerSelected.size === _schSameRounds.length;
-        _schPickerSelected.clear();
-        _schSameRounds.forEach((r, i) => {
+        const allSelected = _schPickerMonthRounds.length > 0 && _schPickerMonthRounds.every(r => _schPickerSelected.has(r));
+        _schPickerMonthRounds.forEach((r, i) => {
             const chip = document.getElementById('schChip_' + i);
             const chk  = document.getElementById('schChipChk_' + i);
             if (!allSelected) {
@@ -1759,6 +1796,7 @@
                 if (chip) { chip.style.borderColor = '#00B0FF'; chip.style.background = 'rgba(0,176,255,.1)'; }
                 if (chk)  { chk.style.background = '#00B0FF'; chk.style.borderColor = '#00B0FF'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#0B0F19;"></i>'; }
             } else {
+                _schPickerSelected.delete(r);
                 if (chip) { chip.style.borderColor = 'var(--border)'; chip.style.background = 'var(--icon-bg)'; }
                 if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = 'var(--border)'; chk.innerHTML = ''; }
             }
@@ -1768,10 +1806,11 @@
     function _updateScheduleRoundAllBtn() {
         const btn = document.getElementById('scheduleRoundAllBtn');
         if (!btn) return;
-        btn.textContent = _schPickerSelected.size === _schSameRounds.length ? '전체 해제' : '전체 선택';
+        const allSelected = _schPickerMonthRounds.length > 0 && _schPickerMonthRounds.every(r => _schPickerSelected.has(r));
+        btn.textContent = allSelected ? '전체 해제' : '전체 선택';
     }
     function confirmScheduleRoundSearch() {
-        const selected = _schSameRounds.filter(r => _schPickerSelected.has(r));
+        const selected = Array.from(_schPickerSelected);
         if (!selected.length) return;
         closeScheduleRoundPicker();
         _schRoundFilterSet = new Set(selected);
