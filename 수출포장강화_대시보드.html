@@ -6372,18 +6372,65 @@
                 return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};${wrapStyle}">${_pkgPrintEsc(v)}</div></td>`;
             }).join('') + '</tr>';
         }
+        // 건명(수주건명)·품목코드(제품코드)는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이
+        // 실제 내용보다 좁으면 white-space:nowrap;overflow:visible을 줘도 html2canvas가
+        // 그 바깥으로 삐져나온 부분을 못 살리고 그냥 잘라버렸다(알려진 한계) — 화면 밖에
+        // 한 번 그려서 그 칼럼에서 가장 긴 값의 실제 픽셀 너비를 재고, 모자라면 칼럼 폭
+        // 자체를 넓혀서(부족분은 줄바꿈 가능한 다른 칼럼들에서 비례해서 떼어옴) 애초에
+        // 삐져나올 일이 없게 만든다.
+        function _pkgAutoWidenOneLineColumns(columns, rows, fontSize, headerFontSize, contentWidthPx) {
+            const oneLineIdx = columns.map((c, i) => i).filter(i => _pkgOneLineLabels.indexOf(columns[i].label) !== -1);
+            if (!oneLineIdx.length) return columns;
+
+            const span = document.createElement('span');
+            span.style.cssText = `position:fixed;left:-99999px;top:0;white-space:nowrap;font-family:'맑은 고딕',sans-serif;`;
+            document.body.appendChild(span);
+            const measure = (text, size) => { span.style.fontSize = size + 'px'; span.textContent = text; return span.offsetWidth; };
+
+            const CELL_PAD = 14;
+            const neededPx = {};
+            oneLineIdx.forEach(i => {
+                const c = columns[i];
+                let maxW = measure(c.label, headerFontSize);
+                rows.forEach(item => {
+                    const v = c.get ? c.get(item) : '';
+                    maxW = Math.max(maxW, measure(v == null ? '' : String(v), fontSize));
+                });
+                neededPx[i] = maxW + CELL_PAD;
+            });
+            document.body.removeChild(span);
+
+            const widthsPx = columns.map(c => parseFloat(c.width) / 100 * contentWidthPx);
+            let totalDeficit = 0;
+            oneLineIdx.forEach(i => {
+                const deficit = neededPx[i] - widthsPx[i];
+                if (deficit > 0) { widthsPx[i] += deficit; totalDeficit += deficit; }
+            });
+            if (totalDeficit <= 0) return columns;
+
+            const shrinkable = columns.map((c, i) => i).filter(i => oneLineIdx.indexOf(i) === -1);
+            const shrinkableTotalPx = shrinkable.reduce((s, i) => s + widthsPx[i], 0);
+            if (shrinkableTotalPx > 0) {
+                shrinkable.forEach(i => {
+                    const share = widthsPx[i] / shrinkableTotalPx;
+                    widthsPx[i] = Math.max(20, widthsPx[i] - totalDeficit * share);
+                });
+            }
+            return columns.map((c, i) => Object.assign({}, c, { width: (widthsPx[i] / contentWidthPx * 100) + '%' }));
+        }
         // opts: { title, columns, rows, filename, footer(선택), fontSize(선택), headerFontSize(선택) }
         async function _pkgRenderGenericPrintPdf(opts) {
             await new Promise((resolve) => _pkgLoadPdfLibs(resolve));
             if (!window.jspdf || !window.html2canvas) return; // CDN 로드 실패 — _pkgLoadPdfLibs가 이미 alert로 안내함
 
-            const columns = opts.columns;
             const rows = opts.rows || [];
             const fontSize = opts.fontSize || 11;
             const headerFontSize = opts.headerFontSize || 11.5;
-            const rowHtml = (item) => _pkgGenericRowHtml(item, columns, fontSize);
-
             const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
+            const columns = _pkgAutoWidenOneLineColumns(opts.columns, rows, fontSize, headerFontSize, CONTENT_WIDTH_PX);
+            // idx(줄무늬용)를 빠뜨리면 모든 행이 같은 색으로 나온다 — map 콜백에 그대로 전달.
+            const rowHtml = (item, idx) => _pkgGenericRowHtml(item, columns, fontSize, idx);
+
             const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
             const HEADER_ROW_PX = 32;
             const TITLE_PX = 30;
