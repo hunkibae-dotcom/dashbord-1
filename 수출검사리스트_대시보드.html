@@ -3501,10 +3501,14 @@ const RP_PHOTOS_KEY = 'qc_report_photos_v2';    // 무거운 사진(base64, 개�
 // 가벼운 메타데이터만 다시 쓴다.
 let _rpSaveDebounceTimer = null;
 let _rpPhotosDirty = false;
-function _rpSaveToStorage(photosChanged) {
+// immediate=true는 체크 하나 누르고 바로 앱을 배경으로 보내거나 화면을 꺼도(안드로이드가
+// 자원 회수를 위해 웹뷰를 그 사이에 멈추거나 죽일 수 있음) 300ms 디바운스가 끝까지
+// 돌 기회를 못 얻어 "분명 눌렀는데 저장이 안 됐다"는 식으로 유실되는 걸 막는다 —
+// 작성완료/철물처럼 드물고 중요한 클릭은 디바운스 없이 그 자리에서 바로 쓴다.
+function _rpSaveToStorage(photosChanged, immediate) {
   if (photosChanged) _rpPhotosDirty = true;
   clearTimeout(_rpSaveDebounceTimer);
-  _rpSaveDebounceTimer = setTimeout(function() {
+  const doSave = function() {
     try {
       const metaOnly = {};
       for (const k in _reportSelected) {
