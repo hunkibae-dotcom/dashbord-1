@@ -6340,17 +6340,23 @@
         // 수 있게 페이지를 나눠서 PDF로 만든다. 행 개수를 고정으로 자르지 않고 실제
         // 렌더링된 행 높이를 재서 나누기 때문에, 건명이 길어 줄바꿈되는 행이 있어도
         // 페이지 경계에서 반으로 잘리지 않는다.
+        // 엑셀 출력(_pkgRenderGenericXls)과 똑같은 색·글자 크기로 맞춘다 — 전엔 헤더
+        // 색이 미묘하게 다르고(#1e293b vs 엑셀 #0B0F19), 줄무늬도 상태 글자색도 전혀
+        // 없어서 "같은 데이터인데 PDF만 허전하고 다르게" 보였다.
         function _pkgGenericHeaderRowHtml(columns, headerFontSize) {
             return '<tr>' + columns.map(c =>
-                `<th style="width:${c.width};padding:7px 6px;border:1px solid #334155;background:#1e293b;color:#fff;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</th>`
+                `<th style="width:${c.width};padding:7px 6px;border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</th>`
             ).join('') + '</tr>';
         }
         // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
         // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
-        function _pkgGenericRowHtml(item, columns, fontSize) {
+        function _pkgGenericRowHtml(item, columns, fontSize, idx) {
+            const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
             return '<tr>' + columns.map(c => {
                 const v = c.get ? c.get(item) : '';
-                return `<td style="width:${c.width};padding:6px 6px;border:1px solid #cbd5e1;font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;">${_pkgPrintEsc(v)}</td>`;
+                const isStatus = !!c.isStatus;
+                const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
+                return `<td style="width:${c.width};padding:6px 6px;border:1px solid #e2e8f0;font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};">${_pkgPrintEsc(v)}</td>`;
             }).join('') + '</tr>';
         }
         // opts: { title, columns, rows, filename, footer(선택), fontSize(선택), headerFontSize(선택) }
