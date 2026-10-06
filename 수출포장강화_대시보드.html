@@ -6355,6 +6355,9 @@
         // 여러 줄로 늘어난 행에서 나머지 짧은 칸들이 전부 위쪽에 붙어 보였다. td 안에
         // height:100%짜리 flex 박스를 하나 더 둬서 그 박스 기준으로 가운데 정렬한다.
         const _pkgAlignToJustify = { left: 'flex-start', center: 'center', right: 'flex-end' };
+        // 건명(수주건명)·품목코드(제품코드)는 내용이 길어도 줄바꿈하지 말고 무조건
+        // 한 줄로 — 칸보다 길면 잘리지 않고 옆으로 삐져나오게 둔다(절대 안 잘림).
+        const _pkgOneLineLabels = ['건명', '수주건명', '제품코드', '품목코드'];
         function _pkgGenericRowHtml(item, columns, fontSize, idx) {
             const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
             return '<tr>' + columns.map(c => {
@@ -6362,7 +6365,11 @@
                 const isStatus = !!c.isStatus;
                 const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
                 const justify = _pkgAlignToJustify[c.align] || 'flex-start';
-                return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;">${_pkgPrintEsc(v)}</div></td>`;
+                const forceOneLine = _pkgOneLineLabels.indexOf(c.label) !== -1;
+                const wrapStyle = forceOneLine
+                    ? 'white-space:nowrap;overflow:visible;'
+                    : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
+                return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};${wrapStyle}">${_pkgPrintEsc(v)}</div></td>`;
             }).join('') + '</tr>';
         }
         // opts: { title, columns, rows, filename, footer(선택), fontSize(선택), headerFontSize(선택) }
