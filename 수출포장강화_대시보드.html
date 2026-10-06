@@ -7524,12 +7524,13 @@
                         ? {
                             action: 'pkgPrintShipLabelSelected', palletNumber: palletNumber,
                             labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
-                            customName: _pkgLabelState.customName, items: _pkgSelectedItemsForLabel()
+                            customName: _pkgLabelState.customName, items: _pkgSelectedItemsForLabel(),
+                            zoneName: zoneName
                           }
                         : {
                             action: 'pkgPrintShipLabel', palletNumber: palletNumber,
                             labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
-                            customName: _pkgLabelState.customName
+                            customName: _pkgLabelState.customName, zoneName: zoneName
                           };
                     const res = await fetch(_pkgGasUrl(), {
                         method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
