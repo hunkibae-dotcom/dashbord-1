@@ -3712,6 +3712,58 @@ function _rpSyncMetaToServer(key) {
   }, 400);
 }
 
+// 헤더 전체선택으로 수백~수천 건을 한꺼번에 켜면, 그 각각을 위 _rpSyncMetaToServer로
+// 따로따로 보내서 디바운스 타이머가 거의 동시에 몰려 터지면 수천 개 요청이 한순간에
+// 나가버린다 — 브라우저 동시 연결 수 제한과 Apps Script 동시실행 제한에 걸려 느려지고
+// 실패하는 요청도 생긴다. 로컬 저장은 이미 즉시 끝나서 화면/새로고침엔 문제없지만,
+// 다른 기기·구글시트 쪽 반영은 한참 걸리거나 일부 누락될 수 있었다 — 한 번에 몇 개씩만
+// 순서대로 보내고, 다 끝날 때까지 "서버 반영 중" 띠를 띄워서 그 사이엔 새로고침하지
+// 않아도 된다는 걸(= 이미 로컬엔 반영됐다는 걸) 명확히 보여준다.
+const RP_BULK_SYNC_CONCURRENCY = 6;
+async function _rpBulkSyncMetaToServer(keys) {
+  if (!keys.length) return;
+  const banner = document.getElementById('rpBulkSyncBanner');
+  const label = document.getElementById('rpBulkSyncLabel');
+  let done = 0;
+  const total = keys.length;
+  const updateLabel = () => { if (label) label.textContent = `서버 반영 중... (${done}/${total})`; };
+  if (banner) banner.style.display = 'flex';
+  updateLabel();
+
+  const sendOne = async (key) => {
+    clearTimeout(_rpMetaSyncTimers[key]); // 개별 디바운스는 취소 — 여기서 바로 보낸다
+    const sel = _reportSelected[key];
+    if (sel && sel.item && sel.item.공장) {
+      const url = _gasUrlForFactory(sel.item.공장);
+      if (url) {
+        const params = Object.assign({
+          action: 'saveReportMeta', key: key,
+          checked: _reportChecked.has(key) ? '1' : '0',
+          hasHardware: sel.hasHardware ? '1' : '0',
+          written: sel.written ? '1' : '0',
+          writtenAt: sel.writtenAt || ''
+        }, _gasQcSyncParams(sel.item));
+        try {
+          await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
+          sel._updatedAt = Date.now();
+          _rpDirtyMetaKeys.delete(key);
+        } catch (e) { /* 실패해도 로컬엔 이미 반영돼 있음 — dirty 표시는 남겨서 다음 동기화 때 다시 보호됨 */ }
+      }
+    }
+    done++;
+    updateLabel();
+  };
+
+  let idx = 0;
+  async function worker() {
+    while (idx < keys.length) { await sendOne(keys[idx++]); }
+  }
+  const workerCount = Math.min(RP_BULK_SYNC_CONCURRENCY, keys.length);
+  await Promise.all(Array.from({ length: workerCount }, worker));
+
+  if (banner) banner.style.display = 'none';
+}
+
 // 사진은 base64라 GET으로 못 보내서 POST — 실패해도 로컬 사진은 이미 이 기기 화면엔
 // 바로 보이므로 체감상 문제 없고, 다른 사람과의 공유만 잠시 안 될 뿐이다.
 async function _rpUploadPhotoToServer(key, side, dataUrl) {
