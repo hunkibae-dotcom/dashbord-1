@@ -4735,7 +4735,8 @@ function toggleReportWritten(key, checked) {
   // 초기화해버리는 걸 막는다.
   _reportSelected[key]._updatedAt = Date.now();
   _rpDirtyMetaKeys.add(key);
-  _rpSaveToStorage();
+  // 위 toggleReportHardware와 같은 이유로 디바운스 없이 즉시 저장
+  _rpSaveToStorage(false, true);
   _rpSyncMetaToServer(key);
   // 작성완료 필터가 걸려있으면 이 행 자체가 목록에서 빠지거나 들어와야 하고, 방금 선택도
   // 같이 새로 켜졌으면 상단 선택 개수·순서 배지도 갱신해야 하니 그때만 전체를 다시
@@ -4787,7 +4788,7 @@ function toggleRpHeaderBulk(kind) {
     _reportSelected[key]._updatedAt = Date.now(); // 위 toggleReportWritten/toggleReportHardware와 동일한 이유
     _rpDirtyMetaKeys.add(key);
   });
-  _rpSaveToStorage();
+  _rpSaveToStorage(false, true); // 즉시 저장(위 toggleReportWritten/toggleReportHardware와 동일한 이유)
   keys.forEach(key => _rpSyncMetaToServer(key));
   renderReportList();
 }
