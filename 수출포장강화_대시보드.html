@@ -4767,6 +4767,7 @@
             if (!_pkgIsDesktopWidth()) return;
             const wrapper = document.getElementById('sidebarWrapper');
             const center = document.getElementById('pkgCenterHeader');
+            const expandBtn = document.getElementById('pkgExpandBtn');
             if (!wrapper) return;
             clearTimeout(_pkgSidebarAnimTimer);
             wrapper.style.width = collapsed ? '0px' : '250px';
@@ -4778,6 +4779,7 @@
             wrapper.style.paddingRight = collapsed ? '0px' : '';
             wrapper.style.borderRightWidth = collapsed ? '0px' : '';
             if (center) center.style.display = collapsed ? 'flex' : 'none';
+            if (expandBtn) expandBtn.style.display = collapsed ? 'flex' : 'none';
             if (collapsed) {
                 wrapper.style.overflow = 'hidden';
             } else if (animated) {
