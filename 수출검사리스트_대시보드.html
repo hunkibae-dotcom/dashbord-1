@@ -983,6 +983,14 @@ try {
     </div>
   </div>
 
+  <!-- 작성완료/철물 전체선택처럼 한 번에 수백~수천 건을 서버로 보내는 동안 분명하게
+       보여주는 띠 — 이게 떠 있는 동안 새로고침하면 아직 서버로 못 간 항목은 다음에
+       다시 눌러야 하니, 다 끝날 때까지 기다리라는 신호다. -->
+  <div id="rpBulkSyncBanner" style="display:none;align-items:center;gap:10px;background:#FEF3C7;border-bottom:1px solid #FDE68A;padding:9px 18px;flex-shrink:0;">
+    <i class="fa-solid fa-spinner fa-spin" style="color:#B45309;font-size:13px;"></i>
+    <span id="rpBulkSyncLabel" style="font-size:12.5px;font-weight:700;color:#92400E;">서버 반영 중...</span>
+  </div>
+
   <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
     <!-- 행 1: 납기일/포장일/검사완료일 — 실제 날짜입력은 화면 밖 숨김 인풋에 두고
          버튼은 showPicker()로 그걸 열기만 한다(예전엔 버튼 위에 투명한 날짜 인풋을
