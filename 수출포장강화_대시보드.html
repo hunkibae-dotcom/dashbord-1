@@ -9707,6 +9707,11 @@
         <!-- 마지막 공통 단계: 적재번호 입력 -->
         <div id="pkgLabelStepPallet" style="display:none;margin-top:18px;">
             <div id="pkgLabelPalletTitle" style="font-size:13px;color:#64748b;margin-bottom:10px;"></div>
+            <div id="pkgLabelZoneInputWrap" style="display:none;margin-bottom:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">구역이름 (라벨에 큰 글자로 찍힙니다)</div>
+                <input id="pkgLabelZoneInput" type="text" placeholder="예: B-20" onkeydown="if(event.key==='Enter')pkgLabelSubmitPallet()"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+            </div>
             <div id="pkgLabelPalletInputWrap">
                 <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">적재번호</div>
                 <input id="pkgLabelPalletInput" type="text" placeholder="예: 1, B-20" onkeydown="if(event.key==='Enter')pkgLabelSubmitPallet()"
