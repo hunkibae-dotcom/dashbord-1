@@ -6009,6 +6009,8 @@ async function _qcRenderPrintPdf(opts) {
     ? `border:1px solid #000;background:#f1f5f9;color:#1e293b;font-weight:700;text-align:center;`
     : `border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-weight:700;text-align:center;`;
   const bodyCellBorder = plain ? '1px solid #000' : '1px solid #e2e8f0';
+  // 건명/단품코드가 실제로 다 들어가도록 필요하면 칼럼 폭을 넓힌다(아래 함수 설명 참고).
+  const columns = _qcAutoWidenOneLineColumns(opts.columns, rows, fontSize, headerFontSize, CONTENT_WIDTH_PX);
 
   // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
   // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
