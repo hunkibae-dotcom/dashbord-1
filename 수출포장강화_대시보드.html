@@ -7101,6 +7101,7 @@
                 // 합계행/요약행 제외: 품목코드 칸이 비어있거나 코드 형식(영숫자/하이픈)이 아니면 건너뜀
                 if (!codeStr || !/^[A-Za-z0-9][A-Za-z0-9\-_.]*$/.test(codeStr)) continue;
                 const typeVal  = (iType  >= 0 ? row[iType]  : row[0]);
+                if (!_pkgIsAllowedProductType(typeVal)) continue; // 충주1/2제품·목제N상품만 포함, 그 외(우레탄/베트남 등) 제외
                 const colorVal = (iColor >= 0 ? row[iColor] : row[2]);
                 const qtyVal   = (iQty   >= 0 ? row[iQty]   : row[3]);
                 const roundVal = (iRound >= 0 ? row[iRound] : row[4]);
