@@ -4757,6 +4757,10 @@ function toggleRpHeaderBulk(kind) {
   };
   const allOn = keys.every(isOn);
   const newVal = !allOn;
+  if (kind !== 'select') {
+    const label = kind === 'written' ? '작성완료' : '철물';
+    if (!confirm(`보이는 ${keys.length}개 품목을 전부 ${label} ${newVal ? '전체선택' : '전체해제'} 하시겠습니까?`)) return;
+  }
   keys.forEach(key => {
     if (kind === 'select') {
       if (newVal) { _rpEnsureRecord(key); if (_reportSelected[key]) _reportChecked.add(key); }
