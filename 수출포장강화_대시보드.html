@@ -7061,6 +7061,14 @@
             const code = (roundName || '').toString().split('-')[0].trim().toUpperCase();
             return PKG_NORTH_AMERICA_CODES.includes(code);
         }
+        // 제품구분은 "충주1제품"/"충주2제품"과 "목제N상품"(목제상품/목제5상품/목제6상품
+        // 등 숫자가 붙었다 안 붙었다 함)만 포장강화 대상이다 — F우레탄제품·베트남상품처럼
+        // 그 외 제품구분은 다른 공정이라 제외한다.
+        function _pkgIsAllowedProductType(typeVal) {
+            const t = (typeVal || '').toString().trim();
+            if (t === '충주1제품' || t === '충주2제품') return true;
+            return /^목제\d*상품$/.test(t);
+        }
         // 철물류(철물/다이얼락/옷걸이봉)는 포장강화 작업 대상이 아니라서, 수주 파일에
         // 섞여 들어와도 단품명칭 기준으로 제외한다.
         const PKG_EXCLUDED_ITEM_NAME_KEYWORDS = ['철물', '다이얼락', '옷걸이봉'];
