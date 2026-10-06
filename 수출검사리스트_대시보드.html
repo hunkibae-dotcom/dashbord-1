@@ -5927,11 +5927,17 @@ function _qcPrintMonthDay(str) {
 }
 // 단품명칭 표기 간소화 — "FAC9110NO-형태-W1600*D600 행잉상판"처럼 "-"로 구분된 뒤쪽에
 // 규격/제품명까지 길게 붙는 경우가 많아, 앞의 두 토큰("FAC9110NO-형태")만 남긴다.
+// "[하이닉스PJ]W600*H2100용 2인락커 도어(콤퐁15t/2차육면)"처럼 하이픈이 아예 없는
+// 긴 이름도 많아서, 하이픈 기준 자르기만으로는 안 줄어드는 경우가 있었다(인쇄물에서
+// 한 칸이 여러 줄로 늘어나 표가 너무 길어짐) — 그런 경우엔 일정 길이에서 "…"로 잘라
+// 한 줄 안에 들어오게 한다.
 function _qcSimplifyName(name) {
   const s = (name || '').toString().trim();
   if (!s) return '';
   const parts = s.split('-');
-  return parts.length > 2 ? parts.slice(0, 2).join('-') : s;
+  const simplified = parts.length > 2 ? parts.slice(0, 2).join('-') : s;
+  const MAX_LEN = 16;
+  return simplified.length > MAX_LEN ? simplified.slice(0, MAX_LEN) + '…' : simplified;
 }
 // 공통 페이지 나누기/캡처 엔진 — opts: { title, columns, rows, filename, plain(선택,
 // 흑백 단순 표 스타일) }. columns: [{label, width, align, get(d)}].
