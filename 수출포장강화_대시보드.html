@@ -8241,16 +8241,25 @@
                     <div style="font-size:16px;font-weight:800;color:#1e293b;display:flex;align-items:center;gap:8px;">
                         <i class="fa-solid fa-ship" style="color:#f97316;"></i> 수출 일정 조회
                     </div>
-                    <div id="card4PickerDateLabel" style="font-size:12px;color:#94a3b8;margin-top:3px;"></div>
                 </div>
                 <button onclick="closeCard4RoundPicker()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
+            <!-- 월 이동 -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:6px 8px;">
+                <button onclick="prevCard4PickerMonth()" style="width:30px;height:30px;border-radius:8px;border:none;background:#fff;color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.06);">
+                    <i class="fa-solid fa-chevron-left" style="font-size:12px;"></i>
+                </button>
+                <span id="card4PickerDateLabel" style="font-size:13.5px;font-weight:800;color:#1e293b;"></span>
+                <button onclick="nextCard4PickerMonth()" style="width:30px;height:30px;border-radius:8px;border:none;background:#fff;color:#475569;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.06);">
+                    <i class="fa-solid fa-chevron-right" style="font-size:12px;"></i>
+                </button>
+            </div>
             <!-- 안내 -->
             <div style="font-size:12.5px;color:#64748b;display:flex;align-items:center;gap:6px;background:#f8fafc;border-radius:10px;padding:10px 12px;">
                 <i class="fa-solid fa-circle-info" style="color:#0ea5e9;"></i>
-                조회할 건명을 선택하세요. 복수 선택 가능합니다.
+                조회할 건명을 선택하세요. 복수 선택 가능하고, 달을 넘겨도 선택은 유지됩니다.
             </div>
             <!-- 전체 선택 -->
             <div style="display:flex;align-items:center;justify-content:space-between;padding:0 2px;">
