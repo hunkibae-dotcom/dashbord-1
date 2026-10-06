@@ -4712,7 +4712,10 @@ function toggleReportHardware(key, checked) {
   // 서버가 실제로 받아갈 때까지는 dirty 표시로 아예 덮어쓰기 대상에서 뺀다.
   _reportSelected[key]._updatedAt = Date.now();
   _rpDirtyMetaKeys.add(key);
-  _rpSaveToStorage();
+  // 드물게 누르는 중요한 클릭이라 디바운스를 기다리지 않고 바로 저장한다 — 누르자마자
+  // 앱을 배경으로 보내도(안드로이드가 그 틈에 웹뷰를 멈추거나 죽일 수 있음) 저장이
+  // 누락되지 않게.
+  _rpSaveToStorage(false, true);
   _rpSyncMetaToServer(key);
   _rpRefreshRow(key);
 }
