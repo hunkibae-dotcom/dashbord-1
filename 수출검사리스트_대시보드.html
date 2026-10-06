@@ -5977,7 +5977,13 @@ async function _qcRenderPrintPdf(opts) {
     const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
     const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
     const justify = _qcAlignToJustify[c.align] || 'flex-start';
-    return `<td style="width:${c.width};padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;">${_qcPrintEsc(v)}</div></td>`;
+    // 건명·단품코드는 내용이 길어도 줄바꿈하지 말고 무조건 한 줄로 — 칸보다 길면
+    // 잘리지 않고 옆으로 삐져나오게 둔다(overflow:visible, 절대 안 잘림).
+    const forceOneLine = c.label === '건명' || c.label === '단품코드';
+    const wrapStyle = forceOneLine
+      ? 'white-space:nowrap;overflow:visible;'
+      : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
+    return `<td style="width:${c.width};padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
   }).join('') + '</tr>';
   const headerRowHtml = () => '<tr>' + columns.map(c =>
     `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
