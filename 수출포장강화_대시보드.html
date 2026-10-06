@@ -7061,6 +7061,13 @@
             const code = (roundName || '').toString().split('-')[0].trim().toUpperCase();
             return PKG_NORTH_AMERICA_CODES.includes(code);
         }
+        // 철물류(철물/다이얼락/옷걸이봉)는 포장강화 작업 대상이 아니라서, 수주 파일에
+        // 섞여 들어와도 단품명칭 기준으로 제외한다.
+        const PKG_EXCLUDED_ITEM_NAME_KEYWORDS = ['철물', '다이얼락', '옷걸이봉'];
+        function _pkgIsExcludedItemName(name) {
+            const n = (name || '').toString();
+            return PKG_EXCLUDED_ITEM_NAME_KEYWORDS.some(kw => n.includes(kw));
+        }
         // "통합품목_*" 파일 → 분류(수주)용 6칸(제품구분,품목코드,색상,수량,수주건명,납기일).
         // 마지막 "합계" 행은 품목코드 칸이 코드 형식이 아니라서 자연스럽게 걸러진다.
         function _pkgExtractIntegratedRows(grid) {
