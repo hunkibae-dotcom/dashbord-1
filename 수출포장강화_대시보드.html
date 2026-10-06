@@ -7420,8 +7420,14 @@
             }
             const labelMap = { kim: '김효진님', choi: '최필재님', yangji: '양지출고' };
             _pkgSetLabelPalletTitle((labelMap[type] || '') + ' 인식표 — 적재번호를 입력하세요.');
+            // 김효진님/최필재님 출고용은 라벨에 실제로 찍히는 큰 글자가 적재번호(조회용
+            // 내부 번호)가 아니라 구역이름(예: B-20)이어야 한다 — 둘은 서로 다른 값이라
+            // 별도 입력칸을 받는다. 그 외(사전조립/양지출고)는 기존과 동일.
+            const zoneWrap = document.getElementById('pkgLabelZoneInputWrap');
+            zoneWrap.style.display = (type === 'kim' || type === 'choi') ? '' : 'none';
+            document.getElementById('pkgLabelZoneInput').value = '';
             _pkgLabelShowStep('pkgLabelStepPallet');
-            if (_pkgSelectedKeys.size > 0) pkgLabelSubmitPallet();
+            if (_pkgSelectedKeys.size > 0 && zoneWrap.style.display === 'none') pkgLabelSubmitPallet();
         }
         function pkgLabelBackToShipType() {
             _pkgLabelShowStep('pkgLabelStepShipType');
