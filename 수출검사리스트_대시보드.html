@@ -5776,7 +5776,10 @@ function _qcExportKindMeta(kind, sourceRows) {
     const items = sourceRows.filter(d => d.검사 !== '검사');
     const now = new Date();
     const md = (now.getMonth() + 1) + '/' + now.getDate();
-    return { title: `${md} 검사대기 출고금지 현황`, columns: _qcFieldColumns(), rows: items, filenameBase: `검사대기출고금지현황_${md.replace('/', '-')}`, emptyMsg: '검사대기 품목이 없습니다.', plain: true };
+    // "현장용 출력"도 이젠 PDF만 유독 흑백 단순 표였는데, 엑셀(이 kind의 xls 버전)과
+    // 똑같은 모습으로 보이게 해달라는 요청으로 plain 스타일을 없앴다 — 이제 다른
+    // 출력들과 같은 색/줄무늬로 나온다.
+    return { title: `${md} 검사대기 출고금지 현황`, columns: _qcFieldColumns(), rows: items, filenameBase: `검사대기출고금지현황_${md.replace('/', '-')}`, emptyMsg: '검사대기 품목이 없습니다.' };
   }
   return null;
 }
