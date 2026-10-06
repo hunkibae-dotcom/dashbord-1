@@ -8637,34 +8637,77 @@
         let _card4PickerSelected = new Set();
 
         function openCard4RoundPicker() {
+            // 기본 선택은 메인 화면 카드에 적혀있는 건명(_card4SameDateRounds)만 — 달을
+            // 넘겨서 다른 건이 보여도 그 선택 자체는 유지된다(새로 체크/해제하기 전까지).
             _card4PickerSelected = new Set(_card4SameDateRounds);
-            const chipList = document.getElementById('card4RoundChipList');
-            chipList.innerHTML = _card4SameDateRounds.map((r, i) => {
-                const roundMap = {};
-                (_card4TooltipData || []).forEach(item => {
-                    const rk = item.round || '-';
-                    if (!roundMap[rk]) roundMap[rk] = { qty: 0, dueDate: item.dueDate || '', loadDate: item.date || '' };
-                    roundMap[rk].qty += parseInt(item.qty) || 0;
-                });
-                const info = roundMap[r] || {};
-                return `<button id="c4Chip_${i}" onclick="toggleCard4Chip(${i},'${r.replace(/'/g,'\\\'')}')"
-                    style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid #0ea5e9;background:#f0f9ff;cursor:pointer;text-align:left;width:100%;transition:all .15s;">
-                    <span id="c4ChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid #0ea5e9;background:#0ea5e9;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>
-                    </span>
-                    <span style="flex:1;min-width:0;text-align:left;">
-                        <span style="display:block;font-size:13.5px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
-                        ${info.qty ? `<span style="font-size:11.5px;color:#94a3b8;margin-top:1px;display:block;">수량 <strong style="color:#0ea5e9;">${info.qty.toLocaleString()}</strong> BOX · 납기 ${normalizeDate(info.dueDate) || '-'}</span>` : ''}
-                    </span>
-                </button>`;
-            }).join('');
-            const el = document.getElementById('card4RoundName');
-            const fieldLabel = _card4NearestField === 'dueDate' ? '납기일' : '상차일';
-            const loadDate = _card4NearestDate ? normalizeDate(_card4NearestDate) : '';
-            const dateEl = document.getElementById('card4PickerDateLabel');
-            if (dateEl) dateEl.textContent = loadDate && loadDate !== '-' ? fieldLabel + ' ' + loadDate : '';
-            _updateCard4PickerAllBtn();
+            const base = _card4NearestDateObj || new Date();
+            _card4PickerYear = base.getFullYear();
+            _card4PickerMonth = base.getMonth();
+            _renderCard4PickerMonth();
             document.getElementById('card4RoundPickerModal').style.display = 'flex';
+        }
+
+        function prevCard4PickerMonth() {
+            _card4PickerMonth--;
+            if (_card4PickerMonth < 0) { _card4PickerMonth = 11; _card4PickerYear--; }
+            _renderCard4PickerMonth();
+        }
+        function nextCard4PickerMonth() {
+            _card4PickerMonth++;
+            if (_card4PickerMonth > 11) { _card4PickerMonth = 0; _card4PickerYear++; }
+            _renderCard4PickerMonth();
+        }
+
+        // 보고 있는 달(_card4PickerYear/_card4PickerMonth)에 속하는 건명만 걸러서, 건명별로
+        // 수량 합계+그 달 안에서 가장 빠른 날짜(상차일 우선, 없으면 납기일 — 메인 카드와
+        // 같은 기준)를 구하고, 그 날짜 기준 오름차순(촉박한 순서)으로 정렬해 보여준다.
+        function _renderCard4PickerMonth() {
+            const dateField = _card4NearestField; // 'date'(상차일) 또는 'dueDate'(납기일)
+            const fieldLabel = dateField === 'dueDate' ? '납기' : '상차';
+            const y = _card4PickerYear, m = _card4PickerMonth;
+
+            const roundMap = {}; // round → { qty, earliestDate(로컬 Date), earliestStr }
+            (_card4FullList || []).forEach(item => {
+                if ((item.status || '').trim() === '피킹') return;
+                const raw = dateField === 'dueDate' ? item.dueDate : item.date;
+                const nd = normalizeDate(raw);
+                if (!nd || nd === '-') return;
+                const d = new Date(nd);
+                if (isNaN(d.getTime())) return;
+                const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                if (local.getFullYear() !== y || local.getMonth() !== m) return;
+                const rk = item.round || '-';
+                if (!roundMap[rk]) roundMap[rk] = { qty: 0, earliestDate: local, earliestStr: nd };
+                roundMap[rk].qty += parseInt(item.qty) || 0;
+                if (local.getTime() < roundMap[rk].earliestDate.getTime()) { roundMap[rk].earliestDate = local; roundMap[rk].earliestStr = nd; }
+            });
+
+            const rounds = Object.keys(roundMap).sort((a, b) => roundMap[a].earliestDate.getTime() - roundMap[b].earliestDate.getTime());
+            _card4PickerMonthRounds = rounds;
+
+            const chipList = document.getElementById('card4RoundChipList');
+            if (rounds.length) {
+                chipList.innerHTML = rounds.map((r, i) => {
+                    const info = roundMap[r];
+                    const checked = _card4PickerSelected.has(r);
+                    return `<button id="c4Chip_${i}" onclick="toggleCard4Chip(${i},'${r.replace(/'/g,'\\\'')}')"
+                        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1.5px solid ${checked ? '#0ea5e9' : '#e2e8f0'};background:${checked ? '#f0f9ff' : '#fff'};cursor:pointer;text-align:left;width:100%;transition:all .15s;">
+                        <span id="c4ChipChk_${i}" style="width:18px;height:18px;border-radius:5px;border:2px solid ${checked ? '#0ea5e9' : '#cbd5e1'};background:${checked ? '#0ea5e9' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            ${checked ? '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>' : ''}
+                        </span>
+                        <span style="flex:1;min-width:0;text-align:left;">
+                            <span style="display:block;font-size:13.5px;font-weight:700;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r}</span>
+                            <span style="font-size:11.5px;color:#94a3b8;margin-top:1px;display:block;">수량 <strong style="color:#0ea5e9;">${info.qty.toLocaleString()}</strong> BOX · ${fieldLabel} ${normalizeDate(info.earliestStr) || '-'}</span>
+                        </span>
+                    </button>`;
+                }).join('');
+            } else {
+                chipList.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12.5px;padding:20px 0;">이 달엔 조회할 건명이 없습니다.</div>`;
+            }
+
+            const dateEl = document.getElementById('card4PickerDateLabel');
+            if (dateEl) dateEl.textContent = `${y}년 ${m + 1}월`;
+            _updateCard4PickerAllBtn();
         }
 
         function closeCard4RoundPicker() {
@@ -8686,10 +8729,11 @@
             _updateCard4PickerAllBtn();
         }
 
+        // "전체 선택/해제"는 지금 보고 있는 달(_card4PickerMonthRounds)에 한해서만 토글한다
+        // — 다른 달에서 이미 체크해둔 건명은 그대로 둔다.
         function toggleCard4PickerAll() {
-            const allSelected = _card4PickerSelected.size === _card4SameDateRounds.length;
-            _card4PickerSelected.clear();
-            _card4SameDateRounds.forEach((r, i) => {
+            const allSelected = _card4PickerMonthRounds.length > 0 && _card4PickerMonthRounds.every(r => _card4PickerSelected.has(r));
+            _card4PickerMonthRounds.forEach((r, i) => {
                 const chip = document.getElementById('c4Chip_' + i);
                 const chk  = document.getElementById('c4ChipChk_' + i);
                 if (!allSelected) {
@@ -8697,6 +8741,7 @@
                     if (chip) { chip.style.borderColor = '#0ea5e9'; chip.style.background = '#f0f9ff'; }
                     if (chk)  { chk.style.background = '#0ea5e9'; chk.style.borderColor = '#0ea5e9'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>'; }
                 } else {
+                    _card4PickerSelected.delete(r);
                     if (chip) { chip.style.borderColor = '#e2e8f0'; chip.style.background = '#fff'; }
                     if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = '#cbd5e1'; chk.innerHTML = ''; }
                 }
@@ -8707,11 +8752,12 @@
         function _updateCard4PickerAllBtn() {
             const btn = document.getElementById('card4PickerSelectAllBtn');
             if (!btn) return;
-            btn.textContent = _card4PickerSelected.size === _card4SameDateRounds.length ? '전체 해제' : '전체 선택';
+            const allSelected = _card4PickerMonthRounds.length > 0 && _card4PickerMonthRounds.every(r => _card4PickerSelected.has(r));
+            btn.textContent = allSelected ? '전체 해제' : '전체 선택';
         }
 
         function confirmCard4RoundSearch() {
-            const selected = _card4SameDateRounds.filter(r => _card4PickerSelected.has(r));
+            const selected = Array.from(_card4PickerSelected);
             if (!selected.length) return;
             closeCard4RoundPicker();
             _ensureSourceFilterSelected();
