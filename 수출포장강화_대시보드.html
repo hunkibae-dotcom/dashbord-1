@@ -3263,6 +3263,8 @@
                 _card4NearestDate = (nearestField === 'date' ? nearestItem.date : nearestItem.dueDate) || '';
                 _card4NearestField = nearestField;
                 _card4SameDateRounds = uniqueRounds.slice();
+                _card4FullList = list.slice();
+                _card4NearestDateObj = loadDateReset;
 
                 // 동일 상차일 전체 수량: 총수량 / 포장완료 = 강화완료 / 그외 = 남은수량
                 // item.status는 이미 '출고완료'/'출고'가 전부 '출고' 카테고리로 정규화돼 있다 —
