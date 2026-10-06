@@ -5941,18 +5941,27 @@ async function _qcRenderPrintPdf(opts) {
   const columns = opts.columns;
   const rows = opts.rows || [];
   const plain = !!opts.plain;
-  const fontSize = plain ? 11 : 10;
-  const headerFontSize = plain ? 11.5 : 10.5;
+  // 엑셀 출력(이 파일의 _qcRenderGenericXls)과 똑같은 색·글자 크기로 맞춘다 — 전엔
+  // 헤더 색조차 미묘하게 다르고(#1e293b vs 엑셀 #0B0F19), 줄무늬도 검사상태 배지
+  // 색도 전혀 없어서 "같은 데이터인데 PDF만 허전하고 다르게" 보였다. "현장용 출력"
+  // (plain)은 의도적으로 흑백 단순 표라 그대로 둔다.
+  const fontSize = plain ? 11 : 12.5;
+  const headerFontSize = plain ? 11.5 : 13;
   const headCellStyle = plain
     ? `border:1px solid #000;background:#f1f5f9;color:#1e293b;font-weight:700;text-align:center;`
-    : `border:1px solid #334155;background:#1e293b;color:#fff;font-weight:700;text-align:center;`;
-  const bodyCellBorder = plain ? '1px solid #000' : '1px solid #cbd5e1';
+    : `border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-weight:700;text-align:center;`;
+  const bodyCellBorder = plain ? '1px solid #000' : '1px solid #e2e8f0';
 
   // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
   // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
-  const rowHtml = (d) => '<tr>' + columns.map(c => {
+  const rowHtml = (d, idx) => '<tr>' + columns.map(c => {
     const v = c.get(d);
-    return `<td style="width:${c.width};padding:6px 6px;border:${bodyCellBorder};font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;color:#1e293b;background:#fff;">${_qcPrintEsc(v)}</td>`;
+    const isStatus = !plain && !!c.isStatus;
+    const sc = isStatus ? _qcStatusXlsColor(d) : null;
+    const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
+    const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
+    const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
+    return `<td style="width:${c.width};padding:6px 6px;border:${bodyCellBorder};font-size:${fontSize}px;line-height:1.4;vertical-align:middle;text-align:${c.align};white-space:normal;word-break:break-all;overflow-wrap:break-word;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};">${_qcPrintEsc(v)}</td>`;
   }).join('') + '</tr>';
   const headerRowHtml = () => '<tr>' + columns.map(c =>
     `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
