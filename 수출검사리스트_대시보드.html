@@ -6039,7 +6039,6 @@ async function _qcRenderPrintPdf(opts) {
     `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
   ).join('') + '</tr>';
 
-  const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
   const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
   const HEADER_ROW_PX = 32;
   const TITLE_PX = 30;
