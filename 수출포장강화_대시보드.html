@@ -7358,7 +7358,7 @@
         //
         // 모달 체인: 1단계(재고용/출고용) → 2단계(재고용=적재번호 / 출고용=4종류
         // 선택) → (사전조립만) 건명+성함 입력 → (출고용 전체 공통) 적재번호 입력.
-        let _pkgLabelState = { kind: null, shipType: null, customRound: '', customName: '' };
+        let _pkgLabelState = { kind: null, shipType: null, customRound: '', customName: '', zoneName: '' };
 
         function _pkgLabelShowStep(id) {
             ['pkgLabelStep1', 'pkgLabelStepShipType', 'pkgLabelStepPrep', 'pkgLabelStepPallet'].forEach(function (s) {
