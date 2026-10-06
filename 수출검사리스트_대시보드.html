@@ -4849,7 +4849,7 @@ function toggleRpHeaderBulk(kind) {
     _rpDirtyMetaKeys.add(key);
   });
   _rpSaveToStorage(false, true); // 즉시 저장(위 toggleReportWritten/toggleReportHardware와 동일한 이유)
-  keys.forEach(key => _rpSyncMetaToServer(key));
+  if (kind !== 'select') _rpBulkSyncMetaToServer(keys); // 선택(체크)은 서버에 안 올리는 값이라 제외
   renderReportList();
 }
 
