@@ -3705,10 +3705,20 @@ function _rpSyncMetaToServer(key) {
       writtenAt: sel.writtenAt || ''
     }, _gasQcSyncParams(sel.item));
     try {
-      await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
-      sel._updatedAt = Date.now();
-      _rpDirtyMetaKeys.delete(key); // 서버가 받아갔다고 확인된 뒤에만 보호를 푼다
-    } catch (e) { /* 실패해도 로컬엔 이미 반영돼 있어 다음 변경 때 자연히 다시 시도됨 — dirty 표시는 그대로 유지 */ }
+      const res = await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
+      // fetch는 HTTP 상태코드가 4xx/5xx여도 예외를 안 던진다 — 응답이 왔다고 무조건
+      // 성공 취급하면, 서버가 내부적으로 거부/오류 처리한 경우(예: 동시 요청이 몰려
+      // Apps Script 실행 제한에 걸린 경우)까지 "반영됐다"고 착각해서 dirty 보호를
+      // 풀어버린다 — 실제로 이게 몇 개 항목만 작성완료가 풀리는 원인이었다. 응답
+      // status가 진짜 'success'일 때만 반영 확정으로 본다.
+      const json = res.ok ? await res.json().catch(() => null) : null;
+      if (json && json.status === 'success') {
+        sel._updatedAt = Date.now();
+        _rpDirtyMetaKeys.delete(key); // 서버가 받아갔다고 확인된 뒤에만 보호를 푼다
+      }
+      // 실패(또는 확인 불가)면 dirty 표시를 그대로 둬서, 다음 변경이나 재시도 때까지
+      // _rpFetchSharedReportData()가 이 항목을 절대 덮어쓰지 못하게 보호한다.
+    } catch (e) { /* 네트워크 자체 실패 — 역시 dirty 표시는 그대로 유지 */ }
   }, 400);
 }
 
