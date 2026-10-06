@@ -2005,7 +2005,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '생산완료 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '포장대기 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : '검사상태';
 
   if (dd) dd.classList.add('hidden');
   applyFilters();
