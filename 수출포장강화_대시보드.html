@@ -7501,6 +7501,9 @@
             // 선택된 품목으로 만들 땐 적재번호가 없어도(섞여있어서 못 뽑은 경우) 그냥
             // 제목만 빈 채로 진행한다 — 입력을 요구하지 않는다.
             if (!useSelection && !palletNumber) { fb.textContent = '적재번호를 입력해주세요.'; return; }
+            const needsZone = (_pkgLabelState.shipType === 'kim' || _pkgLabelState.shipType === 'choi');
+            const zoneName = needsZone ? document.getElementById('pkgLabelZoneInput').value.trim() : '';
+            if (needsZone && !zoneName) { fb.textContent = '구역이름을 입력해주세요. (예: B-20)'; return; }
             fb.textContent = '';
             const btn = document.getElementById('pkgLabelPalletSubmitBtn');
             const origHtml = btn.innerHTML;
