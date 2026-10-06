@@ -4795,7 +4795,7 @@
         window.addEventListener('resize', () => {
             const wrapper = document.getElementById('sidebarWrapper');
             if (!_pkgIsDesktopWidth()) {
-                if (wrapper) { wrapper.style.width = ''; wrapper.style.overflow = ''; wrapper.style.borderRightColor = ''; }
+                if (wrapper) { wrapper.style.width = ''; wrapper.style.overflow = ''; wrapper.style.borderRightColor = ''; wrapper.style.paddingLeft = ''; wrapper.style.paddingRight = ''; wrapper.style.borderRightWidth = ''; }
                 const center = document.getElementById('pkgCenterHeader');
                 if (center) center.style.display = 'none';
                 return;
