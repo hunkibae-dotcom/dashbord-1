@@ -5942,15 +5942,63 @@ function _qcSimplifyName(name) {
   const MAX_LEN = 16;
   return simplified.length > MAX_LEN ? simplified.slice(0, MAX_LEN) + '…' : simplified;
 }
+// 건명·단품코드는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이 실제 내용보다 좁으면
+// white-space:nowrap;overflow:visible을 줘도 html2canvas가 그 바깥으로 삐져나온
+// 부분을 못 살리고 그냥 잘라버렸다(알려진 한계) — 화면 밖에 한 번 그려서 그 칼럼에서
+// 가장 긴 값의 실제 픽셀 너비를 재고, 모자라면 칼럼 폭 자체를 넓혀서(부족분은 줄바꿈
+// 가능한 다른 칼럼들에서 비례해서 떼어옴) 애초에 삐져나올 일이 없게 만든다.
+function _qcAutoWidenOneLineColumns(columns, rows, fontSize, headerFontSize, contentWidthPx) {
+  const ONE_LINE_LABELS = ['건명', '단품코드'];
+  const oneLineIdx = columns.map((c, i) => i).filter(i => ONE_LINE_LABELS.indexOf(columns[i].label) !== -1);
+  if (!oneLineIdx.length) return columns;
+
+  const span = document.createElement('span');
+  span.style.cssText = `position:fixed;left:-99999px;top:0;white-space:nowrap;font-family:'맑은 고딕',sans-serif;`;
+  document.body.appendChild(span);
+  const measure = (text, size) => { span.style.fontSize = size + 'px'; span.textContent = text; return span.offsetWidth; };
+
+  const CELL_PAD = 14; // 좌우 padding(6px*2) + 여유
+  const neededPx = {};
+  oneLineIdx.forEach(i => {
+    const c = columns[i];
+    let maxW = measure(c.label, headerFontSize);
+    rows.forEach(d => {
+      const v = c.get(d);
+      maxW = Math.max(maxW, measure(v == null ? '' : String(v), fontSize));
+    });
+    neededPx[i] = maxW + CELL_PAD;
+  });
+  document.body.removeChild(span);
+
+  const widthsPx = columns.map(c => parseFloat(c.width) / 100 * contentWidthPx);
+  let totalDeficit = 0;
+  oneLineIdx.forEach(i => {
+    const deficit = neededPx[i] - widthsPx[i];
+    if (deficit > 0) { widthsPx[i] += deficit; totalDeficit += deficit; }
+  });
+  if (totalDeficit <= 0) return columns; // 이미 다 들어가면 손댈 필요 없음
+
+  // 부족분을 "줄바꿈 가능한(한 줄 강제가 아닌)" 칼럼들의 현재 폭 비율대로 나눠서 뺀다.
+  const shrinkable = columns.map((c, i) => i).filter(i => oneLineIdx.indexOf(i) === -1);
+  const shrinkableTotalPx = shrinkable.reduce((s, i) => s + widthsPx[i], 0);
+  if (shrinkableTotalPx > 0) {
+    shrinkable.forEach(i => {
+      const share = widthsPx[i] / shrinkableTotalPx;
+      widthsPx[i] = Math.max(20, widthsPx[i] - totalDeficit * share); // 최소 20px은 남김
+    });
+  }
+
+  return columns.map((c, i) => Object.assign({}, c, { width: (widthsPx[i] / contentWidthPx * 100) + '%' }));
+}
 // 공통 페이지 나누기/캡처 엔진 — opts: { title, columns, rows, filename, plain(선택,
 // 흑백 단순 표 스타일) }. columns: [{label, width, align, get(d)}].
 async function _qcRenderPrintPdf(opts) {
   await new Promise((resolve) => _qcLoadPdfLibs(resolve));
   if (!window.jspdf || !window.html2canvas) return;
 
-  const columns = opts.columns;
   const rows = opts.rows || [];
   const plain = !!opts.plain;
+  const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
   // 엑셀 출력(이 파일의 _qcRenderGenericXls)과 똑같은 색·글자 크기로 맞춘다 — 전엔
   // 헤더 색조차 미묘하게 다르고(#1e293b vs 엑셀 #0B0F19), 줄무늬도 검사상태 배지
   // 색도 전혀 없어서 "같은 데이터인데 PDF만 허전하고 다르게" 보였다. "현장용 출력"
