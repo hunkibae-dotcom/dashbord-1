@@ -993,7 +993,7 @@
             <!-- 헤더: 제목 + 소스 필터 탭 -->
             <div class="px-5 py-4 flex flex-row items-center justify-between gap-3 flex-wrap" style="border-bottom:1px solid #f1f5f9;">
                 <h3 class="text-[15.5px] font-bold flex items-center gap-2" style="color:#1e293b;">
-                    <i class="fa-solid fa-table-list" style="color:#94a3b8;"></i> 수출포장 관리현황
+                    <i class="fa-solid fa-table-list" style="color:#94a3b8;"></i> 제품검색
                     <span id="tableStatsBadge" style="display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;">
                         <span style="display:inline-flex;align-items:center;gap:3px;">
                             <i class="fa-solid fa-layer-group" style="color:#94a3b8;font-size:10px;"></i>
@@ -1031,34 +1031,37 @@
                 </div>
             </div>
             <!-- 검색 4칸 행 -->
-            <div style="padding:12px 20px 8px;border-bottom:none;display:grid;grid-template-columns:2fr 1.5fr 0.8fr 0.8fr;gap:8px;">
-                <div style="position:relative;">
-                    <i class="fa-solid fa-folder-open" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+            <div style="margin:12px 20px 8px;padding:5px;display:flex;align-items:stretch;gap:0;border:1px solid #e2e8f0;border-radius:14px;background:#f8fafc;">
+                <div style="position:relative;flex:2.2;min-width:0;border-radius:10px;transition:background .15s;">
+                    <i class="fa-solid fa-folder-open" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
                     <input type="text" id="roundFilter" oninput="applyFiltersDebounced()" placeholder="건명 / 국가 (예: FAM-110, FAM)"
-                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
-                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 2px rgba(56,189,248,.12)'"
-                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                        style="width:100%;padding:8px 10px 8px 31px;border:none;border-radius:10px;font-size:13px;color:#334155;background:transparent;outline:none;box-sizing:border-box;"
+                        onfocus="this.parentElement.style.background='#fff';this.parentElement.style.boxShadow='0 0 0 1.5px #38bdf8'"
+                        onblur="this.parentElement.style.background='transparent';this.parentElement.style.boxShadow='none'">
                 </div>
-                <div style="position:relative;">
-                    <i class="fa-solid fa-barcode" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                <div style="width:1px;margin:7px 2px;background:#e2e8f0;flex-shrink:0;"></div>
+                <div style="position:relative;flex:1.5;min-width:0;border-radius:10px;transition:background .15s;">
+                    <i class="fa-solid fa-barcode" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
                     <input type="text" id="productCodeFilter" oninput="applyFiltersDebounced()" placeholder="제품코드"
-                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
-                        onfocus="this.style.borderColor='#38bdf8';this.style.boxShadow='0 0 0 2px rgba(56,189,248,.12)'"
-                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                        style="width:100%;padding:8px 10px 8px 31px;border:none;border-radius:10px;font-size:13px;color:#334155;background:transparent;outline:none;box-sizing:border-box;"
+                        onfocus="this.parentElement.style.background='#fff';this.parentElement.style.boxShadow='0 0 0 1.5px #38bdf8'"
+                        onblur="this.parentElement.style.background='transparent';this.parentElement.style.boxShadow='none'">
                 </div>
-                <div style="position:relative;">
-                    <i class="fa-solid fa-palette" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                <div style="width:1px;margin:7px 2px;background:#e2e8f0;flex-shrink:0;"></div>
+                <div style="position:relative;flex:1;min-width:0;border-radius:10px;transition:background .15s;">
+                    <i class="fa-solid fa-palette" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
                     <input type="text" id="colorFilter" oninput="applyFiltersDebounced()" placeholder="색상"
-                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
-                        onfocus="this.style.borderColor='#f97316';this.style.boxShadow='0 0 0 2px rgba(249,115,22,.12)'"
-                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                        style="width:100%;padding:8px 10px 8px 31px;border:none;border-radius:10px;font-size:13px;color:#334155;background:transparent;outline:none;box-sizing:border-box;"
+                        onfocus="this.parentElement.style.background='#fff';this.parentElement.style.boxShadow='0 0 0 1.5px #f97316'"
+                        onblur="this.parentElement.style.background='transparent';this.parentElement.style.boxShadow='none'">
                 </div>
-                <div style="position:relative;">
-                    <i class="fa-solid fa-pallet" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
+                <div style="width:1px;margin:7px 2px;background:#e2e8f0;flex-shrink:0;"></div>
+                <div style="position:relative;flex:1;min-width:0;border-radius:10px;transition:background .15s;">
+                    <i class="fa-solid fa-pallet" style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;pointer-events:none;"></i>
                     <input type="text" id="palletFilter" oninput="applyFiltersDebounced()" placeholder="적재"
-                        style="width:100%;padding:8px 10px 8px 30px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s,box-shadow .15s;"
-                        onfocus="this.style.borderColor='#a78bfa';this.style.boxShadow='0 0 0 2px rgba(167,139,250,.12)'"
-                        onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none'">
+                        style="width:100%;padding:8px 10px 8px 31px;border:none;border-radius:10px;font-size:13px;color:#334155;background:transparent;outline:none;box-sizing:border-box;"
+                        onfocus="this.parentElement.style.background='#fff';this.parentElement.style.boxShadow='0 0 0 1.5px #a78bfa'"
+                        onblur="this.parentElement.style.background='transparent';this.parentElement.style.boxShadow='none'">
                 </div>
             </div>
             <!-- 날짜 필터 행 -->
