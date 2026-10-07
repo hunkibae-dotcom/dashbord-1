@@ -3417,18 +3417,41 @@ function setConnStatus(state) {
   if (mIco) mIco.classList.toggle('fa-spin', state === 'loading');
 }
 
-// 개별 시트 로드가 실패했을 때 콘솔이 아니라 화면에서 바로 원인이 보이도록 배너로 표시
+// 개별 시트 로드가 실패했을 때 콘솔이 아니라 화면에서 바로 원인이 보이고, 그 자리에서
+// 바로 다시 시도할 수 있게 재시도 버튼도 같이 보여준다 — 예전엔 보여주기만 하고 새로고침
+// 버튼(사이드바)까지 따로 찾아 눌러야 했다.
 function renderLoadWarnings() {
   const box = document.getElementById('loadWarning');
   if (!loadErrors.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
   box.classList.remove('hidden');
-  box.innerHTML = `<div class="flex items-start gap-2">
-    <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
-    <div>
-      <div class="font-bold mb-1">일부 시트를 불러오지 못했어요 (아래 항목은 최신 상태가 아닐 수 있어요)</div>
-      <ul class="list-disc pl-4 space-y-0.5">${loadErrors.map(m => `<li>${m}</li>`).join('')}</ul>
+  box.innerHTML = `<div class="flex items-start justify-between gap-2">
+    <div class="flex items-start gap-2">
+      <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+      <div>
+        <div class="font-bold mb-1">일부 시트를 불러오지 못했어요 (아래 항목은 최신 상태가 아닐 수 있어요)</div>
+        <ul class="list-disc pl-4 space-y-0.5">${loadErrors.map(m => `<li>${m}</li>`).join('')}</ul>
+      </div>
     </div>
+    <button id="loadWarningRetryBtn" onclick="_retryLoadAfterWarning()" class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-amber-300 bg-white text-amber-700 text-[12.5px] font-bold hover:bg-amber-100 transition-colors">
+      <i class="fa-solid fa-arrows-rotate" id="loadWarningRetryIcon"></i> 재시도
+    </button>
   </div>`;
+}
+async function _retryLoadAfterWarning() {
+  const btn = document.getElementById('loadWarningRetryBtn');
+  const icon = document.getElementById('loadWarningRetryIcon');
+  if (btn) btn.disabled = true;
+  if (icon) icon.classList.add('fa-spin');
+  try {
+    await loadData();
+  } finally {
+    // 성공해서 배너 자체가 사라졌으면(loadErrors 비어짐) 이 버튼도 이미 DOM에서 없어진
+    // 상태라 다시 건드릴 필요 없다 — 계속 실패해서 배너가 남아있을 때만 원래대로 되돌린다.
+    const stillThere = document.getElementById('loadWarningRetryBtn');
+    if (stillThere) { stillThere.disabled = false; }
+    const stillIcon = document.getElementById('loadWarningRetryIcon');
+    if (stillIcon) stillIcon.classList.remove('fa-spin');
+  }
 }
 
 // ===== SCROLL TO TOP =====
