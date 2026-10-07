@@ -7661,12 +7661,12 @@
 
             return '<div style="width:860px;background:#fff;font-family:\'Malgun Gothic\',\'Apple SD Gothic Neo\',sans-serif;padding:28px;box-sizing:border-box;color:#1e293b;">'
                 + '<div style="text-align:center;font-size:22px;font-weight:800;letter-spacing:.08em;color:#1e293b;margin-bottom:20px;">수출 표준품 인식표</div>'
-                + '<div style="display:flex;border:1.5px solid #1e293b;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.08);margin-bottom:22px;height:220px;">'
+                + '<div style="display:flex;border:1.5px solid #1e293b;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.08);margin-bottom:22px;height:300px;">'
                 // 왼쪽: 입고(큰 제목)
                 + '<div style="flex:2.3;display:flex;flex-direction:column;border-right:1.5px solid #1e293b;min-width:0;">'
                 + '<div style="' + HEAD_BAR + '">입고</div>'
                 + '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:12px 20px;min-height:0;">'
-                + '<div style="font-size:80px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
+                + '<div style="font-size:120px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
                 + (opts.midLine ? '<div style="font-size:18px;font-weight:700;color:#6d28d9;text-align:center;">' + esc(opts.midLine) + '</div>' : '')
                 // 구글시트는 이 줄도 채워진 박스가 아니라 그냥 굵은 주황색 글자다(배경 없음).
                 + (opts.bottomLine ? '<div style="color:#f97316;text-align:center;font-size:19px;font-weight:800;">' + esc(opts.bottomLine) + '</div>' : '')
@@ -7699,11 +7699,17 @@
                             document.body.removeChild(host);
                             const imgData = canvas.toDataURL('image/png');
                             const jsPDF = window.jspdf.jsPDF;
-                            const pxToMm = 0.264583;
-                            const wMm = canvas.width * pxToMm / 2;
-                            const hMm = canvas.height * pxToMm / 2;
-                            const pdf = new jsPDF({ orientation: wMm > hMm ? 'landscape' : 'portrait', unit: 'mm', format: [wMm, hMm] });
-                            pdf.addImage(imgData, 'PNG', 0, 0, wMm, hMm);
+                            // 내용 크기에 딱 맞춘 임의 크기 페이지 대신, 실제 A4 가로(landscape) 용지에
+                            // 맞춰 출력한다 — 비율을 유지한 채 여백 안에서 최대로 키워 가운데 배치.
+                            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                            const pageW = 297, pageH = 210, margin = 10;
+                            const maxW = pageW - margin * 2, maxH = pageH - margin * 2;
+                            const imgRatio = canvas.width / canvas.height;
+                            let drawW = maxW, drawH = drawW / imgRatio;
+                            if (drawH > maxH) { drawH = maxH; drawW = drawH * imgRatio; }
+                            const offsetX = (pageW - drawW) / 2;
+                            const offsetY = (pageH - drawH) / 2;
+                            pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH);
                             pdf.save(filename);
                             resolve();
                         }).catch(function (err) {
