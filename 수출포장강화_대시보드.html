@@ -6163,8 +6163,9 @@
         const PKG_EXPORT_BASIC_COLS = [
             { label: '제품구분', width: '8%', align: 'center', get: item => _pkgPrintCountry(item) },
             { label: '등록일자(포장일)', width: '10%', align: 'center', get: item => normalizeDate(item.regDate) },
-            { label: '건명', width: '14%', align: 'left', wrap: true, get: item => item.round || '' },
-            { label: '제품코드', width: '10%', align: 'left', get: item => item.code || '' },
+            { label: '건명', width: '11%', align: 'left', wrap: true, get: item => item.round || '' },
+            { label: '제품코드', width: '8%', align: 'left', get: item => item.code || '' },
+            { label: '색상', width: '5%', align: 'center', get: item => (item.color && item.color !== '-') ? item.color : '' },
             { label: '수량', width: '6%', align: 'right', get: item => item.qty },
             { label: '납기일', width: '9%', align: 'center', get: item => normalizeDate(item.dueDate) },
             { label: '상차일', width: '9%', align: 'center', get: item => normalizeDate(item.date) },
