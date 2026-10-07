@@ -906,9 +906,9 @@
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
                             <div class="flex items-center justify-between gap-2">
                                 <h3 class="text-[19.5px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
-                                    <i class="fa-solid fa-chart-column text-accentBlue"></i> 포장 강화 현황
+                                    <i class="fa-solid fa-chart-column text-accentBlue"></i> 포장강화 누적차트
                                 </h3>
-                                <button onclick="downloadPackingChartData()"
+                                <button onclick="pkgRunPackingChartReport()"
                                     class="md:hidden flex items-center gap-1 text-[17.5px] font-semibold px-3 py-2 rounded transition-colors duration-150 shrink-0"
                                     style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
                                     title="현재 보기 데이터 CSV 다운로드">
@@ -935,7 +935,7 @@
                                         class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
                                         style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">년도별</button>
                                 </div>
-                                <button onclick="downloadPackingChartData()"
+                                <button onclick="pkgRunPackingChartReport()"
                                     class="hidden md:flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-lg transition-colors duration-150 shrink-0"
                                     style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
                                     title="현재 보기 데이터 CSV 다운로드">
@@ -969,16 +969,45 @@
                     </div>
 
                     <div class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
-                        <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
-                            <h3 class="text-[19.5px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
-                                <i class="fa-solid fa-chart-column text-accentBlue"></i> 제품별 실적 비교
-                            </h3>
-                            <button onclick="downloadExportRoundChartData()"
-                                class="flex items-center gap-1 text-[17.5px] md:text-[12px] font-semibold px-3 py-2 md:px-2 md:py-0.5 rounded md:rounded-lg transition-colors duration-150 shrink-0"
-                                style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
-                                title="현재 차트 데이터 CSV 다운로드">
-                                <i class="fa-solid fa-file-arrow-down"></i> <span class="hidden md:inline">데이터 출력</span>
-                            </button>
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center justify-between gap-2">
+                                <h3 class="text-[19.5px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fa-solid fa-chart-column text-accentBlue"></i> 제품별 실적 비교차트
+                                </h3>
+                                <button onclick="pkgOpenProdCmpExportModal()"
+                                    class="md:hidden flex items-center gap-1 text-[17.5px] font-semibold px-3 py-2 rounded transition-colors duration-150 shrink-0"
+                                    style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
+                                    title="제품구분별 데이터 출력">
+                                    <i class="fa-solid fa-file-arrow-down"></i>
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                                <select id="prodCmpYearSelect" onchange="setProdCmpYear(this.value)"
+                                    class="text-[14.5px] rounded px-2 cursor-pointer outline-none font-semibold self-stretch"
+                                    style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD;">
+                                </select>
+                                <div class="relative flex rounded-lg p-0.5" style="min-width:232px;background:#EFF6FF;border:1px solid #BAE6FD">
+                                    <div id="prodCmpModeSlider" class="absolute top-0.5 bottom-0.5 rounded-md transition-all duration-200" style="width:25%;left:50%;background:#38BDF8"></div>
+                                    <button onclick="setProdCmpViewMode('daily')" id="prodCmpBtn_daily"
+                                        class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">일별</button>
+                                    <button onclick="setProdCmpViewMode('weekly')" id="prodCmpBtn_weekly"
+                                        class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">주간별</button>
+                                    <button onclick="setProdCmpViewMode('monthly')" id="prodCmpBtn_monthly"
+                                        class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#ffffff;white-space:nowrap;padding-left:4px;padding-right:4px">월간별</button>
+                                    <button onclick="setProdCmpViewMode('yearly')" id="prodCmpBtn_yearly"
+                                        class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                        style="flex:1;color:#475569;white-space:nowrap;padding-left:4px;padding-right:4px">년도별</button>
+                                </div>
+                                <button onclick="pkgOpenProdCmpExportModal()"
+                                    class="hidden md:flex items-center gap-1 text-[12px] font-semibold px-2 py-0.5 rounded-lg transition-colors duration-150 shrink-0"
+                                    style="background:#EFF6FF;color:#0369A1;border:1px solid #BAE6FD"
+                                    title="제품구분별 데이터 출력">
+                                    <i class="fa-solid fa-file-arrow-down"></i> <span>데이터 출력</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="relative h-72 w-full flex items-center justify-center">
                             <canvas id="exportRoundChart"></canvas>
@@ -3935,21 +3964,410 @@
         function pkgGoLastPage()  { _pkgGoToPage(Math.max(0, Math.ceil(state.filteredData.length / _pkgPageSize) - 1)); }
 
         // 차트 가공 렌더러
+        // 제품별 실적 비교차트 — 제품구분(충주1제품/충주2제품/목제N상품 등, item.country
+        // 필드. 변수명만 country일 뿐 실제로는 분류(수주) 단계에서 온 "제품구분" 값이다)별
+        // 출고 기준 집계. 화면 그래프는 국가가 아니라 이 제품구분 축으로 묶어서 보여주고,
+        // 포장강화 누적차트와 같은 일/주/월/년도별 필터를 추가로 지원한다.
+        let prodCmpViewMode = 'monthly';
+        let prodCmpSelectedYear = null;
+        let prodCmpDailyWeekOffset = 0;
+        let prodCmpWeeklyMonthOffset = 0;
+        let prodCmpMonthlyHalfOffset = 0;
+        let _prodCmpCatDateQtyMap = {};   // { 제품구분: { 'YYYY-MM-DD': qty } }
+        let _prodCmpCategories = [];
+        let _prodCmpLabelMeta = [];
+        let prodCmpChartInstance = null;
+        const PROD_CMP_COLORS = ['#38BDF8', '#F87171', '#34D399', '#A78BFA', '#FBBF24', '#F472B6'];
+
+        // "출고 기준" — 포장은 끝났지만 아직 재고에 머물러있는 건(포장완료)은 빼고,
+        // 실제로 출고/피킹까지 끝난 것만 센다(강화수량 전체를 보는 포장강화 누적차트와의
+        // 차이점 — 사용자가 명시적으로 "그냥 출고기준으로 봐주면돼"라고 요청함).
+        function _pkgIsShippedItem(item) {
+            return !!item && (item.status === '출고' || item.status === '피킹' || item.status === '출고완료');
+        }
+        // 포장강화 누적차트(강화수량)용 — 포장완료(재고) + 출고까지 전부 포함.
+        function _pkgIsReinforcedItem(item) {
+            return !!item && ['포장완료', '출고', '피킹', '출고완료'].includes(item.status);
+        }
+        // CBM은 코드가 같은 다른 차수의 평균이 아니라 반드시 그 행 자신의 실제 규격이어야
+        // 한다(이 파일의 renderTable CBM 계산과 동일 원칙) — 값이 없으면 빈 칸으로 둔다.
+        function _pkgCbmOwn(item) {
+            const su = v => { if (!v || v === '-') return NaN; return parseFloat(v.toString().replace(/[a-zA-Z가-힣\s]+$/g, '')); };
+            const w = su(item.specW), d = su(item.specD), h = su(item.specH);
+            if (!isNaN(w) && w > 0 && !isNaN(d) && d > 0 && !isNaN(h) && h > 0) return ((w * d * h) / 1e9).toFixed(4);
+            return '';
+        }
+
+        function buildProdCmpDataAndInit() {
+            _prodCmpCatDateQtyMap = {};
+            function parseQty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g, '')) || 0) : 0; }
+            (state.data || []).forEach(item => {
+                if (!_pkgIsShippedItem(item)) return;
+                const cat = (item.country || '').toString().trim();
+                if (!cat || cat === '미구성' || cat === 'DOMESTIC') return;
+                const d = normalizeDate(item.date); // 상차일 기준(출고 기준)
+                if (!d || d === '-') return;
+                if (!_prodCmpCatDateQtyMap[cat]) _prodCmpCatDateQtyMap[cat] = {};
+                _prodCmpCatDateQtyMap[cat][d] = (_prodCmpCatDateQtyMap[cat][d] || 0) + parseQty(item.qty);
+            });
+            _prodCmpCategories = Object.keys(_prodCmpCatDateQtyMap).sort();
+            initProdCmpYearSelect();
+            updateProdCmpModeSlider();
+            renderProdCmpChart();
+        }
+
+        function _prodCmpAllDates() {
+            const set = new Set();
+            _prodCmpCategories.forEach(cat => Object.keys(_prodCmpCatDateQtyMap[cat]).forEach(d => set.add(d)));
+            return set;
+        }
+
+        function initProdCmpYearSelect() {
+            const years = [];
+            _prodCmpAllDates().forEach(d => { const y = d.slice(0, 4); if (years.indexOf(y) === -1) years.push(y); });
+            years.sort();
+            const sel = document.getElementById('prodCmpYearSelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            if (years.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = ''; opt.textContent = '데이터 없음';
+                sel.appendChild(opt);
+                prodCmpSelectedYear = null;
+                return;
+            }
+            years.forEach(y => { const opt = document.createElement('option'); opt.value = y; opt.textContent = y + '년'; sel.appendChild(opt); });
+            const currentYear = new Date().getFullYear().toString();
+            prodCmpSelectedYear = years.indexOf(currentYear) >= 0 ? currentYear : years[years.length - 1];
+            sel.value = prodCmpSelectedYear;
+        }
+
+        function setProdCmpYear(year) { prodCmpSelectedYear = year; renderProdCmpChart(); }
+
+        function setProdCmpViewMode(mode) {
+            prodCmpViewMode = mode;
+            prodCmpDailyWeekOffset = 0; prodCmpWeeklyMonthOffset = 0; prodCmpMonthlyHalfOffset = 0;
+            updateProdCmpModeSlider();
+            renderProdCmpChart();
+        }
+
+        function updateProdCmpModeSlider() {
+            const slider = document.getElementById('prodCmpModeSlider');
+            if (!slider) return;
+            const modes = ['daily', 'weekly', 'monthly', 'yearly'];
+            const idx = modes.indexOf(prodCmpViewMode);
+            slider.style.left = (idx * 25) + '%';
+            slider.style.width = '25%';
+            modes.forEach((m, i) => { const btn = document.getElementById('prodCmpBtn_' + m); if (btn) btn.style.color = (i === idx) ? '#ffffff' : '#475569'; });
+            const yearSel = document.getElementById('prodCmpYearSelect');
+            if (yearSel) yearSel.style.display = (prodCmpViewMode === 'yearly') ? 'none' : '';
+        }
+
+        // renderPackingChart와 같은 방식(일/주/월반기/년도)의 구간 나누기 — 날짜→수량 맵이
+        // 제품구분별로 여러 개라서, 여기서는 "구간 정의"만 만들고 실제 합산은 카테고리별로
+        // _prodCmpQtyInBucket에서 각각 돌린다.
+        function _prodCmpComputeBuckets() {
+            const buckets = [];
+            if (prodCmpViewMode === 'daily') {
+                const slots = _getDailySlots();
+                const slotIdx = Math.min(slots.length - 1, -prodCmpDailyWeekOffset);
+                const slot = slots[Math.max(0, slotIdx)];
+                const DAY = ['일', '월', '화', '수', '목', '금', '토'];
+                (slot ? slot.dates : []).forEach(ds => {
+                    const d = new Date(ds.replace(/-/g, '/'));
+                    buckets.push({ label: (d.getMonth() + 1) + '/' + d.getDate() + '(' + DAY[d.getDay()] + ')', dates: [ds] });
+                });
+            } else if (prodCmpViewMode === 'weekly') {
+                const today = new Date();
+                const targetDate = new Date(today.getFullYear(), today.getMonth() + prodCmpWeeklyMonthOffset, 1);
+                const yr = targetDate.getFullYear(), mo = targetDate.getMonth();
+                const firstOfMonth = new Date(yr, mo, 1);
+                const fdow = firstOfMonth.getDay();
+                const daysBack = (fdow + 6) % 7;
+                const wkStart = new Date(yr, mo, 1 - daysBack);
+                const lastOfMonth = new Date(yr, mo + 1, 0);
+                let wi = 0;
+                while (wkStart <= lastOfMonth) {
+                    const wkDates = [];
+                    for (let j = 0; j < 5; j++) {
+                        const dd = new Date(wkStart); dd.setDate(wkStart.getDate() + j);
+                        if (dd.getMonth() !== mo) continue;
+                        wkDates.push(_dateStr(dd));
+                    }
+                    if (wkDates.length > 0) { wi++; buckets.push({ label: (mo + 1) + '월 ' + wi + '주차', dates: wkDates }); }
+                    wkStart.setDate(wkStart.getDate() + 7);
+                    if (buckets.length > 7) break;
+                }
+            } else if (prodCmpViewMode === 'yearly') {
+                const years = new Set();
+                _prodCmpAllDates().forEach(d => years.add(d.slice(0, 4)));
+                [...years].sort().forEach(y => buckets.push({ label: y + '년', prefix: y }));
+            } else {
+                const _today = new Date();
+                const curHalfIdx = _today.getFullYear() * 2 + (_today.getMonth() >= 6 ? 1 : 0);
+                const tgtHalfIdx = curHalfIdx + prodCmpMonthlyHalfOffset;
+                const tgtYear = Math.floor(tgtHalfIdx / 2);
+                const tgtHalf = tgtHalfIdx % 2;
+                const startMo = tgtHalf * 6;
+                const yr = String(tgtYear);
+                const MO_LABELS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+                for (let mi = startMo; mi < startMo + 6; mi++) {
+                    buckets.push({ label: MO_LABELS[mi], prefix: yr + '-' + String(mi + 1).padStart(2, '0') });
+                }
+            }
+            return buckets;
+        }
+
+        function _prodCmpQtyInBucket(cat, bucket) {
+            const map = _prodCmpCatDateQtyMap[cat] || {};
+            if (bucket.dates) return bucket.dates.reduce((s, d) => s + (map[d] || 0), 0);
+            if (bucket.prefix) {
+                let total = 0;
+                Object.keys(map).forEach(d => { if (d.startsWith(bucket.prefix)) total += map[d]; });
+                return total;
+            }
+            return 0;
+        }
+
+        function renderProdCmpChart() {
+            _prodCmpLabelMeta = _prodCmpComputeBuckets();
+            const labels = _prodCmpLabelMeta.map(b => b.label);
+
+            if (prodCmpChartInstance) { prodCmpChartInstance.destroy(); prodCmpChartInstance = null; }
+            const canvas = document.getElementById('exportRoundChart');
+            if (!canvas) return;
+
+            const datasets = _prodCmpCategories.map((cat, i) => ({
+                label: cat,
+                data: _prodCmpLabelMeta.map(b => _prodCmpQtyInBucket(cat, b) || null),
+                backgroundColor: PROD_CMP_COLORS[i % PROD_CMP_COLORS.length] + 'A8',
+                borderColor: PROD_CMP_COLORS[i % PROD_CMP_COLORS.length],
+                borderWidth: 1.5,
+                borderRadius: 4,
+                minBarLength: 4
+            }));
+
+            prodCmpChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: _prodCmpCategories.length > 0, labels: { color: '#94A3B8', font: { size: 12.5 }, boxWidth: 12 } },
+                        tooltip: { enabled: true, mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#64748B', font: { size: 13 } },
+                            grid: { color: 'rgba(148,163,184,0.18)', lineWidth: 0.5, drawBorder: false },
+                            border: { display: false, color: 'transparent' }
+                        },
+                        x: {
+                            ticks: { color: '#64748B', font: { size: 12.5 }, maxRotation: 0, autoSkip: false },
+                            grid: { display: false },
+                            border: { display: false, color: 'transparent' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function pkgOpenProdCmpExportModal() {
+            const statusEl = document.getElementById('prodCmpExportStatus');
+            if (statusEl) statusEl.textContent = '';
+            const list = document.getElementById('prodCmpCatCheckList');
+            if (!_prodCmpCategories.length) {
+                list.innerHTML = '<div style="font-size:12.5px;color:#94a3b8;text-align:center;padding:14px 0;">출고 데이터가 없습니다.</div>';
+            } else {
+                const rows = ['전체', ..._prodCmpCategories];
+                list.innerHTML = rows.map(cat => {
+                    const isAll = cat === '전체';
+                    const val = isAll ? '__ALL__' : cat.replace(/"/g, '&quot;');
+                    return `<label style="display:flex;align-items:center;gap:10px;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:13.5px;font-weight:${isAll ? 800 : 700};color:#1e293b;cursor:pointer;">
+                        <input type="checkbox" class="prodCmpCatChk" value="${val}" checked onchange="_pkgProdCmpCatChkChange(this)" style="width:16px;height:16px;accent-color:#0ea5e9;">
+                        ${cat}
+                    </label>`;
+                }).join('');
+            }
+            document.getElementById('prodCmpExportModal').style.display = 'flex';
+        }
+        function pkgCloseProdCmpExportModal() {
+            document.getElementById('prodCmpExportModal').style.display = 'none';
+        }
+        function _pkgProdCmpCatChkChange(el) {
+            const all = document.querySelectorAll('.prodCmpCatChk');
+            const allChk = document.querySelector('.prodCmpCatChk[value="__ALL__"]');
+            if (el.value === '__ALL__') {
+                all.forEach(c => { if (c !== el) c.checked = el.checked; });
+            } else if (!el.checked) {
+                if (allChk) allChk.checked = false;
+            } else {
+                const others = Array.from(all).filter(c => c.value !== '__ALL__');
+                if (allChk && others.every(c => c.checked)) allChk.checked = true;
+            }
+        }
+
+        // "① 요약"(기간 × 제품구분)과 "② 상세내역"(품목 단위 — 구분/건명/단품코드/색상/
+        // 수량/포장일/납기일/상차일/CBM)을 화면에 지금 표시된 기간/기준 그대로 만든다.
+        function pkgRunProdCmpReport() {
+            const statusEl = document.getElementById('prodCmpExportStatus');
+            const checked = Array.from(document.querySelectorAll('.prodCmpCatChk:checked')).map(c => c.value).filter(v => v !== '__ALL__');
+            const cats = checked.length ? checked : _prodCmpCategories.slice();
+            if (!cats.length) { if (statusEl) statusEl.textContent = '출력할 데이터가 없습니다.'; return; }
+
+            const buckets = _prodCmpLabelMeta;
+            const modeLabel = { daily: '일별', weekly: '주간별', monthly: '월간별', yearly: '년도별' }[prodCmpViewMode] || '월간별';
+
+            const summaryColumns = [
+                { label: '기간', width: '18%', get: r => r.기간 },
+                ...cats.map(cat => ({ label: cat + '(BOX)', width: (70 / cats.length) + '%', get: r => (r[cat] != null ? r[cat] : 0) })),
+                { label: '합계(BOX)', width: '14%', get: r => r.합계 }
+            ];
+            const summaryRows = buckets.map(b => {
+                const row = { 기간: b.label };
+                let sum = 0;
+                cats.forEach(cat => { const v = _prodCmpQtyInBucket(cat, b) || 0; row[cat] = v; sum += v; });
+                row.합계 = sum;
+                return row;
+            });
+            const totalRow = { 기간: '합계', __isTotal: true };
+            let grand = 0;
+            cats.forEach(cat => { const v = summaryRows.reduce((s, r) => s + (r[cat] || 0), 0); totalRow[cat] = v; grand += v; });
+            totalRow.합계 = grand;
+            summaryRows.push(totalRow);
+
+            const dateSet = new Set();
+            const prefixes = [];
+            buckets.forEach(b => { if (b.dates) b.dates.forEach(d => dateSet.add(d)); if (b.prefix) prefixes.push(b.prefix); });
+            function inRange(dateStr) {
+                if (dateSet.size && dateSet.has(dateStr)) return true;
+                if (prefixes.length && prefixes.some(p => dateStr.startsWith(p))) return true;
+                return false;
+            }
+            const detailItems = (state.data || []).filter(item => {
+                if (!_pkgIsShippedItem(item)) return false;
+                const cat = (item.country || '').toString().trim();
+                if (!cats.includes(cat)) return false;
+                const d = normalizeDate(item.date);
+                if (!d || d === '-') return false;
+                return inRange(d);
+            });
+            const detailColumns = [
+                { label: '구분', width: '12%', get: it => it.country },
+                { label: '건명', width: '18%', get: it => it.round },
+                { label: '단품코드', width: '13%', get: it => it.code },
+                { label: '색상', width: '9%', get: it => it.color },
+                { label: '수량', width: '7%', get: it => it.qty },
+                { label: '포장일', width: '12%', get: it => _pkgPrintMonthDay(it.regDate) },
+                { label: '납기일', width: '12%', get: it => _pkgPrintMonthDay(it.dueDate) },
+                { label: '상차일', width: '12%', get: it => _pkgPrintMonthDay(it.date) },
+                { label: 'CBM', width: '10%', get: it => _pkgCbmOwn(it) }
+            ];
+
+            _pkgRenderChartReportXls({
+                filename: `제품별실적비교차트_${modeLabel}_${new Date().toISOString().slice(0, 10)}.xls`,
+                summary: { sheetName: '① 요약', columns: summaryColumns, rows: summaryRows },
+                detail: { sheetName: '② 상세내역', columns: detailColumns, rows: detailItems }
+            });
+            pkgCloseProdCmpExportModal();
+        }
+
+        // 포장강화 누적차트 — 선택창 없이 바로, 화면에 보이는 현재 기간/기준 그대로 "①
+        // 요약"(기간/강화수량)과 "② 상세내역"(건명/단품코드/색상/수량/납기일/상차일/CBM)을
+        // 만든다. 강화완료 기준(포장완료 + 출고 전부 포함)은 화면 차트(buildPackingDataAndInit)와
+        // 동일.
+        function pkgRunPackingChartReport() {
+            if (!trendChartInstance) { alert('차트 데이터가 없습니다.'); return; }
+            const buckets = _packingLabelMeta || [];
+            const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : packingViewMode === 'yearly' ? '년도별' : '월간별';
+            const labels = trendChartInstance.data.labels || [];
+            const dataArr = trendChartInstance.data.datasets[0] ? trendChartInstance.data.datasets[0].data : [];
+
+            const summaryColumns = [
+                { label: '기간', width: '50%', get: r => r.기간 },
+                { label: '강화수량(BOX)', width: '50%', get: r => r.수량 }
+            ];
+            const summaryRows = labels.map((lbl, i) => ({ 기간: lbl, 수량: dataArr[i] || 0 }));
+            const total = dataArr.reduce((s, v) => s + (v || 0), 0);
+            summaryRows.push({ 기간: '합계', 수량: total, __isTotal: true });
+
+            const dateSet = new Set();
+            const prefixes = [];
+            buckets.forEach(b => { if (b.dates) b.dates.forEach(d => dateSet.add(d)); if (b.prefix) prefixes.push(b.prefix); });
+            function inRange(dateStr) {
+                if (dateSet.size && dateSet.has(dateStr)) return true;
+                if (prefixes.length && prefixes.some(p => dateStr.startsWith(p))) return true;
+                return false;
+            }
+            const detailItems = (state.data || []).filter(item => {
+                if (!_pkgIsReinforcedItem(item)) return false;
+                const d = normalizeDate(item.regDate);
+                if (!d || d === '-') return false;
+                return inRange(d);
+            });
+            const detailColumns = [
+                { label: '건명', width: '22%', get: it => it.round },
+                { label: '단품코드', width: '15%', get: it => it.code },
+                { label: '색상', width: '10%', get: it => it.color },
+                { label: '수량', width: '8%', get: it => it.qty },
+                { label: '납기일', width: '15%', get: it => _pkgPrintMonthDay(it.dueDate) },
+                { label: '상차일', width: '15%', get: it => _pkgPrintMonthDay(it.date) },
+                { label: 'CBM', width: '15%', get: it => _pkgCbmOwn(it) }
+            ];
+
+            _pkgRenderChartReportXls({
+                filename: `포장강화누적차트_${modeLabel}_${new Date().toISOString().slice(0, 10)}.xls`,
+                summary: { sheetName: '① 요약', columns: summaryColumns, rows: summaryRows },
+                detail: { sheetName: '② 상세내역', columns: detailColumns, rows: detailItems }
+            });
+        }
+
+        // 차트 데이터 출력 리포트 공용 — "① 요약"/"② 상세내역" 2개 시트짜리 xls.
+        // _pkgRenderGenericXls(단일 시트)와 같은 HTML-as-xls 트릭을 테이블 2개로 늘려서
+        // 쓴다 — Excel은 이런 HTML을 열 때 <table> 개수만큼, <x:ExcelWorksheet>에 적은
+        // 이름 순서대로 시트를 나눠 만든다(기존 단일 시트 트릭의 공식 확장판).
+        function _pkgRenderChartReportXls(opts) {
+            const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            function sheetTable(sheet) {
+                const colgroup = sheet.columns.map(c => `<col style="width:${Math.round(parseFloat(c.width || '12%') * 10)}px;">`).join('');
+                const headHtml = sheet.columns.map(c =>
+                    `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
+                ).join('');
+                const bodyHtml = (sheet.rows || []).map((r, idx) => {
+                    const isTotal = !!r.__isTotal;
+                    const rowBg = isTotal ? '#EFF6FF' : (idx % 2 === 0 ? '#ffffff' : '#f8fafc');
+                    const color = isTotal ? '#0369A1' : '#1e293b';
+                    return '<tr>' + sheet.columns.map(c => {
+                        const v = c.get ? c.get(r) : '';
+                        return `<td style="background:${rowBg};color:${color};${isTotal ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(v)}</td>`;
+                    }).join('') + '</tr>';
+                }).join('');
+                return { colgroup, headHtml, bodyHtml };
+            }
+            if (!(opts.summary.rows || []).length && !(opts.detail.rows || []).length) { alert('내보낼 데이터가 없습니다.'); return; }
+            const sheets = [opts.summary, opts.detail];
+            const worksheetXml = sheets.map(s => `<x:ExcelWorksheet><x:Name>${esc(s.sheetName)}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`).join('');
+            const bodyTables = sheets.map(s => {
+                const t = sheetTable(s);
+                return `<table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${t.colgroup}</colgroup><thead><tr>${t.headHtml}</tr></thead><tbody>${t.bodyHtml}</tbody></table>`;
+            }).join('');
+            const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>${worksheetXml}</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body>${bodyTables}</body></html>`;
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = opts.filename || `리포트_${new Date().toISOString().slice(0, 10)}.xls`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         function renderCharts() {
             if (typeof Chart === 'undefined') return; // 🌟 Chart.js 라이브러리 미로드 시 비정상 크래시 원천 방지 가드 장착 🌟
-
-            const filtered = state.filteredData;
-
-            const countryMap = {};
-
-            // 1) 수출 현황 시트: 전체 제품구분 등록 + 포장완료 → 강화완료에 합산
-            (state.data || []).forEach(item => {
-                const label = (item.country || '').replace(/\s+/g, '');
-                if (!label || label === 'DOMESTIC') return;
-                if (!countryMap[label]) countryMap[label] = { strengthened: 0, shipped: 0, rounds: {} };
-                const status = (item.status || '').replace(/\s+/g, '');
-                if (!status.includes('포장완료')) return;
-                const roundVal = item.round || '';
+            buildProdCmpDataAndInit();
                 const qty = parseInt(item.qty) || 0;
                 if (roundVal && !countryMap[label].rounds[roundVal]) countryMap[label].rounds[roundVal] = { strengthened: 0, shipped: 0 };
                 countryMap[label].strengthened += qty;
@@ -9806,6 +10224,21 @@
             </div>
         </div>
         <div id="pkgExportChoiceStatus" style="font-size:12px;color:#64748b;font-weight:600;min-height:16px;margin-top:14px;text-align:center;"></div>
+    </div>
+</div>
+
+<!-- ── 제품별 실적 비교차트: 데이터 출력 시 제품구분 선택(복수선택) ──────────── -->
+<div id="prodCmpExportModal" onclick="if(event.target===this)pkgCloseProdCmpExportModal()"
+    style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:420px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:16px;font-weight:800;color:#1e293b;"><i class="fa-solid fa-file-export" style="color:#0284c7;margin-right:6px;"></i>어떤 제품을 출력할까요?</div>
+            <button onclick="pkgCloseProdCmpExportModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;margin:8px 0 12px;">복수선택 가능 · 화면에 표시된 현재 기간/기준으로 리포트가 만들어집니다.</div>
+        <div id="prodCmpCatCheckList" style="display:flex;flex-direction:column;gap:7px;max-height:280px;overflow-y:auto;"></div>
+        <button onclick="pkgRunProdCmpReport()" style="margin-top:16px;width:100%;background:#0ea5e9;color:#fff;border:none;padding:11px;border-radius:10px;font-size:13.5px;font-weight:800;cursor:pointer;">리포트 생성</button>
+        <div id="prodCmpExportStatus" style="font-size:12px;color:#64748b;font-weight:600;min-height:16px;margin-top:10px;text-align:center;"></div>
     </div>
 </div>
 

@@ -710,7 +710,7 @@ try {
       <div id="qualitySection" class="card p-5">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-[16.5px] font-bold text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-line text-slate-400"></i> 누적 품질검사 차트</h2>
-          <button onclick="exportQualityChart()" class="flex items-center gap-1.5 text-[13.5px] font-semibold text-slate-500 hover:bg-slate-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+          <button onclick="qcOpenChartExportModal()" class="flex items-center gap-1.5 text-[13.5px] font-semibold text-slate-500 hover:bg-slate-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
         </div>
         <div id="qualityChartGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
 
@@ -1512,6 +1512,23 @@ try {
       </div>
     </div>
     <div id="qcExportChoiceStatus" class="text-[12px] text-slate-500 font-semibold min-h-[16px] mt-3.5 text-center"></div>
+  </div>
+</div>
+
+<!-- ===== 누적 품질검사 차트: 데이터 출력 시 공장 선택 ===== -->
+<div id="qcChartExportModal" class="hidden fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseChartExportModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-1">
+      <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-file-export text-violet-600 mr-1.5"></i>어떤 데이터를 출력할까요?</div>
+      <button onclick="qcCloseChartExportModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="text-[12px] text-slate-400 my-3">화면에 표시된 현재 기간/기준으로 리포트가 만들어집니다.</div>
+    <div class="flex flex-col gap-2">
+      <button onclick="qcRunChartReport('cj1')" class="w-full py-3 px-4 rounded-xl border border-violet-200 bg-violet-50 text-violet-800 font-bold text-[13.5px] text-left">충주1공장만</button>
+      <button onclick="qcRunChartReport('cj2')" class="w-full py-3 px-4 rounded-xl border border-violet-200 bg-violet-50 text-violet-800 font-bold text-[13.5px] text-left">충주2공장만</button>
+      <button onclick="qcRunChartReport('both')" class="w-full py-3 px-4 rounded-xl border border-violet-200 bg-violet-50 text-violet-800 font-bold text-[13.5px] text-left">충주1 + 충주2 둘 다</button>
+    </div>
+    <div id="qcChartExportStatus" class="text-[12px] text-slate-500 font-semibold min-h-[16px] mt-3.5 text-center"></div>
   </div>
 </div>
 
@@ -5944,6 +5961,125 @@ function _qcRenderGenericXls(opts) {
   a.download = opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ── 누적 품질검사 차트 데이터 출력: "① 요약"/"② 상세내역" 2개 시트짜리 xls ──
+// 기존 _qcRenderGenericXls(단일 시트)와 같은 HTML-as-xls 트릭을 테이블 2개로
+// 늘려서 쓴다 — Excel은 이런 HTML을 열 때 <table> 개수만큼, <x:ExcelWorksheet>에
+// 적은 이름 순서대로 시트를 나눠 만든다(기존 단일 시트 트릭의 공식 확장판).
+function _qcRenderChartReportXls(opts) {
+  const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  function sheetTable(sheet) {
+    const colgroup = sheet.columns.map(c => `<col style="width:${Math.round(parseFloat(c.width || '12%') * 10)}px;">`).join('');
+    const headHtml = sheet.columns.map(c =>
+      `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
+    ).join('');
+    const bodyHtml = (sheet.rows || []).map((r, idx) => {
+      const isTotal = !!r.__isTotal;
+      const rowBg = isTotal ? '#F5F3FF' : (idx % 2 === 0 ? '#ffffff' : '#f8fafc');
+      const color = isTotal ? '#7C3AED' : '#1e293b';
+      return '<tr>' + sheet.columns.map(c => {
+        const v = c.get ? c.get(r) : '';
+        return `<td style="background:${rowBg};color:${color};${isTotal ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(v)}</td>`;
+      }).join('') + '</tr>';
+    }).join('');
+    return { colgroup, headHtml, bodyHtml };
+  }
+  if (!(opts.summary.rows || []).length && !(opts.detail.rows || []).length) { alert('내보낼 데이터가 없습니다.'); return; }
+  const sheets = [opts.summary, opts.detail];
+  const worksheetXml = sheets.map(s => `<x:ExcelWorksheet><x:Name>${esc(s.sheetName)}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`).join('');
+  const bodyTables = sheets.map(s => {
+    const t = sheetTable(s);
+    return `<table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${t.colgroup}</colgroup><thead><tr>${t.headHtml}</tr></thead><tbody>${t.bodyHtml}</tbody></table>`;
+  }).join('');
+  const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>${worksheetXml}</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
+<body>${bodyTables}</body></html>`;
+  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = opts.filename || `리포트_${new Date().toISOString().slice(0,10)}.xls`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function qcOpenChartExportModal() {
+  const statusEl = document.getElementById('qcChartExportStatus');
+  if (statusEl) statusEl.textContent = '';
+  document.getElementById('qcChartExportModal').classList.remove('hidden');
+}
+function qcCloseChartExportModal() {
+  document.getElementById('qcChartExportModal').classList.add('hidden');
+}
+// 공장 선택(충주1/충주2/둘 다)에 따라 "① 요약"(구간별 완료/누적)과 "② 상세내역"
+// (품목 단위 — 건명/단품코드/색상/수량/납기일/포장일/검사일/CBM)을 만든다. 화면에
+// 지금 표시된 그 공장의 기간기준(chartGranularity/chartYear)을 그대로 쓴다 — 국가별/
+// 제품별(순위 막대)로 보고 있던 중이면 시계열이 아니라서 일별로 대신 집계한다.
+function qcRunChartReport(scope) {
+  const factories = scope === 'both' ? ['cj1', 'cj2'] : [scope];
+  const lookup = _qcBuildSpecLookup();
+  const summaryRows = [];
+  const detailItems = [];
+
+  factories.forEach(key => {
+    const label = key === 'cj1' ? '충주1공장' : '충주2공장';
+    const activeDone = allData.filter(d => d.공장 === key && d.검사 === '검사');
+    const archive = archiveRows.filter(d => d.공장 === key);
+    const allItems = [...activeDone, ...archive];
+    let gran = chartGranularity[key];
+    if (gran === 'country' || gran === 'product') gran = 'day';
+    const year = chartYear[key];
+    const series = computeCumulativeSeries(allItems, gran, year);
+
+    series.rawLabels.forEach((rawKey, i) => {
+      const row = { 구간: series.labels[i], 기간별완료: series.periodData[i], 누적합계: series.data[i] };
+      if (scope === 'both') row.공장 = label;
+      summaryRows.push(row);
+    });
+
+    allItems.forEach(d => {
+      const date = parseKDate(d.검사일);
+      if (!date) return;
+      if (year && year !== 'all' && date.getFullYear() !== parseInt(year)) return;
+      const spec = _qcSpecForItem(d, lookup);
+      const w = parseFloat(spec.w), dd = parseFloat(spec.d), h = parseFloat(spec.h);
+      const cbm = (!isNaN(w) && w > 0 && !isNaN(dd) && dd > 0 && !isNaN(h) && h > 0) ? ((w * dd * h) / 1e9).toFixed(4) : '';
+      const row = { 건명: d.건명, 단품코드: d.단품코드, 색상: d.색상, 수량: d.수량, 납기일: _qcPrintMonthDay(d.납기일), 포장일: _qcPrintMonthDay(d.포장일), 검사일: _qcPrintMonthDay(d.검사일), CBM: cbm };
+      if (scope === 'both') row.공장 = label;
+      detailItems.push(row);
+    });
+  });
+
+  const statusEl = document.getElementById('qcChartExportStatus');
+  if (!summaryRows.length) { if (statusEl) statusEl.textContent = '출력할 데이터가 없습니다.'; return; }
+
+  const summaryColumns = [];
+  if (scope === 'both') summaryColumns.push({ label: '공장', width: '14%', get: r => r.공장 });
+  summaryColumns.push(
+    { label: '구간', width: '28%', get: r => r.구간 },
+    { label: '기간별 완료(건)', width: '28%', get: r => r.기간별완료 },
+    { label: '누적 합계(건)', width: '28%', get: r => r.누적합계 }
+  );
+  const detailColumns = [];
+  if (scope === 'both') detailColumns.push({ label: '공장', width: '10%', get: it => it.공장 });
+  detailColumns.push(
+    { label: '건명', width: '18%', get: it => it.건명 },
+    { label: '단품코드', width: '14%', get: it => it.단품코드 },
+    { label: '색상', width: '9%', get: it => it.색상 },
+    { label: '수량', width: '7%', get: it => it.수량 },
+    { label: '납기일', width: '12%', get: it => it.납기일 },
+    { label: '포장일', width: '12%', get: it => it.포장일 },
+    { label: '검사일', width: '12%', get: it => it.검사일 },
+    { label: 'CBM', width: '10%', get: it => it.CBM }
+  );
+
+  _qcRenderChartReportXls({
+    filename: `누적품질검사차트_${scope}_${new Date().toISOString().slice(0, 10)}.xls`,
+    summary: { sheetName: '① 요약', columns: summaryColumns, rows: summaryRows },
+    detail: { sheetName: '② 상세내역', columns: detailColumns, rows: detailItems }
+  });
+  qcCloseChartExportModal();
 }
 
 // ── PDF 생성(클라이언트에서 바로) ──────────────────────────────────
