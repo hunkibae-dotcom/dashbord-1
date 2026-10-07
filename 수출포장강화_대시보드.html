@@ -4826,27 +4826,6 @@
             }, 160);
         }
 
-        function downloadExportRoundChartData() {
-            if (!exportRoundChartInstance) return;
-            const chart = exportRoundChartInstance;
-            const labels = chart.data.labels || [];
-            const ds0 = chart.data.datasets[0] ? chart.data.datasets[0].data : [];
-            const ds1 = chart.data.datasets[1] ? chart.data.datasets[1].data : [];
-
-            let csv = '﻿제품구분,강화완료(BOX),출고완료(BOX)\n';
-            labels.forEach(function(lbl, i) {
-                csv += '"' + lbl + '",' + (ds0[i] || 0) + ',' + (ds1[i] || 0) + '\n';
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href     = url;
-            a.download = '제품별실적비교.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
         function downloadPackingChartData() {
             if (!trendChartInstance) return;
             const chart = trendChartInstance;
