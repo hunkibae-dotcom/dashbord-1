@@ -6090,20 +6090,18 @@ async function _qcRenderPrintPdf(opts) {
 
   // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
   // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
-  // td의 vertical-align:middle이나 자식 div의 height:100%만으로는 위아래 가운데 정렬이
-  // 안 됐다 — html2canvas로 캡처할 때 한 행 안에서 칼럼마다 칸 높이를 실제 행 높이로
-  // 안 늘리고 각자 내용물 높이만큼만 그려버려서(알려진 한계), 짧은 칸들이 전부
-  // 위쪽에 붙어 보였다(건명처럼 긴 칸만 길게 늘어난 행에서 특히 두드러짐). 그래서
-  // "height:100%" 같은 상대값 대신, 실측한 행 높이(explicitHeightPx)를 td에 직접
-  // px로 박아서 모든 칼럼이 똑같은 높이를 갖게 만든다 — 그래야 그 안의 flex 가운데
-  // 정렬이 실제로 먹는다. 아직 행 높이를 모르는 "실측 패스"에서는 height를 생략하고
-  // (내용 그대로 자연스러운 높이로 측정) 최종 렌더 패스에서만 넘겨준다.
-  // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
-  const rowHtml = (d, idx, explicitHeightPx) => {
-    const trHeightAttr = explicitHeightPx ? ` style="height:${explicitHeightPx}px;"` : '';
-    const cellHeightStyle = explicitHeightPx ? `height:${explicitHeightPx}px;` : '';
-    const innerHeightStyle = explicitHeightPx ? `height:${explicitHeightPx}px;` : 'height:100%;';
-    return `<tr${trHeightAttr}>` + columns.map(c => {
+  // <table>/<tr>/<td>로 짰을 때는 vertical-align:middle도, 칸에 height를 직접 px로
+  // 박아도 안 먹었다 — html2canvas가 테이블 레이아웃 알고리즘(칸마다 행 높이에 맞춰
+  // 늘어나는 것)을 캡처 시점에 제대로 안 살려서, 짧은 칸들이 전부 위쪽에 붙어 보였다
+  // (알려진 한계 — 이 세션에서 두 번의 시도로 확인). 그래서 테이블 자체를 버리고
+  // 순수 flex로 다시 짰다: 행은 display:flex 컨테이너, 칸은 그 flex 아이템인데 칸
+  // 자체도 display:flex라 — flex 아이템은 기본이 align-self:stretch라서 한 행 안의
+  // 모든 칸이 "가장 큰 칸의 높이"로 자동으로 똑같이 늘어나고, 그 늘어난 높이 안에서
+  // 칸 스스로 글자를 가운데 정렬한다. 테이블 레이아웃이 아예 없으니 html2canvas가
+  // 못 살릴 여지도 없다. 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로
+  // 가운데 정렬.
+  const rowHtml = (d, idx) => {
+    const cells = columns.map(c => {
       const v = c.get(d);
       const isStatus = !plain && !!c.isStatus;
       const sc = isStatus ? _qcStatusXlsColor(d) : null;
@@ -6116,29 +6114,28 @@ async function _qcRenderPrintPdf(opts) {
       const wrapStyle = forceOneLine
         ? 'white-space:nowrap;overflow:visible;'
         : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
-      return `<td style="width:${c.width};${cellHeightStyle}padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:center;${innerHeightStyle}box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
-    }).join('') + '</tr>';
+      return `<div style="width:${c.width};flex-shrink:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div>`;
+    }).join('');
+    return `<div class="qc-pdf-row" style="display:flex;width:100%;">${cells}</div>`;
   };
-  const headerRowHtml = () => '<tr>' + columns.map(c =>
-    `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
-  ).join('') + '</tr>';
+  const headerRowHtml = () => {
+    const cells = columns.map(c =>
+      `<div style="width:${c.width};flex-shrink:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;${headCellStyle}">${_qcPrintEsc(c.label)}</div>`
+    ).join('');
+    return `<div style="display:flex;width:100%;">${cells}</div>`;
+  };
 
   const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
   const HEADER_ROW_PX = 32;
   const TITLE_PX = 30;
 
-  // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다(이 패스는 아직 높이를
-  // 모르므로 explicitHeightPx 없이 — 내용 그대로 자연스럽게 그려서 측정만 한다).
+  // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다.
   const measureHost = document.createElement('div');
   measureHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;`;
-  measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(d => rowHtml(d, 0)).join('')}</table>`;
+  measureHost.innerHTML = rows.map(rowHtml).join('');
   document.body.appendChild(measureHost);
-  const heights = Array.from(measureHost.querySelectorAll('tr')).map(tr => tr.offsetHeight);
+  const heights = Array.from(measureHost.querySelectorAll('.qc-pdf-row')).map(el => el.offsetHeight);
   document.body.removeChild(measureHost);
-  // 행 객체(참조) → 실측 높이. 페이지로 나눈 뒤에도 같은 행 객체를 그대로 쓰므로
-  // 이 맵으로 "이 행의 실제 높이"를 바로 찾아 최종 렌더 때 td에 그대로 박아 넣는다.
-  const heightByRow = new Map();
-  rows.forEach((item, idx) => heightByRow.set(item, heights[idx] || 28));
 
   // 2) 실측 높이 기준으로 페이지를 나눈다(행이 페이지 경계에서 안 잘리게).
   const pages = [];
@@ -6163,10 +6160,10 @@ async function _qcRenderPrintPdf(opts) {
     host.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
     host.innerHTML = `
       <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">${_qcPrintEsc(opts.title)}${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
-      <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
-        <thead>${headerRowHtml()}</thead>
-        <tbody>${pages[p].map((d, localIdx) => rowHtml(d, localIdx, heightByRow.get(d))).join('')}</tbody>
-      </table>`;
+      <div style="border-collapse:collapse;width:100%;">
+        ${headerRowHtml()}
+        ${pages[p].map(rowHtml).join('')}
+      </div>`;
     document.body.appendChild(host);
     const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(host);

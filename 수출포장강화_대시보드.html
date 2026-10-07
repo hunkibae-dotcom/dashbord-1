@@ -6346,11 +6346,11 @@
 
         // 포장항목 출력(작업자용, 실재고 기준) — 수주건명을 맨 왼쪽에 두고 품목코드/색상/
         // 수량/전산상 납기/확정 상차일/유형(어떤 PE폼 유형을 쓸지 — 자동 판정 로직은 아직
-        // 없어서 현장에서 직접 적도록 빈 칸)/진행/파렛트 순. 제품구분·포장일 칼럼은
-        // 제외했고, 가로/세로/높이/중량은 작업자가 현장에서 직접 수기로 적는 칸이라
-        // 일부러 공백으로 비워둔다(스펙 조회값을 자동으로 채우지 않음).
+        // 없어서 현장에서 직접 적도록 빈 칸)/진행 순. 제품구분·포장일·적재(파렛트)
+        // 칼럼은 제외했고(요청), 가로/세로/높이/중량은 작업자가 현장에서 직접 수기로
+        // 적는 칸이라 일부러 공백으로 비워둔다(스펙 조회값을 자동으로 채우지 않음).
         const PKG_PRINT_PACK_COLS = [
-            { label: '수주건명', width: '20%', align: 'left', wrap: true, get: item => item.round || '' },
+            { label: '수주건명', width: '26%', align: 'left', wrap: true, get: item => item.round || '' },
             { label: '품목코드', width: '11%', align: 'left', get: item => item.code || '' },
             { label: '색상', width: '6%', align: 'center', get: item => (item.color && item.color !== '-') ? item.color : '' },
             { label: '수량', width: '5%', align: 'right', get: item => item.qty },
@@ -6358,7 +6358,6 @@
             { label: '확정 상차일', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.date) },
             { label: '유형', width: '7%', align: 'center', get: item => _pkgPeTypeDisplay(item) },
             { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
-            { label: '파렛트', width: '6%', align: 'center', get: item => item.pallet || '' },
             { label: '가로', width: '5.75%', align: 'right', get: () => '' },
             { label: '세로', width: '5.75%', align: 'right', get: () => '' },
             { label: '높이', width: '5.75%', align: 'right', get: () => '' },
@@ -6385,24 +6384,28 @@
         // 엑셀 출력(_pkgRenderGenericXls)과 똑같은 색·글자 크기로 맞춘다 — 전엔 헤더
         // 색이 미묘하게 다르고(#1e293b vs 엑셀 #0B0F19), 줄무늬도 상태 글자색도 전혀
         // 없어서 "같은 데이터인데 PDF만 허전하고 다르게" 보였다.
+        // <table>/<tr>/<td>로 짰을 때는 vertical-align:middle도, 칸에 height를 직접 px로
+        // 박아도 안 먹었다 — html2canvas가 테이블 레이아웃 알고리즘(칸마다 행 높이에 맞춰
+        // 늘어나는 것)을 캡처 시점에 제대로 안 살려서, 짧은 칸들이 전부 위쪽에 붙어 보였다
+        // (알려진 한계). 그래서 테이블 자체를 버리고 순수 flex로 짰다: 행은 display:flex
+        // 컨테이너, 칸은 그 flex 아이템인데 칸 자체도 display:flex라 — flex 아이템은
+        // 기본이 align-self:stretch라서 한 행 안의 모든 칸이 "가장 큰 칸의 높이"로 자동
+        // 늘어나고, 그 늘어난 높이 안에서 칸 스스로 글자를 가운데 정렬한다.
         function _pkgGenericHeaderRowHtml(columns, headerFontSize) {
-            return '<tr>' + columns.map(c =>
-                `<th style="width:${c.width};padding:7px 6px;border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</th>`
-            ).join('') + '</tr>';
+            const cells = columns.map(c =>
+                `<div style="width:${c.width};flex-shrink:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:7px 6px;border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-size:${headerFontSize}px;line-height:1.4;font-weight:700;text-align:center;">${_pkgPrintEsc(c.label)}</div>`
+            ).join('');
+            return `<div style="display:flex;width:100%;">${cells}</div>`;
         }
         // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
         // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
-        // td의 vertical-align:middle만으로는 위아래 가운데 정렬이 안 됐다 — html2canvas로
-        // 캡처할 때 table-cell의 vertical-align을 제대로 못 살려서(알려진 한계), 한 칸이
-        // 여러 줄로 늘어난 행에서 나머지 짧은 칸들이 전부 위쪽에 붙어 보였다. td 안에
-        // height:100%짜리 flex 박스를 하나 더 둬서 그 박스 기준으로 가운데 정렬한다.
         // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
         // 건명(수주건명)·품목코드(제품코드)는 내용이 길어도 줄바꿈하지 말고 무조건
         // 한 줄로 — 칸보다 길면 잘리지 않고 옆으로 삐져나오게 둔다(절대 안 잘림).
         const _pkgOneLineLabels = ['건명', '수주건명', '제품코드', '품목코드'];
         function _pkgGenericRowHtml(item, columns, fontSize, idx) {
             const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
-            return '<tr>' + columns.map(c => {
+            const cells = columns.map(c => {
                 const v = c.get ? c.get(item) : '';
                 const isStatus = !!c.isStatus;
                 const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
@@ -6410,8 +6413,9 @@
                 const wrapStyle = forceOneLine
                     ? 'white-space:nowrap;overflow:visible;'
                     : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
-                return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_pkgPrintEsc(v)}</div></td>`;
-            }).join('') + '</tr>';
+                return `<div style="width:${c.width};flex-shrink:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_pkgPrintEsc(v)}</div>`;
+            }).join('');
+            return `<div class="pkg-pdf-row" style="display:flex;width:100%;">${cells}</div>`;
         }
         // 건명(수주건명)·품목코드(제품코드)는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이
         // 실제 내용보다 좁으면 white-space:nowrap;overflow:visible을 줘도 html2canvas가
@@ -6479,9 +6483,9 @@
             // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다.
             const measureHost = document.createElement('div');
             measureHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;`;
-            measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(rowHtml).join('')}</table>`;
+            measureHost.innerHTML = rows.map(rowHtml).join('');
             document.body.appendChild(measureHost);
-            const heights = Array.from(measureHost.querySelectorAll('tr')).map(tr => tr.offsetHeight);
+            const heights = Array.from(measureHost.querySelectorAll('.pkg-pdf-row')).map(el => el.offsetHeight);
             document.body.removeChild(measureHost);
 
             // 2) 실측 높이 기준으로 페이지를 나눈다(행이 페이지 경계에서 안 잘리게).
@@ -6508,10 +6512,10 @@
                 host.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
                 host.innerHTML = `
                     <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">${_pkgPrintEsc(opts.title)}${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
-                    <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
-                        <thead>${_pkgGenericHeaderRowHtml(columns, headerFontSize)}</thead>
-                        <tbody>${pages[p].map(rowHtml).join('')}</tbody>
-                    </table>`;
+                    <div style="width:100%;">
+                        ${_pkgGenericHeaderRowHtml(columns, headerFontSize)}
+                        ${pages[p].map(rowHtml).join('')}
+                    </div>`;
                 document.body.appendChild(host);
                 const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
                 document.body.removeChild(host);
