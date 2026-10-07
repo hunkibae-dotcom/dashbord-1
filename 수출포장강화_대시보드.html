@@ -7665,11 +7665,14 @@
                 // 왼쪽: 입고(큰 제목)
                 + '<div style="flex:2.3;display:flex;flex-direction:column;border-right:1.5px solid #1e293b;min-width:0;">'
                 + '<div style="' + HEAD_BAR + '">입고</div>'
-                + '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:space-evenly;padding:12px 20px;min-height:0;">'
-                + '<div style="font-size:120px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
-                + (opts.midLine ? '<div style="font-size:18px;font-weight:700;color:#6d28d9;text-align:center;">' + esc(opts.midLine) + '</div>' : '')
+                // 구역이름/성함이 이 박스 안에서 가로·세로 정확히 가운데로 — space-evenly는
+                // 줄 수가 바뀌면(midLine 유무 등) 간격이 들쭉날쭉해 보여서, 고정 gap을 둔
+                // justify-content:center로 바꿔 항상 그룹 전체가 정중앙에 오게 한다.
+                + '<div style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 20px;min-height:0;box-sizing:border-box;">'
+                + '<div style="width:100%;font-size:120px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
+                + (opts.midLine ? '<div style="width:100%;font-size:18px;font-weight:700;color:#6d28d9;text-align:center;">' + esc(opts.midLine) + '</div>' : '')
                 // 구글시트는 이 줄도 채워진 박스가 아니라 그냥 굵은 주황색 글자다(배경 없음).
-                + (opts.bottomLine ? '<div style="color:#f97316;text-align:center;font-size:19px;font-weight:800;">' + esc(opts.bottomLine) + '</div>' : '')
+                + (opts.bottomLine ? '<div style="width:100%;color:#f97316;text-align:center;font-size:19px;font-weight:800;">' + esc(opts.bottomLine) + '</div>' : '')
                 + '</div></div>'
                 // 오른쪽: 상차일(위) / 포장완료일(아래)
                 + '<div style="flex:1;display:flex;flex-direction:column;min-width:0;">'
