@@ -7702,10 +7702,14 @@
                             document.body.removeChild(host);
                             const imgData = canvas.toDataURL('image/png');
                             const jsPDF = window.jspdf.jsPDF;
-                            // 내용 크기에 딱 맞춘 임의 크기 페이지 대신, 실제 A4 가로(landscape) 용지에
-                            // 맞춰 출력한다 — 비율을 유지한 채 여백 안에서 최대로 키워 가운데 배치.
-                            const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-                            const pageW = 297, pageH = 210, margin = 10;
+                            // 내용 크기에 딱 맞춘 임의 크기 페이지 대신, 실제 A4 용지에 맞춰 출력한다
+                            // — 비율을 유지한 채 여백 안에서 최대로 키워 가운데 배치. 품목이 8개
+                            // 이상이면 표가 길어져서 가로(landscape, 세로폭 210mm)로는 높이가 모자라
+                            // 전체가 쪼그라들었다 — 그럴 땐 세로(portrait, 세로폭 297mm)로 바꿔서
+                            // 글자가 작아지지 않게 한다.
+                            const isTall = (opts.items || []).length >= 8;
+                            const pdf = new jsPDF({ orientation: isTall ? 'portrait' : 'landscape', unit: 'mm', format: 'a4' });
+                            const pageW = isTall ? 210 : 297, pageH = isTall ? 297 : 210, margin = 10;
                             const maxW = pageW - margin * 2, maxH = pageH - margin * 2;
                             const imgRatio = canvas.width / canvas.height;
                             let drawW = maxW, drawH = drawW / imgRatio;
