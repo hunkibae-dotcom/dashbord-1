@@ -6402,7 +6402,9 @@
         // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
         // 건명(수주건명)·품목코드(제품코드)는 내용이 길어도 줄바꿈하지 말고 무조건
         // 한 줄로 — 칸보다 길면 잘리지 않고 옆으로 삐져나오게 둔다(절대 안 잘림).
-        const _pkgOneLineLabels = ['건명', '수주건명', '제품코드', '품목코드'];
+        // 진행/상태 칸도 "포장완료"처럼 4글자라 칸이 좁으면 두 줄로 쪼개져(포장/완료)
+        // 그 행만 유독 키가 달라지는 문제가 있어서(요청) 한 줄 강제 목록에 추가했다.
+        const _pkgOneLineLabels = ['건명', '수주건명', '제품코드', '품목코드', '진행', '상태'];
         function _pkgGenericRowHtml(item, columns, fontSize, idx) {
             const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
             const cells = columns.map(c => {
@@ -6852,12 +6854,11 @@
           }
           return { type: type, spec: spec };
         }
-        // 데이터 출력의 "유형" 칸 — 규격 숫자는 빼고 유형("코너"/"일자" 등)만 보여준다.
-        function _pkgPeAbbrevType(type) { return (type || '').replace('형', ''); }
+        // 데이터 출력의 "유형" 칸 — 규격 숫자는 빼고 유형("코너형"/"일자형" 등, "형"
+        // 그대로 유지)만 보여준다.
         function _pkgPeTypeDisplay(item) {
           const pe = _pkgEffectivePeType(item);
-          if (!pe.type) return '';
-          return _pkgPeAbbrevType(pe.type);
+          return pe.type || '';
         }
         // 유형 드롭다운이 바뀔 때마다 규격 드롭다운 옵션을 그 유형 전용 목록으로 다시
         // 채운다 — selectedSpec을 주면(수정창을 열 때 기존값 복원용) 그 값을 바로 선택해둔다.
