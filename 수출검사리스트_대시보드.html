@@ -584,7 +584,7 @@ try {
           </div>
           <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
             <div id="kpiWaitDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('진행_미검사')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <button onclick="viewDetailInTable('검사대기')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
@@ -2026,7 +2026,7 @@ function setColInspect(val) {
   colInspectFilter = val;
   const label = document.getElementById('inspectColLabel');
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '포장대기 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : '검사상태';
+  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '포장대기 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : val === '검사대기' ? '검사 대기 품목 ✓' : '검사상태';
 
   if (dd) dd.classList.add('hidden');
   applyFilters();
@@ -2113,6 +2113,9 @@ function applyFilters() {
       if (cat !== ddayUrgencyFilter.urgency) return false;
     } else {
       if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || !((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d))) return false; }
+      // '검사대기'는 "검사 대기 품목" KPI 카드 전용 — 드롭다운의 "미검사(진행중)"(진행_미검사,
+      // 미검사만)보다 넓게, 진행중인 품목 중 검사완료만 뺀 전부(QC_WAIT_INSPECT_STATUSES)를 본다.
+      else if (colInspectFilter === '검사대기') { if (d.source === 'archive' || !QC_WAIT_INSPECT_STATUSES.includes(d.검사)) return false; }
       else if (colInspectFilter === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
       // "검사완료" 한 묶음이 진행중(아직 출고 안 된)·출고(이미 출고완료 시트로 넘어간) 둘을
       // 섞어 보여줘서 "진행중인 것만 보고 싶다"는 요청이 애매했다 — 미검사와 똑같이 둘로 나눴다.
@@ -6087,26 +6090,35 @@ async function _qcRenderPrintPdf(opts) {
 
   // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
   // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
-  // td의 vertical-align:middle만으로는 위아래 가운데 정렬이 안 됐다 — html2canvas로
-  // 캡처할 때 table-cell의 vertical-align을 제대로 못 살려서(알려진 한계), 한 칸이
-  // 여러 줄로 늘어난 행에서 나머지 짧은 칸들이 전부 위쪽에 붙어 보였다. td 안에
-  // height:100%짜리 flex 박스를 하나 더 둬서 그 박스 기준으로 가운데 정렬한다.
+  // td의 vertical-align:middle이나 자식 div의 height:100%만으로는 위아래 가운데 정렬이
+  // 안 됐다 — html2canvas로 캡처할 때 한 행 안에서 칼럼마다 칸 높이를 실제 행 높이로
+  // 안 늘리고 각자 내용물 높이만큼만 그려버려서(알려진 한계), 짧은 칸들이 전부
+  // 위쪽에 붙어 보였다(건명처럼 긴 칸만 길게 늘어난 행에서 특히 두드러짐). 그래서
+  // "height:100%" 같은 상대값 대신, 실측한 행 높이(explicitHeightPx)를 td에 직접
+  // px로 박아서 모든 칼럼이 똑같은 높이를 갖게 만든다 — 그래야 그 안의 flex 가운데
+  // 정렬이 실제로 먹는다. 아직 행 높이를 모르는 "실측 패스"에서는 height를 생략하고
+  // (내용 그대로 자연스러운 높이로 측정) 최종 렌더 패스에서만 넘겨준다.
   // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
-  const rowHtml = (d, idx) => '<tr>' + columns.map(c => {
-    const v = c.get(d);
-    const isStatus = !plain && !!c.isStatus;
-    const sc = isStatus ? _qcStatusXlsColor(d) : null;
-    const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
-    const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
-    const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
-    // 건명·단품코드는 내용이 길어도 줄바꿈하지 말고 무조건 한 줄로 — 칸보다 길면
-    // 잘리지 않고 옆으로 삐져나오게 둔다(overflow:visible, 절대 안 잘림).
-    const forceOneLine = c.label === '건명' || c.label === '단품코드';
-    const wrapStyle = forceOneLine
-      ? 'white-space:nowrap;overflow:visible;'
-      : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
-    return `<td style="width:${c.width};padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
-  }).join('') + '</tr>';
+  const rowHtml = (d, idx, explicitHeightPx) => {
+    const trHeightAttr = explicitHeightPx ? ` style="height:${explicitHeightPx}px;"` : '';
+    const cellHeightStyle = explicitHeightPx ? `height:${explicitHeightPx}px;` : '';
+    const innerHeightStyle = explicitHeightPx ? `height:${explicitHeightPx}px;` : 'height:100%;';
+    return `<tr${trHeightAttr}>` + columns.map(c => {
+      const v = c.get(d);
+      const isStatus = !plain && !!c.isStatus;
+      const sc = isStatus ? _qcStatusXlsColor(d) : null;
+      const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
+      const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
+      const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
+      // 건명·단품코드는 내용이 길어도 줄바꿈하지 말고 무조건 한 줄로 — 칸보다 길면
+      // 잘리지 않고 옆으로 삐져나오게 둔다(overflow:visible, 절대 안 잘림).
+      const forceOneLine = c.label === '건명' || c.label === '단품코드';
+      const wrapStyle = forceOneLine
+        ? 'white-space:nowrap;overflow:visible;'
+        : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
+      return `<td style="width:${c.width};${cellHeightStyle}padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:center;${innerHeightStyle}box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
+    }).join('') + '</tr>';
+  };
   const headerRowHtml = () => '<tr>' + columns.map(c =>
     `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
   ).join('') + '</tr>';
@@ -6115,13 +6127,18 @@ async function _qcRenderPrintPdf(opts) {
   const HEADER_ROW_PX = 32;
   const TITLE_PX = 30;
 
-  // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다.
+  // 1) 화면 밖에 전체 행을 한 번 그려서 각 행의 실제 높이를 잰다(이 패스는 아직 높이를
+  // 모르므로 explicitHeightPx 없이 — 내용 그대로 자연스럽게 그려서 측정만 한다).
   const measureHost = document.createElement('div');
   measureHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;`;
-  measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(rowHtml).join('')}</table>`;
+  measureHost.innerHTML = `<table style="border-collapse:collapse;width:100%;table-layout:fixed;">${rows.map(d => rowHtml(d, 0)).join('')}</table>`;
   document.body.appendChild(measureHost);
   const heights = Array.from(measureHost.querySelectorAll('tr')).map(tr => tr.offsetHeight);
   document.body.removeChild(measureHost);
+  // 행 객체(참조) → 실측 높이. 페이지로 나눈 뒤에도 같은 행 객체를 그대로 쓰므로
+  // 이 맵으로 "이 행의 실제 높이"를 바로 찾아 최종 렌더 때 td에 그대로 박아 넣는다.
+  const heightByRow = new Map();
+  rows.forEach((item, idx) => heightByRow.set(item, heights[idx] || 28));
 
   // 2) 실측 높이 기준으로 페이지를 나눈다(행이 페이지 경계에서 안 잘리게).
   const pages = [];
@@ -6148,7 +6165,7 @@ async function _qcRenderPrintPdf(opts) {
       <div style="font-size:15px;font-weight:800;color:#1e293b;margin-bottom:8px;">${_qcPrintEsc(opts.title)}${pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : ''}</div>
       <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
         <thead>${headerRowHtml()}</thead>
-        <tbody>${pages[p].map(rowHtml).join('')}</tbody>
+        <tbody>${pages[p].map((d, localIdx) => rowHtml(d, localIdx, heightByRow.get(d))).join('')}</tbody>
       </table>`;
     document.body.appendChild(host);
     const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
@@ -7834,6 +7851,9 @@ function renderMobileList() {
     if (mStatus === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
     else if (mStatus === '출고완료') { if (d.source !== 'archive') return false; }
     else if (mStatus === '진행_미검사') { if (d.source === 'archive' || !(d.검사 === '미검사' || isReinspectWaiting(d))) return false; }
+    // '검사대기'는 "검사 대기 품목" KPI 카드 전용 — 진행중인 품목 중 검사완료만 뺀 전부
+    // (QC_WAIT_INSPECT_STATUSES, 데스크탑 viewDetailInTable과 동일 정의).
+    else if (mStatus === '검사대기') { if (d.source === 'archive' || !QC_WAIT_INSPECT_STATUSES.includes(d.검사)) return false; }
     else if (mStatus === '금일포장') {
       if (d.source === 'archive') return false;
       if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
@@ -8661,7 +8681,7 @@ function onNativeScanResult(raw) {
         </div>
 
         <!-- 검사 대기 -->
-        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('진행_미검사');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <div class="bg-white rounded-2xl p-4 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('검사대기');setMTab('list')" style="box-shadow:0 2px 16px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-2 mb-3">
             <span class="w-8 h-8 rounded-full flex items-center justify-center shrink-0 m-kpi-r" style="background:#FEE2E2;">
               <i class="fa-solid fa-hourglass-half text-rose-500 text-[13px]"></i>
