@@ -557,7 +557,6 @@
         <button type="button" class="pkg-nav-item" onclick="pkgOpenClassifyUploadModal()" title="통합품목·grd_Group(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
             <i class="fa-solid fa-file-excel w-4 text-center"></i>
             <span class="flex-1">수주입고 업데이트</span>
-            <span class="text-[10.5px] font-normal text-slate-500">수정중</span>
         </button>
 
         <label class="pkg-nav-item" style="cursor:pointer;">
@@ -2504,12 +2503,15 @@
             showNotification('대시보드 초기화 완료', '모든 로컬 업로드 파일이 소멸되었으며 데모 데이터셋으로 안전 복원되었습니다.', 'success');
         }
 
-        // 연동 상태 컨트롤러
+        // 연동 상태 컨트롤러 — 품질검사 대시보드의 배지(연동 정상 등)와 모양/크기를
+        // 통일한다. 예전엔 여기만 rounded-full(완전히 둥근 알약 모양)·text-[16px]·
+        // green-100 계열이라 품질검사의 rounded-lg·text-[14.5px]·emerald 계열과
+        // 서로 다르게 보였다 — 전부 품질검사 기준으로 맞췄다.
         function updateConnectionStatus(isOnline, type = '') {
             const indicator = document.getElementById('connIndicator');
             if (isOnline) {
                 if (type === 'bypass') {
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-green-100 text-green-700 border border-green-300';
+                    indicator.className = 'inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[14.5px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 mb-3';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         사내 보안망 실시간 연결됨 (LIVE)
@@ -2517,7 +2519,7 @@
                 } else {
                     // 품질검사 대시보드와 같은 문구("연동 정상")로 통일 — 예전엔 "구글 시트
                     // 라이브 연결됨"이라고 따로 표기했었다.
-                    indicator.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[16px] font-semibold bg-green-100 text-green-700 border border-green-300';
+                    indicator.className = 'inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[14.5px] font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200 mb-3';
                     indicator.innerHTML = `
                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                         연동 정상
@@ -2527,7 +2529,7 @@
                 const listSpanText = document.getElementById('loadedFilesList').innerText;
                 if (listSpanText && listSpanText !== '대기 중') return;
 
-                indicator.className = 'inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-[16px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20';
+                indicator.className = 'inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[14.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20 mb-3';
                 indicator.innerHTML = `
                     <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
                     로컬 오프라인 모드
