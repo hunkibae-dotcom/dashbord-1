@@ -6111,9 +6111,14 @@ async function _qcRenderPrintPdf(opts) {
     // 페이지 하단 날짜(모든 페이지 공통) — 표가 페이지를 다 못 채워도 항상 실제 페이지
     // 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다(포장강화 대시보드의
     // 페이지 하단 문구와 같은 방식).
+    // 앱(안드로이드 웹뷰)에서 "맑은 고딕"이 실제로 설치돼 있지 않아 대체 글꼴로 렌더링
+    // 되는데, 그 대체 글꼴의 줄 높이/여백이 PC 크롬과 달라서 auto-height(padding-top만
+    // 으로 높이를 잡던 방식)로는 글자 위쪽이 그대로 잘려 나왔다(PC에서는 안 보이고 실제
+    // 앱에서만 재현됨). 글꼴에 영향 안 받게, 컨테이너 높이를 고정값으로 못박고 안쪽을
+    // flex로 세로 가운데 정렬한다.
     const footerHost = document.createElement('div');
-    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
-    footerHost.innerHTML = `<div style="text-align:right;font-size:11px;color:#64748b;padding-top:6px;">${dateStr}</div>`;
+    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;height:30px;box-sizing:border-box;background:#fff;font-family:'맑은 고딕',sans-serif;`;
+    footerHost.innerHTML = `<div style="height:100%;box-sizing:border-box;display:flex;justify-content:flex-end;align-items:center;font-size:11px;color:#64748b;">${dateStr}</div>`;
     document.body.appendChild(footerHost);
     const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(footerHost);

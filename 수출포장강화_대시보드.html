@@ -6508,9 +6508,14 @@
                 // 연락처 줄(opts.footer)은 포장항목/상차항목 출력처럼 원래 있던 곳에만 그대로
                 // 유지하고, 날짜 자체는 모든 출력 종류에 공통으로 넣는다.
                 {
+                    // 앱(안드로이드 웹뷰)에서 "맑은 고딕"이 실제로 설치돼 있지 않아 대체 글꼴로
+                    // 렌더링되는데, 그 대체 글꼴의 줄 높이/여백이 PC 크롬과 달라서 auto-height
+                    // (padding-top만으로 높이를 잡던 방식)로는 글자 위쪽이 그대로 잘려 나왔다
+                    // (PC에서는 안 보이고 실제 앱에서만 재현됨). 글꼴에 영향 안 받게, 컨테이너
+                    // 높이를 고정값으로 못박고 안쪽을 flex로 세로 가운데 정렬한다.
                     const footerHost = document.createElement('div');
-                    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
-                    footerHost.innerHTML = `<div style="display:flex;justify-content:${opts.footer ? 'space-between' : 'flex-end'};align-items:center;font-size:11px;color:#64748b;padding-top:6px;">
+                    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;height:30px;box-sizing:border-box;background:#fff;font-family:'맑은 고딕',sans-serif;`;
+                    footerHost.innerHTML = `<div style="height:100%;box-sizing:border-box;display:flex;justify-content:${opts.footer ? 'space-between' : 'flex-end'};align-items:center;font-size:11px;color:#64748b;">
                         ${opts.footer ? '<span>010-5667-2088 품질보증팀 배훈기</span>' : ''}<span>${dateStr}</span></div>`;
                     document.body.appendChild(footerHost);
                     const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
