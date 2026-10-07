@@ -845,7 +845,7 @@ try {
           <table class="w-full text-[14.5px]" style="min-width:1000px">
             <thead class="sticky top-0 z-10 bg-white">
               <tr class="text-[12.5px] uppercase tracking-wider text-slate-400 border-b border-slate-200">
-                <th class="text-left py-2 pr-3 font-semibold w-8">#</th>
+                <th class="text-left py-2 pr-3 font-semibold w-8" id="tblSelectHeaderCell">#</th>
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('공장명')">공장 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-공장명"></i></th>
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('건명')">건명 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-건명"></i></th>
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSortColumn('단품코드')">단품코드 <i class="fa-solid fa-sort text-[9px]" id="sortIcon-단품코드"></i></th>
@@ -2631,18 +2631,38 @@ function tblOpenBulkEditFromSelection() {
 }
 function _updateTblMultiBtn() {
   const btn = document.getElementById('tblMultiBtn');
-  if (!btn) return;
-  if (_tblMultiSelectMode) {
-    btn.innerHTML = `<i class="fa-solid fa-xmark"></i> 선택취소${_tblSelectedKeys.size ? ' (' + _tblSelectedKeys.size + ')' : ''}`;
-    btn.style.background = '#6D5CE8';
-    btn.style.color = '#fff';
-    btn.style.borderColor = '#6D5CE8';
-  } else {
-    btn.innerHTML = `<i class="fa-solid fa-list-check"></i> 선택`;
-    btn.style.background = '#f8fafc';
-    btn.style.color = '';
-    btn.style.borderColor = '';
+  if (btn) {
+    if (_tblMultiSelectMode) {
+      btn.innerHTML = `<i class="fa-solid fa-xmark"></i> 선택취소${_tblSelectedKeys.size ? ' (' + _tblSelectedKeys.size + ')' : ''}`;
+      btn.style.background = '#6D5CE8';
+      btn.style.color = '#fff';
+      btn.style.borderColor = '#6D5CE8';
+    } else {
+      btn.innerHTML = `<i class="fa-solid fa-list-check"></i> 선택`;
+      btn.style.background = '#f8fafc';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }
   }
+  // 포장강화 수출포장 관리현황과 같은 패턴 — 선택 모드일 때만 "#" 자리에 전체선택
+  // 체크박스가 보인다(평소엔 그냥 행 번호).
+  const hcell = document.getElementById('tblSelectHeaderCell');
+  if (hcell) {
+    hcell.innerHTML = _tblMultiSelectMode
+      ? `<input type="checkbox" id="tblSelectAllChk" onchange="_tblToggleSelectAll(this.checked)" style="width:16px;height:16px;cursor:pointer;accent-color:#6D5CE8;">`
+      : '#';
+  }
+}
+// 지금 화면(현재 페이지)에 보이는 품목만 전체선택/전체해제한다 — 포장강화의
+// pkgToggleSelectAll과 동일한 범위(페이지네이션이 있어 전체 데이터가 아니라 보이는
+// 행 기준). _tblToggleRowSelect를 그대로 재사용해서 배경색/Set/버튼 라벨이 한 번에 맞게.
+function _tblToggleSelectAll(checked) {
+  document.querySelectorAll('tr.tbl-row[data-tbl-key]').forEach(tr => {
+    const key = tr.getAttribute('data-tbl-key');
+    if (!key) return;
+    const isSel = _tblSelectedKeys.has(key);
+    if (isSel !== checked) _tblToggleRowSelect(key);
+  });
 }
 // 체크 하나 바뀔 때마다 수백~수천 행짜리 표 전체를 다시 그리면 느려지므로, 그 행
 // 하나의 배경/체크 상태만 직접 바꾼다.
