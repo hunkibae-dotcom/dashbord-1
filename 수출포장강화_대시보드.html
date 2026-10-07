@@ -607,27 +607,22 @@
                 <span class="flex-1">연동 · 업데이트 상태</span>
                 <span id="pkgSyncDot" class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span>
             </div>
+            <!-- 품질검사 대시보드의 연동 상태 팝업과 같은 구성/간격으로 통일 — 라벨 하나에
+                 값 하나를 한 줄에 나란히 우겨넣던 방식(justify-between) 대신, 품질검사처럼
+                 "작은 라벨 → 그 아래 값" 2줄 구성 + 구간마다 구분선(border-t)을 쓴다. -->
             <div class="absolute left-full top-0 w-72 bg-panelBg border border-borderSlate rounded-2xl shadow-2xl p-4 opacity-0 invisible -translate-x-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-x-0 z-50" style="margin-left:8px;">
-                <div class="flex items-center justify-between mb-3">
-                    <span class="text-[12px] font-bold text-slate-400 uppercase tracking-wider">연동 상태</span>
-                </div>
-                <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[12.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20 mb-3">
+                <div id="connIndicator" class="inline-flex w-full items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[14.5px] font-semibold bg-amber-500/10 text-accentOrange border border-amber-500/20 mb-3">
                     <span class="h-1.5 w-1.5 rounded-full bg-accentOrange animate-ping"></span>
                     연동 대기 중
                 </div>
-                <div class="flex items-center justify-between text-[12px] mb-1.5">
-                    <span class="text-slate-500 font-semibold">동기화</span>
-                    <span class="text-orange-500 font-bold" id="syncTimestamp">초기 로드 대기</span>
+                <div class="text-[12.5px] text-slate-400">마지막 동기화</div>
+                <div class="text-[14.5px] text-slate-300 font-mono mb-3" id="syncTimestamp">초기 로드 대기</div>
+                <div class="text-[12.5px] text-slate-400 pt-2 border-t border-borderSlate/60">수주/입고 업데이트</div>
+                <div class="text-[12.5px] text-slate-300 leading-relaxed mb-3">
+                    수주: <span class="text-accentGreen font-bold" id="pkgClassifySunjuLastSyncLabel">기록 없음</span><br>
+                    입고: <span class="text-accentGreen font-bold" id="pkgClassifyIpgoLastSyncLabel">기록 없음</span>
                 </div>
-                <div class="flex items-center justify-between text-[12px] mb-1.5">
-                    <span class="text-slate-500 font-semibold">수주 업데이트</span>
-                    <span class="text-accentGreen font-bold" id="pkgClassifySunjuLastSyncLabel">기록 없음</span>
-                </div>
-                <div class="flex items-center justify-between text-[12px]">
-                    <span class="text-slate-500 font-semibold">입고 업데이트</span>
-                    <span class="text-accentGreen font-bold" id="pkgClassifyIpgoLastSyncLabel">기록 없음</span>
-                </div>
-                <div id="loadedFilesContainer" class="hidden bg-darkBg/60 p-2 rounded-lg border border-borderSlate/60 text-[11px] space-y-1 mt-3">
+                <div id="loadedFilesContainer" class="hidden bg-darkBg/60 p-2 rounded-lg border border-borderSlate/60 text-[11px] space-y-1">
                     <div class="flex items-center justify-between font-bold text-slate-400 uppercase tracking-wider">
                         <span>사용중 데이터 탭</span>
                         <button onclick="confirmRemoveDataTab()" class="text-accentRed hover:text-red-400 transition-all duration-100" title="데이터 탭 제거" style="display:inline-flex;align-items:center;">
@@ -2832,9 +2827,12 @@
                 chip.style.display = 'none';
                 return;
             }
-            const list = Array.from(cardRoundFilter);
+            // cardRoundFilter는 "건명+기준필드+날짜" 조합키 집합이라(_cardRoundKey), 칩에
+            // 보여줄 땐 건명만 뽑아서 중복 제거한다(같은 건명이 날짜 다르게 두 번 선택됐어도
+            // 칩엔 한 번만 표시).
+            const uniqueRounds = Array.from(new Set(Array.from(cardRoundFilter).map(_cardRoundKeyRoundName)));
             document.getElementById('cardRoundFilterChipText').textContent =
-                '조회 중: ' + list[0] + (list.length > 1 ? ' 외 ' + (list.length - 1) + '건' : '');
+                '조회 중: ' + uniqueRounds[0] + (uniqueRounds.length > 1 ? ' 외 ' + (uniqueRounds.length - 1) + '건' : '');
             chip.style.display = 'inline-flex';
         }
         function clearCardRoundFilter() {
@@ -2913,7 +2911,13 @@
                         matchesSource = _shippedStatuses.has(item.status);
                     }
 
-                    const matchesCardRound = !cardRoundFilter || cardRoundFilter.has(item.round);
+                    // item.date/item.dueDate는 이미 "YYYY-MM-DD"로 정규화되어 들어있다(위
+                    // matchesDate의 정규식 검사가 그 전제) — cardRoundFilter는 건명 단독이
+                    // 아니라 "건명+기준필드+날짜" 조합키 집합이라, 같은 건명이라도 선택 안 한
+                    // 날짜의 품목은 걸러진다(_cardRoundKey 참고).
+                    const matchesCardRound = !cardRoundFilter || cardRoundFilter.size === 0 ||
+                        cardRoundFilter.has(_cardRoundKey(item.round, 'date', item.date)) ||
+                        cardRoundFilter.has(_cardRoundKey(item.round, 'dueDate', item.dueDate));
 
                     return matchesDate && matchesRound && matchesCode && matchesColor && matchesStatus && matchesPallet && matchesSource && matchesCardRound;
                 });
@@ -8738,17 +8742,19 @@
         // 검색하는 confirmCard4RoundSearch()와 같은 방식.
         function scRunDayQuery() {
             if (!_scSelectedDates.size) return;
-            const rounds = new Set();
+            // 건명만으로 거르면 같은 건명이 선택 안 한 다른 날짜에도 걸려 있을 때 같이
+            // 나와버리므로, 어느 날짜의 납기/상차로 뽑힌 건명인지까지 묶은 조합키를 쓴다.
+            const keys = new Set();
             _scSelectedDates.forEach(dateStr => {
                 const ev = _scEventsCache.byDate[dateStr];
                 if (!ev) return;
-                ev.due.forEach(r => rounds.add(r));
-                ev.load.forEach(r => rounds.add(r));
+                ev.due.forEach(r => keys.add(_cardRoundKey(r, 'dueDate', dateStr)));
+                ev.load.forEach(r => keys.add(_cardRoundKey(r, 'date', dateStr)));
             });
-            if (!rounds.size) return;
+            if (!keys.size) return;
             closeScheduleCalendar();
             _ensureSourceFilterSelected();
-            cardRoundFilter = rounds;
+            cardRoundFilter = keys;
             document.getElementById('roundFilter').value = '';
             applyFilters();
             const tableEl = document.getElementById('tablePanel');
@@ -8789,11 +8795,24 @@
     <script>
         // ── 수출 일정 건명 선택 피커 ──────────────────────────────
         let _card4PickerSelected = new Set();
+        // 같은 건명이라도 차수 안에서 상차일이 서로 다른 품목이 섞여 있는 경우가 실제로
+        // 있다(예: FAM-167/26이 10-12분과 10-15분으로 나뉘어 있음) — 건명만으로 필터를
+        // 걸면 "12일 조회"인데 15일 품목까지 같이 딸려 나오는 버그가 생긴다. 그래서 선택한
+        // 건명이 "정확히 어느 날짜를 기준으로 선택된 것인지"도 같이 기억해뒀다가, 실제
+        // 필터링(cardRoundFilter)에는 건명 단독이 아니라 "건명+기준필드+그 날짜"를 묶은
+        // 조합키를 쓴다(applyFilters의 matchesCardRound, _cardRoundKey 참고).
+        let _card4PickerSelectedDates = {}; // round → dateStr(그 라운드를 선택한 시점의 기준일)
+        let _card4PickerMonthRoundMap = {};  // 지금 보고 있는 달의 round → {qty, earliestDate, earliestStr}
+
+        function _cardRoundKey(round, field, dateStr) { return round + '||' + field + '||' + (dateStr || ''); }
+        function _cardRoundKeyRoundName(key) { return key.split('||')[0]; }
 
         function openCard4RoundPicker() {
             // 기본 선택은 메인 화면 카드에 적혀있는 건명(_card4SameDateRounds)만 — 달을
             // 넘겨서 다른 건이 보여도 그 선택 자체는 유지된다(새로 체크/해제하기 전까지).
             _card4PickerSelected = new Set(_card4SameDateRounds);
+            _card4PickerSelectedDates = {};
+            _card4SameDateRounds.forEach(r => { _card4PickerSelectedDates[r] = _card4NearestDate; });
             const base = _card4NearestDateObj || new Date();
             _card4PickerYear = base.getFullYear();
             _card4PickerMonth = base.getMonth();
@@ -8838,6 +8857,7 @@
 
             const rounds = Object.keys(roundMap).sort((a, b) => roundMap[a].earliestDate.getTime() - roundMap[b].earliestDate.getTime());
             _card4PickerMonthRounds = rounds;
+            _card4PickerMonthRoundMap = roundMap;
 
             const chipList = document.getElementById('card4RoundChipList');
             if (rounds.length) {
@@ -8873,10 +8893,16 @@
             const chk  = document.getElementById('c4ChipChk_' + idx);
             if (_card4PickerSelected.has(round)) {
                 _card4PickerSelected.delete(round);
+                delete _card4PickerSelectedDates[round];
                 if (chip) { chip.style.borderColor = '#e2e8f0'; chip.style.background = '#fff'; }
                 if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = '#cbd5e1'; chk.innerHTML = ''; }
             } else {
                 _card4PickerSelected.add(round);
+                // 지금 보고 있는 달 기준으로 이 건명의 날짜를 기억해둔다 — 같은 건명이 다른
+                // 달/다른 날짜에도 있을 수 있어서, "이번에 체크한 건 이 날짜 기준"이라는 걸
+                // 남겨둬야 나중에 엉뚱한 날짜의 같은 건명까지 같이 조회되지 않는다.
+                const info = _card4PickerMonthRoundMap[round];
+                if (info) _card4PickerSelectedDates[round] = info.earliestStr;
                 if (chip) { chip.style.borderColor = '#0ea5e9'; chip.style.background = '#f0f9ff'; }
                 if (chk)  { chk.style.background = '#0ea5e9'; chk.style.borderColor = '#0ea5e9'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>'; }
             }
@@ -8892,10 +8918,13 @@
                 const chk  = document.getElementById('c4ChipChk_' + i);
                 if (!allSelected) {
                     _card4PickerSelected.add(r);
+                    const info = _card4PickerMonthRoundMap[r];
+                    if (info) _card4PickerSelectedDates[r] = info.earliestStr;
                     if (chip) { chip.style.borderColor = '#0ea5e9'; chip.style.background = '#f0f9ff'; }
                     if (chk)  { chk.style.background = '#0ea5e9'; chk.style.borderColor = '#0ea5e9'; chk.innerHTML = '<i class="fa-solid fa-check" style="font-size:10px;color:#fff;"></i>'; }
                 } else {
                     _card4PickerSelected.delete(r);
+                    delete _card4PickerSelectedDates[r];
                     if (chip) { chip.style.borderColor = '#e2e8f0'; chip.style.background = '#fff'; }
                     if (chk)  { chk.style.background = 'transparent'; chk.style.borderColor = '#cbd5e1'; chk.innerHTML = ''; }
                 }
@@ -8915,7 +8944,9 @@
             if (!selected.length) return;
             closeCard4RoundPicker();
             _ensureSourceFilterSelected();
-            cardRoundFilter = new Set(selected);
+            // 건명만으로 거르면 같은 건명의 다른 날짜 품목까지 같이 나오므로, 건명을
+            // 체크한 시점의 기준일(상차일/납기일)까지 묶은 조합키로 거른다.
+            cardRoundFilter = new Set(selected.map(r => _cardRoundKey(r, _card4NearestField, _card4PickerSelectedDates[r] || _card4NearestDate)));
             document.getElementById('roundFilter').value = '';
             applyFilters();
             const tableEl = document.getElementById('tablePanel');
