@@ -6083,6 +6083,10 @@ async function _qcRenderPrintPdf(opts) {
   });
   pages.push(cur);
 
+  // 출력 "지금" 기준 날짜 — 모든 데이터 출력 PDF 하단에 공통으로 넣는다(YY.MM.DD, 예: 25.10.07).
+  const _now = new Date();
+  const dateStr = String(_now.getFullYear()).slice(-2) + '.' + String(_now.getMonth() + 1).padStart(2, '0') + '.' + String(_now.getDate()).padStart(2, '0');
+
   // 3) 페이지마다 실제로 그려서 캔버스로 캡처 → A4 PDF 페이지에 넣는다.
   const jsPDFCtor = window.jspdf.jsPDF;
   const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
@@ -6103,6 +6107,20 @@ async function _qcRenderPrintPdf(opts) {
     const imgWmm = 190;
     const imgHmm = canvas.height / canvas.width * imgWmm;
     pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
+
+    // 페이지 하단 날짜(모든 페이지 공통) — 표가 페이지를 다 못 채워도 항상 실제 페이지
+    // 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다(포장강화 대시보드의
+    // 페이지 하단 문구와 같은 방식).
+    const footerHost = document.createElement('div');
+    footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
+    footerHost.innerHTML = `<div style="text-align:right;font-size:11px;color:#64748b;padding-top:6px;">${dateStr}</div>`;
+    document.body.appendChild(footerHost);
+    const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
+    document.body.removeChild(footerHost);
+    const footerImgData = footerCanvas.toDataURL('image/png');
+    const footerWmm = 190;
+    const footerHmm = footerCanvas.height / footerCanvas.width * footerWmm;
+    pdf.addImage(footerImgData, 'PNG', 10, 297 - 10 - footerHmm, footerWmm, footerHmm);
   }
   pdf.save(opts.filename);
 }

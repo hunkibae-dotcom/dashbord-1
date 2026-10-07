@@ -6477,8 +6477,9 @@
             pages.push(cur);
 
             // 날짜는 출력하는 "지금"을 기준으로 매번 새로 구한다(페이지 하단 우측 문구용).
+            // YY.MM.DD(예: 25.10.07) — 모든 데이터 출력 PDF 하단에 공통으로 넣는다.
             const _now = new Date();
-            const mmdd = String(_now.getMonth() + 1).padStart(2, '0') + '-' + String(_now.getDate()).padStart(2, '0');
+            const dateStr = String(_now.getFullYear()).slice(-2) + '.' + String(_now.getMonth() + 1).padStart(2, '0') + '.' + String(_now.getDate()).padStart(2, '0');
 
             // 3) 페이지마다 실제로 그려서 캔버스로 캡처 → A4 PDF 페이지에 넣는다.
             const jsPDFCtor = window.jspdf.jsPDF;
@@ -6501,13 +6502,15 @@
                 const imgHmm = canvas.height / canvas.width * imgWmm;
                 pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
 
-                // 페이지 하단 문구(모든 페이지 공통) — 표가 페이지를 다 못 채워도 항상
-                // 실제 페이지 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다.
-                if (opts.footer) {
+                // 페이지 하단 날짜(모든 데이터 출력 PDF 공통) — 표가 페이지를 다 못 채워도
+                // 항상 실제 페이지 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다.
+                // 연락처 줄(opts.footer)은 포장항목/상차항목 출력처럼 원래 있던 곳에만 그대로
+                // 유지하고, 날짜 자체는 모든 출력 종류에 공통으로 넣는다.
+                {
                     const footerHost = document.createElement('div');
                     footerHost.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
-                    footerHost.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#64748b;padding-top:6px;">
-                        <span>010-5667-2088 품질보증팀 배훈기</span><span>${mmdd}</span></div>`;
+                    footerHost.innerHTML = `<div style="display:flex;justify-content:${opts.footer ? 'space-between' : 'flex-end'};align-items:center;font-size:11px;color:#64748b;padding-top:6px;">
+                        ${opts.footer ? '<span>010-5667-2088 품질보증팀 배훈기</span>' : ''}<span>${dateStr}</span></div>`;
                     document.body.appendChild(footerHost);
                     const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
                     document.body.removeChild(footerHost);
