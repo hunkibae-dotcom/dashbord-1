@@ -6203,8 +6203,11 @@
             // PDF 쪽과 칼럼 정의(퍼센트 폭)를 공유하기 위해, 엑셀 칸 너비는 퍼센트를 적당한
             // 픽셀값으로 환산해서 쓴다(표 전체 폭을 대략 1000px로 가정).
             const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
+            // 글자는 가로·세로 전부 가운데 정렬 — 엑셀은 브라우저와 달리 칸 세로정렬 기본값이
+            // 가운데가 아니라서(위/아래로 치우쳐 보임), vertical-align을 명시해야 실제로
+            // 열었을 때도 가운데로 나온다.
             const headHtml = columns.map(c =>
-                `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
+                `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
             ).join('');
             const bodyHtml = rows.map((item, idx) => {
                 const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
@@ -6212,7 +6215,7 @@
                     const v = c.get ? c.get(item) : '';
                     const isStatus = !!c.isStatus;
                     const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
-                    return `<td style="background:${rowBg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${c.align};white-space:nowrap;">${esc(v)}</td>`;
+                    return `<td style="background:${rowBg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(v)}</td>`;
                 }).join('') + '</tr>';
             }).join('');
 
@@ -6332,12 +6335,13 @@
         // 품목구분(item.country) 원본 값에 공백이 섞여 들어오는 경우가 있어("충주1 제품"처럼) —
         // 다른 화면(피킹순서 뱃지 등)에서 이미 쓰던 것과 같은 정리 방식을 인쇄물에도 그대로 적용.
         function _pkgPrintCountry(item) { return (item.country || '').replace(/\s+/g, ''); }
-        // 인쇄물 날짜 표기 — "2026-10-13"을 "10월 13일"로 줄인다(연도까지 적으면 너무 길다는 요청).
+        // 인쇄물 날짜 표기 — "2026-10-13"을 "10. 13"으로 줄인다(연도까지 적으면 너무
+        // 길다는 요청). 앞에 0을 붙이지 않는다(예: 10.04가 아니라 10.4).
         function _pkgPrintMonthDay(rawDate) {
             const sd = shortDate(rawDate); // "MM-DD" 또는 '-'
             if (!sd || sd === '-' || !sd.includes('-')) return '-';
             const [mm, dd] = sd.split('-');
-            return `${parseInt(mm, 10)}월 ${parseInt(dd, 10)}일`;
+            return `${parseInt(mm, 10)}. ${parseInt(dd, 10)}`;
         }
 
         // 포장항목 출력(작업자용, 실재고 기준) — 수주건명을 맨 왼쪽에 두고 품목코드/색상/
@@ -6392,7 +6396,7 @@
         // 캡처할 때 table-cell의 vertical-align을 제대로 못 살려서(알려진 한계), 한 칸이
         // 여러 줄로 늘어난 행에서 나머지 짧은 칸들이 전부 위쪽에 붙어 보였다. td 안에
         // height:100%짜리 flex 박스를 하나 더 둬서 그 박스 기준으로 가운데 정렬한다.
-        const _pkgAlignToJustify = { left: 'flex-start', center: 'center', right: 'flex-end' };
+        // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
         // 건명(수주건명)·품목코드(제품코드)는 내용이 길어도 줄바꿈하지 말고 무조건
         // 한 줄로 — 칸보다 길면 잘리지 않고 옆으로 삐져나오게 둔다(절대 안 잘림).
         const _pkgOneLineLabels = ['건명', '수주건명', '제품코드', '품목코드'];
@@ -6402,12 +6406,11 @@
                 const v = c.get ? c.get(item) : '';
                 const isStatus = !!c.isStatus;
                 const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
-                const justify = _pkgAlignToJustify[c.align] || 'flex-start';
                 const forceOneLine = _pkgOneLineLabels.indexOf(c.label) !== -1;
                 const wrapStyle = forceOneLine
                     ? 'white-space:nowrap;overflow:visible;'
                     : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
-                return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};${wrapStyle}">${_pkgPrintEsc(v)}</div></td>`;
+                return `<td style="width:${c.width};padding:0;border:1px solid #e2e8f0;${isStatus ? 'font-weight:700;' : ''}color:${color};background:${rowBg};"><div style="display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_pkgPrintEsc(v)}</div></td>`;
             }).join('') + '</tr>';
         }
         // 건명(수주건명)·품목코드(제품코드)는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이

@@ -5906,8 +5906,11 @@ function _qcRenderGenericXls(opts) {
 
   const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
+  // 글자는 가로·세로 전부 가운데 정렬 — 엑셀은 브라우저와 달리 칸 세로정렬 기본값이
+  // 가운데가 아니라서(위/아래로 치우쳐 보임), vertical-align을 명시해야 실제로 열었을 때도
+  // 가운데로 나온다.
   const headHtml = columns.map(c =>
-    `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;white-space:nowrap;">${esc(c.label)}</th>`
+    `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
   ).join('');
   const bodyHtml = rows.map((d, idx) => {
     const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
@@ -5916,7 +5919,7 @@ function _qcRenderGenericXls(opts) {
       const sc = isStatus ? _qcStatusXlsColor(d) : null;
       const bg = isStatus ? sc.bg : rowBg;
       const color = isStatus ? sc.color : '#1e293b';
-      return `<td style="background:${bg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:${c.align};white-space:nowrap;">${esc(c.get(d))}</td>`;
+      return `<td style="background:${bg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.get(d))}</td>`;
     }).join('') + '</tr>';
   }).join('');
 
@@ -5985,12 +5988,13 @@ function _qcSpecForItem(d, lookup) {
     g: own(d.중량) || avg(fb.g),
   };
 }
-// 인쇄물 날짜 표기 — "2026. 10. 13" 같은 원본을 "10월 13일"로 줄인다(연도까지 다
-// 적으면 너무 길어진다는 요청, 포장강화 쪽 인쇄물과 같은 표기 방식).
+// 인쇄물 날짜 표기 — "2026. 10. 13" 같은 원본을 "10. 13"으로 줄인다(연도까지 다 적으면
+// 너무 길어진다는 요청, 포장강화 쪽 인쇄물과 같은 표기 방식). 앞에 0을 붙이지 않는다
+// (예: 10.04가 아니라 10.4).
 function _qcPrintMonthDay(str) {
   const d = parseKDate(str);
   if (!d) return str || '';
-  return (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  return (d.getMonth() + 1) + '. ' + d.getDate();
 }
 // 단품명칭 표기 간소화 — "FAC9110NO-형태-W1600*D600 행잉상판"처럼 "-"로 구분된 뒤쪽에
 // 규격/제품명까지 길게 붙는 경우가 많아, 앞의 두 토큰("FAC9110NO-형태")만 남긴다.
@@ -6082,7 +6086,7 @@ async function _qcRenderPrintPdf(opts) {
   // 캡처할 때 table-cell의 vertical-align을 제대로 못 살려서(알려진 한계), 한 칸이
   // 여러 줄로 늘어난 행에서 나머지 짧은 칸들이 전부 위쪽에 붙어 보였다. td 안에
   // height:100%짜리 flex 박스를 하나 더 둬서 그 박스 기준으로 가운데 정렬한다.
-  const _qcAlignToJustify = { left: 'flex-start', center: 'center', right: 'flex-end' };
+  // 글자는 칼럼별 정렬(왼쪽/오른쪽) 구분 없이 전부 가로·세로 가운데 정렬.
   const rowHtml = (d, idx) => '<tr>' + columns.map(c => {
     const v = c.get(d);
     const isStatus = !plain && !!c.isStatus;
@@ -6090,14 +6094,13 @@ async function _qcRenderPrintPdf(opts) {
     const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
     const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
     const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
-    const justify = _qcAlignToJustify[c.align] || 'flex-start';
     // 건명·단품코드는 내용이 길어도 줄바꿈하지 말고 무조건 한 줄로 — 칸보다 길면
     // 잘리지 않고 옆으로 삐져나오게 둔다(overflow:visible, 절대 안 잘림).
     const forceOneLine = c.label === '건명' || c.label === '단품코드';
     const wrapStyle = forceOneLine
       ? 'white-space:nowrap;overflow:visible;'
       : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
-    return `<td style="width:${c.width};padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:${justify};height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:${c.align};${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
+    return `<td style="width:${c.width};padding:0;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};"><div style="display:flex;align-items:center;justify-content:center;height:100%;box-sizing:border-box;padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div></td>`;
   }).join('') + '</tr>';
   const headerRowHtml = () => '<tr>' + columns.map(c =>
     `<th style="width:${c.width};padding:7px 6px;font-size:${headerFontSize}px;line-height:1.4;vertical-align:middle;${headCellStyle}">${_qcPrintEsc(c.label)}</th>`
@@ -6173,19 +6176,18 @@ async function _qcRenderPrintPdf(opts) {
   pdf.save(opts.filename);
 }
 
-// 검사항목 출력 칼럼 — 건명/단품코드/색상/수량/단품명칭/확정 납기일(=납기일 값 그대로,
-// 인쇄물에서 부르는 이름만 다름)/포장일/가로/세로/높이/중량. BOM·검사일은 출력에서
-// 제외해달라는 요청으로 뺐고, 그만큼 건명/단품코드 폭을 넓혀서 한 줄에 들어가게 했다.
+// 검사항목 출력 칼럼 — 건명/단품코드/색상/수량/납기일/포장일/가로/세로/높이/중량.
+// BOM·검사일은 출력에서 제외해달라는 요청으로 뺐고, 단품명칭도 빼서(요청) 그만큼
+// 건명/단품코드 폭을 넓혀 한 줄에 들어가게 했다.
 // lookup(규격 평균 캐시)을 매번 새로 만들어야 해서 상수 배열이 아니라 함수로 둔다.
 function _qcInspectColumns() {
   const lookup = _qcBuildSpecLookup();
   return [
-    { label: '건명', width: '19%', align: 'left', wrap: true, get: d => d.건명 || '' },
-    { label: '단품코드', width: '12%', align: 'left', get: d => d.단품코드 || '' },
+    { label: '건명', width: '25%', align: 'left', wrap: true, get: d => d.건명 || '' },
+    { label: '단품코드', width: '18%', align: 'left', get: d => d.단품코드 || '' },
     { label: '색상', width: '6%', align: 'center', get: d => d.색상 || '' },
     { label: '수량', width: '5%', align: 'right', get: d => d.수량 },
-    { label: '단품명칭', width: '12%', align: 'left', get: d => _qcSimplifyName(d.단품명칭) },
-    { label: '확정 납기일', width: '9%', align: 'center', get: d => _qcPrintMonthDay(d.납기일) },
+    { label: '납기일', width: '9%', align: 'center', get: d => _qcPrintMonthDay(d.납기일) },
     { label: '포장일', width: '8%', align: 'center', get: d => _qcPrintMonthDay(d.포장일) },
     { label: '가로', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).w },
     { label: '세로', width: '7.25%', align: 'right', get: d => _qcSpecForItem(d, lookup).d },
