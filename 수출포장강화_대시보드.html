@@ -6848,29 +6848,12 @@
           }
           return { type: type, spec: spec };
         }
-        // 데이터 출력의 "유형" 칸 — 전체 규격을 그대로 적으면 너무 기니까, 유형별로
-        // 가장 의미있는 숫자 하나만 뽑아 "코너/40"처럼 줄여서 보여준다(실제 사용자가
-        // 지정한 규칙): 코너형은 규격(가로*세로*높이)의 높이, 일자형은 규격(길이*폭*두께)의
-        // 폭, 패드형은 첫 번째 숫자(실사용이 500*500뿐이라 이게 곧 가로/세로), 롤형은
-        // "1t"처럼 적힌 두께. 숫자를 못 찾으면 유형 글자만 보여준다.
+        // 데이터 출력의 "유형" 칸 — 규격 숫자는 빼고 유형("코너"/"일자" 등)만 보여준다.
         function _pkgPeAbbrevType(type) { return (type || '').replace('형', ''); }
         function _pkgPeTypeDisplay(item) {
           const pe = _pkgEffectivePeType(item);
           if (!pe.type) return '';
-          const abbr = _pkgPeAbbrevType(pe.type);
-          if (!pe.spec) return abbr;
-          const nums = (pe.spec.match(/\d+(?:\.\d+)?/g) || []).map(Number);
-          let key = '';
-          if (pe.type === '코너형') key = nums.length >= 3 ? nums[2] : (nums.length ? nums[nums.length - 1] : '');
-          else if (pe.type === '일자형') key = nums.length >= 2 ? nums[1] : (nums.length ? nums[0] : '');
-          else if (pe.type === '패드형') key = nums.length ? nums[0] : '';
-          else if (pe.type === '롤형') {
-            const m = pe.spec.match(/(\d+(?:\.\d+)?)\s*[tT]\b/);
-            key = m ? (m[1] + 't') : (nums.length ? nums[nums.length - 1] : '');
-          } else {
-            key = nums.length ? nums[0] : '';
-          }
-          return key !== '' ? (abbr + '/' + key) : abbr;
+          return _pkgPeAbbrevType(pe.type);
         }
         // 유형 드롭다운이 바뀔 때마다 규격 드롭다운 옵션을 그 유형 전용 목록으로 다시
         // 채운다 — selectedSpec을 주면(수정창을 열 때 기존값 복원용) 그 값을 바로 선택해둔다.
