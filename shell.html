@@ -3153,40 +3153,32 @@
         if (btn) btn.querySelector('i').className = _chartAutoPlay ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     }
 
-    // ── 수출 포장 관리 현황 ────────────────────────────────
+    // ── 진행별 현황 ────────────────────────────────────────
+    // 각 항목은 독립적으로 판정한다(if/else-if로 하나만 고르지 않음) — "미적재/적재"는
+    // 충주공장 재고 전체를 적재번호 유무로 나눈 것이라 "포장대기/미포장/철물"과 같은
+    // 재고 행을 동시에 셀 수 있다(실물 하나가 여러 각도에서 중복 집계되는 건 의도된 것).
+    const MGMT_STATUS_DEFS = [
+        { key:'입고',     label:'입고',      color:'#38BDF8', icon:'fa-right-to-bracket', match:d => d.source==='standard' && d.status.replace(/\s+/g,'')==='입고' },
+        { key:'미입고',   label:'미입고',    color:'#64748B', icon:'fa-clock',            match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('미입고') },
+        { key:'일부입고', label:'일부 입고', color:'#F59E0B', icon:'fa-hourglass-half',   match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('일부입고') },
+        { key:'재고활용', label:'재고 활용', color:'#22D3EE', icon:'fa-recycle',          match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('재고활용') },
+        { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open',         match:d => d.source==='stock' && (d.status.replace(/\s+/g,'').includes('미확인') || d.status.replace(/\s+/g,'').includes('포장대기')) },
+        { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked',    match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('포장완료') },
+        { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube',             match:d => d.source==='stock' && d.status.replace(/\s+/g,'').includes('미포장') },
+        { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench',           match:d => d.source==='stock' && d.status.replace(/\s+/g,'')==='철물' },
+        { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              match:d => d.source==='stock' && !d.pallet },
+        { key:'적재',     label:'적재',      color:'#A855F7', icon:'fa-layer-group',      match:d => d.source==='stock' && !!d.pallet },
+        { key:'출고',     label:'출고',      color:'#00E676', icon:'fa-truck-fast',       match:d => (d.source==='standard'||d.source==='shipped') && d.status.replace(/\s+/g,'').includes('출고') && !d.status.replace(/\s+/g,'').includes('피킹') },
+        { key:'피킹',     label:'피킹',      color:'#A855F7', icon:'fa-dolly',            match:d => (d.source==='standard'||d.source==='shipped') && d.status.replace(/\s+/g,'').includes('피킹') },
+    ];
     function renderManagementStatus() {
-        const STATUS_DEFS = [
-            { key:'미입고',   label:'미입고',    color:'#64748B', icon:'fa-clock'          },
-            { key:'일부입고', label:'일부 입고', color:'#F59E0B', icon:'fa-hourglass-half'},
-            { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open'       },
-            { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked'  },
-            { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube'           },
-            { key:'출고완료', label:'출고 완료', color:'#00E676', icon:'fa-truck-fast'     },
-            { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench'         },
-            { key:'피킹',     label:'피킹',      color:'#A855F7', icon:'fa-dolly'          },
-        ];
         const groups = {};
-        STATUS_DEFS.forEach(s => { groups[s.key] = { cnt:0, qty:0 }; });
+        MGMT_STATUS_DEFS.forEach(s => { groups[s.key] = { cnt:0, qty:0 }; });
 
         allData.forEach(d => {
-            const s = d.status.replace(/\s+/g,'').toLowerCase();
-            if (s.includes('피킹')) {
-                groups['피킹'].cnt++;    groups['피킹'].qty+=d.qty;
-            } else if (s === '철물') {
-                groups['철물'].cnt++;    groups['철물'].qty+=d.qty;
-            } else if (s.includes('일부입고')) {
-                groups['일부입고'].cnt++; groups['일부입고'].qty+=d.qty;
-            } else if (s.includes('미포장')) {
-                groups['미포장'].cnt++;  groups['미포장'].qty+=d.qty;
-            } else if (s.includes('포장대기') || s.includes('미확인') || (s.includes('입고') && !s.includes('미입고'))) {
-                groups['포장대기'].cnt++; groups['포장대기'].qty+=d.qty;
-            } else if (s.includes('포장완료')) {
-                groups['포장완료'].cnt++; groups['포장완료'].qty+=d.qty;
-            } else if (d.isDone) {
-                groups['출고완료'].cnt++; groups['출고완료'].qty+=d.qty;
-            } else if (s.includes('미입고')) {
-                groups['미입고'].cnt++;   groups['미입고'].qty+=d.qty;
-            }
+            MGMT_STATUS_DEFS.forEach(sd => {
+                if (sd.match(d)) { groups[sd.key].cnt++; groups[sd.key].qty += d.qty; }
+            });
         });
 
         const totalCnt = allData.length;
@@ -3194,13 +3186,13 @@
         const mgmtTotalEl = document.getElementById('mgmtTotal');
         if (mgmtTotalEl) mgmtTotalEl.textContent = totalCnt+'건 · '+totalQty.toLocaleString()+' BOX';
 
-        const maxQty = Math.max(...STATUS_DEFS.map(sd=>groups[sd.key].qty), 1);
+        const maxQty = Math.max(...MGMT_STATUS_DEFS.map(sd=>groups[sd.key].qty), 1);
         const mgmtEl = document.getElementById('mgmtStatus');
         if (!mgmtEl) return;
-        mgmtEl.innerHTML = STATUS_DEFS.map(sd => {
+        mgmtEl.innerHTML = MGMT_STATUS_DEFS.map(sd => {
             const g   = groups[sd.key];
             const pct = Math.round(g.qty/maxQty*100);
-            return `<div>
+            return `<div onclick="openMgmtCategory('${sd.key}')" style="cursor:pointer;padding:6px 4px;border-radius:10px;transition:background .15s;" onmouseenter="this.style.background='var(--icon-bg)'" onmouseleave="this.style.background='transparent'">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
                     <div style="display:flex;align-items:center;gap:7px;">
                         <i class="fa-solid ${sd.icon}" style="color:${sd.color};font-size:11px;width:14px;text-align:center;"></i>
@@ -3212,11 +3204,24 @@
                         <span style="font-size:10px;color:var(--label);">BOX</span>
                     </div>
                 </div>
-                <div style="background:var(--icon-bg);border-radius:4px;height:6px;overflow:hidden;">
+                <div style="background:var(--icon-bg);border-radius:4px;height:7px;overflow:hidden;">
                     <div style="height:100%;width:${pct}%;background:${sd.color};border-radius:4px;opacity:.9;transition:width .6s ease;"></div>
                 </div>
             </div>`;
         }).join('');
+    }
+    // 진행별 현황의 한 줄을 누르면 제품검색으로 바로 넘어가 그 조건으로 필터링된
+    // 결과를 보여준다 — 수출 일정 카드의 "선택 조회"(_schRoundFilterSet)와 같은 자리에
+    // 걸리는 특수 모드 하나를 추가한 것(runSearch의 _mgmtCatKey 분기 참고).
+    function openMgmtCategory(key) {
+        _schRoundFilterSet = null;
+        _kpiPendingFilterActive = false;
+        _mgmtCatKey = key;
+        _sfSourceFilter = ''; _sfStatusFilters.clear();
+        if (typeof _updateSfSourceButtons === 'function') _updateSfSourceButtons();
+        closeSearchSub();
+        openView('viewSearch');
+        runSearch();
     }
 
     // ── 상태 표시 ─────────────────────────────────────────
