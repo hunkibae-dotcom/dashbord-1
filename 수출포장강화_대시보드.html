@@ -6284,123 +6284,65 @@
             URL.revokeObjectURL(url);
         }
 
-        // ─── 작업 인원 등록 모달 ─────────────────────────────────────
-        let _wrmWorkers = [];  // 모달 임시 작업자 목록
-        let _wrmCount = 0;     // 인원 수 (이름 추가 시 자동 증가, 수동 조정 가능)
-
+        // ─── 용역 요청 모달 ─────────────────────────────────────
         function openWorkerRegisterModal() {
-            _wrmWorkers = [];
-            _wrmCount = 0;
             const modal = document.getElementById('workerRegisterModal');
             const dateInp = document.getElementById('wrm_date');
-            const deptInp = document.getElementById('wrm_dept');
-            const memoInp = document.getElementById('wrm_memo');
+            const deptSel = document.getElementById('wrm_deptSelect');
+            const deptCustom = document.getElementById('wrm_deptCustom');
+            const cntInp = document.getElementById('wrm_countInput');
             const statusEl = document.getElementById('wrm_status');
             if (dateInp) dateInp.value = _todayStr();
-            if (deptInp) deptInp.value = '';
-            if (memoInp) memoInp.value = '';
-            if (statusEl) { statusEl.classList.add('hidden'); statusEl.textContent = ''; }
-            const cntInp = document.getElementById('wrm_countInput');
+            if (deptSel) deptSel.value = '품질보증팀';
+            if (deptCustom) { deptCustom.value = ''; deptCustom.classList.add('hidden'); }
             if (cntInp) cntInp.value = 0;
-            _wrmRenderChips();
+            if (statusEl) { statusEl.classList.add('hidden'); statusEl.textContent = ''; }
             const btn = document.getElementById('wrm_submitBtn');
             if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
             modal.classList.remove('hidden');
-            setTimeout(() => { if (deptInp) deptInp.focus(); }, 100);
         }
 
         function closeWorkerRegisterModal() {
             document.getElementById('workerRegisterModal').classList.add('hidden');
         }
 
-        function wrmSyncCount(val) {
-            const n = Math.max(0, parseInt(val) || 0);
-            _wrmCount = n;
-            const inp = document.getElementById('wrm_countInput');
-            if (inp && parseInt(inp.value) !== n) inp.value = n;
+        // 부서 드롭다운에서 "직접입력"을 고르면 바로 아래 텍스트칸을 보여준다.
+        function wrmOnDeptSelectChange() {
+            const sel = document.getElementById('wrm_deptSelect');
+            const custom = document.getElementById('wrm_deptCustom');
+            if (!sel || !custom) return;
+            if (sel.value === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
+            else custom.classList.add('hidden');
         }
 
-        function wrmAddWorker() {
-            const inp = document.getElementById('wrm_workerInput');
-            const name = inp ? inp.value.trim() : '';
-            if (!name || _wrmWorkers.includes(name)) { if (inp) inp.value = ''; return; }
-            _wrmWorkers.push(name);
-            // 외 N명은 추가 무명 인원 — 이름 추가해도 count(외) 건드리지 않음
-            if (inp) inp.value = '';
-            _wrmRenderChips();
-            const _ci = document.getElementById('wrm_countInput'); if (_ci) _ci.value = _wrmCount;
-            inp.focus();
+        function _wrmSelectedDept() {
+            const sel = document.getElementById('wrm_deptSelect');
+            if (!sel) return '';
+            if (sel.value === '__custom__') return (document.getElementById('wrm_deptCustom')?.value || '').trim();
+            return sel.value;
         }
 
-        function wrmRemoveWorker(idx) {
-            _wrmWorkers.splice(idx, 1);
-            if (_wrmCount > _wrmWorkers.length && _wrmCount > 0) {
-                // 수동으로 올렸던 count는 유지, 이름 삭제해도 count는 그대로
-            }
-            _wrmRenderChips();
-            const _ci = document.getElementById('wrm_countInput'); if (_ci) _ci.value = _wrmCount;
-        }
-
-        function _wrmRenderChips() {
-            const container = document.getElementById('wrm_workerChips');
-            if (!container) return;
-            if (!_wrmWorkers.length) {
-                container.innerHTML = '<span style="font-size:12px;color:#475569;">이름 입력 없이 인원 수만으로도 등록 가능</span>';
-                return;
-            }
-            container.innerHTML = _wrmWorkers.map((w, i) =>
-                `<span style="display:inline-flex;align-items:center;gap:4px;font-size:13px;font-weight:600;
-                              background:rgba(56,189,248,0.12);color:#38BDF8;padding:3px 10px;
-                              border-radius:999px;border:1px solid rgba(56,189,248,0.3);">
-                    ${w}
-                    <button onclick="wrmRemoveWorker(${i})" style="background:none;border:none;cursor:pointer;color:#64748B;font-size:10px;padding:0;margin-left:2px;">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </span>`
-            ).join('');
-        }
-
-        // 포장강화 앱(shell.html)의 submitWorkerInput()과 동일한 컬럼 매핑/액션으로 전송해야
-        // 실제 작업일지 시트에 반영된다 — 예전에는 action:'addWorkerLog' + 별도 파라미터로 보내서
-        // 시트에도 안 쓰이고 이 카드(작업일지 시트 데이터 기반)에도 반영이 안 됐음.
+        // 용역 요청현황 시트(A=등록일자,B=요청부서,C=요청용역인원,D=비고)에 새 행을 추가한다.
+        // 포장강화 앱(shell.html)의 submitWorkerInput()과 같은 액션/파라미터로 보내야
+        // 실제 시트에 반영된다.
         async function submitWorkerRegister() {
             const date  = (document.getElementById('wrm_date')?.value || '').trim();
-            const dept  = (document.getElementById('wrm_dept')?.value || '').trim();
-            const memo  = (document.getElementById('wrm_memo')?.value || '').trim();
+            const dept  = _wrmSelectedDept();
+            const count = parseInt(document.getElementById('wrm_countInput')?.value || '0') || 0;
             const btn   = document.getElementById('wrm_submitBtn');
 
-            _wrmCount = parseInt(document.getElementById('wrm_countInput')?.value || '0') || _wrmCount;
-            if (!dept) { _wrmShowStatus('부서명을 입력하세요.', '#F59E0B'); return; }
-            if (_wrmCount === 0) { _wrmShowStatus('인원 수를 1명 이상으로 입력하세요.', '#F59E0B'); return; }
-            if (_wrmCount < _wrmWorkers.length) { _wrmShowStatus('총 인원이 등록된 이름 수보다 적습니다.', '#F59E0B'); return; }
             if (!date) { _wrmShowStatus('날짜를 선택하세요.', '#F59E0B'); return; }
+            if (!dept) { _wrmShowStatus('부서를 선택하거나 입력하세요.', '#F59E0B'); return; }
+            if (count <= 0) { _wrmShowStatus('인원 수를 1명 이상으로 입력하세요.', '#F59E0B'); return; }
 
-            // 작업자(C열): 첫 번째 이름 / 비고(D열): 나머지 이름들 + 외 인원(용역) / 총 인원(E열): 사용자가 입력한 총 인원
-            const firstWorker  = _wrmWorkers[0] || '';
-            const extraWorkers = _wrmWorkers.slice(1);
-
-            let memoNorm = memo;
-            if (/^\d+$/.test(memo)) {
-                memoNorm = '용역' + memo + '명';
-            } else if (/^용역\s*\d+$/.test(memo)) {
-                memoNorm = memo.replace(/용역\s*(\d+)/, '용역$1명');
-            }
-            const memoParts = [];
-            if (extraWorkers.length) memoParts.push(extraWorkers.join(', '));
-            if (memoNorm) memoParts.push(memoNorm);
-            const memoStr  = memoParts.join(' · ');
-            const totalStr = _wrmCount + '명';
+            const totalStr = count + '명';
 
             // localStorage 백업 (시트 미수신 상황을 위한 폴백용 — 카드1 표시에서만 사용)
             const logs = getWorkerLogs();
             const now = new Date();
             logs.push({
                 id: now.getTime().toString(),
-                date, dept,
-                count: _wrmCount,
-                extraCount: _wrmCount - _wrmWorkers.length,
-                workers: [..._wrmWorkers],
-                memo: memoNorm,
+                date, dept, count,
                 registeredAt: date + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0')
             });
             saveWorkerLogs(logs);
@@ -6413,12 +6355,7 @@
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 15000);
             try {
-                const params = new URLSearchParams({
-                    action: 'addWorkLog', date, dept,
-                    worker: firstWorker,
-                    memo:   memoStr,
-                    total:  totalStr
-                });
+                const params = new URLSearchParams({ action: 'addWorkLog', date, dept, total: totalStr });
                 const res = await fetch(scriptUrl + '?' + params.toString(), { signal: controller.signal });
                 clearTimeout(timeoutId);
                 const text = await res.text();
@@ -6426,9 +6363,9 @@
                 if (ok) {
                     // 새로 받아오기 전까지 화면에 바로 반영 (shell.html과 동일한 방식)
                     if (!state.workLogRows || state.workLogRows.length < 1) {
-                        state.workLogRows = [['등록일자','부서','작업자','비고','총 인원']];
+                        state.workLogRows = [['등록일자','요청부서','요청용역인원','비고']];
                     }
-                    state.workLogRows.push([date, dept, firstWorker, memoStr, totalStr]);
+                    state.workLogRows.push([date, dept, totalStr, '']);
                     renderWorkLogSummaryCard();
                     renderCard1WorkerDisplay();
                     if (!document.getElementById('workLogModal').classList.contains('hidden')) renderWorkLogModalTable();
