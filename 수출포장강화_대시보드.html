@@ -4984,11 +4984,11 @@
         // 설정 패널 제어
         function openSettingsModal() {
             document.getElementById('inputPubUrl').value = safeLocalStorage.getItem('sheet_pub_url') || '';
-            document.getElementById('settingsModal').classList.remove('hidden');
+            document.getElementById('settingsModal').style.display = 'flex';
         }
 
         function closeSettingsModal() {
-            document.getElementById('settingsModal').classList.add('hidden');
+            document.getElementById('settingsModal').style.display = 'none';
         }
 
 
