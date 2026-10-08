@@ -800,23 +800,42 @@ try {
             <span id="tableCount" class="text-[13.5px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0건</span>
           </h2>
           <div class="flex gap-2 flex-wrap">
-            <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
-            <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
             <button onclick="setView('all')" id="tabAll" class="tab-btn active">전체</button>
             <button onclick="setView('cj1')" id="tabCj1" class="tab-btn">충주1공장</button>
             <button onclick="setView('cj2')" id="tabCj2" class="tab-btn">충주2공장</button>
           </div>
         </div>
 
-        <div class="flex items-center gap-1.5 mb-4 p-1.5 rounded-2xl bg-slate-50 border border-slate-200">
-          <div class="relative flex-1 min-w-0">
-            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[13px]"></i>
-            <input type="text" id="fSearch" oninput="applyFiltersDebounced()" placeholder="건명, 단품코드, 단품명칭 검색"
-              class="w-full bg-transparent border-none outline-none pl-10 pr-3 py-2 text-[14px] text-slate-700 placeholder:text-slate-400">
+        <!-- 검색 4칸 -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-400 mb-1">건명/차수</label>
+            <input type="text" id="fRound" oninput="applyFiltersDebounced()" placeholder="건명 검색"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
           </div>
-          <div class="w-px h-6 bg-slate-200 shrink-0"></div>
-          <button onclick="resetFilters()" class="shrink-0 px-3.5 py-2 rounded-xl font-semibold text-[13px] text-slate-500 flex items-center gap-1.5 hover:bg-white hover:shadow-sm transition-all"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
-          <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-xl font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-400 mb-1">단품코드/명칭</label>
+            <input type="text" id="fCode" oninput="applyFiltersDebounced()" placeholder="코드/명칭 검색"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
+          </div>
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-400 mb-1">색상</label>
+            <input type="text" id="fColor" oninput="applyFiltersDebounced()" placeholder="색상 검색"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
+          </div>
+          <div>
+            <label class="block text-[10.5px] font-bold text-slate-400 mb-1">포장처</label>
+            <input type="text" id="fPacker" oninput="applyFiltersDebounced()" placeholder="포장처 검색"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
+          </div>
+        </div>
+
+        <!-- 선택/수정/초기화/데이터출력 -->
+        <div class="flex items-center gap-2 mb-4 flex-wrap">
+          <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
+          <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
+          <button onclick="resetFilters()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] border border-slate-200 text-slate-500 flex items-center gap-1.5 hover:bg-slate-50 transition-all"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
+          <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
         </div>
 
         <div id="ddayFilterChip" class="hidden mb-3 flex items-center gap-2 flex-wrap">
