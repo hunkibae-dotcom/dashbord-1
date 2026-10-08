@@ -5285,11 +5285,9 @@
                     const wRows = _parseWorkLogForDate(state.workLogRows, ymd);
                     if (wRows.length > 0) {
                         const totalSum = wRows.reduce((s, r) => s + r.total, 0);
-                        const workers  = wRows.map(r => r.worker).filter(Boolean);
-                        const memos    = wRows.map(r => r.memo).filter(Boolean);
+                        const depts = [...new Set(wRows.map(r => r.dept).filter(Boolean))];
                         let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${totalSum}명</span>`];
-                        if (workers.length) parts.push(workers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
-                        if (memos.filter(m=>m).length) parts.push(`<span style="color:#94A3B8;">${memos.filter(m=>m).join(' · ')}</span>`);
+                        if (depts.length) parts.push(depts.map(d => `<span style="color:#F1F5F9;font-weight:600;">${d}</span>`).join(' · '));
                         workerEl.innerHTML = parts.join(' · ');
                         rendered = true;
                     }
@@ -5297,18 +5295,12 @@
                 if (!rendered) {
                     const logs = getWorkerLogs().filter(r => r.date === ymd);
                     if (!logs.length) {
-                        workerEl.innerHTML = '<span style="color:#475569;">등록된 인원 없음</span>';
+                        workerEl.innerHTML = '<span style="color:#475569;">등록된 요청 없음</span>';
                     } else {
-                        const allWorkers = [], seenWorkers = new Set();
-                        let extraTotal = 0;
-                        logs.forEach(log => {
-                            (log.workers || []).forEach(w => { if (w && !seenWorkers.has(w)) { seenWorkers.add(w); allWorkers.push(w); } });
-                            extraTotal += parseInt(log.extraCount) || 0;
-                        });
-                        const total = allWorkers.length + extraTotal;
+                        const total = logs.reduce((s, log) => s + (parseInt(log.count) || 0), 0);
+                        const depts = [...new Set(logs.map(l => l.dept).filter(Boolean))];
                         let parts = [`<span style="color:#CBD5E1;font-weight:700;">총 ${total}명</span>`];
-                        if (allWorkers.length) parts.push(allWorkers.map(w => `<span style="color:#F1F5F9;font-weight:600;">${w}</span>`).join(' · '));
-                        if (extraTotal > 0) parts.push(`<span style="color:#CBD5E1;">용역 ${extraTotal}명</span>`);
+                        if (depts.length) parts.push(depts.map(d => `<span style="color:#F1F5F9;font-weight:600;">${d}</span>`).join(' · '));
                         workerEl.innerHTML = parts.join(' · ');
                     }
                 }
