@@ -1916,6 +1916,19 @@ async function loadData() {
   const activePromise = Promise.all(
     FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
   ).then(results => {
+    // 자동 새로고침(5분 간격) 중 구글시트/GAS 쪽이 예외를 던지지 않고도 그 공장만 0건을
+    // 돌려주는 경우가 있다(배포 교체 직후 등) — 방금 전까지 데이터가 있던 공장이 이번만
+    // 갑자기 0건이면 네트워크 오류와 똑같이 의심해서, 그 공장은 이전 화면을 그대로 두고
+    // 경고 배너로 알린다. 그래야 "작업하다 갑자기 전부 0개로 바뀐다"처럼 안 보인다.
+    results.forEach((rows, i) => {
+      const f = FACTORIES[i];
+      if (rows.length === 0 && _lastFactoryRows[f.key] && _lastFactoryRows[f.key].length > 0) {
+        loadErrors.push(`${f.label} 검사항목 리스트가 이번엔 0건으로 응답해서 이전 데이터를 유지했어요 (일시적 오류로 보임)`);
+        results[i] = _lastFactoryRows[f.key];
+      } else if (rows.length > 0) {
+        _lastFactoryRows[f.key] = rows;
+      }
+    });
     allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
