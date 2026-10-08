@@ -8808,16 +8808,102 @@ async function _presenceTick() {
   // 나 자신도 같이 보여준다 — 안 그러면 접속한 사람이 나 혼자일 땐 배지가 하나도 안
   // 떠서 "기능이 안 되는 건가?" 헷갈릴 수 있다.
   const names = Object.keys(latest).filter(n => now - latest[n] <= PRESENCE_FRESH_MS);
+  const wrap = document.getElementById('presenceBarWrap');
   const bar = document.getElementById('presenceBar');
-  if (!bar) return;
-  if (!names.length) { bar.style.display = 'none'; return; }
-  bar.style.display = 'flex';
+  if (!wrap || !bar) return;
+  if (!names.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
   bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">접속 중</span>` + names.map(n => {
     const initial = n.trim().slice(0, 1); // 맨 앞 성이 보이게
     const isMe = n === name;
     return `<span title="${n.replace(/"/g,'&quot;')}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#6D5CE8;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};">${initial}</span>`;
   }).join('');
+  _applyPresenceCollapsed();
 }
+
+// ── 접속중 표시: 접기/펼치기 + 꾹 눌러서 드래그 ──────────────
+const PRESENCE_POS_KEY = 'presenceBarPos';
+const PRESENCE_COLLAPSED_KEY = 'presenceBarCollapsed';
+function _applyPresenceCollapsed() {
+  const bar = document.getElementById('presenceBar');
+  const icon = document.getElementById('presenceToggleIcon');
+  if (!bar || !icon) return;
+  const collapsed = localStorage.getItem(PRESENCE_COLLAPSED_KEY) === '1';
+  bar.style.display = collapsed ? 'none' : 'flex';
+  icon.className = 'fa-solid ' + (collapsed ? 'fa-chevron-right' : 'fa-chevron-left');
+}
+let _presenceDragMoved = false;
+function _togglePresenceCollapsed(ev) {
+  if (_presenceDragMoved) { _presenceDragMoved = false; return; }
+  const collapsed = localStorage.getItem(PRESENCE_COLLAPSED_KEY) === '1';
+  localStorage.setItem(PRESENCE_COLLAPSED_KEY, collapsed ? '0' : '1');
+  _applyPresenceCollapsed();
+}
+(function _initPresenceDrag() {
+  const wrap = document.getElementById('presenceBarWrap');
+  const btn = document.getElementById('presenceToggleBtn');
+  if (!wrap || !btn) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem(PRESENCE_POS_KEY) || 'null');
+    if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
+      wrap.style.left = saved.left + 'px';
+      wrap.style.top = saved.top + 'px';
+      wrap.style.right = 'auto';
+    }
+  } catch (e) {}
+  let dragging = false, holdTimer = null, startX = 0, startY = 0, baseLeft = 0, baseTop = 0;
+  const HOLD_MS = 350, MOVE_TOLERANCE = 6;
+  function clampAndSave(left, top) {
+    const maxLeft = window.innerWidth - wrap.offsetWidth - 4;
+    const maxTop = window.innerHeight - wrap.offsetHeight - 4;
+    left = Math.min(Math.max(4, left), Math.max(4, maxLeft));
+    top  = Math.min(Math.max(4, top),  Math.max(4, maxTop));
+    wrap.style.left = left + 'px';
+    wrap.style.top  = top + 'px';
+    wrap.style.right = 'auto';
+    localStorage.setItem(PRESENCE_POS_KEY, JSON.stringify({ left, top }));
+  }
+  function onPointerDown(e) {
+    const p = e.touches ? e.touches[0] : e;
+    startX = p.clientX; startY = p.clientY;
+    const r = wrap.getBoundingClientRect();
+    baseLeft = r.left; baseTop = r.top;
+    _presenceDragMoved = false;
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(() => { dragging = true; wrap.style.opacity = '.85'; }, HOLD_MS);
+  }
+  function onPointerMove(e) {
+    if (!dragging) {
+      const p0 = e.touches ? e.touches[0] : e;
+      if (Math.abs(p0.clientX - startX) > MOVE_TOLERANCE || Math.abs(p0.clientY - startY) > MOVE_TOLERANCE) {
+        clearTimeout(holdTimer);
+      }
+      return;
+    }
+    e.preventDefault();
+    const p = e.touches ? e.touches[0] : e;
+    const dx = p.clientX - startX, dy = p.clientY - startY;
+    if (Math.abs(dx) > MOVE_TOLERANCE || Math.abs(dy) > MOVE_TOLERANCE) _presenceDragMoved = true;
+    wrap.style.left = (baseLeft + dx) + 'px';
+    wrap.style.top  = (baseTop + dy) + 'px';
+    wrap.style.right = 'auto';
+  }
+  function onPointerUp() {
+    clearTimeout(holdTimer);
+    if (dragging) {
+      dragging = false;
+      wrap.style.opacity = '';
+      const r = wrap.getBoundingClientRect();
+      clampAndSave(r.left, r.top);
+    }
+  }
+  btn.addEventListener('mousedown', onPointerDown);
+  btn.addEventListener('touchstart', onPointerDown, { passive: true });
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('mouseup', onPointerUp);
+  window.addEventListener('touchend', onPointerUp);
+})();
 
 // ===== INIT =====
 var _scanCodeHandled = false;
