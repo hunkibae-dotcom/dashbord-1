@@ -6099,27 +6099,18 @@
             let totalCount = 0;
             todayLogs.forEach(r => {
                 const dept = r.dept || '미지정';
-                if (!deptMap[dept]) deptMap[dept] = { count: 0, workers: [], extraCount: 0 };
-                const named = r.workers.length || 0;
-                const extra = r.extraCount || 0;
-                const cnt = r.count || (named + extra) || named || 0;
-                deptMap[dept].count += cnt;
-                deptMap[dept].extraCount += extra;
-                totalCount += cnt;
-                r.workers.forEach(w => { if (!deptMap[dept].workers.includes(w)) deptMap[dept].workers.push(w); });
+                deptMap[dept] = (deptMap[dept] || 0) + (r.count || 0);
+                totalCount += r.count || 0;
             });
             let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                 <span style="font-size:13.5px;font-weight:700;color:#0369A1;">총 ${totalCount}명</span>
-                <span style="font-size:12.5px;color:#334155;">작업 참여</span>
+                <span style="font-size:12.5px;color:#334155;">용역 요청</span>
             </div>`;
-            Object.entries(deptMap).forEach(([dept, info]) => {
-                let nameParts = [...info.workers];
-                if (info.extraCount > 0) nameParts.push('용역 ' + info.extraCount + '명');
-                const nameStr = nameParts.length ? nameParts.join(' · ') : info.count + '명';
+            Object.entries(deptMap).forEach(([dept, count]) => {
                 html += `<div style="margin-bottom:4px;">
                     <span style="font-size:12.5px;color:#334155;font-weight:600;">${dept}</span>
                     <span style="font-size:12.5px;color:#94A3B8;margin:0 4px;">·</span>
-                    <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${nameStr}</span>
+                    <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${count}명</span>
                 </div>`;
             });
             display.innerHTML = html;
