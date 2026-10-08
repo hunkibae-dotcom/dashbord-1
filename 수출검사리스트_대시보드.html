@@ -503,6 +503,17 @@ try {
         </div>
       </div>
     </div>
+
+    <button type="button" class="nav-item w-full" onclick="qcOpenSettingsModal()" title="구글 시트 연동 설정">
+      <i class="fa-solid fa-cog w-4 text-center"></i>
+      <span class="flex-1 text-left">연동 설정</span>
+    </button>
+
+    <!-- 연동 초기화만 되돌리기 어려운 위험 동작이라 의도적으로 빨간색을 남겨둠(포장강화와 동일) -->
+    <button type="button" class="nav-item w-full" style="color:#DC2626;" onclick="qcConfirmResetConnection()" title="저장된 연동 설정 초기화">
+      <i class="fa-solid fa-power-off w-4 text-center"></i>
+      <span class="flex-1 text-left">연동 초기화</span>
+    </button>
     </div>
 
     <div class="px-3 pb-4 mt-2">
