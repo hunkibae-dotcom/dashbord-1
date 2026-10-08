@@ -3168,8 +3168,8 @@
         { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked',    match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('포장완료') },
         { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube',             match:d => d.source==='stock' && d.status.replace(/\s+/g,'').includes('미포장') },
         { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench',           match:d => d.source==='stock' && d.status.replace(/\s+/g,'')==='철물' },
-        { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              match:d => d.source==='stock' && !d.pallet },
-        { key:'적재',     label:'적재',      color:'#A855F7', icon:'fa-layer-group',      match:d => d.source==='stock' && !!d.pallet },
+        { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              match:d => d.source==='stock' && d.pallet.replace(/\s+/g,'')==='미적재' },
+        { key:'적재',     label:'적재',      color:'#A855F7', icon:'fa-layer-group',      match:d => d.source==='stock' && !!d.pallet && d.pallet.replace(/\s+/g,'')!=='미적재' },
         { key:'출고',     label:'출고',      color:'#00E676', icon:'fa-truck-fast',       match:d => (d.source==='standard'||d.source==='shipped') && d.status.replace(/\s+/g,'').includes('출고') && !d.status.replace(/\s+/g,'').includes('피킹') },
         { key:'피킹',     label:'피킹',      color:'#A855F7', icon:'fa-dolly',            match:d => (d.source==='standard'||d.source==='shipped') && d.status.replace(/\s+/g,'').includes('피킹') },
     ];
