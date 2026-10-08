@@ -1835,6 +1835,7 @@
         // 건명만으로 거르면 같은 건명의 다른 날짜 품목까지 같이 나오므로, 건명을 체크한
         // 시점의 기준일(상차일/납기일)까지 묶은 조합키로 거른다.
         _schRoundFilterSet = new Set(selected.map(r => _cardRoundKey(r, _schNearestField, _schPickerSelectedDates[r] || _schNearestDate)));
+        _kpiPendingFilterActive = false; _mgmtCatKey = null;
         // 같은 차수라도 일부는 수출현황에, 일부는 이미 출고/실재고로 넘어가 있을 수 있어서
         // 여기선 소스를 하나로 고정하지 않는다 — 드롭다운은 '전체'로 표시되고,
         // _sfSourceFilter=''인 동안은 runSearch()가 소스로 거르지 않고 차수만으로 거른다.
