@@ -2594,12 +2594,15 @@
             } else if (_kpiPendingFilterActive) {
                 document.getElementById('sfSpecialModeLabel').textContent = '포장대기 카드 조회 중';
                 specialChip.classList.remove('hidden');
+            } else if (_mgmtCatKey) {
+                document.getElementById('sfSpecialModeLabel').textContent = '진행별 현황 · ' + _mgmtCatKey + ' 조회 중';
+                specialChip.classList.remove('hidden');
             } else {
                 specialChip.classList.add('hidden');
             }
         }
         _updateSfFilterDot();
-        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive) {
+        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey) {
             document.getElementById('srCount').textContent = '0';
             const qtyEl0 = document.getElementById('srQtySum');
             if (qtyEl0) qtyEl0.textContent = '0';
