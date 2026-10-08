@@ -2705,27 +2705,6 @@
         runSearch();
     }
 
-    // 색상/날짜/적재/국가/세부상태 입력칸을 sfFilterModal 시트 뒤로 숨기면서, 지금 뭔가
-    // 걸려있는지는 sfFilterBtn 모서리의 점 하나로만 보여준다(안을 열어야 정확히 뭐가 걸렸는지 보임).
-    function openSfFilterSheet() {
-        document.getElementById('sfFilterModal').style.display = 'flex';
-        _armBackTrap();
-    }
-    function closeSfFilterSheet() {
-        document.getElementById('sfFilterModal').style.display = 'none';
-    }
-    function _updateSfFilterDot() {
-        const country = (document.getElementById('sf_country').value || '').trim();
-        const on = !!(country || _sfStatusFilters.size);
-        const dot = document.getElementById('sfFilterDot');
-        if (dot) dot.style.display = on ? 'block' : 'none';
-        const btn = document.getElementById('sfFilterBtn');
-        if (btn) {
-            btn.style.borderColor = on ? '#00B0FF' : 'var(--border)';
-            btn.style.background  = on ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
-        }
-    }
-
     // ── 제품 상세스펙 조회 ─────────────────────────────────
     const _stripUnit = val => (!val || val==='-') ? '' : val.toString().trim().replace(/[a-zA-Z가-힣]+$/g,'').trim();
     const _fmt       = n   => n % 1 === 0 ? n.toFixed(0) : n.toFixed(1);
