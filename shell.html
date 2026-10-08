@@ -1707,6 +1707,9 @@
     let _schPickerSelected = new Set();
     let _schRoundFilterSet = null;
     let _kpiPendingFilterActive = false;
+    // 진행별 현황 카드의 한 줄(예: 포장대기, 적재 등)을 눌러서 들어온 필터 — 소스/세부상태
+    // 드롭다운과는 별개로, MGMT_STATUS_DEFS의 match() 조건을 그대로 재사용해 거른다.
+    let _mgmtCatKey = null;
     // 같은 건명이라도 차수 안에서 상차일이 서로 다른 품목이 섞여 있는 경우가 있다 —
     // 건명만으로 필터를 걸면 "그 날짜 조회"인데 다른 날짜 품목까지 같이 딸려 나오는
     // 버그가 생긴다(PC 웹 대시보드에서 실제로 발견됨). 그래서 선택한 건명이 정확히
