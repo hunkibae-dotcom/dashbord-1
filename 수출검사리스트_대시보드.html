@@ -2152,12 +2152,14 @@ function applyFilters() {
   const codeSearch   = (document.getElementById('fCode')?.value   || '').toLowerCase().trim();
   const colorSearch  = (document.getElementById('fColor')?.value  || '').toLowerCase().trim();
   const packerSearch = (document.getElementById('fPacker')?.value || '').toLowerCase().trim();
+  const qStartDate = document.getElementById('qStartDateFilter')?.value || '';
+  const qEndDate   = document.getElementById('qEndDateFilter')?.value   || '';
 
   // 검색/필터/정렬/공장탭 중 뭐라도 바뀌면 표 페이지를 1페이지로 되돌린다 — 호출하는
   // 곳이 워낙 많아서(정렬 클릭, 탭 전환, 카드 클릭 필터 등) 매번 거기서 리셋하는 대신,
   // 여기 한 곳에서 "직전 호출 때와 조건이 달라졌는지"만 보고 판단한다.
   const _dateFilterSig = _tblExactDateFilter ? (Array.from(_tblExactDateFilter.dates).sort().join(',') + ':' + _tblExactDateFilter.field) : '';
-  const _tblSig = JSON.stringify([roundSearch, codeSearch, colorSearch, packerSearch, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, _dateFilterSig, factoryTab, tableSortKey, tableSortDir]);
+  const _tblSig = JSON.stringify([roundSearch, codeSearch, colorSearch, packerSearch, _qcDateField, qStartDate, qEndDate, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, _dateFilterSig, factoryTab, tableSortKey, tableSortDir]);
   if (_tblSig !== _tblLastFilterSig) { _tblPage = 1; _tblLastFilterSig = _tblSig; }
 
   function matchRow(d) {
@@ -2166,6 +2168,13 @@ function applyFilters() {
         !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
     if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
     if (packerSearch && !(d.포장처||'').toLowerCase().includes(packerSearch)) return false;
+    if (_qcDateField && (qStartDate || qEndDate)) {
+      const dVal = parseKDate(d[_qcDateField]);
+      if (!dVal) return false;
+      const iso = dVal.getFullYear() + '-' + String(dVal.getMonth()+1).padStart(2,'0') + '-' + String(dVal.getDate()).padStart(2,'0');
+      if (qStartDate && iso < qStartDate) return false;
+      if (qEndDate && iso > qEndDate) return false;
+    }
     if (pieFilter) {
       if (d.source !== 'archive') return false;
       if (d.공장 !== pieFilter.factory) return false;
