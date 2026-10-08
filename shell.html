@@ -4392,12 +4392,13 @@
                 const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
                 const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
                 const iCol = hdr.findIndex(h => h.replace(/\s/g,'').includes('색상') || h.toLowerCase().includes('color'));
+                const iPal = _stockPalletColIndex();
                 for (let i = 1; i < rawStockRows.length; i++) {
                     const r = rawStockRows[i]; if (!r) continue;
                     const rColor = iCol >= 0 ? (r[iCol]||'').toString().trim() : '';
                     if ((r[iC>=0?iC:1]||'').toString().trim().toUpperCase() === _ieCode.toUpperCase() &&
                         (r[iR>=0?iR:4]||'').toString().trim() === _ieRound &&
-                        (iCol < 0 || rColor === _ieColor)) { r[10] = changed.pallet; break; }
+                        (iCol < 0 || rColor === _ieColor)) { r[iPal] = changed.pallet; break; }
                 }
             }
             if (fb) { fb.textContent = '✓ 저장 완료'; fb.style.color = '#00E676'; }
