@@ -3405,21 +3405,6 @@ function setChartYear(key, year) {
   renderQualityChart(key, chartGranularity[key]);
 }
 
-function exportQualityChart() {
-  const rows = [];
-  ['cj1','cj2'].forEach(key => {
-    const label = key === 'cj1' ? '충주1공장' : '충주2공장';
-    const series = lastQualitySeries[key];
-    if (!series) return;
-    series.rawLabels.forEach((l, i) => rows.push({ 공장: label, 구간: l, 누적건수: series.data[i] }));
-  });
-  exportCSV(rows, `누적품질검사차트_${new Date().toISOString().slice(0,10)}.csv`, [
-    { label:'공장', get: d => d.공장 },
-    { label:'구간', get: d => d.구간 },
-    { label:'누적건수', get: d => d.누적건수 },
-  ]);
-}
-
 function lightTooltip() {
   const c = _chartThemeColors();
   return { backgroundColor:c.tooltipBg, titleColor:c.tooltipTitle, bodyColor:c.tooltipBody, borderColor:c.tooltipBorder, borderWidth:1, padding:8 };
