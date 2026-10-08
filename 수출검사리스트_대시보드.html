@@ -993,11 +993,15 @@ try {
       <input id="psPacker" type="text" oninput="runProductSearchDebounced()" placeholder="포장처"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="세부 진행상태"
-        style="position:relative;min-width:0;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:700;padding:0 6px;">
-        <i class="fa-solid fa-sliders" style="font-size:12px;flex-shrink:0;color:var(--label);"></i> 상세필터
-        <span id="psSrcDetailDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#6D5CE8;"></span>
-      </button>
+      <div style="position:relative;min-width:0;">
+        <select id="psFactory" onchange="runProductSearch()"
+          style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 24px 11px 10px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
+          <option value="">사업장 전체</option>
+          <option value="cj1">충주 1공장</option>
+          <option value="cj2">충주 2공장</option>
+        </select>
+        <i class="fa-solid fa-chevron-down" style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
+      </div>
     </div>
   </div>
 
