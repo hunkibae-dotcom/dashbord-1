@@ -2591,7 +2591,13 @@ function renderSidebarFlyout(key, items, done, undoneCount) {
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
   const noData = document.getElementById('noData');
-  document.getElementById('tableCount').textContent = data.length + '건';
+  // 포장강화 제품검색과 같은 "항목/건/EA" 3분할 배지 — 항목=표시된 행 수, 건=고유
+  // 건명 수, EA=수량 합계.
+  const _badge = document.getElementById('tableCountBadge'); if (_badge) _badge.textContent = data.length;
+  const _rounds = new Set(data.map(d => d.건명 || '').filter(Boolean));
+  const _qtySum = data.reduce((s, d) => s + (parseInt(d.수량) || 0), 0);
+  const _rcEl = document.getElementById('tableRoundCount'); if (_rcEl) _rcEl.textContent = _rounds.size;
+  const _tqEl = document.getElementById('tableTotalQty');   if (_tqEl) _tqEl.textContent = _qtySum.toLocaleString();
 
   if (!data.length) {
     tbody.innerHTML = '';
