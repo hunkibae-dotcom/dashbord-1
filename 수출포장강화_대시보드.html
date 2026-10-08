@@ -518,7 +518,7 @@
          스태킹 컨텍스트를 만들어버려서 "연동 상태" 호버 팝업이 z-index를 아무리 올려도
          본문 카드 밑에 깔리는 문제가 있었다 — QC 사이드바(aside)처럼 감싸는 박스 없이
          바로 이 엘리먼트에 너비 애니메이션을 걸어서 그 문제를 없앴다. -->
-    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-1 p-3 overflow-y-auto transform -translate-x-full lg:static lg:translate-x-0 lg:w-[250px] lg:max-w-none lg:h-full lg:min-h-screen lg:shrink-0 lg:shadow-none lg:overflow-visible" style="transition:transform .3s cubic-bezier(0,0,.2,1), width .28s cubic-bezier(.4,0,.2,1), border-color .28s;">
+    <div id="sidebarWrapper" class="fixed top-0 left-0 h-full w-[520px] max-w-[96vw] z-50 bg-darkBg border-r border-borderSlate/70 shadow-2xl flex flex-col gap-2.5 p-3 overflow-y-auto transform -translate-x-full lg:static lg:translate-x-0 lg:w-[250px] lg:max-w-none lg:h-full lg:min-h-screen lg:shrink-0 lg:shadow-none lg:overflow-visible" style="transition:transform .3s cubic-bezier(0,0,.2,1), width .28s cubic-bezier(.4,0,.2,1), border-color .28s;">
         <div class="flex items-center justify-between px-1 pb-2 lg:hidden">
             <span class="text-[15px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-sliders text-accentBlue"></i>메뉴</span>
             <button onclick="closeFilterDrawer()" class="text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-[18px]"></i></button>
