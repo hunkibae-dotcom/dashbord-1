@@ -2594,15 +2594,15 @@
                 // 건명 개수를 보여줄 땐 중복 제거한 건명 수를 쓴다.
                 const uniqueRoundCount = new Set(Array.from(_schRoundFilterSet).map(_cardRoundKeyRoundName)).size;
                 document.getElementById('sfSpecialModeLabel').textContent = `일정 조회 중 · 건명 ${uniqueRoundCount}개`;
-                specialChip.classList.remove('hidden');
+                specialChip.style.display = 'flex';
             } else if (_kpiPendingFilterActive) {
                 document.getElementById('sfSpecialModeLabel').textContent = '포장대기 카드 조회 중';
-                specialChip.classList.remove('hidden');
+                specialChip.style.display = 'flex';
             } else if (_mgmtCatKey) {
                 document.getElementById('sfSpecialModeLabel').textContent = '진행별 현황 · ' + _mgmtCatKey + ' 조회 중';
-                specialChip.classList.remove('hidden');
+                specialChip.style.display = 'flex';
             } else {
-                specialChip.classList.add('hidden');
+                specialChip.style.display = 'none';
             }
         }
         _updateSfFilterDot();
