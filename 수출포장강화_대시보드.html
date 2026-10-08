@@ -9024,11 +9024,15 @@
             // 그러면 상차일이 갱신되기 전의 옛 값을 물고 있는 행도 같이 섞여 들어가서,
             // 상차일을 바꾼 뒤에도 달력에 지워진 옛 날짜 칸이 계속 남아있는 것처럼 보였다.
             // code+round+색상 단위로 마지막에 이어붙는(=더 나중 시트, 보통 더 최신 값)
-            // 행 하나만 남기고 중복을 제거한다.
+            // 행 하나만 남기고 중복을 제거한다 — 단, 수량까지 키에 넣는다. 사전조립처럼
+            // 같은 건명+코드+색상인데 물량 일부만 먼저/나중에 다른 상차일로 나뉜 진짜
+            // 별개 행(수량도 다름)까지 "중복"으로 오인해 하나로 뭉개버리면, 그 행의 상차일이
+            // 달력/수출일정에서 통째로 사라져 선택 조회 시 그 수량만 빠지는 문제가 있었다
+            // (수량까지 같아야 진짜 "같은 행의 옛 값 vs 새 값" 중복으로 본다).
             const dedup = {};
             list.forEach((item, idx) => {
                 if (!item.round) return;
-                const key = item.code ? ((item.code||'').toUpperCase() + '|' + item.round + '|' + (item.color||'')) : ('__noCode_' + idx);
+                const key = item.code ? ((item.code||'').toUpperCase() + '|' + item.round + '|' + (item.color||'') + '|' + (parseInt(item.qty)||0)) : ('__noCode_' + idx);
                 dedup[key] = item;
             });
             Object.values(dedup).forEach(item => {
