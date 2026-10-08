@@ -5832,7 +5832,12 @@ function renderProductSearchResults(results) {
     <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">단품코드 <strong style="color:var(--text);font-size:12px;">${uniqueCodes.toLocaleString()}</strong>개</span>
     <span style="background:#DCFCE7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검사완료 <strong style="color:#15803D;font-size:12px;">${inspected.toLocaleString()}</strong>건</span>
     <span style="background:#EDE9FE;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">출고이력 <strong style="color:#6D5CE8;font-size:12px;">${shippedQty.toLocaleString()}</strong>개 · <strong style="color:#6D5CE8;">${shipped.length.toLocaleString()}</strong>건</span>
-    <button onclick="openPsDatePicker()" title="날짜 필터" style="margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
+    <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="상세필터 — 지금 고른 시트의 진행상태"
+      style="margin-left:auto;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
+      <i class="fa-solid fa-sliders"></i>
+      <span id="psSrcDetailDot" style="display:none;position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:#6D5CE8;"></span>
+    </button>
+    <button onclick="openPsDatePicker()" title="날짜 필터" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
       <i class="fa-solid fa-calendar-days"></i>
     </button>
     <button onclick="resetProductSearchFilters()" title="검색/필터 초기화" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;white-space:nowrap;">
