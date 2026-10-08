@@ -3518,31 +3518,42 @@
 
     // ── 작업 인원 초기화 ──────────────────────────────────
     // ── 포장 대기 상세 모달 ───────────────────────────────
+    // 파렛트 칸 위치는 헤더 문구("파렛트"/"PALET"/"적재")로 찾고, 못 찾을 때만 10번째
+    // (K열)로 본다 — 실제 칸 위치가 다르면 여기 쓰는 모든 기능(파렛트 맵/다음 적재번호/
+    // mapRows의 pallet)이 같이 틀어지므로 한 군데(이 함수)에서만 계산해 공유한다.
+    function _stockPalletColIndex() {
+        if (!rawStockRows || !rawStockRows.length) return 10;
+        const hdr = rawStockRows[0].map(h => (h||'').toString().trim().replace(/\s/g,'').toUpperCase());
+        const i = hdr.findIndex(h => h.includes('파렛트') || h.includes('PALET') || h.includes('적재'));
+        return i >= 0 ? i : 10;
+    }
     function _buildPalletMap() {
         const map = {};
         if (!rawStockRows || rawStockRows.length <= 1) return map;
         const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
         const iC  = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
         const iR  = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+        const iP  = _stockPalletColIndex();
         for (let i = 1; i < rawStockRows.length; i++) {
             const r = rawStockRows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
             const code   = (r[iC >= 0 ? iC : 1] || '').toString().trim().toUpperCase();
             const round  = (r[iR >= 0 ? iR : 4] || '').toString().trim();
-            const pallet = (r[10] || '').toString().trim();
+            const pallet = (r[iP] || '').toString().trim();
             if (code && pallet) map[code + '|' + round] = pallet;
         }
         return map;
     }
-    // 충주공장 재고 시트의 K열(파렛트)에 이미 쓰인 숫자 중 가장 큰 값 다음 번호 —
+    // 충주공장 재고 시트의 파렛트 칸에 이미 쓰인 숫자 중 가장 큰 값 다음 번호 —
     // 작업 마치고 다음에 어느 적재번호를 써야 할지 바로 보여주기 위함
     function _nextPalletNumber() {
         if (!rawStockRows || rawStockRows.length <= 1) return 1;
+        const iP = _stockPalletColIndex();
         let maxN = 0;
         for (let i = 1; i < rawStockRows.length; i++) {
             const r = rawStockRows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
-            const raw = (r[10] || '').toString().trim();
+            const raw = (r[iP] || '').toString().trim();
             if (!raw) continue;
             const n = parseInt(raw.replace(/[^0-9]/g, ''), 10);
             if (!isNaN(n) && n > maxN) maxN = n;
