@@ -3240,48 +3240,47 @@
     }
 
     // ── 작업일지 → 금일 작업 인원 ────────────────────────
+    // 시트가 "작업일지"→"용역 요청현황"으로 개명되면서 작업자 칼럼이 없어지고
+    // "총 인원"이 그대로 "요청 용역인원"이 됐다 — 부서+인원수만 쓴다.
     function processTodayWorkers(rows) {
         if (!rows || rows.length < 2) return;
         rawWorkLogRows = rows;
         const hdr = rows[0].map(h => (h||'').toString().trim());
-        let iDate=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+        let iDate=-1, iDept=-1, iMemo=-1, iTotal=-1;
         hdr.forEach((h, i) => {
             const hn = h.replace(/\s/g,'');
-            if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
-            if (iWorker < 0 && hn==='작업자')                  iWorker = i;
-            if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
-            if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+            if (iDate  < 0 && (hn==='등록일자'||hn==='날짜')) iDate  = i;
+            if (iDept  < 0 && hn.includes('부서'))            iDept  = i;
+            if (iMemo  < 0 && hn.includes('비고'))            iMemo  = i;
+            if (iTotal < 0 && hn.includes('인원'))            iTotal = i;
         });
-        if (iDate < 0) { iDate=0; iWorker=2; iMemo=3; iTotal=4; }
+        if (iDate < 0) { iDate=0; iDept=1; iTotal=2; iMemo=3; }
         const today = todayStr();
         let total = 0;
-        const workers = [], memos = [];
+        const depts = [];
         for (let i = 1; i < rows.length; i++) {
             const r = rows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
             if (_nd((r[iDate]||'').toString()) !== today) continue;
             total += parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0;
-            const w = (r[iWorker]||'').toString().trim();
-            const m = (r[iMemo]  ||'').toString().trim();
-            if (w) workers.push(w);
-            if (m) memos.push(m);
+            const d = (r[iDept]||'').toString().trim();
+            if (d && !depts.includes(d)) depts.push(d);
         }
         // 오늘 데이터 없으면 카드 초기화 (이전 날짜 값이 남지 않도록)
-        if (total === 0 && workers.length === 0) {
+        if (total === 0) {
             document.getElementById('kpiWorkers').textContent = '—';
             const nm = document.getElementById('kpiWorkerNames');
-            if (nm) nm.textContent = '작업일지 연동';
+            if (nm) nm.textContent = '용역 요청현황 연동';
             localStorage.removeItem('todayWorkers_' + today);
             return;
         }
-        document.getElementById('kpiWorkers').textContent = total || workers.length || '0';
-        const parts = [...workers, ...memos.filter(m => m && !m.match(/^\d+$/))];
+        document.getElementById('kpiWorkers').textContent = total;
         const nm = document.getElementById('kpiWorkerNames');
-        if (nm) nm.textContent = parts.length ? parts.join(' · ') : '작업일지 연동';
-        localStorage.setItem('todayWorkers_' + today, total || workers.length);
+        if (nm) nm.textContent = depts.length ? depts.join(' · ') : '용역 요청현황 연동';
+        localStorage.setItem('todayWorkers_' + today, total);
     }
 
-    // ── 금일 작업 카드: 인원 투입 / 이력 보기 ────────────────
+    // ── 금일 작업 카드: 용역 요청 / 용역 요청현황 ────────────────
     function openWorkCardActions() {
         document.getElementById('workCardActionSheet').style.display = 'flex';
         _armBackTrap();
@@ -3290,43 +3289,35 @@
         document.getElementById('workCardActionSheet').style.display = 'none';
     }
 
-    // ── 작업자 칩 관리 ──────────────────────────────────────
-    let _wiWorkers = [];
-
-    function wiAddWorker() {
-        const inp = document.getElementById('wiWorkerInput');
-        const name = inp.value.trim();
-        if (!name) return;
-        if (!_wiWorkers.includes(name)) _wiWorkers.push(name);
-        inp.value = '';
-        _renderWiChips();
-        inp.focus();
+    // 부서 드롭다운에서 "직접입력"을 고르면 바로 아래 텍스트칸을 보여준다.
+    function wiOnDeptSelectChange() {
+        const sel = document.getElementById('wiDeptSelect');
+        const custom = document.getElementById('wiDeptCustom');
+        if (!sel || !custom) return;
+        if (sel.value === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
+        else custom.classList.add('hidden');
     }
-
-    function wiRemoveWorker(idx) {
-        _wiWorkers.splice(idx, 1);
-        _renderWiChips();
-    }
-
-    function _renderWiChips() {
-        const area = document.getElementById('wiWorkerChips');
-        if (!area) return;
-        area.innerHTML = _wiWorkers.map((w, i) =>
-            `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--icon-bg);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--text);">
-                ${w}
-                <button onclick="wiRemoveWorker(${i})" style="-webkit-appearance:none;appearance:none;border:none;background:none;color:var(--text-sub);font-size:14px;cursor:pointer;padding:0;line-height:1;display:flex;align-items:center;">×</button>
-            </span>`
-        ).join('');
+    function _wiSelectedDept() {
+        const sel = document.getElementById('wiDeptSelect');
+        if (!sel) return '';
+        if (sel.value === '__custom__') return (document.getElementById('wiDeptCustom')?.value || '').trim();
+        return sel.value;
     }
 
     function openWorkerInputModal() {
         closeWorkCardActions();
-        _wiWorkers = [];
         document.getElementById('wiDate').value = todayStr();
-        document.getElementById('wiDept').value = localStorage.getItem('workLog_lastDept') || '품질보증팀';
-        document.getElementById('wiWorkerInput').value = '';
-        document.getElementById('wiMemo').value = '';
-        _renderWiChips();
+        const lastDept = localStorage.getItem('workLog_lastDept') || '품질보증팀';
+        const sel = document.getElementById('wiDeptSelect');
+        const custom = document.getElementById('wiDeptCustom');
+        if (sel.value !== undefined && ['품질보증팀','충주 2공장'].includes(lastDept)) {
+            sel.value = lastDept; custom.classList.add('hidden'); custom.value = '';
+        } else if (lastDept) {
+            sel.value = '__custom__'; custom.classList.remove('hidden'); custom.value = lastDept;
+        } else {
+            sel.value = '품질보증팀'; custom.classList.add('hidden'); custom.value = '';
+        }
+        document.getElementById('wiCount').value = 0;
         const fb = document.getElementById('wiFeedback');
         fb.textContent = ''; fb.style.color = 'var(--text-sub)';
         document.getElementById('workerInputModal').style.display = 'flex';
@@ -3336,59 +3327,29 @@
         document.getElementById('workerInputModal').style.display = 'none';
     }
 
+    // 용역 요청현황 시트(A=등록일자,B=요청부서,C=요청용역인원,D=비고)에 새 행을 추가한다.
     async function submitWorkerInput() {
-        const date = document.getElementById('wiDate').value;
-        const dept = document.getElementById('wiDept').value.trim() || '품질보증팀';
-        const memo = document.getElementById('wiMemo').value.trim();
-        const fb   = document.getElementById('wiFeedback');
-        const btn  = document.getElementById('wiSaveBtn');
+        const date  = document.getElementById('wiDate').value;
+        const dept  = _wiSelectedDept();
+        const count = parseInt(document.getElementById('wiCount').value || '0') || 0;
+        const fb    = document.getElementById('wiFeedback');
+        const btn   = document.getElementById('wiSaveBtn');
 
-        // 입력창에 남아있는 이름도 자동 추가
-        const pending = document.getElementById('wiWorkerInput').value.trim();
-        if (pending && !_wiWorkers.includes(pending)) { _wiWorkers.push(pending); _renderWiChips(); }
-        document.getElementById('wiWorkerInput').value = '';
+        if (!date)      { fb.textContent = '날짜를 선택하세요.'; fb.style.color = '#FF4444'; return; }
+        if (!dept)      { fb.textContent = '부서를 선택하거나 입력하세요.'; fb.style.color = '#FF4444'; return; }
+        if (count <= 0) { fb.textContent = '인원 수를 1명 이상으로 입력하세요.'; fb.style.color = '#FF4444'; return; }
 
-        if (!date)               { fb.textContent = '등록일자를 선택하세요.'; fb.style.color = '#FF4444'; return; }
-        if (!_wiWorkers.length)  { fb.textContent = '작업자를 1명 이상 추가하세요.'; fb.style.color = '#FF4444'; return; }
-
-        // 시트 컬럼 분배
-        // 작업자(C): 첫 번째 이름
-        // 비고(D): 나머지 이름들 + 용역인원
-        const firstWorker  = _wiWorkers[0];
-        const extraWorkers = _wiWorkers.slice(1);
-
-        // 외 인원(메모) 정규화
-        let memoNorm = memo;
-        if (/^\d+$/.test(memo)) {
-            memoNorm = '용역' + memo + '명';
-        } else if (/^용역\s*\d+$/.test(memo)) {
-            memoNorm = memo.replace(/용역\s*(\d+)/, '용역$1명');
-        }
-
-        // 비고 컬럼 조합: "김기원, 정일성 · 용역2명" 형태
-        const memoParts = [];
-        if (extraWorkers.length) memoParts.push(extraWorkers.join(', '));
-        if (memoNorm)            memoParts.push(memoNorm);
-        const memoStr = memoParts.join(' · ');
-
-        // 총인원 = 등록된 작업자 수 + 용역 수
-        const svcMatch = memoNorm.match(/용역\s*:?\s*(\d+)\s*명/);
-        const svcCount = svcMatch ? parseInt(svcMatch[1]) : 0;
-        const totalStr = (_wiWorkers.length + svcCount) + '명';
+        const totalStr = count + '명';
 
         fb.textContent = '등록 중...'; fb.style.color = 'var(--text-sub)';
         btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
         try {
-            await fetch(GAS_URL + '?' + new URLSearchParams({
-                action: 'addWorkLog', date, dept,
-                worker: firstWorker,
-                memo:   memoStr,
-                total:  totalStr
-            }), { signal: AbortSignal.timeout(15000) }).then(r => r.text());
+            await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'addWorkLog', date, dept, total: totalStr }),
+                { signal: AbortSignal.timeout(15000) }).then(r => r.text());
             localStorage.setItem('workLog_lastDept', dept);
             fb.textContent = '등록 완료되었습니다.'; fb.style.color = '#00E676';
-            if (!rawWorkLogRows || rawWorkLogRows.length < 1) rawWorkLogRows = [['등록일자','부서','작업자','비고','총 인원']];
-            rawWorkLogRows.push([date, dept, firstWorker, memoStr, totalStr]);
+            if (!rawWorkLogRows || rawWorkLogRows.length < 1) rawWorkLogRows = [['등록일자','요청부서','요청용역인원','비고']];
+            rawWorkLogRows.push([date, dept, totalStr, '']);
             processTodayWorkers(rawWorkLogRows);
             setTimeout(closeWorkerInputModal, 700);
         } catch (e) {
