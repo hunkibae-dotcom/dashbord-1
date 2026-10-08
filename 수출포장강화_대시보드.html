@@ -4984,11 +4984,15 @@
         // 설정 패널 제어
         function openSettingsModal() {
             document.getElementById('inputPubUrl').value = safeLocalStorage.getItem('sheet_pub_url') || '';
-            document.getElementById('settingsModal').style.display = 'flex';
+            const m = document.getElementById('settingsModal');
+            m.style.display = 'flex';
+            m.classList.remove('hidden'); // isDetailViewOpen()이 이 클래스로 열림 여부를 판단함
         }
 
         function closeSettingsModal() {
-            document.getElementById('settingsModal').style.display = 'none';
+            const m = document.getElementById('settingsModal');
+            m.style.display = 'none';
+            m.classList.add('hidden');
         }
 
 
