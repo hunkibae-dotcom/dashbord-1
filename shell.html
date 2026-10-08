@@ -885,7 +885,7 @@
             <button onclick="closeWorkLogHistoryModal()" style="width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--text-sub);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
-            <span style="font-size:16px;font-weight:800;color:var(--text);flex:1;">용역 인원 현황</span>
+            <span style="font-size:16px;font-weight:800;color:var(--text);flex:1;">용역 요청현황</span>
             <button onclick="downloadWorkLogHistoryCsv()" style="width:36px;height:36px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;">
                 <i class="fa-solid fa-file-arrow-down"></i>
             </button>
@@ -893,16 +893,12 @@
         <div class="no-scrollbar" style="flex:1;overflow-y:auto;padding:16px;">
             <div style="display:flex;gap:8px;margin-bottom:16px;">
                 <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
-                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">총 인원(연인원)</div>
-                    <div id="wlhTotalHeadcount" style="font-size:18px;font-weight:800;color:var(--text);">0명</div>
-                </div>
-                <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
-                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">총 용역 인원</div>
+                    <div style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">총 요청 용역인원</div>
                     <div id="wlhTotalService" style="font-size:18px;font-weight:800;color:#818CF8;">0명</div>
                 </div>
                 <div style="flex:1;background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center;">
-                    <div id="wlhTotalDaysLabel" style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">작업일수</div>
-                    <div id="wlhTotalDays" style="font-size:18px;font-weight:800;color:var(--text);">0일</div>
+                    <div id="wlhTotalDaysLabel" style="font-size:10.5px;color:var(--text-sub);margin-bottom:3px;">요청 건수</div>
+                    <div id="wlhTotalDays" style="font-size:18px;font-weight:800;color:var(--text);">0건</div>
                 </div>
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px;">
