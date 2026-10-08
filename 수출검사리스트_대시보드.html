@@ -2130,6 +2130,23 @@ const renderMobileListDebounced = debounce(() => renderMobileList(), 300);
 const runSpecLookupDebounced = debounce(() => runSpecLookup(), 250);
 const kpiDetailRenderDebounced = debounce(() => _kpiDetailRender(), 250);
 
+let _qcDateField = '';
+function setQcDateField(field) {
+  // 같은 버튼 재클릭 시 해제(토글) — 포장강화 대시보드의 setWebDateField와 동일.
+  if (_qcDateField === field) field = '';
+  _qcDateField = field;
+  ['qdfDue','qdfPack','qdfInspect'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; }
+  });
+  if (field) {
+    const map = { 납기일:'qdfDue', 포장일:'qdfPack', 검사일:'qdfInspect' };
+    const active = document.getElementById(map[field]);
+    if (active) { active.style.background = '#0ea5e9'; active.style.color = '#fff'; }
+  }
+  applyFiltersDebounced();
+}
+
 function applyFilters() {
   const roundSearch  = (document.getElementById('fRound')?.value  || '').toLowerCase().trim();
   const codeSearch   = (document.getElementById('fCode')?.value   || '').toLowerCase().trim();
