@@ -6133,35 +6133,33 @@
         }
 
         // ─── 용역 현황 (카드3 슬라이드3 + 상세 모달) ───────
+        // 시트가 "작업일지"→"용역 요청현황"으로 개명되면서 작업자 칼럼이 없어지고
+        // "총 인원"이 그대로 "요청 용역인원"이 됐다(비고 메모에서 regex로 용역 인원수를
+        // 따로 뽑아내던 옛 방식은 더 이상 필요 없음 — 그 칸 자체가 요청 인원수다).
         function _parseWorkLogRows() {
             const rows = state.workLogRows;
             if (!rows || rows.length < 2) return [];
             const hdr = rows[0].map(h => (h||'').toString().trim());
-            let iDate=-1, iDept=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+            let iDate=-1, iDept=-1, iMemo=-1, iTotal=-1;
             hdr.forEach((h, i) => {
                 const hn = h.replace(/\s/g,'');
                 if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
-                if (iDept   < 0 && hn==='부서')                    iDept   = i;
-                if (iWorker < 0 && hn==='작업자')                  iWorker = i;
-                if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
-                if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+                if (iDept   < 0 && hn.includes('부서'))            iDept   = i;
+                if (iMemo   < 0 && hn.includes('비고'))            iMemo   = i;
+                if (iTotal  < 0 && hn.includes('인원'))            iTotal  = i;
             });
-            if (iDate < 0) { iDate=0; iDept=1; iWorker=2; iMemo=3; iTotal=4; }
+            if (iDate < 0) { iDate=0; iDept=1; iTotal=2; iMemo=3; }
             const out = [];
             for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
                 if (!r || r.every(c => !c || !c.toString().trim())) continue;
                 const date = normalizeDate((r[iDate]||'').toString().trim());
                 if (date === '-') continue;
-                const memo = (r[iMemo]||'').toString().trim();
-                const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
                 out.push({
                     date,
-                    dept:    (r[iDept]  ||'').toString().trim() || '미지정',
-                    worker:  (r[iWorker]||'').toString().trim(),
-                    memo,
-                    total:   parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0,
-                    service: svcMatch ? parseInt(svcMatch[1]) : 0
+                    dept:  (r[iDept] ||'').toString().trim() || '미지정',
+                    memo:  (r[iMemo] ||'').toString().trim(),
+                    total: parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0
                 });
             }
             return out;
