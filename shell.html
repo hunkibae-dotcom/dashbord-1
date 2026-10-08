@@ -755,34 +755,28 @@
         <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <span style="font-size:16px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px;">
-                    <i class="fa-solid fa-user-plus" style="color:#00B0FF;"></i> 인원 투입
+                    <i class="fa-solid fa-user-plus" style="color:#00B0FF;"></i> 용역 요청
                 </span>
                 <button onclick="closeWorkerInputModal()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <div>
-                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">등록일자</div>
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">날짜</div>
                 <input id="wiDate" type="date" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
             </div>
             <div>
-                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">부서</div>
-                <input id="wiDept" type="text" placeholder="예: 품질보증팀" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">요청 부서</div>
+                <select id="wiDeptSelect" onchange="wiOnDeptSelectChange()" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
+                    <option value="품질보증팀">품질보증팀</option>
+                    <option value="충주 2공장">충주 2공장</option>
+                    <option value="__custom__">직접입력</option>
+                </select>
+                <input id="wiDeptCustom" type="text" placeholder="부서명을 입력하세요" class="hidden" style="width:100%;margin-top:7px;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;">
             </div>
             <div>
-                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">작업자 <span style="color:var(--label);font-weight:400;">(이름 입력 후 Enter 또는 추가)</span></div>
-                <div style="display:flex;gap:6px;">
-                    <input id="wiWorkerInput" type="text" placeholder="이름 입력"
-                        style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;"
-                        onkeydown="if(event.key==='Enter'){event.preventDefault();wiAddWorker()}">
-                    <button onclick="wiAddWorker()" style="-webkit-appearance:none;appearance:none;padding:0 16px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">추가</button>
-                </div>
-                <div id="wiWorkerChips" style="display:flex;flex-wrap:wrap;gap:5px;min-height:0;margin-top:7px;"></div>
-            </div>
-            <div>
-                <div style="font-size:11px;color:var(--text-sub);margin-bottom:3px;font-weight:600;">용역인원</div>
-                <div style="font-size:10px;color:var(--label);margin-bottom:6px;line-height:1.4;">숫자만 표기 시 용역인원 명수로 표기됩니다 · 이름 입력 시 그대로 기입</div>
-                <input id="wiMemo" type="text" placeholder="예: 2  또는  홍길동" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')submitWorkerInput()">
+                <div style="font-size:11px;color:var(--text-sub);margin-bottom:5px;font-weight:600;">요청 용역인원</div>
+                <input id="wiCount" type="number" min="0" max="999" value="0" placeholder="0" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text);font-size:14px;box-sizing:border-box;" onkeydown="if(event.key==='Enter')submitWorkerInput()">
             </div>
             <div id="wiFeedback" style="font-size:11.5px;color:var(--text-sub);min-height:14px;"></div>
             <button id="wiSaveBtn" onclick="submitWorkerInput()" style="width:100%;background:#00B0FF;color:#0B0F19;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
