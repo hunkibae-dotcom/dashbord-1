@@ -797,7 +797,22 @@ try {
         <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
           <h2 class="text-[16.5px] font-bold text-slate-800 flex items-center gap-2">
             <i class="fa-solid fa-table-list text-slate-400"></i> 제품검색
-            <span id="tableCount" class="text-[13.5px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">0건</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;">
+              <span style="display:inline-flex;align-items:center;gap:3px;">
+                <i class="fa-solid fa-layer-group" style="color:#94a3b8;font-size:10px;"></i>
+                <strong id="tableCountBadge" style="color:#0ea5e9;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">항목</span>
+              </span>
+              <span style="color:#e2e8f0;font-size:11px;">|</span>
+              <span style="display:inline-flex;align-items:center;gap:3px;">
+                <i class="fa-solid fa-folder-open" style="color:#94a3b8;font-size:10px;"></i>
+                <strong id="tableRoundCount" style="color:#a78bfa;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">건</span>
+              </span>
+              <span style="color:#e2e8f0;font-size:11px;">|</span>
+              <span style="display:inline-flex;align-items:center;gap:3px;">
+                <i class="fa-solid fa-boxes-stacked" style="color:#94a3b8;font-size:10px;"></i>
+                <strong id="tableTotalQty" style="color:#10b981;font-size:13px;">0</strong><span style="color:#94a3b8;font-size:12px;">EA</span>
+              </span>
+            </span>
           </h2>
           <div class="flex gap-2 flex-wrap">
             <button onclick="setView('all')" id="tabAll" class="tab-btn active">전체</button>
