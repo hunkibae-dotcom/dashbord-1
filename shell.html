@@ -3311,11 +3311,11 @@
         const sel = document.getElementById('wiDeptSelect');
         const custom = document.getElementById('wiDeptCustom');
         if (sel.value !== undefined && ['품질보증팀','충주 2공장'].includes(lastDept)) {
-            sel.value = lastDept; custom.classList.add('hidden'); custom.value = '';
+            sel.value = lastDept; custom.style.display = 'none'; custom.value = '';
         } else if (lastDept) {
-            sel.value = '__custom__'; custom.classList.remove('hidden'); custom.value = lastDept;
+            sel.value = '__custom__'; custom.style.display = 'block'; custom.value = lastDept;
         } else {
-            sel.value = '품질보증팀'; custom.classList.add('hidden'); custom.value = '';
+            sel.value = '품질보증팀'; custom.style.display = 'none'; custom.value = '';
         }
         document.getElementById('wiCount').value = 0;
         const fb = document.getElementById('wiFeedback');
