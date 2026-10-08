@@ -622,6 +622,17 @@
             </div>
         </div>
 
+        <button type="button" class="pkg-nav-item" onclick="openSettingsModal()" title="구글 시트 연동 설정">
+            <i class="fa-solid fa-cog w-4 text-center"></i>
+            <span class="flex-1">연동 설정</span>
+        </button>
+
+        <!-- 연동 초기화만 되돌리기 어려운 위험 동작이라 의도적으로 빨간색을 남겨둠 -->
+        <button type="button" class="pkg-nav-item danger" onclick="confirmResetConnection()" title="저장된 연동 설정 초기화">
+            <i class="fa-solid fa-power-off w-4 text-center"></i>
+            <span class="flex-1">연동 초기화</span>
+        </button>
+
         <a href="https://hunkibae-dotcom.github.io/dashbord-1/F.WORK.apk" download="F.WORK.apk" class="pkg-nav-item">
             <span style="width:18px;height:18px;background:#94a3b8;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;font-family:sans-serif;flex-shrink:0;letter-spacing:-0.5px;">F</span>
             <span class="flex-1">F.WORK 앱 다운로드</span>
