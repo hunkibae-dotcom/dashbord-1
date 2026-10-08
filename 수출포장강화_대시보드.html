@@ -1344,11 +1344,11 @@
 
     <!-- 작업 인원 등록 모달 -->
     <div id="workerRegisterModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this)closeWorkerRegisterModal()">
-        <div class="bg-panelBg border border-borderSlate rounded-2xl p-5 w-[440px] max-w-[95vw] shadow-2xl flex flex-col gap-4">
+        <div class="bg-panelBg border border-borderSlate rounded-2xl p-5 w-[400px] max-w-[95vw] shadow-2xl flex flex-col gap-4">
             <!-- 모달 헤더 -->
             <div class="flex items-center justify-between">
                 <h3 class="text-[17.5px] font-bold text-white flex items-center gap-2">
-                    <i class="fa-solid fa-user-plus text-accentBlue"></i> 금일 작업 인원 등록
+                    <i class="fa-solid fa-user-plus text-accentBlue"></i> 용역 요청
                 </h3>
                 <button onclick="closeWorkerRegisterModal()" class="text-slate-400 hover:text-white transition-colors">
                     <i class="fa-solid fa-xmark text-[17.5px]"></i>
@@ -1360,44 +1360,26 @@
                 <input id="wrm_date" type="date"
                     class="bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors w-full">
             </div>
-            <!-- 부서 + 인원 수 (같은 행) -->
-            <div class="flex gap-3 items-end">
-                <div class="flex flex-col gap-1 flex-1">
-                    <label class="text-[13.5px] text-slate-400 font-semibold">부서</label>
-                    <input id="wrm_dept" type="text" placeholder="예: 품질보증팀"
-                        class="bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors w-full"
-                        onkeydown="if(event.key==='Enter')document.getElementById('wrm_workerInput').focus()">
-                </div>
-                <div class="flex items-center gap-1 bg-darkBg border border-borderSlate rounded-lg px-3" style="height:42px;white-space:nowrap;">
-                    <span style="font-size:14px;color:#94A3B8;">총</span>
+            <!-- 요청 부서 -->
+            <div class="flex flex-col gap-1">
+                <label class="text-[13.5px] text-slate-400 font-semibold">요청 부서</label>
+                <select id="wrm_deptSelect" onchange="wrmOnDeptSelectChange()"
+                    class="bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors w-full">
+                    <option value="품질보증팀">품질보증팀</option>
+                    <option value="충주 2공장">충주 2공장</option>
+                    <option value="__custom__">직접입력</option>
+                </select>
+                <input id="wrm_deptCustom" type="text" placeholder="부서명을 입력하세요"
+                    class="hidden bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors w-full mt-1">
+            </div>
+            <!-- 요청 용역인원 -->
+            <div class="flex flex-col gap-1">
+                <label class="text-[13.5px] text-slate-400 font-semibold">요청 용역인원</label>
+                <div class="flex items-center gap-1.5 bg-darkBg border border-borderSlate rounded-lg px-3" style="height:46px;width:fit-content;">
                     <input id="wrm_countInput" type="number" min="0" max="999" value="0"
-                        style="width:44px;background:none;border:none;outline:none;font-size:20px;font-weight:800;color:#0F172A;text-align:center;padding:0 2px;"
-                        oninput="wrmSyncCount(this.value)">
+                        style="width:56px;background:none;border:none;outline:none;font-size:20px;font-weight:800;color:#0F172A;text-align:center;padding:0 2px;">
                     <span style="font-size:14px;color:#94A3B8;">명</span>
                 </div>
-            </div>
-            <!-- 작업자 이름 입력 (선택) -->
-            <div class="flex flex-col gap-1.5">
-                <label class="text-[13.5px] text-slate-400 font-semibold">작업자 이름 <span class="text-slate-600 font-normal">(선택)</span></label>
-                <div class="flex gap-2">
-                    <input id="wrm_workerInput" type="text" placeholder="이름 입력 후 추가"
-                        class="flex-1 bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 focus:outline-none focus:border-accentBlue transition-colors"
-                        onkeydown="if(event.key==='Enter')wrmAddWorker()">
-                    <button onclick="wrmAddWorker()"
-                        style="background:#E2E8F0;color:#475569;border:none;font-size:14.5px;font-weight:700;padding:0 16px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background 0.15s;"
-                        onmouseenter="this.style.background='#CBD5E1'" onmouseleave="this.style.background='#E2E8F0'">
-                        추가
-                    </button>
-                </div>
-                <div id="wrm_workerChips" class="flex flex-wrap gap-1.5 min-h-[24px]"></div>
-            </div>
-            <!-- 외 인원 -->
-            <div class="flex flex-col gap-1">
-                <label class="text-[13.5px] text-slate-400 font-semibold">외 인원 <span class="text-slate-600 font-normal">(선택)</span></label>
-                <p class="text-[11.5px] text-slate-600 leading-snug" style="margin-top:-2px;">숫자만 표기 시 용역인원 명수로 표기됩니다 · 이름 입력 시 그대로 기입</p>
-                <textarea id="wrm_memo" placeholder="예: 2  또는  홍길동"
-                    class="bg-darkBg border border-borderSlate rounded-lg px-3 py-2 text-[14.5px] text-slate-200 placeholder-slate-400 focus:outline-none focus:border-accentBlue transition-colors resize-none w-full"
-                    rows="2"></textarea>
             </div>
             <!-- 상태 메시지 -->
             <div id="wrm_status" class="text-[13.5px] text-center hidden"></div>
