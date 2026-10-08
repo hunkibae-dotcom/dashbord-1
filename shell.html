@@ -1651,6 +1651,7 @@
         if (!keys.size) return;
         closeScheduleCalendar();
         _schRoundFilterSet = keys;
+        _kpiPendingFilterActive = false; _mgmtCatKey = null;
         _sfSourceFilter = ''; _sfStatusFilters.clear(); _updateSfSourceButtons();
         openView('viewSearch');
         const inp = document.getElementById('sf_round');
