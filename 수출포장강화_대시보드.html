@@ -880,15 +880,15 @@
                                 <div style="margin-top:8px;margin-bottom:12px;font-size:9px;color:#94A3B8;line-height:1.4;">※ 회수품, 재포장품 외의 항목도 있어 실제 공간률과 차이가 있을 수 있으니 유의 바랍니다.</div>
                             </div>
                         </div>
-                        <!-- 슬라이드 5: 작업일지 · 용역 인원 현황 -->
+                        <!-- 슬라이드 5: 용역 현황 -->
                         <div id="noticeSlide_4" class="hidden flex flex-col">
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-[13px] font-semibold flex items-center gap-1.5" style="color:#0F172A;line-height:1;">
-                                    <i class="fa-solid fa-people-group text-[11px]" style="display:flex;align-items:center;"></i> 작업일지 · 용역 인원 현황
+                                    <i class="fa-solid fa-people-group text-[11px]" style="display:flex;align-items:center;"></i> 용역 현황
                                 </span>
                             </div>
                             <div id="workLogSummaryBody" class="flex flex-col items-center justify-center gap-1" style="min-height:64px;">
-                                <div class="text-[12px] text-slate-600 text-center py-3">작업일지 시트 연동 대기 중</div>
+                                <div class="text-[12px] text-slate-600 text-center py-3">용역 요청현황 연동 대기 중</div>
                             </div>
                             <div class="mt-2 flex gap-1.5">
                                 <button onclick="openWorkerRegisterModal()" class="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-semibold py-2 rounded-xl transition-colors"
@@ -6099,7 +6099,7 @@
             // 시트 미수신 → localStorage 폴백
             const todayLogs = getWorkerLogs().filter(r => r.date === today);
             if (!todayLogs.length) {
-                display.innerHTML = '<div style="font-size:12.5px;color:#475569;text-align:center;padding:6px 0;">작업일지 시트 연동 대기 중</div>';
+                display.innerHTML = '<div style="font-size:12.5px;color:#475569;text-align:center;padding:6px 0;">용역 요청현황 연동 대기 중</div>';
                 return;
             }
             const deptMap = {};
@@ -6132,7 +6132,7 @@
             display.innerHTML = html;
         }
 
-        // ─── 작업일지 · 용역 인원 현황 (카드3 슬라이드3 + 상세 모달) ───────
+        // ─── 용역 현황 (카드3 슬라이드3 + 상세 모달) ───────
         function _parseWorkLogRows() {
             const rows = state.workLogRows;
             if (!rows || rows.length < 2) return [];
@@ -6172,7 +6172,7 @@
             if (!body) return;
             const rows = _parseWorkLogRows();
             if (!rows.length) {
-                body.innerHTML = '<div class="text-[12px] text-slate-600 text-center py-3">작업일지 시트 연동 대기 중</div>';
+                body.innerHTML = '<div class="text-[12px] text-slate-600 text-center py-3">용역 요청현황 연동 대기 중</div>';
                 return;
             }
             const totalService = rows.reduce((s, r) => s + r.service, 0);
