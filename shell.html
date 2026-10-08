@@ -1238,7 +1238,8 @@
         const iRound  = fi('수주건명','건명','차수','round');
         const iQty    = fi('수량','qty');
         const iDue    = fi('전산상납기','전산납기','납기','duedate');
-        const iStatus = fi('진행','진행상태','상태','status');
+        let iStatus = fi('진행','진행상태','상태','status');
+        if (iStatus < 0) iStatus = 9; // J열 — 헤더 문구가 안 잡혀도(충주공장 재고 시트) 고정 위치로라도 읽는다
         const iCode   = fi('품목코드','제품코드','code');
         const iCtry   = fi('국가','수출국','납품국','country');
         const iDiv    = fi('제품구분','제품 구분','구분','공장구분','분류','제조처','공장','제품분류');
