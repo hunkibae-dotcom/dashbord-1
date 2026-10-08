@@ -2307,7 +2307,8 @@ function clearDateFilter() {
 }
 
 function resetFilters() {
-  ['fRound','fCode','fColor','fPacker'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['fRound','fCode','fColor','fPacker','qStartDateFilter','qEndDateFilter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  setQcDateField('');
   setColInspect('');
   ddayUrgencyFilter = null;
   pieFilter = null;
