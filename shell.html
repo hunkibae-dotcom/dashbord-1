@@ -513,8 +513,8 @@
                         <i class="fa-solid fa-chevron-down" style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
                     </div>
                 </div>
-                <!-- 국가(세부 구분) 검색과 날짜 기준필드 전환만 자주 안 건드리는 항목이라
-                     상세필터 시트(sfFilterModal) 뒤로 남겨뒀다 — 나머지는 전부 바로 보이게 뺌. -->
+                <!-- 상세필터: 클릭하면 바로 지금 고른 시트(시트선택)의 진행상태 목록이 뜬다
+                     (sfSourceModal) — 국가(세부 구분) 검색만 그 팝업 맨 위에 같이 넣어뒀다. -->
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
                     <input id="sf_color" type="text" placeholder="색상"
                         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
@@ -522,10 +522,10 @@
                     <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 (예: 1)"
                         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
                         oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
-                    <button id="sfFilterBtn" onclick="openSfFilterSheet()" title="국가/구분·초기화"
-                        style="position:relative;height:100%;min-width:0;box-sizing:border-box;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:700;padding:0 6px;">
-                        <i class="fa-solid fa-sliders" style="font-size:12px;color:var(--label);"></i> 상세필터
-                        <span id="sfFilterDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#00B0FF;"></span>
+                    <button id="sfSrcDetailBtn" onclick="openSfSourcePicker(_sfSourceFilter || 'standard')" title="상세필터"
+                        style="position:relative;height:100%;min-width:0;box-sizing:border-box;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;font-weight:700;padding:2px 4px;line-height:1.2;overflow:hidden;">
+                        <span style="display:flex;align-items:center;gap:4px;"><i class="fa-solid fa-sliders" style="font-size:11px;color:var(--label);"></i> 상세필터</span>
+                        <span id="sfSrcDetailLabel" style="font-size:10px;font-weight:600;color:var(--label);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">전체</span>
                     </button>
                 </div>
                 <div id="sf_palletNotice" style="display:none;background:#A855F722;border:1px solid #A855F7;border-radius:10px;padding:9px 13px;font-size:11px;color:#C084FC;font-weight:600;align-items:center;gap:8px;flex-wrap:wrap;"></div>
