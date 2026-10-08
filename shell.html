@@ -2580,6 +2580,7 @@
         const anyManualFilter = !!(round || code || color || country || pallet || dateFrom || dateTo);
         if (_schRoundFilterSet && anyManualFilter) _schRoundFilterSet = null;
         if (_kpiPendingFilterActive && anyManualFilter) _kpiPendingFilterActive = false;
+        if (_mgmtCatKey && anyManualFilter) _mgmtCatKey = null;
         // 세부 상태를 더 좁혀도 "일정 조회"/"포장대기" 조건이 여전히 같이 걸려있다는 걸
         // 눈에 보이게 — 안 그러면 결과가 줄어든 게 조건이 풀려서인지 원래 그런 건지 헷갈린다.
         const specialChip = document.getElementById('sfSpecialModeChip');
