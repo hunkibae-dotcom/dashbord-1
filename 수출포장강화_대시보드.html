@@ -5567,8 +5567,8 @@
             { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open',         scope:'stock', match: s => s.includes('미확인') || s.includes('포장대기') },
             { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube',             scope:'stock', match: s => s.includes('미포장') },
             { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench',           scope:'stock', match: s => s === '철물' },
-            { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              scope:'stock-pallet', match: p => !p },
-            { key:'적재',     label:'적재',      color:'#A855F7', icon:'fa-layer-group',      scope:'stock-pallet', match: p => !!p },
+            { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              scope:'stock-pallet', match: p => p.replace(/\s+/g,'') === '미적재' },
+            { key:'적재',     label:'적재',      color:'#A855F7', icon:'fa-layer-group',      scope:'stock-pallet', match: p => !!p && p.replace(/\s+/g,'') !== '미적재' },
         ];
         function _pkgComputeMgmtGroups() {
             const groups = {};
