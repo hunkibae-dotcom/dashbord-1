@@ -3009,7 +3009,7 @@ function qcScRunDayQuery() {
     chip.classList.remove('hidden');
   }
   applyFilters();
-  setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+  setTimeout(() => document.getElementById('fRound')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
 }
 
 function renderQcScheduleDayList() {
@@ -3168,7 +3168,7 @@ function renderTopUndoneChart(data) {
         }
         setFactoryTab(factory);
         applyFilters();
-        setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+        setTimeout(() => document.getElementById('fRound')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
       }
     }
   });
@@ -3360,7 +3360,7 @@ function renderQualityChart(key, granularity) {
             chip.classList.remove('hidden');
           }
           applyFilters();
-          setTimeout(() => document.getElementById('fSearch')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
+          setTimeout(() => document.getElementById('fRound')?.closest('.card')?.scrollIntoView({ behavior:'smooth', block:'start' }), 100);
         }
       }
     });
