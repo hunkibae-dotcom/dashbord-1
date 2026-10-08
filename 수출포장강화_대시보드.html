@@ -1966,14 +1966,20 @@
             const hasRealUploads = keys.some(k => k !== 'default');
 
             // 수출 현황 + 출고 완료 행을 그대로 이어붙임 (충주공장 재고는 행으로 추가 안 함)
+            let stockItemsForSpec = [];
             keys.forEach(k => {
                 if (hasRealUploads && k === 'default') return;
-                if (k.includes('충주공장 재고')) return;
+                if (k.includes('충주공장 재고')) { stockItemsForSpec = stockItemsForSpec.concat(datasetMap[k] || []); return; }
                 combined = [...combined, ...(datasetMap[k] || [])];
             });
 
-            // 전체 결합 데이터에 제품 스펙 전파 백필(Backfill) 작동
-            state.data = backfillSpecs(combined);
+            // 전체 결합 데이터에 제품 스펙 전파 백필(Backfill) 작동 — CBM은 updateSpec이
+            // "충주공장 재고" 쪽을 먼저 찾아서 쓰는데(doGet의 _pkgTrySetSpec 우선순위),
+            // 충주공장 재고 행 자체는 표에 안 보이게 combined에서 빠져있어서, 그 값을
+            // backfillSpecs에 "스펙 출처"로만 따로 넘겨준다(행으로 추가하는 게 아니라
+            // code+차수가 같은 combined 쪽 항목에 값만 빌려준다) — 안 넘기면 재고에만
+            // 저장된 CBM이 화면 어디에도 안 보이는 문제가 있었다.
+            state.data = backfillSpecs(combined, stockItemsForSpec);
 
             // 포장완료 항목의 포장일을 충주공장 재고 시트에서 업데이트
             backfillPackingDatesFromStock();
