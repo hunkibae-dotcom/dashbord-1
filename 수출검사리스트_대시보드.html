@@ -961,8 +961,17 @@ try {
       <i class="fa-solid fa-chevron-left" style="font-size:13px;"></i>
     </button>
     <div style="flex:1;min-width:0;">
-      <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.2;">필터 검색</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text);line-height:1.2;">제품검색</div>
       <div style="font-size:11px;color:var(--label);">진행중 + 검사완료(출고) 이력 통합 검색</div>
+    </div>
+    <div style="position:relative;flex-shrink:0;">
+      <select id="psFactory" onchange="runProductSearch()"
+        style="height:32px;background:var(--input-bg);color:var(--text-sub);border:1px solid var(--border);border-radius:9px;padding:0 24px 0 10px;font-size:12px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;max-width:110px;">
+        <option value="">사업장 전체</option>
+        <option value="cj1">충주 1공장</option>
+        <option value="cj2">충주 2공장</option>
+      </select>
+      <i class="fa-solid fa-chevron-down" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:8px;color:var(--label);pointer-events:none;"></i>
     </div>
     <button onclick="exportProductSearch()" title="데이터 출력" style="width:36px;height:36px;border:none;background:var(--icon-bg);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-sub);cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
       <i class="fa-solid fa-file-export" style="font-size:13px;"></i>
@@ -970,38 +979,37 @@ try {
   </div>
 
   <!-- 필터 입력 -->
-  <div class="ps-filter-panel" style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
-    <div class="ps-row ps-row-1" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <input id="psName" type="text" oninput="runProductSearchDebounced()" placeholder="건명 검색"
-        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+  <div class="ps-filter-panel" style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
+    <div class="ps-row ps-row-1" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <input id="psName" type="text" oninput="runProductSearchDebounced()" placeholder="건명/차수 검색"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#6D5CE8'" onblur="this.style.borderColor='var(--border)'">
       <input id="psCode" type="text" oninput="runProductSearchDebounced()" placeholder="단품코드 검색"
-        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px;font-size:14px;outline:none;width:100%;box-sizing:border-box;"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-    </div>
-    <!-- 색상/날짜/세부상태/초기화는 자주 안 건드리는 "추가 필터"라, 전엔 이게 다 펼쳐져
-         있어서 화면이 테트리스처럼 빡빡했다 — 사업장·소스(어디서 찾을지)만 바로 보이게
-         남기고, 나머지는 필터 버튼 하나(psFilterBtn) 뒤 시트(psFilterModal)로 모았다. -->
-    <div class="ps-row ps-row-2" style="display:flex;gap:8px;">
-      <select id="psFactory" onchange="runProductSearch()"
-        style="flex:1;min-width:0;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13.5px;font-weight:600;cursor:pointer;outline:none;box-sizing:border-box;">
-        <option value="">사업장 전체</option>
-        <option value="cj1">충주1공장</option>
-        <option value="cj2">충주2공장</option>
-      </select>
-      <div style="position:relative;flex:1;min-width:0;">
+      <div style="position:relative;min-width:0;">
         <select id="psSourceSelect" onchange="setPsSourceFromDropdown(this.value)"
-          style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 26px 11px 10px;font-size:13.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
+          style="width:100%;height:100%;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 24px 11px 10px;font-size:12.5px;font-weight:700;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;box-sizing:border-box;">
           <option value="active">검사 진행현황</option>
           <option value="active_done">검사완료(진행중)</option>
           <option value="archive">검사완료현황(출고)</option>
         </select>
-        <i class="fa-solid fa-chevron-down" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
+        <i class="fa-solid fa-chevron-down" style="position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:9px;color:var(--label);pointer-events:none;"></i>
       </div>
-      <button id="psFilterBtn" onclick="openPsFilterSheet()" title="색상·날짜·세부상태·초기화"
-        style="position:relative;flex-shrink:0;width:42px;height:42px;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;">
-        <i class="fa-solid fa-sliders" style="font-size:13px;color:var(--label);"></i>
-        <span id="psFilterDot" style="display:none;position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#6D5CE8;"></span>
+    </div>
+    <!-- 날짜·초기화는 아래 검색결과 줄의 빠른 버튼으로 옮겨서, 여기 남는 건 바로바로
+         찾아보는 3개뿐이다 — 상세필터는 시트선택에 맞는 세부 진행상태 팝업을 바로 연다. -->
+    <div class="ps-row ps-row-2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+      <input id="psColor" type="text" oninput="runProductSearchDebounced()" placeholder="색상"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
+        onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+      <input id="psPacker" type="text" oninput="runProductSearchDebounced()" placeholder="포장처"
+        style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
+        onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="세부 진행상태"
+        style="position:relative;min-width:0;background:var(--input-bg);color:var(--text-sub);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;-webkit-appearance:none;display:flex;align-items:center;justify-content:center;gap:5px;font-size:12.5px;font-weight:700;padding:0 6px;">
+        <i class="fa-solid fa-sliders" style="font-size:12px;flex-shrink:0;color:var(--label);"></i> 상세필터
+        <span id="psSrcDetailDot" style="display:none;position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#6D5CE8;"></span>
       </button>
     </div>
   </div>
