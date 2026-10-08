@@ -2472,30 +2472,25 @@
     function _updateSfSourceButtons() {
         const sel = document.getElementById('sfSourceSelect');
         if (sel) sel.value = _sfSourceFilter;
-        const lbl = document.getElementById('sfSrcDetailLabel');
+        const dot = document.getElementById('sfSrcDetailDot');
         const detailBtn = document.getElementById('sfSrcDetailBtn');
         if (!_sfSourceFilter) {
-            if (lbl) { lbl.textContent = '소스를 먼저 선택'; lbl.style.color = 'var(--label)'; }
+            if (dot) dot.style.display = 'none';
             if (detailBtn) {
                 detailBtn.disabled = true;
                 detailBtn.style.opacity = '.5';
                 detailBtn.style.cursor = 'not-allowed';
                 detailBtn.style.borderColor = 'var(--border)';
-                detailBtn.style.background = 'var(--input-bg)';
+                detailBtn.style.background = 'var(--icon-bg)';
             }
             return;
         }
         if (detailBtn) { detailBtn.disabled = false; detailBtn.style.opacity = '1'; detailBtn.style.cursor = 'pointer'; }
-        if (!lbl) return;
-        let label = '전체';
-        if (_sfStatusFilters.size) {
-            const arr = [..._sfStatusFilters];
-            label = arr.length > 1 ? _sfStatusLabel(arr[0]) + ' 외 ' + (arr.length - 1) : _sfStatusLabel(arr[0]);
+        if (dot) dot.style.display = _sfStatusFilters.size ? 'block' : 'none';
+        if (detailBtn) {
+            detailBtn.style.borderColor = _sfStatusFilters.size ? '#00B0FF' : 'var(--border)';
+            detailBtn.style.background  = _sfStatusFilters.size ? 'rgba(0,176,255,.1)' : 'var(--icon-bg)';
         }
-        lbl.textContent = label;
-        lbl.style.color = _sfStatusFilters.size ? '#00B0FF' : 'var(--label)';
-        detailBtn.style.borderColor = _sfStatusFilters.size ? '#00B0FF' : 'var(--border)';
-        detailBtn.style.background  = _sfStatusFilters.size ? 'rgba(0,176,255,.1)' : 'var(--input-bg)';
     }
     // 드롭다운에서 입고현황/출고/실재고를 바꾸면 이전 소스 기준으로 골라둔 세부상태는
     // 더 이상 의미가 없으므로 같이 초기화한다.
