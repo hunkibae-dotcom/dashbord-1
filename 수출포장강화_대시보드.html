@@ -110,6 +110,12 @@
             color: #0F172A !important;
             border-color: #CBD5E1 !important;
         }
+        /* 제품검색 검색창/날짜선택(건명·코드·색상·적재, 상차일~납기일)만 흰색 배경 — 위
+           라이트모드 공용 규칙(#F8FAFC)이 !important라서 덮어쓰려면 이것도 !important 필요 */
+        #roundFilter, #productCodeFilter, #colorFilter, #palletFilter,
+        #startDateFilter, #endDateFilter {
+            background-color: #fff !important;
+        }
 
         /* 라이트 모드 테이블 hover */
         html[data-theme="light"] .hover\:bg-slate-800\/40:hover { background-color: #F1F5F9 !important; }
