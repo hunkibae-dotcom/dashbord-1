@@ -2731,11 +2731,8 @@
         document.getElementById('sfFilterModal').style.display = 'none';
     }
     function _updateSfFilterDot() {
-        const color = (document.getElementById('sf_color').value || '').trim();
         const country = (document.getElementById('sf_country').value || '').trim();
-        const pallet = (document.getElementById('sf_pallet').value || '').trim();
-        const hasDate = !!(document.getElementById('sf_dateFrom').value || document.getElementById('sf_dateTo').value);
-        const on = !!(color || country || pallet || hasDate || _sfStatusFilters.size);
+        const on = !!(country || _sfStatusFilters.size);
         const dot = document.getElementById('sfFilterDot');
         if (dot) dot.style.display = on ? 'block' : 'none';
         const btn = document.getElementById('sfFilterBtn');
