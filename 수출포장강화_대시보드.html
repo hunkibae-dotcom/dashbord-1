@@ -5586,19 +5586,21 @@
             let totalStockCnt = 0, totalStockQty = 0;
             if (stockRows && stockRows.length > 1) {
                 const hdr = stockRows[0].map(h => (h || '').toString().trim());
-                let iStatus = -1, iQty = -1;
+                let iStatus = -1, iQty = -1, iPallet = -1;
                 hdr.forEach((h, i) => {
                     const hn = h.replace(/\s/g, '');
                     if (iStatus < 0 && (hn === '진행' || hn === '상태' || hn.toUpperCase() === 'STATUS')) iStatus = i;
                     if (iQty < 0 && (hn === '수량' || hn.toUpperCase() === 'EA')) iQty = i;
+                    if (iPallet < 0 && (hn.includes('파렛트') || hn.toUpperCase().includes('PALET') || hn.includes('적재'))) iPallet = i;
                 });
                 if (iStatus < 0) iStatus = 9;
                 if (iQty < 0) iQty = 3;
+                if (iPallet < 0) iPallet = 10;
                 for (let i = 1; i < stockRows.length; i++) {
                     const row = stockRows[i];
                     if (!row || row.every(c => !c || !c.toString().trim())) continue;
                     const s = (row[iStatus] || '').toString().replace(/\s+/g, '') || '미확인';
-                    const pallet = (row[10] || '').toString().trim();
+                    const pallet = (row[iPallet] || '').toString().trim();
                     const qty = parseInt((row[iQty] || '0').toString().replace(/[^0-9]/g, '')) || 0;
                     totalStockCnt++; totalStockQty += qty;
                     PKG_MGMT_STATUS_DEFS.forEach(sd => {
