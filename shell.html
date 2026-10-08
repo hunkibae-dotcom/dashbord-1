@@ -2382,6 +2382,18 @@
     let _sfDateField = 'date';
     let _sfStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 상태들 — 비어있으면 전체
     let _sfSourceFilter = 'standard';   // ''(전체) | 'standard'(수출현황) | 'shipped'(출고) | 'stock'(실재고)
+    let _sfDivFilter = ''; // 제품구분 드롭다운 — ''(전체) | allData의 실제 div 값 중 하나
+    function setSfDivFromDropdown(value) { _sfDivFilter = value; runSearch(); }
+    // 제품구분 값은 고정 목록이 아니라 시트 A열(품목구분)에 실제로 들어있는 값을 그대로
+    // 쓴다 — 나중에 새 구분(베트남상품 등)이 시트에 추가돼도 코드 수정 없이 바로 뜨게 하려고.
+    function _populateSfDivOptions() {
+        const sel = document.getElementById('sfDivSelect');
+        if (!sel) return;
+        const vals = Array.from(new Set((allData || []).map(d => d.div).filter(Boolean))).sort();
+        const cur = sel.value;
+        sel.innerHTML = '<option value="">제품구분 전체</option>' + vals.map(v => `<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+        if (vals.includes(cur)) sel.value = cur;
+    }
     let _sfPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
     let _sfPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
     let _srSortAsc = true; // 검색 결과 상차일 정렬 — true=빠른순(오름차순), false=늦은순(내림차순)
