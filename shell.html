@@ -2711,7 +2711,8 @@
     }
     function clearSearch() {
         ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
-        _sfStatusFilters.clear(); _sfSourceFilter = 'standard'; _schRoundFilterSet = null; _kpiPendingFilterActive = false; _mgmtCatKey = null;
+        _sfStatusFilters.clear(); _sfSourceFilter = 'standard'; _sfDivFilter = ''; _schRoundFilterSet = null; _kpiPendingFilterActive = false; _mgmtCatKey = null;
+        const divSel = document.getElementById('sfDivSelect'); if (divSel) divSel.value = '';
         _updateSfSourceButtons();
         const notice = document.getElementById('sf_palletNotice');
         if (notice) notice.style.display = 'none';
