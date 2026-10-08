@@ -2372,7 +2372,7 @@ function setView(view) {
 
 function focusFactory(key) {
   setView(key);
-  document.querySelector('.card:has(#tableCount)')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  document.querySelector('.card:has(#tableCountBadge)')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 function focusFactoryTop(key) {
   setView(key);
@@ -2498,7 +2498,7 @@ function renderKPIs(fullData) {
 // KPI 카드 팝오버의 "상세보기" 버튼: 현재 선택된 공장(currentView) 기준으로 검사상태만 맞춰 테이블로 스크롤
 function viewDetailInTable(inspectValue) {
   setColInspect(inspectValue);
-  document.querySelector('.card:has(#tableCount)')?.scrollIntoView({ behavior:'smooth', block:'start' });
+  document.querySelector('.card:has(#tableCountBadge)')?.scrollIntoView({ behavior:'smooth', block:'start' });
 }
 
 // ===== FACTORY CONNECTOR PANELS =====
