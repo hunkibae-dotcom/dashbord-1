@@ -6069,28 +6069,23 @@
                 const rows = _parseWorkLogForDate(state.workLogRows, today);
                 if (rows.length > 0) {
                     const totalSum = rows.reduce((s, r) => s + r.total, 0);
-                    const workers  = rows.map(r => r.worker).filter(Boolean);
-                    const memos    = rows.map(r => r.memo).filter(Boolean);
-                    const dept     = rows[0].dept;
                     let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
                         <span style="font-size:13.5px;font-weight:700;color:#0369A1;">총 ${totalSum}명</span>
-                        <span style="font-size:12.5px;color:#334155;">작업 참여</span>
+                        <span style="font-size:12.5px;color:#334155;">용역 요청</span>
                     </div>`;
-                    if (workers.length) {
+                    rows.forEach(r => {
                         html += `<div style="margin-bottom:3px;">
-                            <span style="font-size:12.5px;color:#334155;font-weight:600;">${dept}</span>
+                            <span style="font-size:12.5px;color:#334155;font-weight:600;">${r.dept}</span>
                             <span style="font-size:12.5px;color:#94A3B8;margin:0 4px;">·</span>
-                            <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${workers.join(' · ')}</span>
+                            <span style="font-size:14.5px;color:#0F172A;font-weight:700;">${r.total}명</span>
+                            ${r.memo ? `<span style="font-size:11.5px;color:#64748B;margin-left:6px;">${r.memo}</span>` : ''}
                         </div>`;
-                    }
-                    if (memos.filter(m=>m).length) {
-                        html += `<div style="font-size:11.5px;color:#64748B;">${memos.filter(m=>m).join(' · ')}</div>`;
-                    }
+                    });
                     display.innerHTML = html;
                     return;
                 }
                 // 시트는 있으나 오늘 데이터 없음
-                display.innerHTML = '<div style="font-size:12.5px;color:#64748B;text-align:center;padding:6px 0;">금일 등록된 작업 인원 없음</div>';
+                display.innerHTML = '<div style="font-size:12.5px;color:#64748B;text-align:center;padding:6px 0;">금일 등록된 용역 요청 없음</div>';
                 return;
             }
 
