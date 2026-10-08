@@ -205,31 +205,24 @@ try {
     #productSearchModal .ps-row { display: flex !important; gap: 10px !important; }
     #productSearchModal .ps-row-1 #psName  { flex: 1.7 !important; }
     #productSearchModal .ps-row-1 #psCode  { flex: 1 !important; }
-    /* 색상/날짜/세부상태/초기화를 psFilterModal 시트로 옮기면서 ps-row-2(이젠 사업장·소스·
-       필터버튼 줄)와 psDateBtn/psSrcDetailBtn(이젠 시트 안)은 더 이상 #productSearchModal의
-       자손이 아니다 — 데스크탑 전용 정렬/호버 규칙도 그에 맞게 옮겼다. */
+    #productSearchModal .ps-row-1 #psSourceSelect { flex: 1.3 !important; }
     #productSearchModal .ps-row-2 { align-items: stretch !important; }
+    #productSearchModal .ps-row-2 #psColor  { flex: 1 !important; }
+    #productSearchModal .ps-row-2 #psPacker { flex: 1 !important; }
+    #productSearchModal .ps-row-2 #psSrcDetailBtn { flex: 0 0 120px !important; }
     #productSearchModal .ps-filter-panel input,
     #productSearchModal .ps-filter-panel select,
-    #psFilterModal input,
-    #psDateBtn,
-    #psSrcDetailBtn,
-    #productSearchModal #psFilterBtn {
+    #psSrcDetailBtn {
       transition: border-color .15s, box-shadow .15s, transform .1s;
     }
     #productSearchModal .ps-filter-panel input:hover,
     #productSearchModal #psFactory:hover,
-    #productSearchModal #psSourceSelect:hover,
-    #psDateBtn:hover {
+    #productSearchModal #psSourceSelect:hover {
       border-color: #94A3B8 !important;
     }
-    #psSrcDetailBtn:hover,
-    #productSearchModal #psFilterBtn:hover {
+    #psSrcDetailBtn:hover {
       border-color: #6D5CE8 !important;
       box-shadow: 0 2px 8px rgba(109,92,232,.15) !important;
-    }
-    #psFilterModal .ps-reset:hover {
-      background: var(--border) !important;
     }
   }
   /* mobile top button */
