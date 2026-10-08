@@ -2929,16 +2929,106 @@
         } catch (e) { /* 조용히 무시 */ }
         const now = Date.now();
         const names = items.filter(it => it.name && now - it.lastSeen <= PRESENCE_FRESH_MS).map(it => it.name);
+        const wrap = document.getElementById('presenceBarWrap');
         const bar = document.getElementById('presenceBar');
-        if (!bar) return;
-        if (!names.length) { bar.style.display = 'none'; return; }
-        bar.style.display = 'flex';
+        if (!wrap || !bar) return;
+        if (!names.length) { wrap.style.display = 'none'; return; }
+        wrap.style.display = 'flex';
+        // _presenceTick()이 45초마다 innerHTML을 통째로 새로 그리기 때문에, 접힘 상태는
+        // presenceBar 안이 아니라 바깥(_applyPresenceCollapsed)에서만 관리해야 다시 그릴
+        // 때마다 펼쳐진 상태로 되돌아가지 않는다.
         bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">접속 중</span>` + names.map(n => {
             const initial = n.trim().slice(0, 1);
             const isMe = n === myName;
             return `<span title="${n.replace(/"/g,'&quot;')}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#00B0FF;color:#0B0F19;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};">${initial}</span>`;
         }).join('');
+        _applyPresenceCollapsed();
     }
+
+    // ── 접속중 표시: 접기/펼치기 + 꾹 눌러서 드래그 ──────────────
+    const PRESENCE_POS_KEY = 'presenceBarPos';
+    const PRESENCE_COLLAPSED_KEY = 'presenceBarCollapsed';
+    function _applyPresenceCollapsed() {
+        const bar = document.getElementById('presenceBar');
+        const icon = document.getElementById('presenceToggleIcon');
+        if (!bar || !icon) return;
+        const collapsed = localStorage.getItem(PRESENCE_COLLAPSED_KEY) === '1';
+        bar.style.display = collapsed ? 'none' : 'flex';
+        icon.className = 'fa-solid ' + (collapsed ? 'fa-chevron-right' : 'fa-chevron-left');
+    }
+    let _presenceDragMoved = false;
+    function _togglePresenceCollapsed(ev) {
+        if (_presenceDragMoved) { _presenceDragMoved = false; return; } // 드래그 끝에 발생하는 클릭은 무시
+        const collapsed = localStorage.getItem(PRESENCE_COLLAPSED_KEY) === '1';
+        localStorage.setItem(PRESENCE_COLLAPSED_KEY, collapsed ? '0' : '1');
+        _applyPresenceCollapsed();
+    }
+    (function _initPresenceDrag() {
+        const wrap = document.getElementById('presenceBarWrap');
+        const btn = document.getElementById('presenceToggleBtn');
+        if (!wrap || !btn) return;
+        // 저장된 위치가 있으면 복원 — top/right 대신 top/left로 전환해서 자유롭게 옮긴다.
+        try {
+            const saved = JSON.parse(localStorage.getItem(PRESENCE_POS_KEY) || 'null');
+            if (saved && typeof saved.left === 'number' && typeof saved.top === 'number') {
+                wrap.style.left = saved.left + 'px';
+                wrap.style.top = saved.top + 'px';
+                wrap.style.right = 'auto';
+            }
+        } catch (e) {}
+        let dragging = false, holdTimer = null, startX = 0, startY = 0, baseLeft = 0, baseTop = 0;
+        const HOLD_MS = 350, MOVE_TOLERANCE = 6;
+        function clampAndSave(left, top) {
+            const maxLeft = window.innerWidth - wrap.offsetWidth - 4;
+            const maxTop = window.innerHeight - wrap.offsetHeight - 4;
+            left = Math.min(Math.max(4, left), Math.max(4, maxLeft));
+            top  = Math.min(Math.max(4, top),  Math.max(4, maxTop));
+            wrap.style.left = left + 'px';
+            wrap.style.top  = top + 'px';
+            wrap.style.right = 'auto';
+            localStorage.setItem(PRESENCE_POS_KEY, JSON.stringify({ left, top }));
+        }
+        function onPointerDown(e) {
+            const p = e.touches ? e.touches[0] : e;
+            startX = p.clientX; startY = p.clientY;
+            const r = wrap.getBoundingClientRect();
+            baseLeft = r.left; baseTop = r.top;
+            _presenceDragMoved = false;
+            clearTimeout(holdTimer);
+            holdTimer = setTimeout(() => { dragging = true; wrap.style.opacity = '.85'; }, HOLD_MS);
+        }
+        function onPointerMove(e) {
+            if (!dragging) {
+                const p0 = e.touches ? e.touches[0] : e;
+                if (Math.abs(p0.clientX - startX) > MOVE_TOLERANCE || Math.abs(p0.clientY - startY) > MOVE_TOLERANCE) {
+                    clearTimeout(holdTimer); // 꾹 누르기 전에 움직이면(스크롤 등) 드래그로 안 잡는다
+                }
+                return;
+            }
+            e.preventDefault();
+            const p = e.touches ? e.touches[0] : e;
+            const dx = p.clientX - startX, dy = p.clientY - startY;
+            if (Math.abs(dx) > MOVE_TOLERANCE || Math.abs(dy) > MOVE_TOLERANCE) _presenceDragMoved = true;
+            wrap.style.left = (baseLeft + dx) + 'px';
+            wrap.style.top  = (baseTop + dy) + 'px';
+            wrap.style.right = 'auto';
+        }
+        function onPointerUp() {
+            clearTimeout(holdTimer);
+            if (dragging) {
+                dragging = false;
+                wrap.style.opacity = '';
+                const r = wrap.getBoundingClientRect();
+                clampAndSave(r.left, r.top);
+            }
+        }
+        btn.addEventListener('mousedown', onPointerDown);
+        btn.addEventListener('touchstart', onPointerDown, { passive: true });
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchend', onPointerUp);
+    })();
 
     // ── 연동 설정 ─────────────────────────────────────────
     function openConnModal() {
