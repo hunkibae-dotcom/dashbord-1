@@ -2630,6 +2630,10 @@
                 const s = (d.status || '').replace(/\s+/g,'').toLowerCase();
                 if (!(s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고'))) return false;
             }
+            if (_mgmtCatKey) {
+                const def = MGMT_STATUS_DEFS.find(sd => sd.key === _mgmtCatKey);
+                if (def && !def.match(d)) return false;
+            }
             if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
             if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
             if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
