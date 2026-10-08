@@ -1700,42 +1700,33 @@
         </div>
     </div>
 
-    <div id="settingsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300">
-        <div class="bg-panelBg border border-borderSlate p-6 rounded-2xl max-w-lg w-full mx-4 shadow-2xl relative">
-            <button onclick="closeSettingsModal()" class="absolute right-4 top-4 text-slate-400 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-[21.5px]"></i>
-            </button>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="bg-accentBlue/10 text-accentBlue p-2.5 rounded-xl border border-accentBlue/20">
-                    <i class="fa-solid fa-cog"></i>
+    <div id="settingsModal" onclick="if(event.target===this)closeSettingsModal()"
+        style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:460px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="width:34px;height:34px;border-radius:10px;background:#eff6ff;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;"><i class="fa-solid fa-cog"></i></span>
+                    <div>
+                        <div style="font-size:16px;font-weight:800;color:#1e293b;">구글 시트 연동 설정</div>
+                        <div style="font-size:12px;color:#94a3b8;margin-top:1px;">실시간 연동할 스프레드시트의 주소를 관리합니다.</div>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-[21.5px] font-bold text-white">구글 시트 연동 설정</h3>
-                    <p class="text-[17.5px] text-slate-400">실시간 연동할 스프레드시트의 주소를 관리합니다.</p>
-                </div>
-            </div>
-            
-            <div class="space-y-4 my-5 text-[17.5px]">
-                <div>
-                    <label class="block text-[17.5px] font-bold text-slate-400 uppercase tracking-wider mb-2">웹에 게시 방식으로 연동하기</label>
-                    <p class="text-[14.5px] text-slate-400 leading-relaxed">아래에 공개된 구글 시트 CSV 주소를 입력하면 이 대시보드가 실시간으로 데이터를 가져옵니다.</p>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="block text-[17.5px] font-bold text-slate-400 uppercase tracking-wider">구글 시트 웹에 게시 CSV 주소</label>
-                    <input type="text" id="inputPubUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv" 
-                           class="w-full bg-darkBg text-slate-200 px-3 py-2 rounded-lg border border-borderSlate focus:outline-none focus:border-accentBlue text-[17.5px]">
-                    <p class="text-[14.5px] text-slate-500">예시: 구글 스프레드시트의 파일 → 웹에 게시 → CSV로 발행 후 복사한 URL</p>
-                </div>
+                <button onclick="closeSettingsModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="flex justify-end gap-2.5 border-t border-borderSlate/40 pt-4 mt-2">
-                <button onclick="closeSettingsModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-[17.5px] px-4 py-2.5 rounded-xl font-semibold border border-borderSlate transition-colors">
-                    취소
-                </button>
-                <button onclick="saveConnectionSettings()" class="bg-accentGreen hover:bg-emerald-400 text-darkBg font-bold text-[17.5px] px-5 py-2.5 rounded-xl flex items-center gap-1.5 transition-all active:scale-95 shadow-lg shadow-accentGreen/10">
-                    <i class="fa-solid fa-save"></i> 설정 저장 및 갱신
-                </button>
+            <div style="margin:18px 0;">
+                <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px;">웹에 게시 방식으로 연동하기</div>
+                <p style="font-size:12.5px;color:#64748b;line-height:1.6;margin:0 0 12px;">아래에 공개된 구글 시트 CSV 주소를 입력하면 이 대시보드가 실시간으로 데이터를 가져옵니다.</p>
+                <label style="display:block;font-size:10.5px;font-weight:700;color:#94a3b8;margin-bottom:5px;">구글 시트 웹에 게시 CSV 주소</label>
+                <input type="text" id="inputPubUrl" placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
+                    style="width:100%;padding:9px 11px;border:1px solid #e2e8f0;border-radius:9px;font-size:13px;color:#334155;background:#fff;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#6D5CE8'" onblur="this.style.borderColor='#e2e8f0'">
+                <p style="font-size:11px;color:#94a3b8;margin:6px 0 0;">예시: 구글 스프레드시트의 파일 → 웹에 게시 → CSV로 발행 후 복사한 URL</p>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #f1f5f9;padding-top:16px;">
+                <button onclick="closeSettingsModal()" style="padding:9px 16px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-weight:700;font-size:13px;cursor:pointer;">취소</button>
+                <button onclick="saveConnectionSettings()" style="padding:9px 18px;border-radius:9px;border:none;background:#6D5CE8;color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;"><i class="fa-solid fa-save"></i> 설정 저장 및 갱신</button>
             </div>
         </div>
     </div>
