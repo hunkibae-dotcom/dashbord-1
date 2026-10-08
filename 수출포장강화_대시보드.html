@@ -6509,17 +6509,15 @@
                 return { title: '수출포장강화', columns: PKG_EXPORT_BASIC_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화', baseItems) };
             }
             if (kind === 'pack') {
-                // 포장항목 출력(작업자용) — 실재고(충주공장 재고)에 실제로 등록된 품목만.
-                // item.pallet은 renderTable()이 실재고 매칭 결과로 채워두며, 매칭이 없으면 '-'이다.
-                const items = baseItems.filter(item => item.pallet && item.pallet !== '-');
-                return { title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: items, filenameBase: _pkgExportFname('수출포장강화_포장항목출력', items), emptyMsg: '실재고에 등록된 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10, headerFontSize: 10.5 } };
+                // 포장항목 출력 — 전엔 실재고(충주공장 재고) 매칭 품목만 자동으로 걸러냈는데,
+                // 화면에서 이미 필터링해서 출력하는 경우와 겹쳐 혼란스럽다는 요청으로 없앴다.
+                // 기본출력과 같은 rows(baseItems)를 그대로 쓰고, 칼럼 구성(포장 작업용)만 다르다.
+                return { title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_포장항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10, headerFontSize: 10.5 } };
             }
             if (kind === 'ship') {
-                // 상차항목 출력(수출 현황용) — 아직 출고 안 된 품목만(applyFilters의 'active'
-                // 소스 필터와 동일한 기준: _shippedStatuses에 없는 상태).
-                const _shippedStatuses = new Set(['출고', '피킹', '출고완료']);
-                const items = baseItems.filter(item => !_shippedStatuses.has(item.status));
-                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: items, filenameBase: _pkgExportFname('수출포장강화_상차항목출력', items), emptyMsg: '아직 출고되지 않은 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
+                // 상차항목 출력 — 마찬가지로 "아직 출고 안 된 품목만" 자동 필터를 없앴다.
+                // rows는 baseItems 그대로, 칼럼 구성(상차 작업용)만 다르다.
+                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_상차항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
             }
             return null;
         }
