@@ -6264,25 +6264,21 @@
         function renderWorkLogModalTable() {
             const rows = _parseWorkLogRows();
             _wlmGroups = _groupWorkLogByPeriod(rows, _wlmMode, _wlmSortAsc);
-            const totalHeadcount = _wlmGroups.reduce((s, g) => s + g.total, 0);
-            const totalService   = _wlmGroups.reduce((s, g) => s + g.service, 0);
-            const periodCount    = _wlmMode === 'all' ? rows.length : _wlmGroups.length;
-            document.getElementById('wlmTotalHeadcount').textContent = totalHeadcount + '명';
+            const totalService = _wlmGroups.reduce((s, g) => s + g.total, 0);
+            const periodCount   = _wlmMode === 'all' ? rows.length : _wlmGroups.length;
             document.getElementById('wlmTotalService').textContent   = totalService + '명';
-            document.getElementById('wlmTotalDaysLabel').textContent = _WLM_PERIOD_LABEL[_wlmMode] || '작업일수';
-            document.getElementById('wlmTotalDays').textContent      = periodCount + (_WLM_PERIOD_UNIT[_wlmMode] || '일');
+            document.getElementById('wlmTotalDaysLabel').textContent = _WLM_PERIOD_LABEL[_wlmMode] || '요청 건수';
+            document.getElementById('wlmTotalDays').textContent      = periodCount + (_WLM_PERIOD_UNIT[_wlmMode] || '건');
 
             const tbody = document.getElementById('workLogModalBody');
             if (!_wlmGroups.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500 text-[13px]">작업일지 데이터가 없습니다</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-500 text-[13px]">용역 요청현황 데이터가 없습니다</td></tr>';
                 return;
             }
             tbody.innerHTML = _wlmGroups.map(g => `
                 <tr class="text-[13px] text-slate-300 hover:bg-darkBg/40 transition-colors">
                     <td class="py-2.5 px-3 font-semibold text-white whitespace-nowrap">${g.label}</td>
-                    <td class="py-2.5 px-3 text-right font-semibold">${g.total}명</td>
-                    <td class="py-2.5 px-3 text-right ${g.service > 0 ? 'text-indigo-400 font-semibold' : 'text-slate-600'}">${g.service > 0 ? g.service + '명' : '-'}</td>
-                    <td class="py-2.5 px-3">${[...g.workers].join(' · ') || '-'}</td>
+                    <td class="py-2.5 px-3 text-right font-semibold text-indigo-400">${g.total}명</td>
                     <td class="py-2.5 px-3">${[...g.depts].join(', ') || '-'}</td>
                 </tr>
             `).join('');
@@ -6291,9 +6287,9 @@
         function downloadWorkLogData() {
             if (!_wlmGroups.length) return;
             const modeLabel = _wlmMode === 'all' ? '전체' : _wlmMode === 'daily' ? '일별' : _wlmMode === 'weekly' ? '주간별' : _wlmMode === 'monthly' ? '월간별' : '년도별';
-            let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
+            let csv = '﻿기간,요청인원,요청부서\n';
             _wlmGroups.forEach(g => {
-                csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
+                csv += `"${g.label}",${g.total},"${[...g.depts].join(', ')}"\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url  = URL.createObjectURL(blob);
