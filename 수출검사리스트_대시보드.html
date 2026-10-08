@@ -830,12 +830,22 @@ try {
           </div>
         </div>
 
-        <!-- 선택/수정/초기화/데이터출력 -->
+        <!-- 날짜기준 탭 + 기간 선택(왼쪽) / 선택·수정·초기화·데이터출력(오른쪽) -->
         <div class="flex items-center gap-2 mb-4 flex-wrap">
-          <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
-          <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
-          <button onclick="resetFilters()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] border border-slate-200 text-slate-500 flex items-center gap-1.5 hover:bg-slate-50 transition-all"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
-          <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+          <div class="flex gap-0.5 bg-slate-50 rounded-lg p-0.5 shrink-0">
+            <button id="qdfDue" onclick="setQcDateField('납기일')" class="text-[12px] font-bold px-2.5 py-1.5 rounded-md transition-colors" style="color:#64748b;">납기일</button>
+            <button id="qdfPack" onclick="setQcDateField('포장일')" class="text-[12px] font-bold px-2.5 py-1.5 rounded-md transition-colors" style="color:#64748b;">포장일</button>
+            <button id="qdfInspect" onclick="setQcDateField('검사일')" class="text-[12px] font-bold px-2.5 py-1.5 rounded-md transition-colors" style="color:#64748b;">검사완료일</button>
+          </div>
+          <input type="date" id="qStartDateFilter" onchange="applyFiltersDebounced()" class="border border-slate-200 rounded-lg px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-accent-500">
+          <span class="text-slate-400 text-[12px]">~</span>
+          <input type="date" id="qEndDateFilter" onchange="applyFiltersDebounced()" class="border border-slate-200 rounded-lg px-2.5 py-1.5 text-[12.5px] text-slate-700 outline-none focus:border-accent-500">
+          <div class="flex items-center gap-2 ml-auto flex-wrap">
+            <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
+            <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
+            <button onclick="resetFilters()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] border border-slate-200 text-slate-500 flex items-center gap-1.5 hover:bg-slate-50 transition-all"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
+            <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+          </div>
         </div>
 
         <div id="ddayFilterChip" class="hidden mb-3 flex items-center gap-2 flex-wrap">
