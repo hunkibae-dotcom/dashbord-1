@@ -2271,7 +2271,7 @@ function clearDateFilter() {
 }
 
 function resetFilters() {
-  document.getElementById('fSearch').value = '';
+  ['fRound','fCode','fColor','fPacker'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   setColInspect('');
   ddayUrgencyFilter = null;
   pieFilter = null;
