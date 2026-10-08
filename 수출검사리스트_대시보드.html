@@ -5712,20 +5712,19 @@ function runProductSearch() {
   const code = document.getElementById('psCode').value.trim().toLowerCase();
   const name = document.getElementById('psName').value.trim().toLowerCase();
   const color = document.getElementById('psColor').value.trim().toLowerCase();
+  const packer = document.getElementById('psPacker').value.trim().toLowerCase();
   const fromStr = document.getElementById('psFrom').value;
   const toStr = document.getElementById('psTo').value;
   const factory = document.getElementById('psFactory').value;
   const fromDate = parseInputDate(fromStr);
   const toDate = parseInputDate(toStr);
 
-  const hasFilter = code || name || color || fromStr || toStr || factory || _psSourceFilter;
+  const hasFilter = code || name || color || packer || fromStr || toStr || factory || _psSourceFilter;
   const tbody = document.getElementById('psTableBody');
   const noData = document.getElementById('psNoData');
   const summary = document.getElementById('psSummary');
   // 소스 미선택 안내 문구로 덮어썼을 수 있으니, 매 검색마다 기본 안내 문구로 복원해둔다.
   noData.innerHTML = _PS_NODATA_DEFAULT_HTML;
-
-  _updatePsFilterDot();
 
   if (!hasFilter) {
     tbody.innerHTML = '';
