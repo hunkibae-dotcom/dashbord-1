@@ -2007,10 +2007,10 @@
         // 같다고 차수가 달라도 같은 값일 거라고 보면 안 된다(실제로 이게 "표에 평균/남의
         // 차수 CBM이 보인다"는 혼란의 근본 원인이었다). 그래서 코드+차수(수주건명)를
         // 합친 키로만 교차 대조한다 — 진짜 같은 주문끼리만 값이 넘어간다.
-        function backfillSpecs(list) {
+        function backfillSpecs(list, extraSpecSource) {
             let specCache = {};
 
-            list.forEach(item => {
+            function collectSpec(item) {
                 let key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
                 let w = (item.specW && item.specW !== '-') ? item.specW : '';
                 let d = (item.specD && item.specD !== '-') ? item.specD : '';
@@ -2027,7 +2027,11 @@
                         if (g) specCache[key].g = g;
                     }
                 }
-            });
+            }
+            list.forEach(collectSpec);
+            // 충주공장 재고는 표에 행으로는 안 보이지만, CBM 값만큼은 같은 code+차수를 가진
+            // combined(수출 현황/출고 완료) 항목에 빌려준다.
+            (extraSpecSource || []).forEach(collectSpec);
 
             list.forEach(item => {
                 let key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
