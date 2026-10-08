@@ -1851,6 +1851,37 @@ const GAS_URL_CJ1 = localStorage.getItem('sheet_pub_url_cj1') ||
     'https://script.google.com/macros/s/AKfycbwYdh83ZiA0PeJKuFacq7ZOJEBwsg1J-6B1PP0-vUGrI76kYNVypaKRJpcP0zY5mqNL/exec';
 const GAS_URL_CJ2 = localStorage.getItem('sheet_pub_url_cj2') ||
     'https://script.google.com/macros/s/AKfycbxedh1oqiQsvdbYl7ccKaamWhiDvsCYklEDSYHW7YPyw34t5ASYjH9yOSt1SpH1A0X_/exec';
+
+// ── 구글 시트 연동 설정(충주1/충주2 웹앱 URL 직접 입력) — 포장강화 대시보드의
+// 연동 설정/연동 초기화와 같은 기능을 품질검사에도 추가한 것. GAS_URL_CJ1/CJ2는
+// 페이지 로드 시 한 번만 계산되는 const라 값을 바꾼 뒤엔 새로고침해야 반영된다
+// (포장강화처럼 다시 fetch만 호출하는 걸로는 안 됨).
+function qcOpenSettingsModal() {
+  document.getElementById('qcInputUrlCj1').value = localStorage.getItem('sheet_pub_url_cj1') || '';
+  document.getElementById('qcInputUrlCj2').value = localStorage.getItem('sheet_pub_url_cj2') || '';
+  document.getElementById('qcSettingsModal').classList.remove('hidden');
+}
+function qcCloseSettingsModal() {
+  document.getElementById('qcSettingsModal').classList.add('hidden');
+}
+function qcSaveConnectionSettings() {
+  const cj1 = document.getElementById('qcInputUrlCj1').value.trim();
+  const cj2 = document.getElementById('qcInputUrlCj2').value.trim();
+  if (cj1) localStorage.setItem('sheet_pub_url_cj1', cj1); else localStorage.removeItem('sheet_pub_url_cj1');
+  if (cj2) localStorage.setItem('sheet_pub_url_cj2', cj2); else localStorage.removeItem('sheet_pub_url_cj2');
+  location.reload();
+}
+function qcConfirmResetConnection() {
+  document.getElementById('qcResetConnectionModal').classList.remove('hidden');
+}
+function qcCloseResetConnection() {
+  document.getElementById('qcResetConnectionModal').classList.add('hidden');
+}
+function qcResetConnectionSettings() {
+  localStorage.removeItem('sheet_pub_url_cj1');
+  localStorage.removeItem('sheet_pub_url_cj2');
+  location.reload();
+}
 // 검사완료 후 별도 탭으로 이동되는 누적 이력 시트 (진행중인 검사항목 리스트와는 별도)
 const ARCHIVES = [
   { key:'cj1', label:'충주1공장', sheetId:'1SfWe8mIcmz8ibx5yoHMm5vQ5u3qBwnklKAofFK5bh-U', gid:'1307214033', accent:'f1' },
