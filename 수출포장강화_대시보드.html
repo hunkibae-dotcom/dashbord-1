@@ -6239,10 +6239,8 @@
                     key = r.date.slice(0, 4);
                     label = key + '년';
                 }
-                if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, service: 0, workers: new Set(), depts: new Set() };
-                groups[key].total   += r.total;
-                groups[key].service += r.service;
-                if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
+                if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, depts: new Set() };
+                groups[key].total += r.total;
                 if (r.dept) groups[key].depts.add(r.dept);
             });
             return Object.values(groups).sort((a, b) => asc ? a.sortKey.localeCompare(b.sortKey) : b.sortKey.localeCompare(a.sortKey));
