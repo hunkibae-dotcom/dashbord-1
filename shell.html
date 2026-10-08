@@ -3377,31 +3377,26 @@
         const rows = rawWorkLogRows;
         if (!rows || rows.length < 2) return [];
         const hdr = rows[0].map(h => (h||'').toString().trim());
-        let iDate=-1, iDept=-1, iWorker=-1, iMemo=-1, iTotal=-1;
+        let iDate=-1, iDept=-1, iMemo=-1, iTotal=-1;
         hdr.forEach((h, i) => {
             const hn = h.replace(/\s/g,'');
-            if (iDate   < 0 && (hn==='등록일자'||hn==='날짜')) iDate   = i;
-            if (iDept   < 0 && hn==='부서')                    iDept   = i;
-            if (iWorker < 0 && hn==='작업자')                  iWorker = i;
-            if (iMemo   < 0 && hn==='비고')                    iMemo   = i;
-            if (iTotal  < 0 && (hn==='총인원'||hn.includes('인원'))) iTotal = i;
+            if (iDate  < 0 && (hn==='등록일자'||hn==='날짜')) iDate  = i;
+            if (iDept  < 0 && hn.includes('부서'))            iDept  = i;
+            if (iMemo  < 0 && hn.includes('비고'))            iMemo  = i;
+            if (iTotal < 0 && hn.includes('인원'))            iTotal = i;
         });
-        if (iDate < 0) { iDate=0; iDept=1; iWorker=2; iMemo=3; iTotal=4; }
+        if (iDate < 0) { iDate=0; iDept=1; iTotal=2; iMemo=3; }
         const out = [];
         for (let i = 1; i < rows.length; i++) {
             const r = rows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
             const date = _wlmNormDate((r[iDate]||'').toString().trim());
             if (!date) continue;
-            const memo = (r[iMemo]||'').toString().trim();
-            const svcMatch = memo.match(/용역\s*:?\s*(\d+)\s*명/);
             out.push({
                 date,
-                dept:    (r[iDept]  ||'').toString().trim() || '미지정',
-                worker:  (r[iWorker]||'').toString().trim(),
-                memo,
-                total:   parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0,
-                service: svcMatch ? parseInt(svcMatch[1]) : 0
+                dept:  (r[iDept] ||'').toString().trim() || '미지정',
+                memo:  (r[iMemo] ||'').toString().trim(),
+                total: parseInt((r[iTotal]||'0').toString().replace(/[^0-9]/g,'')) || 0
             });
         }
         return out;
@@ -3442,10 +3437,8 @@
                 key = r.date.slice(0, 4);
                 label = key + '년';
             }
-            if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, service: 0, workers: new Set(), depts: new Set() };
-            groups[key].total   += r.total;
-            groups[key].service += r.service;
-            if (r.worker) r.worker.split(/[,·]/).forEach(w => { const t = w.trim(); if (t) groups[key].workers.add(t); });
+            if (!groups[key]) groups[key] = { label, sortKey: key, total: 0, depts: new Set() };
+            groups[key].total += r.total;
             if (r.dept) groups[key].depts.add(r.dept);
         });
         return Object.values(groups).sort((a, b) => asc ? a.sortKey.localeCompare(b.sortKey) : b.sortKey.localeCompare(a.sortKey));
@@ -3483,42 +3476,38 @@
         });
         renderWorkLogHistoryList();
     }
-    // 선택된 탭(전체/일별/주간별/월간별/년도별) 기준으로 요약 3개(총 인원·용역 인원·기간)를 그때그때 계산
-    const _WLH_PERIOD_LABEL = { all: '전체 등록', daily: '작업일수', weekly: '작업주수', monthly: '작업월수', yearly: '작업연수' };
+    // 선택된 탭(전체/일별/주간별/월간별/년도별) 기준으로 요약(용역 인원·건수)을 그때그때 계산
+    const _WLH_PERIOD_LABEL = { all: '전체 등록', daily: '요청일수', weekly: '요청주수', monthly: '요청월수', yearly: '요청연수' };
     const _WLH_PERIOD_UNIT  = { all: '건', daily: '일', weekly: '주', monthly: '개월', yearly: '년' };
     function renderWorkLogHistoryList() {
         const rows = _parseAllWorkLogRows();
         _wlhGroups = _wlmGroupByPeriod(rows, _wlhMode, _wlhSortAsc);
-        const totalHeadcount = _wlhGroups.reduce((s, g) => s + g.total, 0);
-        const totalService   = _wlhGroups.reduce((s, g) => s + g.service, 0);
-        const periodCount    = _wlhMode === 'all' ? rows.length : _wlhGroups.length;
-        document.getElementById('wlhTotalHeadcount').textContent = totalHeadcount + '명';
+        const totalService = _wlhGroups.reduce((s, g) => s + g.total, 0);
+        const periodCount   = _wlhMode === 'all' ? rows.length : _wlhGroups.length;
         document.getElementById('wlhTotalService').textContent   = totalService + '명';
-        document.getElementById('wlhTotalDaysLabel').textContent = _WLH_PERIOD_LABEL[_wlhMode] || '작업일수';
-        document.getElementById('wlhTotalDays').textContent      = periodCount + (_WLH_PERIOD_UNIT[_wlhMode] || '일');
+        document.getElementById('wlhTotalDaysLabel').textContent = _WLH_PERIOD_LABEL[_wlhMode] || '요청 건수';
+        document.getElementById('wlhTotalDays').textContent      = periodCount + (_WLH_PERIOD_UNIT[_wlhMode] || '건');
         const el = document.getElementById('workLogHistoryList');
         if (!_wlhGroups.length) {
-            el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">작업일지 데이터가 없습니다</div>';
+            el.innerHTML = '<div style="text-align:center;padding:40px 0;font-size:13px;color:var(--text-sub);">용역 요청현황 데이터가 없습니다</div>';
             return;
         }
         el.innerHTML = _wlhGroups.map(g => `
             <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:13px;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                     <span style="font-size:13px;font-weight:800;color:var(--text);">${g.label}</span>
-                    <span style="font-size:12px;font-weight:700;color:var(--text);">총 ${g.total}명</span>
+                    <span style="font-size:12px;font-weight:700;color:#818CF8;">${g.total}명</span>
                 </div>
-                ${g.service > 0 ? `<div style="font-size:11px;color:#818CF8;font-weight:700;margin-bottom:4px;">용역 ${g.service}명</div>` : ''}
-                <div style="font-size:12px;color:var(--text-sub);">${[...g.workers].join(' · ') || '—'}</div>
-                <div style="font-size:10px;color:var(--label);margin-top:4px;">${[...g.depts].join(', ') || '—'}</div>
+                <div style="font-size:12px;color:var(--text-sub);">${[...g.depts].join(', ') || '—'}</div>
             </div>
         `).join('');
     }
     function downloadWorkLogHistoryCsv() {
         if (!_wlhGroups.length) return;
         const modeLabel = _wlhMode === 'all' ? '전체' : _wlhMode === 'daily' ? '일별' : _wlhMode === 'weekly' ? '주간별' : _wlhMode === 'monthly' ? '월간별' : '년도별';
-        let csv = '﻿기간,총인원,용역인원,참여자,부서\n';
+        let csv = '﻿기간,요청인원,요청부서\n';
         _wlhGroups.forEach(g => {
-            csv += `"${g.label}",${g.total},${g.service},"${[...g.workers].join(' · ')}","${[...g.depts].join(', ')}"\n`;
+            csv += `"${g.label}",${g.total},"${[...g.depts].join(', ')}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url  = URL.createObjectURL(blob);
