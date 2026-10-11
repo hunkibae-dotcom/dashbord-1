@@ -5076,7 +5076,7 @@ function toggleReportHardware(key, checked) {
 // "다 썼다"고 표시하는 항목은 보통 PPTX에도 포함하고 싶을 거란 실제 작업 흐름에 맞춘
 // 것. 체크를 다시 풀 때는 선택까지 같이 풀지는 않는다(실수로 PPTX 대상에서 빠지는 것
 // 방지 — 선택 해제는 항상 선택 칼럼에서 직접 하게 한다).
-function toggleReportWritten(key, checked) {
+function toggleReportWritten(key, checked, el) {
   _rpEnsureRecord(key);
   if (!_reportSelected[key]) return;
   const wasChecked = _reportChecked.has(key);
@@ -5089,7 +5089,11 @@ function toggleReportWritten(key, checked) {
   _rpDirtyMetaKeys.add(key);
   // 위 toggleReportHardware와 같은 이유로 디바운스 없이 즉시 저장
   _rpSaveToStorage(false, true);
-  _rpSyncMetaToServer(key);
+  // 작성완료를 누르는 순간엔 지금까지 서버로는 조용히 저장만 되고 화면엔 아무 표시가
+  // 없어서, 눌러도 됐는지 안 됐는지 알 수 없다는 요청으로 그 자리에 "저장중..." 풍선을
+  // 잠깐 띄운다 — 서버 응답이 오면(성공/실패 모두) 사라진다.
+  if (checked && el) _rpShowSavingBubble(el);
+  _rpSyncMetaToServer(key, checked && el ? (ok) => _rpHideSavingBubble(ok) : undefined);
   // 작성완료 필터가 걸려있으면 이 행 자체가 목록에서 빠지거나 들어와야 하고, 방금 선택도
   // 같이 새로 켜졌으면 상단 선택 개수·순서 배지도 갱신해야 하니 그때만 전체를 다시
   // 그린다 — 그 외엔(이미 선택돼 있었거나, 체크를 해제하는 경우) 이 행 하나만 바꾼다.
