@@ -3941,11 +3941,11 @@ async function _rpFetchSharedReportData() {
 let _rpDirtyMetaKeys = new Set();
 
 let _rpMetaSyncTimers = {}; // key별로 따로 디바운스
-function _rpSyncMetaToServer(key) {
+function _rpSyncMetaToServer(key, onDone) {
   const sel = _reportSelected[key];
-  if (!sel || !sel.item || !sel.item.공장) return;
+  if (!sel || !sel.item || !sel.item.공장) { if (onDone) onDone(false); return; }
   const url = _gasUrlForFactory(sel.item.공장);
-  if (!url) return;
+  if (!url) { if (onDone) onDone(false); return; }
   clearTimeout(_rpMetaSyncTimers[key]);
   _rpMetaSyncTimers[key] = setTimeout(async () => {
     const params = Object.assign({
@@ -3955,6 +3955,7 @@ function _rpSyncMetaToServer(key) {
       written: sel.written ? '1' : '0',
       writtenAt: sel.writtenAt || ''
     }, _gasQcSyncParams(sel.item));
+    let ok = false;
     try {
       const res = await fetch(url + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) });
       // fetch는 HTTP 상태코드가 4xx/5xx여도 예외를 안 던진다 — 응답이 왔다고 무조건
@@ -3966,10 +3967,12 @@ function _rpSyncMetaToServer(key) {
       if (json && json.status === 'success') {
         sel._updatedAt = Date.now();
         _rpDirtyMetaKeys.delete(key); // 서버가 받아갔다고 확인된 뒤에만 보호를 푼다
+        ok = true;
       }
       // 실패(또는 확인 불가)면 dirty 표시를 그대로 둬서, 다음 변경이나 재시도 때까지
       // _rpFetchSharedReportData()가 이 항목을 절대 덮어쓰지 못하게 보호한다.
     } catch (e) { /* 네트워크 자체 실패 — 역시 dirty 표시는 그대로 유지 */ }
+    if (onDone) onDone(ok);
   }, 400);
 }
 
