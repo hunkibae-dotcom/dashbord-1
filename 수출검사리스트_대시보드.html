@@ -3200,8 +3200,8 @@ function _qcMiniCalHtml() {
   function dayDots(ev) {
     if (!ev) return '';
     let html = '';
-    if (ev.due.length) html += '<span style="width:5px;height:5px;border-radius:50%;background:#EF4444;display:inline-block;margin:0 1.5px;"></span>';
-    if (ev.pack.length) html += '<span style="width:5px;height:5px;border-radius:50%;background:#38BDF8;display:inline-block;margin:0 1.5px;"></span>';
+    if (ev.due.size) html += '<span style="width:5px;height:5px;border-radius:50%;background:#EF4444;display:inline-block;margin:0 1.5px;"></span>';
+    if (ev.pack.size) html += '<span style="width:5px;height:5px;border-radius:50%;background:#38BDF8;display:inline-block;margin:0 1.5px;"></span>';
     return html;
   }
 
