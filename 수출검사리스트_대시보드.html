@@ -3941,6 +3941,38 @@ async function _rpFetchSharedReportData() {
 let _rpDirtyMetaKeys = new Set();
 
 let _rpMetaSyncTimers = {}; // key별로 따로 디바운스
+// "작성완료" 누른 자리에 "저장중..." 을 잠깐 보여주고, 서버 응답이 오면(성공/실패)
+// 사라진다 — 목록이 그 사이 다시 그려져(el이 DOM에서 빠져)도 풍선 자체는 클릭 시점의
+// 위치에 이미 고정돼 있어서 영향이 없다.
+let _rpSavingBubbleTimer = null;
+function _rpShowSavingBubble(el) {
+  let bubble = document.getElementById('rpSavingBubble');
+  if (!bubble) {
+    bubble = document.createElement('div');
+    bubble.id = 'rpSavingBubble';
+    bubble.style.cssText = 'position:fixed;z-index:10000;background:#0B0F19;color:#fff;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.3);white-space:nowrap;pointer-events:none;transition:opacity .15s;display:flex;align-items:center;gap:5px;';
+    document.body.appendChild(bubble);
+  }
+  const r = el.getBoundingClientRect();
+  bubble.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size:10px;"></i> 저장중...';
+  bubble.style.left = Math.max(4, Math.min(r.left, window.innerWidth - 100)) + 'px';
+  bubble.style.top = (r.bottom + 6) + 'px';
+  bubble.style.opacity = '1';
+  clearTimeout(_rpSavingBubbleTimer);
+  // 네트워크가 안 끊어졌는데도 응답이 영영 안 오는 극단적인 경우까지 대비한 안전장치 —
+  // 보통은 onDone 콜백이 먼저 불려서 이 타이머보다 먼저 사라진다.
+  _rpSavingBubbleTimer = setTimeout(() => { bubble.style.opacity = '0'; }, 20000);
+}
+function _rpHideSavingBubble(ok) {
+  clearTimeout(_rpSavingBubbleTimer);
+  const bubble = document.getElementById('rpSavingBubble');
+  if (!bubble) return;
+  if (ok) { bubble.style.opacity = '0'; return; }
+  // 실패했을 땐 조용히 사라지면 저장 안 된 걸 놓치기 쉬워서, 잠깐 "저장 실패"로 바꿔 보여준다.
+  bubble.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:10px;"></i> 저장 실패 — 다시 시도해주세요';
+  bubble.style.background = '#DC2626';
+  setTimeout(() => { bubble.style.opacity = '0'; bubble.style.background = '#0B0F19'; }, 2500);
+}
 function _rpSyncMetaToServer(key, onDone) {
   const sel = _reportSelected[key];
   if (!sel || !sel.item || !sel.item.공장) { if (onDone) onDone(false); return; }
