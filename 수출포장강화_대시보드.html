@@ -8092,9 +8092,30 @@
             bar.innerHTML = `<span style="font-size:10px;color:#94A3B8;font-weight:700;margin-left:6px;">접속 중</span>` + names.map(n => {
                 const initial = n.trim().slice(0, 1); // 맨 앞 성이 보이게
                 const isMe = n === myName;
-                return `<span title="${n.replace(/"/g,'&quot;')}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#00B0FF;color:#0B0F19;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};">${initial}</span>`;
+                const nameEsc = n.replace(/"/g,'&quot;');
+                return `<span onclick="_showPresenceName(event,'${nameEsc}'${isMe ? ",true" : ""})" title="${nameEsc}${isMe ? ' (나)' : ''}" style="width:26px;height:26px;border-radius:50%;background:#00B0FF;color:#0B0F19;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:1.5px solid ${isMe ? '#00E676' : 'rgba(255,255,255,.5)'};cursor:pointer;">${initial}</span>`;
             }).join('');
             _applyPresenceCollapsed();
+        }
+        // 이니셜만 봐서는 누군지 알 수 없다(특히 손가락으로 터치하는 화면에서는 title
+        // 툴팁도 안 뜬다) — 눌렀을 때 이름을 잠깐 풍선으로 보여준다.
+        let _presenceNameBubbleTimer = null;
+        function _showPresenceName(ev, name, isMe) {
+            ev.stopPropagation();
+            let bubble = document.getElementById('presenceNameBubble');
+            if (!bubble) {
+                bubble = document.createElement('div');
+                bubble.id = 'presenceNameBubble';
+                bubble.style.cssText = 'position:fixed;z-index:10000;background:#0B0F19;color:#fff;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:9px;box-shadow:0 6px 18px rgba(0,0,0,.3);white-space:nowrap;pointer-events:none;transition:opacity .15s;';
+                document.body.appendChild(bubble);
+            }
+            const r = ev.currentTarget.getBoundingClientRect();
+            bubble.textContent = name + (isMe ? ' (나)' : '');
+            bubble.style.left = Math.min(r.left, window.innerWidth - 120) + 'px';
+            bubble.style.top = (r.bottom + 6) + 'px';
+            bubble.style.opacity = '1';
+            clearTimeout(_presenceNameBubbleTimer);
+            _presenceNameBubbleTimer = setTimeout(() => { bubble.style.opacity = '0'; }, 1600);
         }
 
         // ── 접속중 표시: 접기/펼치기 + 꾹 눌러서 드래그 ──────────────
