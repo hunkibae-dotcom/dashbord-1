@@ -3629,8 +3629,12 @@ function renderLoadWarnings() {
 async function _retryLoadAfterWarning() {
   const btn = document.getElementById('loadWarningRetryBtn');
   const icon = document.getElementById('loadWarningRetryIcon');
+  const mBtn = document.getElementById('mConnRetryBtn');
+  const mIcon = document.getElementById('mConnRetryIcon');
   if (btn) btn.disabled = true;
   if (icon) icon.classList.add('fa-spin');
+  if (mBtn) mBtn.disabled = true;
+  if (mIcon) mIcon.classList.add('fa-spin');
   try {
     await loadData();
   } finally {
@@ -3640,6 +3644,12 @@ async function _retryLoadAfterWarning() {
     if (stillThere) { stillThere.disabled = false; }
     const stillIcon = document.getElementById('loadWarningRetryIcon');
     if (stillIcon) stillIcon.classList.remove('fa-spin');
+    // mConnRetryBtn은 setConnStatus()가 state 기준으로 보일지 말지 다시 정하므로(loadData
+    // 안에서 호출됨), 여기선 스피너/비활성만 풀어준다 — 성공해서 숨겨졌으면 어차피 안 보인다.
+    const stillMBtn = document.getElementById('mConnRetryBtn');
+    if (stillMBtn) stillMBtn.disabled = false;
+    const stillMIcon = document.getElementById('mConnRetryIcon');
+    if (stillMIcon) stillMIcon.classList.remove('fa-spin');
   }
 }
 
