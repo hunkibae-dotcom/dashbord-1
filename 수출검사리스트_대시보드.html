@@ -3600,6 +3600,10 @@ function setConnStatus(state) {
   setMTxt('mConnText', mLbl);
   const mIco = document.getElementById('mSyncIco');
   if (mIco) mIco.classList.toggle('fa-spin', state === 'loading');
+  // 앱(모바일)에서는 "일부 오류/오류" 뜰 때 바로 재시도할 방법이 없어서(데스크탑엔 배너에
+  // 재시도 버튼이 있었음) 상태 배지 옆에도 똑같이 재시도 버튼을 보여준다.
+  const mRetryBtn = document.getElementById('mConnRetryBtn');
+  if (mRetryBtn) mRetryBtn.style.display = (state === 'partial' || state === 'error') ? 'flex' : 'none';
 }
 
 // 개별 시트 로드가 실패했을 때 콘솔이 아니라 화면에서 바로 원인이 보이고, 그 자리에서
