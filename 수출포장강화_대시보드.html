@@ -4233,7 +4233,7 @@
             }
             const detailItems = (state.data || []).filter(item => {
                 if (!_pkgIsShippedItem(item)) return false;
-                const cat = (item.country || '').toString().trim();
+                const cat = (item.country || '').toString().replace(/\s+/g, '');
                 if (!cats.includes(cat)) return false;
                 const d = normalizeDate(item.date);
                 if (!d || d === '-') return false;
