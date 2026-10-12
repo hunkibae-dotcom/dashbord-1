@@ -2450,7 +2450,7 @@
 
                 const getCell = (field) => indices[field] !== -1 && indices[field] < row.length && row[indices[field]] ? row[indices[field]].toString().trim() : '-';
 
-                mappedList.push({
+                const _mappedItem = {
                     date: dateVal,
                     regDate: regDateVal,
                     round: roundVal,
@@ -2470,7 +2470,12 @@
                     specD: getCell('specD'),
                     specH: getCell('specH'),
                     specG: getCell('specG')
-                });
+                };
+                // 이 시트에 실제로 파렛트 칸이 있을 때만(수출 현황/출고 완료는 애초에 이
+                // 칸이 없음) 행 자신의 값을 그대로 넣는다 — renderTable()은 이 값이 있으면
+                // (undefined가 아니면) code+차수로 뭉뚱그린 조회값 대신 이 값을 그대로 쓴다.
+                if (indices.pallet !== -1) _mappedItem.pallet = getCell('pallet');
+                mappedList.push(_mappedItem);
             }
             return mappedList;
         }
