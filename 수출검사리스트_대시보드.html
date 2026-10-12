@@ -2366,7 +2366,12 @@ function exportTableData() {
 
 function exportFactory(key) {
   const label = key === 'cj1' ? '충주1공장' : '충주2공장';
-  const rows = filtered.filter(d => d.공장 === key);
+  // 메인 표의 "선택" 체크가 돼 있으면(여러 데이터 출력 버튼 중 이 버튼만) 무시하고
+  // 항상 전체를 내보내고 있었다 — 선택해둔 게 있으면 그 중 이 공장 것만, 없으면
+  // 기존처럼 필터링된 전체를 내보내도록 다른 데이터 출력 버튼들과 동작을 맞췄다.
+  const rows = (_tblMultiSelectMode && _tblSelectedKeys.size > 0)
+    ? Array.from(_tblSelectedKeys).map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean).filter(d => d.공장 === key)
+    : filtered.filter(d => d.공장 === key);
   exportCSV(rows, `${label}_검사리스트_${new Date().toISOString().slice(0,10)}.csv`, [
     { label:'건명', get: d => d.건명 },
     { label:'단품코드', get: d => d.단품코드 },
