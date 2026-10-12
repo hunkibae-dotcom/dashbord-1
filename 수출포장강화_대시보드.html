@@ -6831,8 +6831,8 @@
             const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '수출포장강화')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
 <body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
-<thead>${palletTotalHtml}<tr>${headHtml}</tr></thead>
-<tbody>${bodyHtml}</tbody>
+<thead><tr>${headHtml}</tr></thead>
+<tbody>${bodyHtml}${palletTotalHtml}</tbody>
 </table></body></html>`;
 
             const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
