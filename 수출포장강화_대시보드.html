@@ -6909,7 +6909,7 @@
             if (!meta || !meta.rows.length) { statusEl.textContent = (meta && meta.emptyMsg) || '내보낼 데이터가 없습니다.'; return; }
             try {
                 if (format === 'xls') {
-                    _pkgRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls' });
+                    _pkgRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls', showPalletTotal: meta.showPalletTotal });
                     pkgCloseExportChoiceModal();
                 } else {
                     statusEl.textContent = 'PDF 만드는 중...';
