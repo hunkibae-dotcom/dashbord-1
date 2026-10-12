@@ -4999,7 +4999,32 @@
                     },
                     plugins: {
                         legend: { display: false },
-                        tooltip: { enabled: false }
+                        // 제품별 실적 누적차트처럼 호버하면 그 기간에 구분별로 몇 개씩
+                        // 있었는지 대략 보여준다 — 자세한 건명/코드 단위는 그대로 클릭 시
+                        // 상세창(openPackingDetailModal)에서 본다.
+                        tooltip: {
+                            enabled: true, mode: 'index', intersect: false,
+                            backgroundColor: '#0F172A', titleColor: '#F1F5F9', bodyColor: '#CBD5E1',
+                            borderColor: 'rgba(255,255,255,.08)', borderWidth: 1, padding: 10,
+                            boxPadding: 4, usePointStyle: true,
+                            callbacks: {
+                                label: (item) => '합계  ' + item.parsed.y.toLocaleString() + ' EA',
+                                afterBody: (items) => {
+                                    const b = _packingLabelMeta[items[0].dataIndex];
+                                    if (!b) return [];
+                                    const inRange = (d) => b.prefix ? d.startsWith(b.prefix) : (b.dates && b.dates.indexOf(d) >= 0);
+                                    return Object.keys(_packingCatDateQtyMap)
+                                        .map(cat => {
+                                            const byDate = _packingCatDateQtyMap[cat];
+                                            const qty = Object.keys(byDate).filter(inRange).reduce((s, d) => s + byDate[d], 0);
+                                            return { cat, qty };
+                                        })
+                                        .filter(r => r.qty > 0)
+                                        .sort((a, b2) => b2.qty - a.qty)
+                                        .map(r => `${r.cat}  ${r.qty.toLocaleString()} EA`);
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: {
