@@ -4648,11 +4648,20 @@
         // ─── 포장 강화 현황 차트 ─────────────────────────────────────────
         function buildPackingDataAndInit() {
             _packingDateQtyMap = {};
+            // 호버 툴팁에 "그날 구분별로 몇 개씩"을 같이 보여주기 위한 보조 맵 — 날짜별
+            // 합계(_packingDateQtyMap)와 똑같은 두 소스(출고 완료/충주공장 재고)를 한 번
+            // 더 훑지 않고 같은 루프 안에서 구분(제품구분)까지 같이 누적한다.
+            _packingCatDateQtyMap = {};
+            function addCat(cat, d, qty) {
+                const c = cat || '미구성';
+                if (!_packingCatDateQtyMap[c]) _packingCatDateQtyMap[c] = {};
+                _packingCatDateQtyMap[c][d] = (_packingCatDateQtyMap[c][d] || 0) + qty;
+            }
 
             function parseQty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g, '')) || 0) : 0; }
             function hasData(row) { return row && row.some(function(c){ return c && c.toString().trim(); }); }
 
-            // 1) 출고 완료: H열(index 7)=포장일, D열(index 3)=수량, 행 단위 합산
+            // 1) 출고 완료: H열(index 7)=포장일, D열(index 3)=수량, A열(index 0)=제품구분
             var shippedRows = state.rawShippedRows;
             if (shippedRows && shippedRows.length > 1) {
                 for (var i = 1; i < shippedRows.length; i++) {
@@ -4660,7 +4669,9 @@
                     if (!hasData(row)) continue;
                     var d = normalizeDate((row[7] || '').toString().trim());
                     if (!d || d === '-') continue;
-                    _packingDateQtyMap[d] = (_packingDateQtyMap[d] || 0) + parseQty(row[3]);
+                    var q = parseQty(row[3]);
+                    _packingDateQtyMap[d] = (_packingDateQtyMap[d] || 0) + q;
+                    addCat((row[0] || '').toString().replace(/\s+/g, ''), d, q);
                 }
             }
 
@@ -4669,15 +4680,17 @@
             var stockRows = state.rawStockRows;
             if (stockRows && stockRows.length > 1) {
                 var hdr = stockRows[0].map(function(h){ return (h||'').toString().trim(); });
-                var iRound = -1, iCode = -1, iColor = -1;
+                var iRound = -1, iCode = -1, iColor = -1, iCat = -1;
                 hdr.forEach(function(h, i) {
                     if (iRound < 0 && (h==='건명' || h==='수주건명')) iRound = i;
                     if (iCode  < 0 && (h==='제품코드' || h==='품목코드')) iCode  = i;
                     if (iColor < 0 && (h==='색상' || h==='컬러')) iColor = i;
+                    if (iCat   < 0 && (h==='제품구분' || h==='제품 구분')) iCat   = i;
                 });
                 if (iRound < 0) iRound = 1;
                 if (iCode  < 0) iCode  = 2;
                 if (iColor < 0) iColor = 5;
+                if (iCat   < 0) iCat   = 0;
 
                 var grouped = {};
                 for (var j = 1; j < stockRows.length; j++) {
@@ -4688,12 +4701,13 @@
                     var gKey = (sr[iRound]||'').toString().trim() + '|'
                              + (sr[iCode] ||'').toString().trim() + '|'
                              + (sr[iColor]||'').toString().trim() + '|' + sd;
-                    if (!grouped[gKey]) grouped[gKey] = { d: sd, qty: 0 };
+                    if (!grouped[gKey]) grouped[gKey] = { d: sd, qty: 0, cat: (sr[iCat]||'').toString().replace(/\s+/g, '') };
                     grouped[gKey].qty += parseQty(sr[3]); // D열=수량
                 }
                 Object.keys(grouped).forEach(function(k) {
                     var g = grouped[k];
                     _packingDateQtyMap[g.d] = (_packingDateQtyMap[g.d] || 0) + g.qty;
+                    addCat(g.cat, g.d, g.qty);
                 });
             }
 
