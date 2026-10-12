@@ -7936,14 +7936,22 @@
         // 무조건 헤더로 보고 건너뛰면 데이터가 통째로 하나씩 누락(또는 전부 누락)된다. 그래서
         // 헤더로 보이는 문구(단품코드/색상/수량 등)가 1행에 하나도 없으면 "헤더 없는 파일"로
         // 보고 1행부터 전부 데이터로 취급한다.
-        function _pkgExtractOutResultEntries(grid) {
-            if (!grid || grid.length < 1) return [];
+        // grd_outResult 파일의 단품코드/색상/수량 헤더 위치를 찾는다 — 헤더 문구로 먼저
+        // 찾고, 못 찾으면 고정 열 자리(C/D/E)를 그대로 쓴다. 헤더 행 자체가 없는(1행부터
+        // 바로 데이터) 파일도 있어서, 헤더로 보이는 문구가 1행에 하나도 없으면 1행부터
+        // 전부 데이터로 취급한다. _pkgExtractOutResultEntries(마크로 바로 찾기)와
+        // _pkgBuildIpgoCandidates(마크를 못 찾았을 때 폴백) 둘 다 이 자리를 공유한다.
+        function _pkgDetectOutResultHeader(grid) {
             const headers = (grid[0] || []).map(h => (h || '').toString().trim().replace(/\s+/g, ''));
             const iCode  = _pkgFindCol(headers, ['단품코드', '품목코드', '제품코드', '코드']);
             const iColor = _pkgFindCol(headers, ['색상', '컬러']);
             const iQty   = _pkgFindCol(headers, ['수량']);
             const hasHeaderRow = (iCode >= 0 || iColor >= 0 || iQty >= 0);
-            const startRow = hasHeaderRow ? 1 : 0;
+            return { iCode, iColor, iQty, startRow: hasHeaderRow ? 1 : 0 };
+        }
+        function _pkgExtractOutResultEntries(grid) {
+            if (!grid || grid.length < 1) return [];
+            const { iCode, iColor, iQty, startRow } = _pkgDetectOutResultHeader(grid);
 
             // K열(건명/배송지 문구)에 적히는 "포장강화 대상" 표시가 예전엔 글자 그대로
             // "(포장 강화)"였는데, 전산 쪽에서 이 표시 방식을 바꿔서 이제 그 자리에
