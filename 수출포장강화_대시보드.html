@@ -6812,6 +6812,9 @@
             const headHtml = columns.map(c =>
                 `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
             ).join('');
+            const palletTotalHtml = opts.showPalletTotal
+                ? `<tr><td colspan="${columns.length}" style="background:#fef9c3;color:#78350f;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;">총 파렛트 수 : ${_pkgCountUniquePallets(rows)}파렛트</td></tr>`
+                : '';
             const bodyHtml = rows.map((item, idx) => {
                 const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
                 return '<tr>' + columns.map(c => {
