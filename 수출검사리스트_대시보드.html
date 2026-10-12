@@ -7265,7 +7265,12 @@ function _updateMiCbm() {
   const w = parseFloat(document.getElementById('miW').value) || 0;
   const d = parseFloat(document.getElementById('miD').value) || 0;
   const h = parseFloat(document.getElementById('miH').value) || 0;
-  document.getElementById('miCbm').textContent = (w && d && h) ? 'CBM ' + ((w * d * h) / 1e9).toFixed(4) + 'm³' : 'CBM —';
+  const cbm = (w && d && h) ? (w * d * h) / 1e9 : 0;
+  document.getElementById('miCbm').textContent = cbm ? 'CBM ' + cbm.toFixed(4) + 'm³' : 'CBM —';
+  // 이 함수는 이름 그대로 모달 안의 "미리보기 글자"만 바꾸고, 정작 제품검색 등에서
+  // 읽는 품목 자신의 CBM 값(d.CBM)은 한 번도 갱신한 적이 없었다 — 그래서 가로/세로/
+  // 높이를 바꿔 저장해도 제품검색 목록의 CBM 칸은 계속 예전 값(또는 0)이었다.
+  if (_miCurrent) _miCurrent.CBM = cbm;
 }
 function openMItemDetail(key) {
   const d = window._mItemMap && window._mItemMap[key];
