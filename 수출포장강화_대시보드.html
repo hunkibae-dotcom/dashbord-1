@@ -4134,7 +4134,12 @@
                 return {
                     label: cat,
                     data: _prodCmpLabelMeta.map(b => _prodCmpQtyInBucket(cat, b) || null),
-                    backgroundColor: color,
+                    // 다른 카드들의 차분한 파스텔 톤(sibling 포장강화 누적차트처럼 옅은 채움 +
+                    // 선명한 테두리)과 맞춰서, 식별용 진한 색은 테두리·범례에만 쓰고 막대
+                    // 자체는 옅게 채운다.
+                    backgroundColor: color + '33',
+                    borderColor: color,
+                    borderWidth: 1.5,
                     borderRadius: 4,
                     borderSkipped: false,
                     minBarLength: 3,
