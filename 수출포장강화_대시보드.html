@@ -4585,7 +4585,7 @@
                 { label: 'CBM', width: '10%', get: it => _pkgCbmOwn(it) }
             ];
 
-            _pkgRenderChartReportXls({
+            await _pkgRenderChartReportXls({
                 filename: `제품별실적비교차트_${modeLabel}_${new Date().toISOString().slice(0, 10)}.xls`,
                 summary: { sheetName: '① 요약', columns: summaryColumns, rows: summaryRows },
                 detail: { sheetName: '② 상세내역', columns: detailColumns, rows: detailItems }
