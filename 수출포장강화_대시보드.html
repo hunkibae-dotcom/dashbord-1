@@ -4530,7 +4530,7 @@
 
         // "① 요약"(기간 × 제품구분)과 "② 상세내역"(품목 단위 — 구분/건명/단품코드/색상/
         // 수량/포장일/납기일/상차일/CBM)을 화면에 지금 표시된 기간/기준 그대로 만든다.
-        function pkgRunProdCmpReport() {
+        async function pkgRunProdCmpReport() {
             const statusEl = document.getElementById('prodCmpExportStatus');
             const checked = Array.from(document.querySelectorAll('.prodCmpCatChk:checked')).map(c => c.value).filter(v => v !== '__ALL__');
             const cats = checked.length ? checked : _prodCmpCategories.slice();
