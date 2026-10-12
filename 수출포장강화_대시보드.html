@@ -7026,6 +7026,13 @@
             }).join('');
             return `<div class="pkg-pdf-row" style="display:flex;width:100%;">${cells}</div>`;
         }
+        // 전체 칼럼 폭(100%)을 통째로 차지하는 한 줄 — 표의 칼럼 구분 없이 "병합된 한 행"처럼
+        // 보이게 한다. 마지막 페이지에만 붙는다.
+        function _pkgGenericTotalPalletRowHtml(rows, fontSize) {
+            return `<div style="display:flex;width:100%;">
+                <div style="width:100%;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:8px 6px;border:1px solid #0B0F19;background:#fef9c3;color:#78350f;font-weight:800;font-size:${fontSize}px;">${_pkgPrintEsc(_pkgTotalPalletLabel(rows))}</div>
+            </div>`;
+        }
         // 건명(수주건명)·품목코드(제품코드)는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이
         // 실제 내용보다 좁으면 white-space:nowrap;overflow:visible을 줘도 html2canvas가
         // 그 바깥으로 삐져나온 부분을 못 살리고 그냥 잘라버렸다(알려진 한계) — 화면 밖에
@@ -7124,6 +7131,7 @@
                     <div style="width:100%;">
                         ${_pkgGenericHeaderRowHtml(columns, headerFontSize)}
                         ${pages[p].map(rowHtml).join('')}
+                        ${(opts.showPalletTotal && p === pages.length - 1) ? _pkgGenericTotalPalletRowHtml(rows, fontSize) : ''}
                     </div>`;
                 document.body.appendChild(host);
                 const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
