@@ -10643,6 +10643,19 @@
     </div>
 </div>
 
+<!-- ── 분류(입고) 마크 못 찾았을 때 — 미입고 품목 대조 확인 팝업 ──────────── -->
+<div id="pkgIpgoCandidateModal" style="display:none;position:fixed;inset:0;z-index:230;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:520px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:4px;">입고 품목 확인</div>
+        <div id="pkgIpgoCandidateCount" style="font-size:12.5px;color:#64748b;margin:8px 0 14px;line-height:1.6;"></div>
+        <div id="pkgIpgoCandidateList" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;margin-top:16px;">
+            <button id="pkgIpgoCandidateCancelBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
+            <button id="pkgIpgoCandidateApplyBtn" style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">선택 항목 반영</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── 데이터 출력: 관리용/출력용 선택 모달 ──────────────────── -->
 <div id="pkgExportChoiceModal" onclick="if(event.target===this)pkgCloseExportChoiceModal()"
     style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
