@@ -6108,9 +6108,7 @@ const QC_EXPORT_COLS = [
   { label: '검사상태', width: '8%', align: 'center', isStatus: true, get: d => d.검사 },
 ];
 function _qcStatusXlsColor(d) {
-  // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값 — 지금은
-  // PDF 출력(_qcRenderPrintPdf)에서만 쓴다(엑셀 출력은 xlsx 전환 후 스타일을 입히지
-  // 않음, 아래 _qcRenderGenericXls 주석 참고).
+  // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값.
   if (d.검사 === '검사') return { bg: '#DCFCE7', color: '#15803D' };
   if (d.검사 === '양지') return { bg: '#FEF3C7', color: '#92400E' };
   if (d.검사 === '재투입') return { bg: '#F3E8FF', color: '#7C3AED' };
@@ -6122,27 +6120,78 @@ function _qcSafeSheetName(name, fallback) {
   const cleaned = (name || fallback || 'Sheet1').toString().replace(/[\\\/\?\*\[\]:]/g, '');
   return (cleaned || fallback || 'Sheet1').slice(0, 31);
 }
-// columns는 get 기반(QC_EXPORT_COLS와 동일 모양)이라 검사항목/현장용 출력도
-// "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다.
 // 엑셀에서 데이터를 고쳐서 저장하면 파일이 깨지는 문제(요청, 2026-10-12) — 예전엔 HTML
 // 표를 ".xls"로 속여서 저장했는데(엑셀이 열 때는 문제없이 읽어도, 진짜 xls/xlsx 파일이
-// 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다). 엑셀 업로드 기능에서
-// 이미 쓰던 xlsx 라이브러리(_loadXlsxLib)로 진짜 xlsx 바이너리를 만들어서, 받은 파일이
-// 처음부터 진짜 엑셀 파일이라 그 안에서 자유롭게 고치고 다시 저장해도 안 깨지게 한다.
+// 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다). xlsx 라이브러리로
+// 한 번 바꿨었는데, 그 무료 버전은 셀 서식(색깔/테두리/굵은글씨) 저장 자체가 안 돼서
+// 꾸밈이 다 사라졌다 — 서식까지 그대로 들어가는 ExcelJS로 다시 바꿨다. 이제 "진짜 엑셀
+// 파일"이면서 "기존 꾸밈도 그대로"인 파일이 된다.
+function _qcLoadExcelJsLib(cb) {
+  if (window.ExcelJS) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+  s.onload = cb;
+  s.onerror = function () { alert('엑셀 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+  document.head.appendChild(s);
+}
+async function _qcSaveWorkbookBuffer(wb, filename) {
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+const _QC_XLS_BORDER_LIGHT = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+const _QC_XLS_BORDER_DARK = { top: { style: 'thin', color: { argb: 'FF0B0F19' } }, bottom: { style: 'thin', color: { argb: 'FF0B0F19' } }, left: { style: 'thin', color: { argb: 'FF0B0F19' } }, right: { style: 'thin', color: { argb: 'FF0B0F19' } } };
+const _QC_XLS_CENTER = { horizontal: 'center', vertical: 'middle' };
+function _qcArgb(hex) { return 'FF' + hex.replace('#', '').toUpperCase(); }
+function _qcStyleHeaderRow(ws, columns) {
+  const row = ws.addRow(columns.map(c => c.label));
+  row.eachCell(cell => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B0F19' } };
+    cell.alignment = _QC_XLS_CENTER;
+    cell.border = _QC_XLS_BORDER_DARK;
+  });
+  return row;
+}
+// columns는 get 기반(QC_EXPORT_COLS와 동일 모양)이라 검사항목/현장용 출력도
+// "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다. isStatus 플래그가 있는 칼럼만
+// _qcStatusXlsColor로 배지 색(배경+글자)을 입힌다.
 function _qcRenderGenericXls(opts) {
   const columns = opts.columns;
   const rows = opts.rows || [];
   if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
   return new Promise((resolve) => {
-    _loadXlsxLib(() => {
-      const header = columns.map(c => c.label);
-      const dataRows = rows.map(d => columns.map(c => c.get(d)));
-      const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
-      ws['!cols'] = columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, _qcSafeSheetName(opts.title, '검사항목목록'));
+    _qcLoadExcelJsLib(async () => {
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet(_qcSafeSheetName(opts.title, '검사항목목록'));
+      const statusColIdx = columns.findIndex(c => c.isStatus);
+      _qcStyleHeaderRow(ws, columns);
+      rows.forEach((d, idx) => {
+        const values = columns.map(c => c.get(d));
+        const row = ws.addRow(values);
+        const rowFill = idx % 2 === 0 ? 'FFFFFFFF' : 'FFF8FAFC';
+        row.eachCell((cell, colNumber) => {
+          const isStatus = statusColIdx >= 0 && (colNumber - 1) === statusColIdx;
+          if (isStatus) {
+            const sc = _qcStatusXlsColor(d);
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: _qcArgb(sc.bg) } };
+            cell.font = { bold: true, color: { argb: _qcArgb(sc.color) }, size: 10.5 };
+          } else {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFill } };
+            cell.font = { color: { argb: 'FF1E293B' }, size: 10.5 };
+          }
+          cell.alignment = _QC_XLS_CENTER;
+          cell.border = _QC_XLS_BORDER_LIGHT;
+        });
+      });
+      ws.columns = columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
       const filename = (opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`).replace(/\.xls$/i, '.xlsx');
-      XLSX.writeFile(wb, filename);
+      await _qcSaveWorkbookBuffer(wb, filename);
       resolve();
     });
   });
