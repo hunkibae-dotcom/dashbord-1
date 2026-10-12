@@ -4597,7 +4597,7 @@
         // 요약"(기간/강화수량)과 "② 상세내역"(건명/단품코드/색상/수량/납기일/상차일/CBM)을
         // 만든다. 강화완료 기준(포장완료 + 출고 전부 포함)은 화면 차트(buildPackingDataAndInit)와
         // 동일.
-        function pkgRunPackingChartReport() {
+        async function pkgRunPackingChartReport() {
             if (!trendChartInstance) { alert('차트 데이터가 없습니다.'); return; }
             const buckets = _packingLabelMeta || [];
             const modeLabel = packingViewMode === 'daily' ? '일별' : packingViewMode === 'weekly' ? '주간별' : packingViewMode === 'yearly' ? '년도별' : '월간별';
