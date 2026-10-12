@@ -4147,24 +4147,51 @@
             const canvas = document.getElementById('exportRoundChart');
             if (!canvas) return;
 
-            // 9번째 구분이 생겨도 팔레트를 늘리거나 색을 돌려쓰지 않고, 그 이후는 전부
-            // 중립 회색(기타류)으로 묶어 식별성이 깨지지 않게 한다.
-            // 구분(카테고리)마다 막대를 따로 그리는 "묶음 막대"였는데, 구분이 6~7개라
-            // 한 기간 안에 그만큼 얇은 막대가 다닥다닥 붙어서 포장강화 누적차트(기간당
-            // 막대 1개)에 비해 훨씬 허접해 보였다 — 쌓은 막대(stacked)로 바꿔서 기간당
-            // 막대는 항상 1개(두께는 포장강화 누적차트와 동일)이고, 그 안에서 구분별로
-            // 색이 나뉘게 했다. "누적"이라는 제목과도 더 어울리는 형태.
-            const datasets = _prodCmpCategories.map((cat, i) => {
-                const color = i < PROD_CMP_COLORS.length ? PROD_CMP_COLORS[i] : '#6B7280';
-                return {
-                    label: cat,
-                    data: _prodCmpLabelMeta.map(b => _prodCmpQtyInBucket(cat, b) || null),
-                    backgroundColor: color,
-                    stack: 'total',
-                    borderRadius: 3,
-                    borderSkipped: false
-                };
-            });
+            // 구분별로 색을 나눈 쌓인 막대도 여전히 "이상하다"는 평이라, 포장강화
+            // 누적차트와 완전히 같은 형태(기간당 막대 1개, 단색, 막대 위 총수량 숫자)로
+            // 단순화했다. 구분별 내역은 범례로 상시 노출하는 대신, 마우스를 올렸을 때
+            // 툴팁에서 그 기간의 구분별 수량을 보여준다(어차피 상세는 호버로 본다는 요청).
+            const totals = _prodCmpLabelMeta.map(b => _prodCmpTotalInBucket(b));
+            const datasets = [{
+                label: '총 수량 (EA)',
+                data: totals,
+                backgroundColor: 'rgba(125, 211, 252, 0.65)',
+                borderColor: '#38BDF8',
+                borderWidth: 1.5,
+                borderRadius: prodCmpViewMode === 'yearly' ? 10 : 6,
+                maxBarThickness: prodCmpViewMode === 'yearly' ? 90 : undefined
+            }];
+
+            const prodCmpBarTopPlugin = {
+                id: 'prodCmpBarTop',
+                _hov: -1,
+                afterEvent: function(chart, args) {
+                    const e = args.event;
+                    if (e.type !== 'mousemove' && e.type !== 'mouseout') return;
+                    const els = e.type === 'mousemove'
+                        ? chart.getElementsAtEventForMode(e.native, 'nearest', { intersect: true }, false)
+                        : [];
+                    const ni = els.length > 0 ? els[0].index : -1;
+                    if (ni !== this._hov) { this._hov = ni; args.changed = true; }
+                },
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const hov = this._hov;
+                    const ds  = chart.data.datasets[0];
+                    const meta = chart.getDatasetMeta(0);
+                    meta.data.forEach(function(bar, i) {
+                        const val = ds.data[i];
+                        if (!val) return;
+                        ctx.save();
+                        ctx.fillStyle = '#0284C7';
+                        ctx.font = 'bold ' + (hov === i ? 16 : 14) + 'px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
+                        ctx.fillText(val.toLocaleString(), bar.x, bar.y - 2);
+                        ctx.restore();
+                    });
+                }
+            };
 
             prodCmpChartInstance = new Chart(canvas.getContext('2d'), {
                 type: 'bar',
@@ -4172,49 +4199,51 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    categoryPercentage: prodCmpViewMode === 'yearly' ? 0.6 : 0.9,
                     barPercentage: prodCmpViewMode === 'daily' ? 0.675 : prodCmpViewMode === 'yearly' ? 0.5 : 0.825,
+                    categoryPercentage: prodCmpViewMode === 'yearly' ? 0.6 : 0.9,
+                    layout: { padding: { top: 18 } },
                     plugins: {
-                        // 구분(범례) 글자가 제목 바로 밑에서 굵게·크게 강조돼 보인다는 지적—
-                        // 차트 아래로 내리고 점도 더 작게, 안 굵게 바꿔서 덜 튀게 했다.
-                        legend: {
-                            display: _prodCmpCategories.length > 0,
-                            position: 'bottom',
-                            align: 'center',
-                            labels: {
-                                color: '#94A3B8', font: { size: 11, weight: 'normal' }, boxWidth: 6, boxHeight: 6, padding: 11,
-                                usePointStyle: true, pointStyle: 'circle',
-                                generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
-                                    text: ds.label, fillStyle: ds.backgroundColor, strokeStyle: ds.backgroundColor,
-                                    pointStyle: 'circle', lineWidth: 0, datasetIndex: i, hidden: !chart.isDatasetVisible(i)
-                                }))
-                            }
-                        },
+                        legend: { display: false },
                         tooltip: {
                             enabled: true, mode: 'index', intersect: false,
                             backgroundColor: '#0F172A', titleColor: '#F1F5F9', bodyColor: '#CBD5E1',
                             borderColor: 'rgba(255,255,255,.08)', borderWidth: 1, padding: 10,
-                            boxPadding: 4, usePointStyle: true
+                            boxPadding: 4, usePointStyle: true,
+                            callbacks: {
+                                // 막대 자체는 총합 하나뿐이지만, 그 기간에 구분별로 뭐가 몇 개인지는
+                                // 여기(호버 상세)에서 보여준다 — 0건인 구분은 목록을 어지럽히니 뺀다.
+                                label: () => null,
+                                afterBody: (items) => {
+                                    const b = _prodCmpLabelMeta[items[0].dataIndex];
+                                    if (!b) return [];
+                                    return _prodCmpCategories
+                                        .map(cat => ({ cat, qty: _prodCmpQtyInBucket(cat, b) }))
+                                        .filter(r => r.qty > 0)
+                                        .map(r => `${r.cat}  ${r.qty.toLocaleString()} EA`);
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
-                            stacked: true,
                             beginAtZero: true,
                             ticks: { color: '#64748B', font: { size: 13 } },
                             grid: { color: 'rgba(148,163,184,0.14)', lineWidth: 0.5, drawBorder: false },
                             border: { display: false, color: 'transparent' }
                         },
                         x: {
-                            stacked: true,
                             ticks: { color: '#64748B', font: { size: 12.5 }, maxRotation: 0, autoSkip: false },
                             grid: { display: false },
                             border: { display: false, color: 'transparent' }
                         }
                     }
-                }
+                },
+                plugins: [prodCmpBarTopPlugin]
             });
             updateProdCmpNavArrows();
+        }
+        function _prodCmpTotalInBucket(b) {
+            return _prodCmpCategories.reduce((s, cat) => s + _prodCmpQtyInBucket(cat, b), 0);
         }
 
         function updateProdCmpNavArrows() {
