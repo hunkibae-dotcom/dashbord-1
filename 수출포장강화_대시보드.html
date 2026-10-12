@@ -2991,19 +2991,23 @@
                     let matchesPallet = true;
                     if (palletQuery) {
                         const _isS = item.status === '출고' || item.status === '피킹';
-                        const _pv = _isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '');
+                        // item.pallet이 이미 있으면(충주공장 재고 행 자신의 실제 값) 그걸 그대로
+                        // 쓰고, 없는 시트(수출 현황/출고 완료) 항목만 기존 code+차수 조회값으로.
+                        const _pv = item.pallet !== undefined ? item.pallet
+                            : (_isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || ''));
                         matchesPallet = _pv.toLowerCase().includes(palletQuery);
                     }
 
-                    // 소스 필터
+                    // 소스 필터 — 실재고/적재 탭은 이미 _baseList가 충주공장 재고 행만으로
+                    // 좁혀져 있으니 'stock'은 그대로 전부 통과, 'pallet'만 실제로 적재번호가
+                    // 적힌(숫자/적재 포함) 행만 한 번 더 좁힌다.
                     let matchesSource = true;
                     if (_activeSourceFilter === 'active') {
                         matchesSource = !_shippedStatuses.has(item.status);
                     } else if (_activeSourceFilter === 'stock') {
-                        const _hasPallet = !!_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')];
-                        matchesSource = _hasPallet;
+                        matchesSource = true;
                     } else if (_activeSourceFilter === 'pallet') {
-                        const _pv = _pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '';
+                        const _pv = item.pallet || '';
                         // K열 값이 "적재 N" 형태이거나 숫자·영숫자 번호가 포함된 항목만
                         matchesSource = _pv !== '' && (/적재/.test(_pv) || /\d/.test(_pv));
                     } else if (_activeSourceFilter === 'shipped') {
