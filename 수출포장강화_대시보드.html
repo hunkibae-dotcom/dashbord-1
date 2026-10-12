@@ -1696,6 +1696,40 @@
         </div>
     </div>
 
+    <!-- 제품별 실적 누적차트 — 막대 클릭 시 상세(포장강화 누적차트의 packingDetailModal과
+         동일 구성, id만 prodCmp로 구분) -->
+    <div id="prodCmpDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden transition-all duration-300" onclick="if(event.target===this) closeProdCmpDetailModal()">
+        <div class="bg-panelBg border border-borderSlate p-4 md:p-6 rounded-2xl max-w-4xl w-full mx-4 shadow-2xl relative">
+            <div class="flex items-center gap-2 md:gap-3 mb-4">
+                <div class="bg-sky-400/10 text-sky-400 p-2 md:p-2.5 rounded-xl border border-sky-400/20 shrink-0">
+                    <i class="fa-solid fa-chart-column text-[16px] md:text-[21.5px]"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="text-[15px] md:text-[21.5px] font-bold text-white truncate" id="prodCmpModalTitle">실적 상세 내역</h3>
+                    <p class="hidden md:block text-[17.5px] text-slate-400" id="prodCmpModalSubtitle">상차일 기준 품목 리스트</p>
+                </div>
+                <button onclick="exportProdCmpModalData()" class="flex items-center gap-1.5 bg-sky-400/10 hover:bg-sky-400/20 text-sky-500 text-[14.5px] px-3 py-2 rounded-xl font-semibold border border-sky-400/30 transition-colors active:scale-95 shrink-0">
+                    <i class="fa-solid fa-file-arrow-down text-[13px]"></i> <span class="hidden md:inline">데이터 출력</span>
+                </button>
+            </div>
+            <div id="prodCmpModalTableWrap" class="mobile-table-wrap max-h-80 overflow-y-auto overflow-x-auto border border-borderSlate/60 rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-darkBg/60 text-slate-400 text-[14.5px] font-semibold border-b border-borderSlate" style="white-space:nowrap;">
+                            <th class="py-2.5 px-3">제품구분</th>
+                            <th class="py-2.5 px-3">수출건명</th>
+                            <th class="py-2.5 px-3">품목코드</th>
+                            <th class="py-2.5 px-3">색상</th>
+                            <th class="py-2.5 px-3 text-right">수량(BOX)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prodCmpModalTableBody" class="text-[17.5px] divide-y divide-borderSlate/40"></tbody>
+                </table>
+            </div>
+            <div id="prodCmpModalCardsMobile" class="mobile-card-list gap-2 max-h-80 overflow-y-auto"></div>
+        </div>
+    </div>
+
     <div id="settingsModal" class="hidden" onclick="if(event.target===this)closeSettingsModal()"
         style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:460px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);">
