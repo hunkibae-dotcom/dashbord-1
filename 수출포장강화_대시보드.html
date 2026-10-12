@@ -4212,7 +4212,7 @@
                             callbacks: {
                                 // 막대 자체는 총합 하나뿐이지만, 그 기간에 구분별로 뭐가 몇 개인지는
                                 // 여기(호버 상세)에서 보여준다 — 0건인 구분은 목록을 어지럽히니 뺀다.
-                                label: () => null,
+                                label: (item) => '합계  ' + item.parsed.y.toLocaleString() + ' EA',
                                 afterBody: (items) => {
                                     const b = _prodCmpLabelMeta[items[0].dataIndex];
                                     if (!b) return [];
