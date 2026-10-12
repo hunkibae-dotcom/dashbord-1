@@ -8325,12 +8325,12 @@
             });
         }
 
-        // 구글시트 "수출 표준품 인식표" 양식을 그대로 옮긴 레이아웃 — 이전 버전은
-        // 오른쪽에 아무 값도 안 채워지는 "확정 납기일"/"검사 완료일" 빈 칸 2개를 두고,
-        // 정작 실제 값이 있는 상차일/포장완료일은 왼쪽 큰 제목 박스 밑에 작게 끼워넣고
-        // 있었다 — 실제 시트는 오른쪽 칸이 상차일/포장완료일 그 자체다. 왼쪽(수주 건명 =
-        // 큰 제목)과 오른쪽(상차일 위, 포장완료일 아래)을 시트와 같은 2단 표 형태로 맞췄다.
-        function _pkgBuildLabelHtml(opts) {
+        // (예전엔 이 자리에 인식표 레이아웃을 HTML로 직접 그려서 html2canvas로 캡처하는
+        // _pkgBuildLabelHtml/_pkgRenderLabelToPdf가 있었다 — 구글시트 서식을 흉내 낸
+        // 것이었는데 미세한 정렬 차이가 계속 생겨서, 이제 진짜 시트 자체를 PDF로
+        // 내보내는 방식(_pkgExportLabelSheetAsPdf, GAS 쪽)으로 완전히 대체했다. 이 두
+        // 함수는 더 이상 아무 데서도 호출되지 않아 삭제함 — 2026-10-12.)
+        function _pkgBuildLabelHtml_REMOVED(opts) {
             const esc = function (s) { return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); };
             const headers = opts.columns;
             const BORDER = '#cbd5e1';
