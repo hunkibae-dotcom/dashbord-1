@@ -7945,28 +7945,100 @@
             const hasHeaderRow = (iCode >= 0 || iColor >= 0 || iQty >= 0);
             const startRow = hasHeaderRow ? 1 : 0;
 
+            // K열(건명/배송지 문구)에 적히는 "포장강화 대상" 표시가 예전엔 글자 그대로
+            // "(포장 강화)"였는데, 전산 쪽에서 이 표시 방식을 바꿔서 이제 그 자리에
+            // "김기원님앞"이라고 담당자 이름이 적힌다(요청, 2026-10-12 확인) — 예전 파일이
+            // 섞여 들어와도 안 깨지게 두 글자 다 확인한다.
             const entries = [];
             for (let i = startRow; i < grid.length; i++) {
                 const row = grid[i];
                 if (!row) continue;
-                // K열에 "포장 강화"(공백 유무 무관)가 없으면 포장강화 대상이 아닌 입고 건이므로 건너뜀.
                 const markRaw = (row[10] || '').toString().replace(/\s+/g, '');
-                if (!markRaw.includes('포장강화')) continue;
-                const codeRaw = (iCode >= 0 ? row[iCode] : row[2]);
-                const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
-                if (!codeStr) continue;
-                const colorRaw = (iColor >= 0 ? row[iColor] : row[3]);
-                let qtyRaw = (iQty >= 0 ? row[iQty] : row[4]);
-                // E열(수량)이 0/빈값이면 H열에 있는 수량을 대신 쓴다.
-                const qtyNum = parseFloat((qtyRaw == null ? '' : qtyRaw.toString()).replace(/,/g, ''));
-                if (!qtyNum) qtyRaw = row[7];
-                entries.push({
-                    itemCode: codeStr,
-                    color: (colorRaw == null ? '' : colorRaw.toString()).trim(),
-                    qty: (qtyRaw == null ? '' : qtyRaw.toString()).trim()
-                });
+                if (!markRaw.includes('포장강화') && !markRaw.includes('김기원님앞')) continue;
+                const picked = _pkgPickOutResultRow(row, iCode, iColor, iQty);
+                if (picked) entries.push(picked);
             }
             return entries;
+        }
+        // _pkgExtractOutResultEntries의 한 행 파싱 부분만 떼어낸 것 — 마크(김기원님앞 등)
+        // 판정 없이도 코드/색상/수량만 뽑아야 할 때(아래 후보 매칭 폴백) 재사용한다.
+        function _pkgPickOutResultRow(row, iCode, iColor, iQty) {
+            const codeRaw = (iCode >= 0 ? row[iCode] : row[2]);
+            const codeStr = (codeRaw == null ? '' : codeRaw.toString()).trim();
+            if (!codeStr) return null;
+            const colorRaw = (iColor >= 0 ? row[iColor] : row[3]);
+            let qtyRaw = (iQty >= 0 ? row[iQty] : row[4]);
+            // E열(수량)이 0/빈값이면 H열에 있는 수량을 대신 쓴다.
+            const qtyNum = parseFloat((qtyRaw == null ? '' : qtyRaw.toString()).replace(/,/g, ''));
+            if (!qtyNum) qtyRaw = row[7];
+            return {
+                itemCode: codeStr,
+                color: (colorRaw == null ? '' : colorRaw.toString()).trim(),
+                qty: (qtyRaw == null ? '' : qtyRaw.toString()).trim()
+            };
+        }
+        // 마크(김기원님앞 등)로 못 찾을 때의 폴백 — 파일의 모든 행을 코드/색상/수량으로
+        // 뽑아서, 지금 "미입고" 상태인 품목과 품목코드(+가능하면 색상)가 맞는 것만 후보로
+        // 남긴다. 그 품목이 이미 입고 처리됐거나(미입고가 아님) 아예 등록 자체가 안 된
+        // 코드면 비교 대상이 없으니 후보에서 빠진다 — 확신할 수 없는 매칭이라 전부
+        // 사람이 체크박스로 확인한 뒤에만 반영한다(공정진행정보분류의 확인 팝업과 동일한
+        // 취지).
+        function _pkgBuildIpgoCandidates(grid, startRow, iCode, iColor, iQty) {
+            const waiting = (state.data || []).filter(it => it.status === '미입고');
+            const candidates = [];
+            for (let i = startRow; i < grid.length; i++) {
+                const row = grid[i];
+                if (!row) continue;
+                const picked = _pkgPickOutResultRow(row, iCode, iColor, iQty);
+                if (!picked) continue;
+                const codeU = picked.itemCode.toUpperCase();
+                const matches = waiting.filter(it => (it.code || '').toUpperCase() === codeU);
+                if (!matches.length) continue;
+                // 색상까지 같은 게 있으면 그걸 우선하고, 없으면 수량이 가장 가까운 걸 고른다.
+                const qtyNum = parseFloat(picked.qty.toString().replace(/,/g, '')) || 0;
+                let best = matches.find(it => picked.color && (it.color || '') === picked.color) || matches[0];
+                matches.forEach(it => {
+                    if (Math.abs((it.qty || 0) - qtyNum) < Math.abs((best.qty || 0) - qtyNum)) best = it;
+                });
+                candidates.push({
+                    entry: picked,
+                    existingLabel: `${best.round || '-'} / ${best.code} / ${best.color || '-'} / ${(best.qty || 0).toLocaleString()}EA`,
+                    incomingLabel: `${picked.itemCode} / ${picked.color || '-'} / ${picked.qty}EA`
+                });
+            }
+            return candidates;
+        }
+        // 공정진행정보분류(품질검사)의 체크박스 확인 팝업과 같은 취지 — "기존(미입고)"
+        // 줄과 "이번 파일" 줄을 나란히 보여주고, 사람이 체크한 것만 반영한다. 선택된
+        // entry 배열로 resolve, 취소하면 null로 resolve.
+        function _pkgShowIpgoCandidateConfirm(candidates) {
+            return new Promise((resolve) => {
+                const listEl = document.getElementById('pkgIpgoCandidateList');
+                listEl.innerHTML = candidates.map((c, idx) => `
+                    <label style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="pkg-ipgo-cand-chk" data-idx="${idx}" checked style="margin-top:3px;width:15px;height:15px;flex-shrink:0;">
+                        <div style="font-size:12.5px;line-height:1.6;">
+                            <div style="color:#94a3b8;">기존(미입고) : <span style="color:#334155;font-weight:600;">${c.existingLabel}</span></div>
+                            <div style="color:#94a3b8;">이번 파일 &nbsp;: <span style="color:#0369a1;font-weight:700;">${c.incomingLabel}</span></div>
+                        </div>
+                    </label>
+                `).join('');
+                document.getElementById('pkgIpgoCandidateCount').textContent = `${candidates.length}건 — 품목코드/수량이 정확히 표시되지 않아 사람이 직접 확인해야 합니다.`;
+                const modal = document.getElementById('pkgIpgoCandidateModal');
+                modal.style.display = 'flex';
+                const cleanup = () => { modal.style.display = 'none'; };
+                document.getElementById('pkgIpgoCandidateApplyBtn').onclick = () => {
+                    const selected = Array.from(document.querySelectorAll('.pkg-ipgo-cand-chk'))
+                        .filter(chk => chk.checked)
+                        .map(chk => candidates[parseInt(chk.dataset.idx, 10)].entry);
+                    cleanup();
+                    resolve(selected);
+                };
+                document.getElementById('pkgIpgoCandidateCancelBtn').onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+            });
         }
 
         // 분류(수주)/분류(입고) 엑셀 업데이트를 마지막으로 언제 했는지 사이드바에
