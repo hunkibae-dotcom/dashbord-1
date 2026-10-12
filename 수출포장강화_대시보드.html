@@ -9523,7 +9523,7 @@
             /* ── 4. 화살표+카드명+점 nav 생성 ── */
             var LABELS = {
                 topCardGrid: ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'],
-                chartRow: ['포장 강화 현황', '제품별 실적 비교']
+                chartRow: ['포장 강화 현황', '제품별 실적 누적']
             };
             var labels = LABELS[gridId] || [];
 
@@ -9860,7 +9860,7 @@
     document.body.classList.add('shell-mode');
 
     _shellCarousel('topCardGrid', ['금일 작업계획', '이전 작업내용', '수출 일정', 'INFORM'], '56vh', '20px 12px');
-    _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 비교'],              '50vh', '14px 10px');
+    _shellCarousel('chartRow',   ['포장 강화 현황', '제품별 실적 누적'],              '50vh', '14px 10px');
 
     /* ── 인라인 !important 직접 적용 (Tailwind CDN / 캐스케이드 완전 우회) ── */
     requestAnimationFrame(function(){
