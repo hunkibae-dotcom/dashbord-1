@@ -8288,7 +8288,7 @@ function renderMobileList() {
     else if (mStatus === '검사대기') { if (d.source === 'archive' || !QC_WAIT_INSPECT_STATUSES.includes(d.검사)) return false; }
     else if (mStatus === '금일포장') {
       if (d.source === 'archive') return false;
-      if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
+      if (d.검사 !== '미검사' && d.검사 !== '포장대기' && !isReinspectWaiting(d)) return false;
       if (!d.포장일) return false;
       const dd = ddayInfo(d.포장일);
       if (dd === null || dd > 0) return false;
