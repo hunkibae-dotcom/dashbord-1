@@ -6047,9 +6047,10 @@ function qcBackToExportKind() {
   document.getElementById('qcExportFormatStep').classList.add('hidden');
   document.getElementById('qcExportKindStep').classList.remove('hidden');
 }
-function _qcExportKindMeta(kind, sourceRows) {
+function _qcExportKindMeta(kind, sourceRows, format) {
   if (kind === 'manage') {
-    return { title: '검사항목목록', columns: QC_EXPORT_COLS, rows: sourceRows, filenameBase: `검사항목목록_${new Date().toISOString().slice(0,10)}` };
+    const cols = format === 'pdf' ? _qcExportColsForPdf() : QC_EXPORT_COLS;
+    return { title: '검사항목목록', columns: cols, rows: sourceRows, filenameBase: `검사항목목록_${new Date().toISOString().slice(0,10)}` };
   }
   if (kind === 'inspect') {
     return { title: '검사항목 출력', columns: _qcInspectColumns(), rows: sourceRows, filenameBase: `검사항목출력_${new Date().toISOString().slice(0,10)}` };
