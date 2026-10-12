@@ -6803,6 +6803,32 @@
             });
             return hasUnassigned ? 'TOTAL PALET - ' : ('TOTAL PALET - ' + set.size);
         }
+        // 한글/한자 등은 라틴 글자보다 시각적으로 두 배 가까이 넓어서, 글자 수만 그대로
+        // 세면 한글이 많은 칸(건명/단품명칭 등)이 실제로는 잘려 보인다 — 한글/한자/가나
+        // 범위는 2칸으로 센다.
+        function _pkgVisualLen(v) {
+            const s = (v == null ? '' : String(v));
+            let len = 0;
+            for (const ch of s) {
+                const code = ch.codePointAt(0);
+                const wide = (code >= 0xAC00 && code <= 0xD7A3) || (code >= 0x1100 && code <= 0x11FF) ||
+                    (code >= 0x3130 && code <= 0x318F) || (code >= 0x4E00 && code <= 0x9FFF) ||
+                    (code >= 0x3040 && code <= 0x30FF);
+                len += wide ? 2 : 1;
+            }
+            return len;
+        }
+        // 칼럼 폭을 미리 정해둔 퍼센트가 아니라, 실제로 그 칼럼에 들어가는 값(헤더 포함)
+        // 중 가장 넓은 걸 기준으로 자동으로 정한다 — 데이터 출력할 때마다 글자가 잘려
+        // 보이던 문제(요청)를 없앤다.
+        function _pkgAutoColWidth(label, rows, getter) {
+            let max = _pkgVisualLen(label);
+            rows.forEach(item => {
+                const len = _pkgVisualLen(getter(item));
+                if (len > max) max = len;
+            });
+            return Math.min(60, Math.max(8, max + 3));
+        }
         // 시트 이름에 쓸 수 없는 문자(\ / ? * [ ] :)를 지우고 31자로 자른다 — 엑셀 시트
         // 이름 규칙(길이/금지문자)을 넘기면 XLSX.utils.book_append_sheet가 그냥 에러를
         // 던져서 다운로드 자체가 안 되므로, 파일명/제목을 그대로 쓰기 전에 항상 거친다.
