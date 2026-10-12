@@ -8277,37 +8277,55 @@
             const BORDER = '#cbd5e1';
             const HEAD_BG = '#f1f5f9'; // 연한 회색(기존 연보라 #ede9fe에서 변경)
             const HEAD_TXT = '#334155';
+            // 표 헤더/셀 전부 글자가 칸 아래쪽으로 "주저앉아" 보인다는 지적 — 브라우저
+            // 기본 line-height가 글자 높이보다 넉넉해서 생기는 시각적 쏠림이다. 패딩에만
+            // 기대지 않고 th/td를 flex 박스로 바꿔 글자를 칸 한가운데에 강제로 둔다.
+            const CELL_FLEX = 'display:flex;align-items:center;justify-content:center;line-height:1.2;';
             const headHtml = headers.map(function (h) {
-                return '<th style="padding:9px 10px;border:1px solid ' + BORDER + ';background:' + HEAD_BG + ';color:' + HEAD_TXT + ';font-size:12.5px;font-weight:700;letter-spacing:.02em;">' + esc(h) + '</th>';
+                return '<th style="padding:0;border:1px solid ' + BORDER + ';background:' + HEAD_BG + ';">'
+                    + '<div style="' + CELL_FLEX + 'padding:9px 10px;color:' + HEAD_TXT + ';font-size:12.5px;font-weight:700;letter-spacing:.02em;">' + esc(h) + '</div></th>';
             }).join('');
             const rowsHtml = (opts.items || []).map(function (r, idx) {
                 const bg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
                 return '<tr>' + r.map(function (c) {
-                    return '<td style="padding:8px 10px;border:1px solid ' + BORDER + ';background:' + bg + ';font-size:13px;color:#1e293b;text-align:center;">' + esc(c) + '</td>';
+                    return '<td style="padding:0;border:1px solid ' + BORDER + ';background:' + bg + ';">'
+                        + '<div style="' + CELL_FLEX + 'padding:8px 10px;font-size:13px;color:#1e293b;">' + esc(c) + '</div></td>';
                 }).join('') + '</tr>';
             }).join('');
-            const HEAD_BAR = 'background:' + HEAD_BG + ';color:' + HEAD_TXT + ';font-weight:700;font-size:13.5px;text-align:center;padding:10px;border-bottom:1.5px solid #1e293b;';
+            const HEAD_BAR = 'background:' + HEAD_BG + ';color:' + HEAD_TXT + ';font-weight:700;font-size:13.5px;border-bottom:1.5px solid #1e293b;';
+            const headBarDiv = function (label) {
+                return '<div style="' + HEAD_BAR + CELL_FLEX + 'padding:10px;">' + esc(label) + '</div>';
+            };
             const dateBox = function (label, value) {
                 return '<div style="flex:1;display:flex;flex-direction:column;min-height:0;">'
-                    + '<div style="' + HEAD_BAR + '">' + esc(label) + '</div>'
-                    + '<div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#1e293b;letter-spacing:.02em;">' + esc(value || '-') + '</div>'
+                    + headBarDiv(label)
+                    + '<div style="flex:1;' + CELL_FLEX + 'font-size:21px;font-weight:800;color:#1e293b;letter-spacing:.02em;">' + esc(value || '-') + '</div>'
                     + '</div>';
             };
 
             return '<div style="width:860px;background:#fff;font-family:\'Malgun Gothic\',\'Apple SD Gothic Neo\',sans-serif;padding:28px;box-sizing:border-box;color:#1e293b;">'
-                + '<div style="text-align:center;font-size:22px;font-weight:800;letter-spacing:.08em;color:#1e293b;margin-bottom:20px;">수출 표준품 인식표</div>'
+                // 제목: A4 용지 상단 정중앙(글자 10px 키움, 22→32px) — PDF에 넣을 때도 이
+                // 블록 전체를 세로 가운데가 아니라 위쪽에 고정해서(_pkgRenderLabelToPdf),
+                // 품목이 적어 아래 내용이 짧아도 제목이 페이지 중간으로 안 내려가게 했다.
+                + '<div style="text-align:center;font-size:32px;font-weight:800;letter-spacing:.08em;color:#1e293b;margin-bottom:20px;line-height:1.3;">수출 표준품 인식표</div>'
                 + '<div style="display:flex;border:1.5px solid #1e293b;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(15,23,42,.08);margin-bottom:22px;height:300px;">'
                 // 왼쪽: 입고(큰 제목)
                 + '<div style="flex:2.3;display:flex;flex-direction:column;border-right:1.5px solid #1e293b;min-width:0;">'
-                + '<div style="' + HEAD_BAR + '">입고</div>'
-                // 구역이름/성함이 이 박스 안에서 가로·세로 정확히 가운데로 — space-evenly는
-                // 줄 수가 바뀌면(midLine 유무 등) 간격이 들쭉날쭉해 보여서, 고정 gap을 둔
-                // justify-content:center로 바꿔 항상 그룹 전체가 정중앙에 오게 한다.
-                + '<div style="flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 20px;min-height:0;box-sizing:border-box;">'
-                + '<div style="width:100%;font-size:120px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
-                + (opts.midLine ? '<div style="width:100%;font-size:18px;font-weight:700;color:#6d28d9;text-align:center;">' + esc(opts.midLine) + '</div>' : '')
-                // 구글시트는 이 줄도 채워진 박스가 아니라 그냥 굵은 주황색 글자다(배경 없음).
-                + (opts.bottomLine ? '<div style="width:100%;color:#f97316;text-align:center;font-size:19px;font-weight:800;">' + esc(opts.bottomLine) + '</div>' : '')
+                + headBarDiv('입고')
+                // 구역이름(mainTitle)은 성함/부가문구가 있든 없든 이 박스의 정확한 가로·세로
+                // 중앙에 고정돼야 한다는 요청 — 전엔 mid/bottomLine까지 한 flex 그룹으로 묶어
+                // justify-content:center를 줘서, 그 둘이 있으면 구역이름이 중앙보다 위로
+                // 밀려 "내려앉아" 보였다. position:relative 박스에 구역이름만 절대 좌표로
+                // 정중앙 고정하고, mid/bottomLine은 그 아래쪽에 별도로 얹는다.
+                + '<div style="flex:1;width:100%;position:relative;min-height:0;box-sizing:border-box;">'
+                + '<div style="position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);padding:0 20px;box-sizing:border-box;font-size:120px;font-weight:800;color:#6d28d9;text-align:center;word-break:break-all;line-height:1.1;">' + esc(opts.mainTitle || '') + '</div>'
+                + ((opts.midLine || opts.bottomLine)
+                    ? '<div style="position:absolute;left:0;right:0;bottom:14px;padding:0 20px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:6px;">'
+                        + (opts.midLine ? '<div style="width:100%;font-size:18px;font-weight:700;color:#6d28d9;text-align:center;line-height:1.3;">' + esc(opts.midLine) + '</div>' : '')
+                        // 구글시트는 이 줄도 채워진 박스가 아니라 그냥 굵은 주황색 글자다(배경 없음).
+                        + (opts.bottomLine ? '<div style="width:100%;color:#f97316;text-align:center;font-size:19px;font-weight:800;line-height:1.3;">' + esc(opts.bottomLine) + '</div>' : '')
+                        + '</div>'
+                    : '')
                 + '</div></div>'
                 // 오른쪽: 상차일(위) / 포장완료일(아래)
                 + '<div style="flex:1;display:flex;flex-direction:column;min-width:0;">'
