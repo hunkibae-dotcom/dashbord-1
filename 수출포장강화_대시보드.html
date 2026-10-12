@@ -8108,7 +8108,9 @@
                 .filter(Boolean)
                 .map(it => ({
                     round: it.round || '', code: it.code || '', color: it.color || '',
-                    qty: it.qty || '', status: it.status || '', date: it.date || '', regDate: it.regDate || '',
+                    // cat(제품구분)은 출고용 인식표의 "구분" 칸에 그대로 들어간다 — 진행상태
+                    // (status)는 별개로, "미포장 채 출고"인지 판정하는 용도로만 같이 보낸다.
+                    qty: it.qty || '', status: it.status || '', cat: it.country || '', date: it.date || '', regDate: it.regDate || '',
                     pallet: it.pallet || ''
                 }));
         }
