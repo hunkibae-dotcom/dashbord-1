@@ -6107,56 +6107,34 @@ const QC_EXPORT_COLS = [
   { label: '검사일', width: '8%', align: 'center', get: d => d.검사일 },
   { label: '검사상태', width: '8%', align: 'center', isStatus: true, get: d => d.검사 },
 ];
-function _qcStatusXlsColor(d) {
-  // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값.
-  if (d.검사 === '검사') return { bg: '#DCFCE7', color: '#15803D' };
-  if (d.검사 === '양지') return { bg: '#FEF3C7', color: '#92400E' };
-  if (d.검사 === '재투입') return { bg: '#F3E8FF', color: '#7C3AED' };
-  if (d.검사 === '미투입') return { bg: '#F1F5F9', color: '#475569' };
-  if (d.검사 === '취소') return { bg: '#E2E8F0', color: '#64748B' };
-  return { bg: '#FEE2E2', color: '#B91C1C' }; // pill-undone(미검사) 기본값
+function _qcSafeSheetName(name, fallback) {
+  const cleaned = (name || fallback || 'Sheet1').toString().replace(/[\\\/\?\*\[\]:]/g, '');
+  return (cleaned || fallback || 'Sheet1').slice(0, 31);
 }
 // columns는 get 기반(QC_EXPORT_COLS와 동일 모양)이라 검사항목/현장용 출력도
-// "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다. isStatus 플래그가 있는 칼럼만
-// _qcStatusXlsColor로 배지 색을 입힌다.
+// "XLS로 받기"를 고르면 이 함수를 그대로 재사용한다.
+// 엑셀에서 데이터를 고쳐서 저장하면 파일이 깨지는 문제(요청, 2026-10-12) — 예전엔 HTML
+// 표를 ".xls"로 속여서 저장했는데(엑셀이 열 때는 문제없이 읽어도, 진짜 xls/xlsx 파일이
+// 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다). 엑셀 업로드 기능에서
+// 이미 쓰던 xlsx 라이브러리(_loadXlsxLib)로 진짜 xlsx 바이너리를 만들어서, 받은 파일이
+// 처음부터 진짜 엑셀 파일이라 그 안에서 자유롭게 고치고 다시 저장해도 안 깨지게 한다.
 function _qcRenderGenericXls(opts) {
   const columns = opts.columns;
   const rows = opts.rows || [];
-  if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
-
-  const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
-  // 글자는 가로·세로 전부 가운데 정렬 — 엑셀은 브라우저와 달리 칸 세로정렬 기본값이
-  // 가운데가 아니라서(위/아래로 치우쳐 보임), vertical-align을 명시해야 실제로 열었을 때도
-  // 가운데로 나온다.
-  const headHtml = columns.map(c =>
-    `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
-  ).join('');
-  const bodyHtml = rows.map((d, idx) => {
-    const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-    return '<tr>' + columns.map(c => {
-      const isStatus = !!c.isStatus;
-      const sc = isStatus ? _qcStatusXlsColor(d) : null;
-      const bg = isStatus ? sc.bg : rowBg;
-      const color = isStatus ? sc.color : '#1e293b';
-      return `<td style="background:${bg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.get(d))}</td>`;
-    }).join('') + '</tr>';
-  }).join('');
-
-  const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '검사항목목록')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
-<body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
-<thead><tr>${headHtml}</tr></thead>
-<tbody>${bodyHtml}</tbody>
-</table></body></html>`;
-
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`;
-  a.click();
-  URL.revokeObjectURL(url);
+  if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
+  return new Promise((resolve) => {
+    _loadXlsxLib(() => {
+      const header = columns.map(c => c.label);
+      const dataRows = rows.map(d => columns.map(c => c.get(d)));
+      const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
+      ws['!cols'] = columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, _qcSafeSheetName(opts.title, '검사항목목록'));
+      const filename = (opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`).replace(/\.xls$/i, '.xlsx');
+      XLSX.writeFile(wb, filename);
+      resolve();
+    });
+  });
 }
 
 // ── 누적 품질검사 차트 데이터 출력: "① 요약"/"② 상세내역" 2개 시트짜리 xls ──
