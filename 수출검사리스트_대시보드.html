@@ -6077,7 +6077,7 @@ async function qcRunExport(format) {
   if (!meta || !meta.rows.length) { statusEl.textContent = (meta && meta.emptyMsg) || '내보낼 데이터가 없습니다.'; return; }
   try {
     if (format === 'xls') {
-      _qcRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls' });
+      await _qcRenderGenericXls({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.xls' });
       qcCloseExportChoiceModal();
     } else {
       statusEl.textContent = 'PDF 만드는 중...';
