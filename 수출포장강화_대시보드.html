@@ -8808,6 +8808,17 @@
                             (iCol < 0 || rColor === _pkgColor)) { r[10] = changed.pallet; break; }
                     }
                 }
+                // 위 블록은 "충주공장 재고" 원본 행(state.rawStockRows)만 고쳤는데, 화면에
+                // 보이는 item.pallet은 renderTable()이 그 원본을 다시 훑어서 조회한 값으로
+                // 매번 새로 계산한다 — 그런데 수출현황 단계(아직 재고 시트에 안 들어간
+                // 품목)처럼 매칭되는 원본 행이 아예 없으면 위 for문이 아무것도 못 바꾸고,
+                // 결과적으로 적재번호를 입력해 저장해도 화면 값이 그대로였다. 다른 칸
+                // (진행상태/포장완료일/규격)처럼 이 품목 객체 자체에도 바로 반영한다.
+                if (changed.pallet !== undefined) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => {
+                        if (_pkgMatch(it)) it.pallet = changed.pallet;
+                    }); });
+                }
                 let okMsg = '✓ 저장되었습니다.';
                 if (migrationResult) {
                     if (migrationResult.insertedCount !== undefined) okMsg = `✓ 충주공장 재고에 입고 처리되었습니다.`;
