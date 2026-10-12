@@ -6521,12 +6521,9 @@ async function _qcRenderPrintPdf(opts) {
       const rowBg = (idx % 2 === 0) ? '#ffffff' : '#f8fafc';
       const bg = plain ? '#fff' : (isStatus ? sc.bg : rowBg);
       const color = plain ? '#1e293b' : (isStatus ? sc.color : '#1e293b');
-      // 건명·단품코드는 내용이 길어도 줄바꿈하지 말고 무조건 한 줄로 — 칸보다 길면
-      // 잘리지 않고 옆으로 삐져나오게 둔다(overflow:visible, 절대 안 잘림).
-      const forceOneLine = c.label === '건명' || c.label === '단품코드';
-      const wrapStyle = forceOneLine
-        ? 'white-space:nowrap;overflow:visible;'
-        : 'white-space:normal;word-break:break-all;overflow-wrap:break-word;';
+      // 모든 칸 무조건 한 줄(_qcFitPdfColumns가 이미 다 들어오게 맞춰놨다) —
+      // overflow:hidden은 혹시 모를 측정 오차에 대비한 안전망.
+      const wrapStyle = 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
       return `<div style="width:${c.width};flex-shrink:0;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:${bodyCellBorder};${isStatus ? 'font-weight:700;' : ''}color:${color};background:${bg};padding:6px 6px;font-size:${fontSize}px;line-height:1.4;text-align:center;${wrapStyle}">${_qcPrintEsc(v)}</div>`;
     }).join('');
     return `<div class="qc-pdf-row" style="display:flex;width:100%;">${cells}</div>`;
