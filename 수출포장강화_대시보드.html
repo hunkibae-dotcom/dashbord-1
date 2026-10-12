@@ -8464,7 +8464,30 @@
             }, '인식표_재고용_' + (res.palletNumber || '') + '.pdf');
         }
 
+        // 출고용 인식표는 화면에 HTML로 따로 그리지 않고, 구글시트 "인식표" 탭에 값을
+        // 써넣은 뒤 그 시트 자체를 서버에서 PDF로 내보낸 결과(res.pdfBase64)를 그대로
+        // 다운로드한다 — 실제 시트(서식/정렬 전부 포함)가 그대로 PDF로 나오므로 화면에서
+        // 따로 그릴 때 생기던 미세한 정렬 차이가 원천적으로 없다.
+        function _pkgDownloadBase64Pdf(base64, filename) {
+            const bin = atob(base64);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const blob = new Blob([bytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
         async function _pkgGenerateShipLabelPdf(res) {
+            if (!res.pdfOk || !res.pdfBase64) {
+                alert('인식표 PDF 생성에 실패했습니다' + (res.pdfMessage ? (': ' + res.pdfMessage) : '') + '\n구글시트의 "인식표" 탭은 정상적으로 갱신되었습니다.');
+                return;
+            }
+            _pkgDownloadBase64Pdf(res.pdfBase64, '인식표_출고용_' + (res.palletNumber || '') + '.pdf');
+        }
+        async function _pkgGenerateShipLabelPdfOld(res) {
             // res.items: [건명, 단품코드, 색상, 수량, 구분] (인식표 시트 A20:E31과 동일)
             await _pkgRenderLabelToPdf({
                 isStock: false,
