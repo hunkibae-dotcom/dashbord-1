@@ -4665,7 +4665,7 @@
                                 cell.border = _PKG_XLS_BORDER_LIGHT;
                             });
                         });
-                        ws.columns = spec.columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '12%') / 100 * 100)) }));
+                        ws.columns = spec.columns.map(c => ({ width: _pkgAutoColWidth(c.label, spec.rows || [], c.get || (() => '')) }));
                     }
                     const wb = new ExcelJS.Workbook();
                     addSheet(wb, opts.summary, '요약');
@@ -6910,7 +6910,7 @@
                         cell.alignment = _PKG_XLS_CENTER;
                         cell.border = _PKG_XLS_BORDER_DARK;
                     }
-                    ws.columns = columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
+                    ws.columns = columns.map(c => ({ width: _pkgAutoColWidth(c.label, rows, c.get || (() => '')) }));
                     const filename = (opts.filename || '수출포장강화_export.xls').replace(/\.xls$/i, '.xlsx');
                     await _pkgSaveWorkbookBuffer(wb, filename);
                     resolve();
