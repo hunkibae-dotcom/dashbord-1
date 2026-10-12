@@ -6417,53 +6417,64 @@ function _qcSimplifyName(name) {
   const MAX_LEN = 16;
   return simplified.length > MAX_LEN ? simplified.slice(0, MAX_LEN) + '…' : simplified;
 }
-// 건명·단품코드는 "무조건 한 줄"로 정했는데, 칼럼 폭(%)이 실제 내용보다 좁으면
-// white-space:nowrap;overflow:visible을 줘도 html2canvas가 그 바깥으로 삐져나온
-// 부분을 못 살리고 그냥 잘라버렸다(알려진 한계) — 화면 밖에 한 번 그려서 그 칼럼에서
-// 가장 긴 값의 실제 픽셀 너비를 재고, 모자라면 칼럼 폭 자체를 넓혀서(부족분은 줄바꿈
-// 가능한 다른 칼럼들에서 비례해서 떼어옴) 애초에 삐져나올 일이 없게 만든다.
-function _qcAutoWidenOneLineColumns(columns, rows, fontSize, headerFontSize, contentWidthPx) {
-  const ONE_LINE_LABELS = ['건명', '단품코드'];
-  const oneLineIdx = columns.map((c, i) => i).filter(i => ONE_LINE_LABELS.indexOf(columns[i].label) !== -1);
-  if (!oneLineIdx.length) return columns;
+// PDF는 모든 칸을 "무조건 한 줄"로 고정한다 — 칸마다 줄바꿈 여부가 들쭉날쭉하면
+// 행 높이도 들쭉날쭉해진다는 지적(요청, 2026-10-12)으로, 아예 줄바꿈 자체를 없앴다.
+// 건명/단품명칭처럼 사람이 적는 자유 텍스트만 길어질 수 있으니 그 칸들만 "요약"
+// (말줄임표로 자르기) 대상으로 두고, 나머지(단품코드/색상/수량/날짜/규격 등 짧고
+// 고정된 값)는 실제 내용이 다 들어가는 폭을 그대로 보장한다 — 화면 밖에 한 번 그려서
+// 칼럼별로 실제 필요한 픽셀 너비를 재고(공통 칼럼은 필요한 만큼 그대로, 자유 텍스트
+// 칼럼은 남는 폭만큼만 배정), 자유 텍스트 칼럼 값은 배정된 폭에 맞춰 글자 단위로
+// 줄여 "…"를 붙인다. 그러면 모든 칸이 항상 한 줄로 끝나 행 높이가 전부 같아진다.
+function _qcFitPdfColumns(columns, rows, fontSize, headerFontSize, contentWidthPx) {
+  const FREE_TEXT_LABELS = ['건명', '단품명칭'];
+  const freeIdx = columns.map((c, i) => i).filter(i => FREE_TEXT_LABELS.indexOf(columns[i].label) !== -1);
 
   const span = document.createElement('span');
   span.style.cssText = `position:fixed;left:-99999px;top:0;white-space:nowrap;font-family:'맑은 고딕',sans-serif;`;
   document.body.appendChild(span);
   const measure = (text, size) => { span.style.fontSize = size + 'px'; span.textContent = text; return span.offsetWidth; };
-
   const CELL_PAD = 14; // 좌우 padding(6px*2) + 여유
-  const neededPx = {};
-  oneLineIdx.forEach(i => {
-    const c = columns[i];
+
+  // 1) 자유 텍스트가 아닌 칸 — 실제 값 기준으로 필요한 만큼 그대로 준다(절대 안 줄임).
+  const fixedPx = {};
+  let fixedTotal = 0;
+  columns.forEach((c, i) => {
+    if (freeIdx.indexOf(i) !== -1) return;
     let maxW = measure(c.label, headerFontSize);
     rows.forEach(d => {
       const v = c.get(d);
       maxW = Math.max(maxW, measure(v == null ? '' : String(v), fontSize));
     });
-    neededPx[i] = maxW + CELL_PAD;
+    fixedPx[i] = maxW + CELL_PAD;
+    fixedTotal += fixedPx[i];
+  });
+
+  // 2) 남는 폭을 자유 텍스트 칸들에게 원래 지정된 %비율대로 나눠준다(최소 40px 보장).
+  const freeWeightTotal = freeIdx.reduce((s, i) => s + parseFloat(columns[i].width), 0) || 1;
+  const remainPx = Math.max(0, contentWidthPx - fixedTotal);
+  const freePx = {};
+  freeIdx.forEach(i => {
+    freePx[i] = Math.max(40, remainPx * (parseFloat(columns[i].width) / freeWeightTotal));
+  });
+
+  // 3) 자유 텍스트 값은 배정된 폭 안에 들어오도록 글자 단위로 줄이고 "…"를 붙인다.
+  const truncate = (text, maxPx) => {
+    let s = (text == null ? '' : String(text));
+    if (!s || measure(s, fontSize) + CELL_PAD <= maxPx) return s;
+    while (s.length > 1 && measure(s + '…', fontSize) + CELL_PAD > maxPx) s = s.slice(0, -1);
+    return s + '…';
+  };
+
+  const widthsPx = columns.map((c, i) => freeIdx.indexOf(i) !== -1 ? freePx[i] : fixedPx[i]);
+  const newColumns = columns.map((c, i) => {
+    const width = (widthsPx[i] / contentWidthPx * 100) + '%';
+    if (freeIdx.indexOf(i) === -1) return Object.assign({}, c, { width });
+    const maxPx = widthsPx[i];
+    const origGet = c.get;
+    return Object.assign({}, c, { width, get: d => truncate(origGet(d), maxPx) });
   });
   document.body.removeChild(span);
-
-  const widthsPx = columns.map(c => parseFloat(c.width) / 100 * contentWidthPx);
-  let totalDeficit = 0;
-  oneLineIdx.forEach(i => {
-    const deficit = neededPx[i] - widthsPx[i];
-    if (deficit > 0) { widthsPx[i] += deficit; totalDeficit += deficit; }
-  });
-  if (totalDeficit <= 0) return columns; // 이미 다 들어가면 손댈 필요 없음
-
-  // 부족분을 "줄바꿈 가능한(한 줄 강제가 아닌)" 칼럼들의 현재 폭 비율대로 나눠서 뺀다.
-  const shrinkable = columns.map((c, i) => i).filter(i => oneLineIdx.indexOf(i) === -1);
-  const shrinkableTotalPx = shrinkable.reduce((s, i) => s + widthsPx[i], 0);
-  if (shrinkableTotalPx > 0) {
-    shrinkable.forEach(i => {
-      const share = widthsPx[i] / shrinkableTotalPx;
-      widthsPx[i] = Math.max(20, widthsPx[i] - totalDeficit * share); // 최소 20px은 남김
-    });
-  }
-
-  return columns.map((c, i) => Object.assign({}, c, { width: (widthsPx[i] / contentWidthPx * 100) + '%' }));
+  return newColumns;
 }
 // 공통 페이지 나누기/캡처 엔진 — opts: { title, columns, rows, filename, plain(선택,
 // 흑백 단순 표 스타일) }. columns: [{label, width, align, get(d)}].
