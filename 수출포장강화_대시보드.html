@@ -3985,7 +3985,10 @@
             function parseQty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g, '')) || 0) : 0; }
             (state.data || []).forEach(item => {
                 if (!_pkgIsShippedItem(item)) return;
-                const cat = (item.country || '').toString().trim();
+                // 원본 데이터에 "충주 1제품"/"충주1제품"처럼 띄어쓰기만 다르게 입력된 경우가
+                // 있어서, 공백을 다 지우고 묶지 않으면 같은 제품구분이 막대그래프에서 둘로
+                // 쪼개져 범례가 중복되고 그래프가 더 복잡해 보였다.
+                const cat = (item.country || '').toString().replace(/\s+/g, '');
                 if (!cat || cat === '미구성' || cat === 'DOMESTIC') return;
                 const d = normalizeDate(item.date); // 상차일 기준(출고 기준)
                 if (!d || d === '-') return;
