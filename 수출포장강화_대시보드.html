@@ -7753,12 +7753,12 @@
                     if (res.failed && res.failed.length) throw new Error('일부 저장 실패: ' + res.failed.join(', '));
                     // 즉시 반영: 선택된 품목들에 바로 적재번호를 적용한다(다음 전체
                     // 새로고침 전까지도 화면에 바로 보이도록 — savePkgItemDetail()의
-                    // 단일 수정과 같은 방식).
-                    const selectedKeySet = new Set(_pkgBulkItems.map(it => it.key));
+                    // 단일 수정과 같은 방식). code+round+color로 매칭.
+                    const selectedTuples = new Set(_pkgBulkItems.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')));
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return;
                         arr.forEach(it => {
-                            const k = window._pkgRowMap && Object.keys(window._pkgRowMap).find(kk => window._pkgRowMap[kk] === it);
-                            if (k && selectedKeySet.has(k)) it.pallet = sendPallet;
+                            const tup = (it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + _pkgNormColor(it.color);
+                            if (selectedTuples.has(tup)) it.pallet = sendPallet;
                         });
                     });
                 }
