@@ -6107,6 +6107,17 @@ const QC_EXPORT_COLS = [
   { label: '검사일', width: '8%', align: 'center', get: d => d.검사일 },
   { label: '검사상태', width: '8%', align: 'center', isStatus: true, get: d => d.검사 },
 ];
+function _qcStatusXlsColor(d) {
+  // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값 — 지금은
+  // PDF 출력(_qcRenderPrintPdf)에서만 쓴다(엑셀 출력은 xlsx 전환 후 스타일을 입히지
+  // 않음, 아래 _qcRenderGenericXls 주석 참고).
+  if (d.검사 === '검사') return { bg: '#DCFCE7', color: '#15803D' };
+  if (d.검사 === '양지') return { bg: '#FEF3C7', color: '#92400E' };
+  if (d.검사 === '재투입') return { bg: '#F3E8FF', color: '#7C3AED' };
+  if (d.검사 === '미투입') return { bg: '#F1F5F9', color: '#475569' };
+  if (d.검사 === '취소') return { bg: '#E2E8F0', color: '#64748B' };
+  return { bg: '#FEE2E2', color: '#B91C1C' }; // pill-undone(미검사) 기본값
+}
 function _qcSafeSheetName(name, fallback) {
   const cleaned = (name || fallback || 'Sheet1').toString().replace(/[\\\/\?\*\[\]:]/g, '');
   return (cleaned || fallback || 'Sheet1').slice(0, 31);
