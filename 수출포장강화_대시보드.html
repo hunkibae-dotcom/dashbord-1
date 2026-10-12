@@ -1821,6 +1821,7 @@
         let packingWeeklyMonthOffset = 0;  // 0=이번달, -1=지난달, ...
         let packingMonthlyHalfOffset = 0;  // 0=현재반기, -1=이전반기, ...
         let _packingDateQtyMap = {};
+        let _packingCatDateQtyMap = {}; // { 제품구분: { 'YYYY-MM-DD': qty } } — 호버 상세용
         let _packingLabelMeta = [];
         // 정렬 상태 저장 변수 정의 (기본값 설정)
         let sortConfig = {
