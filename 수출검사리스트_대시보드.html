@@ -6107,6 +6107,17 @@ const QC_EXPORT_COLS = [
   { label: '검사일', width: '8%', align: 'center', get: d => d.검사일 },
   { label: '검사상태', width: '8%', align: 'center', isStatus: true, get: d => d.검사 },
 ];
+// PDF 전용 칼럼(기본출력) — XLS와 달리 PDF는 칸이 좁으면 줄바꿈 때문에 행 높이가
+// 들쭉날쭉해지므로(요청, 2026-10-12), 납기일/포장일/검사일은 PDF에서만 "M.D"로
+// 짧게 줄인다. XLS는 그대로 전체 날짜를 쓴다(QC_EXPORT_COLS 그대로 사용).
+function _qcExportColsForPdf() {
+  return QC_EXPORT_COLS.map(c => {
+    if (c.label === '납기일' || c.label === '포장일' || c.label === '검사일') {
+      return Object.assign({}, c, { get: d => _qcPrintMonthDay(c.get(d)) });
+    }
+    return c;
+  });
+}
 function _qcStatusXlsColor(d) {
   // pill-done/pill-yangji/... 클래스가 쓰는 색(104~111번째 줄 CSS)과 동일한 값.
   if (d.검사 === '검사') return { bg: '#DCFCE7', color: '#15803D' };
