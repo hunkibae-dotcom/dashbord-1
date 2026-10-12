@@ -6198,23 +6198,34 @@ function _qcRenderGenericXls(opts) {
 }
 
 // ── 누적 품질검사 차트 데이터 출력: "① 요약"/"② 상세내역" 2개 시트짜리 엑셀 ──
-// _qcRenderGenericXls와 같은 이유로 HTML-as-xls 트릭을 버리고 진짜 xlsx를 만든다.
+// _qcRenderGenericXls와 같은 이유로 ExcelJS를 써서 진짜 xlsx + 서식을 함께 만든다.
 function _qcRenderChartReportXls(opts) {
   if (!(opts.summary.rows || []).length && !(opts.detail.rows || []).length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
   return new Promise((resolve) => {
-    _loadXlsxLib(() => {
-      function sheetFromSpec(spec) {
-        const header = spec.columns.map(c => c.label);
-        const dataRows = (spec.rows || []).map(r => spec.columns.map(c => (c.get ? c.get(r) : '')));
-        const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
-        ws['!cols'] = spec.columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '12%') / 100 * 100)) }));
-        return ws;
+    _qcLoadExcelJsLib(async () => {
+      function addSheet(wb, spec, fallbackName) {
+        const ws = wb.addWorksheet(_qcSafeSheetName(spec.sheetName, fallbackName));
+        _qcStyleHeaderRow(ws, spec.columns);
+        (spec.rows || []).forEach((r, idx) => {
+          const values = spec.columns.map(c => (c.get ? c.get(r) : ''));
+          const row = ws.addRow(values);
+          const isTotal = !!r.__isTotal;
+          const rowFill = isTotal ? 'FFF5F3FF' : (idx % 2 === 0 ? 'FFFFFFFF' : 'FFF8FAFC');
+          const textColor = isTotal ? 'FF7C3AED' : 'FF1E293B';
+          row.eachCell(cell => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFill } };
+            cell.font = { bold: isTotal, color: { argb: textColor }, size: 10.5 };
+            cell.alignment = _QC_XLS_CENTER;
+            cell.border = _QC_XLS_BORDER_LIGHT;
+          });
+        });
+        ws.columns = spec.columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '12%') / 100 * 100)) }));
       }
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, sheetFromSpec(opts.summary), _qcSafeSheetName(opts.summary.sheetName, '요약'));
-      XLSX.utils.book_append_sheet(wb, sheetFromSpec(opts.detail), _qcSafeSheetName(opts.detail.sheetName, '상세내역'));
+      const wb = new ExcelJS.Workbook();
+      addSheet(wb, opts.summary, '요약');
+      addSheet(wb, opts.detail, '상세내역');
       const filename = (opts.filename || `리포트_${new Date().toISOString().slice(0,10)}.xls`).replace(/\.xls$/i, '.xlsx');
-      XLSX.writeFile(wb, filename);
+      await _qcSaveWorkbookBuffer(wb, filename);
       resolve();
     });
   });
