@@ -7324,6 +7324,20 @@ function saveMItemDetail() {
     if (fields.includes('검사일')) _postMiSync(item, { action: 'updateInspectDate', date: item.검사일 });
     if (fields.includes('비고')) _postMiSync(item, { action: 'updateNote', note: item.비고 || '' });
   }
+  // setMiField()는 검사/검사일 변경만 그때그때 화면을 다시 그린다(가로/세로/높이처럼
+  // 숫자칸에 한 글자씩 칠 때마다 수백 건짜리 목록을 통째로 다시 그리면 느려지므로
+  // 일부러 뺐다 — 위 주석 참고). 그래서 규격(CBM)만 바꾸고 저장하면 그 숫자 변경이
+  // 화면(제품검색 등)에 끝내 한 번도 반영되지 않았다. "저장"은 모든 변경을 실제로
+  // 확정하는 시점이니, 바뀐 필드 종류와 상관없이 여기서 한 번 더 확실하게 다시 그린다.
+  if (item && fields.length) {
+    renderMobileKPIs();
+    renderMobileFactoryPanels();
+    renderMobileList();
+    if (lastSearchResults && lastSearchResults.length) renderProductSearchResults(lastSearchResults);
+    if (specHistoryRows && specHistoryRows.length) runSpecLookup();
+    if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
+    if (typeof applyFilters === 'function') applyFilters();
+  }
   // 검사완료 팝업은 상태 버튼을 누르는 즉시가 아니라 "저장"을 눌렀을 때만 묻는다 —
   // 다른 칸(규격 등)을 만지다 실수로 튀어나오지 않게. 이 창을 연 시점의 원래 상태와
   // 비교해 검사완료로 "바뀐" 경우에만 물어본다.
