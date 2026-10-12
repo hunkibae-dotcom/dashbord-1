@@ -6148,45 +6148,27 @@ function _qcRenderGenericXls(opts) {
   });
 }
 
-// ── 누적 품질검사 차트 데이터 출력: "① 요약"/"② 상세내역" 2개 시트짜리 xls ──
-// 기존 _qcRenderGenericXls(단일 시트)와 같은 HTML-as-xls 트릭을 테이블 2개로
-// 늘려서 쓴다 — Excel은 이런 HTML을 열 때 <table> 개수만큼, <x:ExcelWorksheet>에
-// 적은 이름 순서대로 시트를 나눠 만든다(기존 단일 시트 트릭의 공식 확장판).
+// ── 누적 품질검사 차트 데이터 출력: "① 요약"/"② 상세내역" 2개 시트짜리 엑셀 ──
+// _qcRenderGenericXls와 같은 이유로 HTML-as-xls 트릭을 버리고 진짜 xlsx를 만든다.
 function _qcRenderChartReportXls(opts) {
-  const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  function sheetTable(sheet) {
-    const colgroup = sheet.columns.map(c => `<col style="width:${Math.round(parseFloat(c.width || '12%') * 10)}px;">`).join('');
-    const headHtml = sheet.columns.map(c =>
-      `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
-    ).join('');
-    const bodyHtml = (sheet.rows || []).map((r, idx) => {
-      const isTotal = !!r.__isTotal;
-      const rowBg = isTotal ? '#F5F3FF' : (idx % 2 === 0 ? '#ffffff' : '#f8fafc');
-      const color = isTotal ? '#7C3AED' : '#1e293b';
-      return '<tr>' + sheet.columns.map(c => {
-        const v = c.get ? c.get(r) : '';
-        return `<td style="background:${rowBg};color:${color};${isTotal ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(v)}</td>`;
-      }).join('') + '</tr>';
-    }).join('');
-    return { colgroup, headHtml, bodyHtml };
-  }
-  if (!(opts.summary.rows || []).length && !(opts.detail.rows || []).length) { alert('내보낼 데이터가 없습니다.'); return; }
-  const sheets = [opts.summary, opts.detail];
-  const worksheetXml = sheets.map(s => `<x:ExcelWorksheet><x:Name>${esc(s.sheetName)}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`).join('');
-  const bodyTables = sheets.map(s => {
-    const t = sheetTable(s);
-    return `<table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${t.colgroup}</colgroup><thead><tr>${t.headHtml}</tr></thead><tbody>${t.bodyHtml}</tbody></table>`;
-  }).join('');
-  const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>${worksheetXml}</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
-<body>${bodyTables}</body></html>`;
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = opts.filename || `리포트_${new Date().toISOString().slice(0,10)}.xls`;
-  a.click();
-  URL.revokeObjectURL(url);
+  if (!(opts.summary.rows || []).length && !(opts.detail.rows || []).length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
+  return new Promise((resolve) => {
+    _loadXlsxLib(() => {
+      function sheetFromSpec(spec) {
+        const header = spec.columns.map(c => c.label);
+        const dataRows = (spec.rows || []).map(r => spec.columns.map(c => (c.get ? c.get(r) : '')));
+        const ws = XLSX.utils.aoa_to_sheet([header, ...dataRows]);
+        ws['!cols'] = spec.columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '12%') / 100 * 100)) }));
+        return ws;
+      }
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, sheetFromSpec(opts.summary), _qcSafeSheetName(opts.summary.sheetName, '요약'));
+      XLSX.utils.book_append_sheet(wb, sheetFromSpec(opts.detail), _qcSafeSheetName(opts.detail.sheetName, '상세내역'));
+      const filename = (opts.filename || `리포트_${new Date().toISOString().slice(0,10)}.xls`).replace(/\.xls$/i, '.xlsx');
+      XLSX.writeFile(wb, filename);
+      resolve();
+    });
+  });
 }
 
 function qcOpenChartExportModal() {
