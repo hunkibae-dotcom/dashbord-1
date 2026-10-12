@@ -6214,7 +6214,7 @@ function _qcRenderGenericXls(opts) {
           cell.border = _QC_XLS_BORDER_LIGHT;
         });
       });
-      ws.columns = columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
+      ws.columns = columns.map(c => ({ width: _qcAutoColWidth(c.label, rows, c.get) }));
       const filename = (opts.filename || `검사항목목록_${new Date().toISOString().slice(0,10)}.xls`).replace(/\.xls$/i, '.xlsx');
       await _qcSaveWorkbookBuffer(wb, filename);
       resolve();
@@ -6244,7 +6244,7 @@ function _qcRenderChartReportXls(opts) {
             cell.border = _QC_XLS_BORDER_LIGHT;
           });
         });
-        ws.columns = spec.columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '12%') / 100 * 100)) }));
+        ws.columns = spec.columns.map(c => ({ width: _qcAutoColWidth(c.label, spec.rows || [], c.get || (() => '')) }));
       }
       const wb = new ExcelJS.Workbook();
       addSheet(wb, opts.summary, '요약');
