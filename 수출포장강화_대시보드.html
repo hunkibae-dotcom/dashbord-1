@@ -7689,8 +7689,9 @@
 
             const shipDate = (document.getElementById('pkgBulkShipDate').value || '').trim();
             const dueDate = (document.getElementById('pkgBulkDueDate').value || '').trim();
-            if (!_pkgBulkStatus && !shipDate && !dueDate) {
-                fb.textContent = '진행상태·납기일·상차일 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
+            const palletRaw = (document.getElementById('pkgBulkPallet').value || '').trim();
+            if (!_pkgBulkStatus && !shipDate && !dueDate && !palletRaw) {
+                fb.textContent = '진행상태·납기일·상차일·적재번호 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
                 return;
             }
 
