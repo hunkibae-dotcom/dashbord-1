@@ -2494,9 +2494,9 @@ function computeStats(items) {
   const prodDone = items.filter(d => d.검사 === '포장대기').length;
   // 생산중: 미검사/재투입 — "포장대기"는 이제 별도 상태값이라 자연히 여기 안 걸린다.
   const prodOngoing = items.filter(d => d.검사 === '미검사' || d.검사 === '재투입').length;
-  // 금일 포장: 포장일 <= 오늘 AND (미검사 이거나, 재투입인데 아직 검사일 없음)
+  // 금일 포장: 포장일 <= 오늘 AND (미검사·포장대기 이거나, 재투입인데 아직 검사일 없음)
   const packedToday = items.filter(d => {
-    if (d.검사 !== '미검사' && !isReinspectWaiting(d)) return false;
+    if (d.검사 !== '미검사' && d.검사 !== '포장대기' && !isReinspectWaiting(d)) return false;
     if (!d.포장일) return false;
     const dd = ddayInfo(d.포장일);
     return dd !== null && dd <= 0;
