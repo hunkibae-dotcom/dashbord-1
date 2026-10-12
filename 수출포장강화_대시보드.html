@@ -3183,8 +3183,18 @@
                 }
             }
             matchedList.forEach(it => {
+                // renderTable()과 달리 여기는 기존 item.pallet 값을 무시하고 매번
+                // _dtPM(충주공장 재고 원본) 조회로만 다시 정했다 — 그래서 상세수정창에서
+                // 적재번호를 바로 바꿔 저장해도(원본 재고 행이 아직 없는 품목이면 특히),
+                // 바로 뒤따르는 이 함수 재호출이 그 값을 곧장 덮어써버렸다. renderTable()과
+                // 같은 규칙으로: 이미 실제 값이 들어있으면 그대로 두고, 정해진 적이 없을
+                // 때만(undefined) 원본에서 새로 조회한다.
                 const _isS = it.status === '출고' || it.status === '피킹';
-                it.pallet = _isS ? (it.status === '피킹' ? '피킹' : '출고') : (_dtPM[(it.code||'').toUpperCase() + '|' + (it.round||'')] || '-');
+                if (it.pallet === undefined) {
+                    it.pallet = _isS ? (it.status === '피킹' ? '피킹' : '출고') : (_dtPM[(it.code||'').toUpperCase() + '|' + (it.round||'')] || '-');
+                } else if (!it.pallet) {
+                    it.pallet = '-';
+                }
             });
 
             // 상세 뷰 3단계 정렬 수행
