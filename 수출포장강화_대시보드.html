@@ -3897,11 +3897,19 @@
                 const _hA = (!isNaN(_ownH) && _ownH > 0) ? _ownH : null;
                 item._cbm = (_wA&&_dA&&_hA) ? (_wA*_dA*_hA)/1e9 : null;
                 const _cbm = item._cbm != null ? item._cbm.toFixed(4) : '-';
-                // 적재(파렛트): 출고/피킹 상태는 고정 표시, 재고는 K열 값
+                // 적재(파렛트): 출고/피킹 상태는 고정 표시, 재고는 K열 값. 단, 이 행이
+                // 충주공장 재고 자체의 실제 행(실재고/적재 탭, item.pallet이 mapCSVData
+                // 단계에서 이미 채워짐)이면 code+차수로 뭉뚱그린 조회값(_palletMap, 파렛트
+                // 여러 개로 나뉜 경우 그중 하나만 돌려줌)으로 덮어쓰지 않고 그 행 자신의
+                // 값을 그대로 쓴다 — 아니면 파렛트별로 나뉜 행들이 전부 같은 값으로 보인다.
                 const _isShipped = item.status === '출고' || item.status === '피킹';
-                item.pallet = _isShipped
-                    ? (item.status === '피킹' ? '피킹' : '출고')
-                    : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '-');
+                if (item.pallet === undefined) {
+                    item.pallet = _isShipped
+                        ? (item.status === '피킹' ? '피킹' : '출고')
+                        : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '-');
+                } else if (!item.pallet) {
+                    item.pallet = '-';
+                }
                 const _pallet = item.pallet;
                 const _pk = !_isShipped ? ((item.code||'')+'___'+(item.round||'')).replace(/['"\\]/g,'_') : null;
                 const _palletCellHtml = _isShipped
