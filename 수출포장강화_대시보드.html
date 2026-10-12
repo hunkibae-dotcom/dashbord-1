@@ -4163,7 +4163,17 @@
                             display: _prodCmpCategories.length > 0,
                             position: 'top',
                             align: 'start',
-                            labels: { color: '#94A3B8', font: { size: 12 }, boxWidth: 9, boxHeight: 9, padding: 14, usePointStyle: true, pointStyle: 'circle' }
+                            labels: {
+                                color: '#94A3B8', font: { size: 12 }, boxWidth: 9, boxHeight: 9, padding: 14,
+                                usePointStyle: true, pointStyle: 'circle',
+                                // 막대는 옅게 채웠지만, 범례 점은 선명한 원래 색(테두리색)으로
+                                // 보여줘야 뭐가 뭔지 바로 구분된다 — 기본값대로면 옅은 채움색을
+                                // 그대로 써서 범례 점까지 흐릿해 보인다.
+                                generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
+                                    text: ds.label, fillStyle: ds.borderColor, strokeStyle: ds.borderColor,
+                                    pointStyle: 'circle', lineWidth: 0, datasetIndex: i, hidden: !chart.isDatasetVisible(i)
+                                }))
+                            }
                         },
                         tooltip: {
                             enabled: true, mode: 'index', intersect: false,
