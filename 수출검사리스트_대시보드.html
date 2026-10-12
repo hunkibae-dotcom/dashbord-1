@@ -6475,7 +6475,7 @@ function _qcFitPdfColumns(columns, rows, fontSize, headerFontSize, contentWidthP
     const maxPx = widthsPx[i];
     const cache = new Map();
     rows.forEach(d => cache.set(d, truncate(c.get(d), maxPx)));
-    return Object.assign({}, c, { width, get: d => cache.has(d) ? cache.get(d) : truncate(c.get(d), maxPx) });
+    return Object.assign({}, c, { width, get: d => cache.get(d) });
   });
   document.body.removeChild(span);
   return newColumns;
