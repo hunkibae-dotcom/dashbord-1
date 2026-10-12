@@ -1022,8 +1022,28 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="relative h-72 w-full flex items-center justify-center">
-                            <canvas id="exportRoundChart"></canvas>
+                        <!-- 네비게이션 화살표 행 (포장강화 누적차트와 동일 구성) -->
+                        <div id="prodCmpNavRow" class="flex items-center justify-between mb-2" style="display:none!important;">
+                            <button id="prodCmpNavPrev" onclick="navigateProdCmpChart(-1)"
+                                style="display:flex;align-items:center;justify-content:center;
+                                       background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
+                                       border-radius:7px;width:26px;height:26px;font-size:19.5px;line-height:1;cursor:pointer;
+                                       transform:scale(1);transition:background 0.18s,color 0.18s,transform 0.18s;user-select:none;flex-shrink:0;"
+                                onmouseenter="this.style.background='rgba(148,163,184,0.42)';this.style.color='#334155';this.style.transform='scale(1.12)';"
+                                onmouseleave="this.style.background='rgba(148,163,184,0.22)';this.style.color='#64748B';this.style.transform='scale(1)';">‹</button>
+                            <span id="prodCmpNavLabel" style="font-size:13.5px;color:#94A3B8;font-weight:500;user-select:none;"></span>
+                            <button id="prodCmpNavNext" onclick="navigateProdCmpChart(1)"
+                                style="display:flex;align-items:center;justify-content:center;
+                                       background:rgba(148,163,184,0.22);border:1px solid rgba(148,163,184,0.35);color:#64748B;
+                                       border-radius:7px;width:26px;height:26px;font-size:19.5px;line-height:1;cursor:not-allowed;
+                                       transform:scale(1);opacity:0.35;transition:background 0.18s,color 0.18s,transform 0.18s,opacity 0.18s;user-select:none;flex-shrink:0;"
+                                onmouseenter="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(148,163,184,0.42)';this.style.color='#334155';this.style.transform='scale(1.12)';}"
+                                onmouseleave="if(this.style.cursor!=='not-allowed'){this.style.background='rgba(148,163,184,0.22)';this.style.color='#64748B';this.style.transform='scale(1)';}">›</button>
+                        </div>
+                        <div class="relative h-72 w-full" style="overflow:hidden;">
+                            <div id="prodCmpChartWrap" style="position:absolute;inset:0;transition:opacity 0.25s ease,transform 0.25s ease;">
+                                <canvas id="exportRoundChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
