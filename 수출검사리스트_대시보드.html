@@ -6241,7 +6241,7 @@ async function qcRunChartReport(scope) {
     { label: 'CBM', width: '10%', get: it => it.CBM }
   );
 
-  _qcRenderChartReportXls({
+  await _qcRenderChartReportXls({
     filename: `누적품질검사차트_${scope}_${new Date().toISOString().slice(0, 10)}.xls`,
     summary: { sheetName: '① 요약', columns: summaryColumns, rows: summaryRows },
     detail: { sheetName: '② 상세내역', columns: detailColumns, rows: detailItems }
