@@ -6458,6 +6458,9 @@ function _qcFitPdfColumns(columns, rows, fontSize, headerFontSize, contentWidthP
   });
 
   // 3) 자유 텍스트 값은 배정된 폭 안에 들어오도록 글자 단위로 줄이고 "…"를 붙인다.
+  //    span이 DOM에 붙어 있는 지금(이 함수 안) 바로 계산해서 행별로 캐싱해 둔다 —
+  //    get()을 나중에(행을 그릴 때) 호출하는 시점엔 이 측정용 span이 이미 떼어져
+  //    있어 offsetWidth가 전부 0으로 나와 자르기가 조용히 안 먹는 문제가 있었다.
   const truncate = (text, maxPx) => {
     let s = (text == null ? '' : String(text));
     if (!s || measure(s, fontSize) + CELL_PAD <= maxPx) return s;
@@ -6470,8 +6473,9 @@ function _qcFitPdfColumns(columns, rows, fontSize, headerFontSize, contentWidthP
     const width = (widthsPx[i] / contentWidthPx * 100) + '%';
     if (freeIdx.indexOf(i) === -1) return Object.assign({}, c, { width });
     const maxPx = widthsPx[i];
-    const origGet = c.get;
-    return Object.assign({}, c, { width, get: d => truncate(origGet(d), maxPx) });
+    const cache = new Map();
+    rows.forEach(d => cache.set(d, truncate(c.get(d), maxPx)));
+    return Object.assign({}, c, { width, get: d => cache.has(d) ? cache.get(d) : truncate(c.get(d), maxPx) });
   });
   document.body.removeChild(span);
   return newColumns;
