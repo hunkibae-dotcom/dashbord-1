@@ -2003,6 +2003,13 @@
             // 저장된 CBM이 화면 어디에도 안 보이는 문제가 있었다.
             state.data = backfillSpecs(combined, stockItemsForSpec);
 
+            // 실재고/적재 탭은 "수출 현황 1건=표 1행"이 아니라 충주공장 재고 시트에 실제로
+            // 있는 행 그대로 보여줘야 한다(같은 코드+차수가 부분포장 등으로 파렛트 여러 개에
+            // 나뉘어 있으면 시트에도 행이 그만큼 따로 있다) — applyFilters()가 그 두 탭일 때
+            // state.data 대신 이걸 쓴다.
+            state.stockRowItems = stockItemsForSpec;
+            state.stockRowItems.forEach((item, idx) => { item.originalIndex = idx; });
+
             // 포장완료 항목의 포장일을 충주공장 재고 시트에서 업데이트
             backfillPackingDatesFromStock();
 
