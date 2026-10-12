@@ -6120,6 +6120,31 @@ function _qcSafeSheetName(name, fallback) {
   const cleaned = (name || fallback || 'Sheet1').toString().replace(/[\\\/\?\*\[\]:]/g, '');
   return (cleaned || fallback || 'Sheet1').slice(0, 31);
 }
+// 한글/한자 등은 라틴 글자보다 시각적으로 두 배 가까이 넓어서, 글자 수만 그대로 세면
+// 한글이 많은 칸(건명/단품명칭 등)이 실제로는 잘려 보인다.
+function _qcVisualLen(v) {
+  const s = (v == null ? '' : String(v));
+  let len = 0;
+  for (const ch of s) {
+    const code = ch.codePointAt(0);
+    const wide = (code >= 0xAC00 && code <= 0xD7A3) || (code >= 0x1100 && code <= 0x11FF) ||
+      (code >= 0x3130 && code <= 0x318F) || (code >= 0x4E00 && code <= 0x9FFF) ||
+      (code >= 0x3040 && code <= 0x30FF);
+    len += wide ? 2 : 1;
+  }
+  return len;
+}
+// 칼럼 폭을 미리 정해둔 퍼센트가 아니라, 실제로 그 칼럼에 들어가는 값(헤더 포함) 중
+// 가장 넓은 걸 기준으로 자동으로 정한다 — 데이터 출력할 때마다 글자가 잘려 보이던
+// 문제(요청)를 없앤다.
+function _qcAutoColWidth(label, rows, getter) {
+  let max = _qcVisualLen(label);
+  rows.forEach(item => {
+    const len = _qcVisualLen(getter(item));
+    if (len > max) max = len;
+  });
+  return Math.min(60, Math.max(8, max + 3));
+}
 // 엑셀에서 데이터를 고쳐서 저장하면 파일이 깨지는 문제(요청, 2026-10-12) — 예전엔 HTML
 // 표를 ".xls"로 속여서 저장했는데(엑셀이 열 때는 문제없이 읽어도, 진짜 xls/xlsx 파일이
 // 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다). xlsx 라이브러리로
