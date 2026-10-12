@@ -4366,6 +4366,80 @@
             }, 160);
         }
 
+        // 막대 클릭 시 상세(포장강화 누적차트의 openPackingDetailModal과 같은 모양) — 저쪽은
+        // 원본 시트 행을 직접 훑어서 만들지만, 여기는 이미 파싱·필터링까지 끝난 state.data를
+        // 그대로 쓸 수 있어서(출고 기준은 이미 buildProdCmpDataAndInit과 같은 기준) 더 간단하다.
+        function openProdCmpDetailModal(idx) {
+            const meta = _prodCmpLabelMeta[idx];
+            if (!meta) return;
+            function inRange(d) {
+                if (!d || d === '-') return false;
+                if (meta.prefix) return d.startsWith(meta.prefix);
+                return meta.dates && meta.dates.indexOf(d) >= 0;
+            }
+            const itemMap = {};
+            (state.data || []).forEach(item => {
+                if (!_pkgIsShippedItem(item)) return;
+                const d = normalizeDate(item.date);
+                if (!inRange(d)) return;
+                const cat = (item.country || '').toString().replace(/\s+/g, '');
+                const round = item.round || '-';
+                const code = item.code || '-';
+                const color = item.color || '-';
+                const key = cat + '|' + round + '|' + code + '|' + color;
+                if (!itemMap[key]) itemMap[key] = { cat: cat, round: round, code: code, color: color, qty: 0 };
+                itemMap[key].qty += parseInt(item.qty) || 0;
+            });
+            const items = Object.values(itemMap).filter(it => it.qty > 0).sort((a, b) => b.qty - a.qty);
+
+            document.getElementById('prodCmpModalTitle').innerText = meta.label + ' 실적 상세';
+            document.getElementById('prodCmpModalSubtitle').innerText = '상차일 기준 · ' + items.length + '개 품목';
+            document.getElementById('prodCmpDetailModal').dataset.idx = idx;
+
+            const tbody = document.getElementById('prodCmpModalTableBody');
+            tbody.innerHTML = '';
+            if (!items.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500 text-[17.5px]">데이터 없음</td></tr>';
+            } else {
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-slate-800/40 transition-colors';
+                    tr.innerHTML = '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (item.cat || '-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-300 whitespace-nowrap">' + (item.round || '-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-accentBlue font-semibold whitespace-nowrap">' + item.code + '</td>'
+                                 + '<td class="py-2.5 px-3 text-slate-400 text-[14.5px] whitespace-nowrap">' + (item.color || '-') + '</td>'
+                                 + '<td class="py-2.5 px-3 text-right text-white font-bold whitespace-nowrap">' + item.qty.toLocaleString() + ' BOX</td>';
+                    tbody.appendChild(tr);
+                });
+            }
+            const cardsWrap = document.getElementById('prodCmpModalCardsMobile');
+            if (cardsWrap) cardsWrap.innerHTML = _buildDetailCardsHtml(items);
+            document.getElementById('prodCmpDetailModal').classList.remove('hidden');
+        }
+        function closeProdCmpDetailModal() {
+            document.getElementById('prodCmpDetailModal').classList.add('hidden');
+        }
+        function exportProdCmpModalData() {
+            const idx = parseInt(document.getElementById('prodCmpDetailModal').dataset.idx || '0');
+            const meta = _prodCmpLabelMeta[idx] || {};
+            const rows = document.getElementById('prodCmpModalTableBody').querySelectorAll('tr');
+            let csv = '﻿제품구분,수출건명,품목코드,색상,수량(BOX)\n';
+            rows.forEach(tr => {
+                const cells = tr.querySelectorAll('td');
+                if (cells.length < 5) return;
+                csv += '"' + cells[0].innerText.trim() + '","' + cells[1].innerText.trim() + '","'
+                     + cells[2].innerText.trim() + '","' + cells[3].innerText.trim() + '",'
+                     + cells[4].innerText.replace(/[^0-9]/g, '') + '\n';
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '제품별실적누적차트_' + (meta.label || '').replace(/[~\/()]/g, '_') + '_상세.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
         function pkgOpenProdCmpExportModal() {
             const statusEl = document.getElementById('prodCmpExportStatus');
             if (statusEl) statusEl.textContent = '';
