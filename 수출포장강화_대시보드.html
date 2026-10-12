@@ -4236,6 +4236,14 @@
                     barPercentage: prodCmpViewMode === 'daily' ? 0.675 : prodCmpViewMode === 'yearly' ? 0.5 : 0.825,
                     categoryPercentage: prodCmpViewMode === 'yearly' ? 0.6 : 0.9,
                     layout: { padding: { top: 18 } },
+                    onClick: function(event, elements) {
+                        if (!elements || elements.length === 0) return;
+                        openProdCmpDetailModal(elements[0].index);
+                    },
+                    onHover: function(event, elements) {
+                        if (event.native && event.native.target)
+                            event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+                    },
                     plugins: {
                         legend: { display: false },
                         tooltip: {
