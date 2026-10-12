@@ -6828,7 +6828,7 @@
             const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
 <head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '수출포장강화')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
 <body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
-<thead><tr>${headHtml}</tr></thead>
+<thead>${palletTotalHtml}<tr>${headHtml}</tr></thead>
 <tbody>${bodyHtml}</tbody>
 </table></body></html>`;
 
@@ -6897,7 +6897,7 @@
             if (kind === 'ship') {
                 // 상차항목 출력 — 마찬가지로 "아직 출고 안 된 품목만" 자동 필터를 없앴다.
                 // rows는 baseItems 그대로, 칼럼 구성(상차 작업용)만 다르다.
-                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_상차항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 } };
+                return { title: '상차항목 출력', columns: PKG_PRINT_SHIP_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_상차항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10.5, headerFontSize: 11 }, showPalletTotal: true };
             }
             return null;
         }
