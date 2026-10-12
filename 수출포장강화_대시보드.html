@@ -8350,7 +8350,11 @@
                             let drawW = maxW, drawH = drawW / imgRatio;
                             if (drawH > maxH) { drawH = maxH; drawW = drawH * imgRatio; }
                             const offsetX = (pageW - drawW) / 2;
-                            const offsetY = (pageH - drawH) / 2;
+                            // 세로(위아래) 가운데 배치였는데, 그러면 품목 수가 적어 표가 짧을 때
+                            // 전체 내용(특히 맨 위 제목)이 페이지 중간으로 내려가 버린다 — 제목은
+                            // 항상 용지 "상단"에 있어야 한다는 요청으로 위쪽 여백만 고정하고 세로
+                            // 가운데 정렬은 뺐다.
+                            const offsetY = margin;
                             pdf.addImage(imgData, 'PNG', offsetX, offsetY, drawW, drawH);
                             pdf.save(filename);
                             resolve();
