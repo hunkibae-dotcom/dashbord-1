@@ -1184,14 +1184,15 @@
     }
 
     // ── 데이터 로드 ───────────────────────────────────────
+    // 캐시가 있으면 "일단 그걸로 즉시 렌더"만 하고(네트워크 기다리지 않음), 매번 반드시
+    // 실제로 다시 가져와서 "로딩 중" 표시를 띄운다 — 예전엔 캐시가 있으면 아예 fetch
+    // 자체를 건너뛰어서(5분 TTL 안에서는 거의 항상 캐시가 있다 보니) "로딩 중"이
+    // 사실상 뜰 일이 없었다(웹 대시보드는 캐시가 있어도 항상 새로 받아오고 그동안
+    // "동기화 중"을 보여준다 — 그 차이).
     async function loadData(force = false) {
         if (!force) {
             const cached = _loadDataCache();
-            if (cached) {
-                _applyJson(cached);
-                setStatus('ok');
-                return;
-            }
+            if (cached) _applyJson(cached);
         }
         setStatus('loading');
         try {
