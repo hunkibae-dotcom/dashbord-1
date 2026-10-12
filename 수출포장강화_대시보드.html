@@ -2352,7 +2352,11 @@
                 specW: ['가로', '폭', 'WIDTH', 'width', 'specW'],
                 specD: ['세로', '깊이', 'DEPTH', 'depth', 'specD'],
                 specH: ['높이', 'HEIGHT', 'height', 'specH'],
-                specG: ['무게', '중량', 'KG', '중량(KG)', '무게(KG)', 'weight', 'specG']
+                specG: ['무게', '중량', 'KG', '중량(KG)', '무게(KG)', 'weight', 'specG'],
+                // "충주공장 재고"에만 있는 칸(수출 현황/출고 완료에는 없음) — 행 단위로
+                // 그대로 들고 있어야 같은 코드+차수가 파렛트 여러 개로 나뉘어 있을 때도
+                // (부분 포장 등) 행이 하나로 합쳐지지 않고 그대로 따로 보인다.
+                pallet: ['파렛트', 'PALET', '적재', 'pallet']
             };
 
             let indices = {};
