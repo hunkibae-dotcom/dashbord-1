@@ -1296,6 +1296,9 @@ async function submitUsage() {
     }
   } catch (e) {
     showToast('네트워크 오류로 저장 실패');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origBtnText;
   }
 }
 
