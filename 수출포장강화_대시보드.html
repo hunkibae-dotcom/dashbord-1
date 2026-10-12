@@ -7991,7 +7991,8 @@
         // 코드면 비교 대상이 없으니 후보에서 빠진다 — 확신할 수 없는 매칭이라 전부
         // 사람이 체크박스로 확인한 뒤에만 반영한다(공정진행정보분류의 확인 팝업과 동일한
         // 취지).
-        function _pkgBuildIpgoCandidates(grid, startRow, iCode, iColor, iQty) {
+        function _pkgBuildIpgoCandidates(grid) {
+            const { iCode, iColor, iQty, startRow } = _pkgDetectOutResultHeader(grid);
             const waiting = (state.data || []).filter(it => it.status === '미입고');
             const candidates = [];
             for (let i = startRow; i < grid.length; i++) {
