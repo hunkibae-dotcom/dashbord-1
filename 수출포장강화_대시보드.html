@@ -8487,20 +8487,6 @@
             }
             _pkgDownloadBase64Pdf(res.pdfBase64, '인식표_출고용_' + (res.palletNumber || '') + '.pdf');
         }
-        async function _pkgGenerateShipLabelPdfOld(res) {
-            // res.items: [건명, 단품코드, 색상, 수량, 구분] (인식표 시트 A20:E31과 동일)
-            await _pkgRenderLabelToPdf({
-                isStock: false,
-                mainTitle: res.mainTitle,
-                midLine: res.midLine,
-                bottomLine: res.bottomLine,
-                loadingDate: res.loadingDate,
-                packingDate: res.packingDate,
-                columns: ['수주건명', '단품코드', '색상', '수량', '구분'],
-                items: res.items
-            }, '인식표_출고용_' + (res.palletNumber || '') + '.pdf');
-        }
-
         // ── 접속현황(현재 이 대시보드를 보고 있는 사람) ─────────────────────
         // 구글시트처럼 실시간 정밀 추적은 아니고, "최근 75초 이내에 하트비트를 보낸
         // 사람"만 접속중으로 본다 — 25초마다 한 번씩 조용히(백그라운드) 보내고
