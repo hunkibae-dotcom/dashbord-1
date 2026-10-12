@@ -4516,10 +4516,13 @@
                         (r[iR>=0?iR:4]||'').toString().trim() === _ieRound &&
                         (iCol < 0 || rColor === _ieColor)) { r[iPal] = changed.pallet; break; }
                 }
-                // 위는 원본 재고 행만 고쳤는데, 화면에 보이는 item.pallet은 전체 새로고침 때
-                // 한 번 복사해둔 값이라(_mergeStockSpecsIntoAllData) 따로 안 건드리면 저장
-                // 직후 화면에는 예전 값 그대로 남는다 — 대시보드(웹)에서 같은 이유로 고쳤던
-                // 것과 동일하게 allData/stockData 자신에도 바로 반영한다.
+            }
+            // 위는 원본 재고 행(있을 때만)만 고쳤는데, 화면에 보이는 item.pallet은 전체
+            // 새로고침 때 한 번 복사해둔 값이라(_mergeStockSpecsIntoAllData) rawStockRows가
+            // 비어있거나 매칭 행이 없는 경우(예: 아직 재고 시트에 안 들어간 품목)엔 저장해도
+            // 화면에 반영이 안 됐다 — 대시보드(웹)에서 같은 이유로 고쳤던 것과 동일하게,
+            // 원본 유무와 상관없이 allData/stockData 자신에도 항상 직접 반영한다.
+            if (changed.pallet !== undefined) {
                 [allData, stockData].forEach(arr => { if (!arr) return;
                     arr.forEach(it => { if (_ieMatch(it)) it.pallet = changed.pallet; });
                 });
