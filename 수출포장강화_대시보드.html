@@ -6810,48 +6810,42 @@
             });
             return hasUnassigned ? 'TOTAL PALET - ' : ('TOTAL PALET - ' + set.size);
         }
+        // 시트 이름에 쓸 수 없는 문자(\ / ? * [ ] :)를 지우고 31자로 자른다 — 엑셀 시트
+        // 이름 규칙(길이/금지문자)을 넘기면 XLSX.utils.book_append_sheet가 그냥 에러를
+        // 던져서 다운로드 자체가 안 되므로, 파일명/제목을 그대로 쓰기 전에 항상 거친다.
+        function _pkgSafeSheetName(name, fallback) {
+            const cleaned = (name || fallback || 'Sheet1').toString().replace(/[\\\/\?\*\[\]:]/g, '');
+            return (cleaned || fallback || 'Sheet1').slice(0, 31);
+        }
+        // 엑셀에서 데이터를 고쳐서 저장하면 파일이 깨지는 문제(요청, 2026-10-12) — 예전엔
+        // HTML 표를 ".xls"로 속여서 저장했는데(엑셀은 열 때는 문제없이 읽지만, 애초에 진짜
+        // xls/xlsx 파일이 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다).
+        // 진짜 xlsx 바이너리를 만들어주는 xlsx 라이브러리(_pkgLoadXlsxLib, 엑셀 업로드
+        // 기능에서 이미 쓰던 것과 동일)로 바꿔서, 받은 파일이 처음부터 진짜 엑셀 파일이라
+        // 그 안에서 자유롭게 고치고 다시 저장해도 더 이상 안 깨진다.
         function _pkgRenderGenericXls(opts) {
             const columns = opts.columns;
             const rows = opts.rows || [];
-            if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return; }
-
-            const esc = (v) => (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            // PDF 쪽과 칼럼 정의(퍼센트 폭)를 공유하기 위해, 엑셀 칸 너비는 퍼센트를 적당한
-            // 픽셀값으로 환산해서 쓴다(표 전체 폭을 대략 1000px로 가정).
-            const colgroup = columns.map(c => `<col style="width:${Math.round(parseFloat(c.width) * 10)}px;">`).join('');
-            // 글자는 가로·세로 전부 가운데 정렬 — 엑셀은 브라우저와 달리 칸 세로정렬 기본값이
-            // 가운데가 아니라서(위/아래로 치우쳐 보임), vertical-align을 명시해야 실제로
-            // 열었을 때도 가운데로 나온다.
-            const headHtml = columns.map(c =>
-                `<th style="background:#0B0F19;color:#fff;font-weight:700;font-size:13px;padding:8px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(c.label)}</th>`
-            ).join('');
-            const palletTotalHtml = opts.showPalletTotal
-                ? `<tr><td colspan="${columns.length}" style="background:#fef9c3;color:#78350f;font-weight:800;font-size:13px;padding:9px 10px;border:1px solid #0B0F19;text-align:center;vertical-align:middle;">${esc(_pkgTotalPalletLabel(rows))}</td></tr>`
-                : '';
-            const bodyHtml = rows.map((item, idx) => {
-                const rowBg = idx % 2 === 0 ? '#ffffff' : '#f8fafc';
-                return '<tr>' + columns.map(c => {
-                    const v = c.get ? c.get(item) : '';
-                    const isStatus = !!c.isStatus;
-                    const color = isStatus ? (PKG_STATUS_COLOR[v] || '#1e293b') : '#1e293b';
-                    return `<td style="background:${rowBg};color:${color};${isStatus ? 'font-weight:700;' : ''}font-size:12.5px;padding:6px 10px;border:1px solid #e2e8f0;text-align:center;vertical-align:middle;white-space:nowrap;">${esc(v)}</td>`;
-                }).join('') + '</tr>';
-            }).join('');
-
-            const html = '﻿' + `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>${esc(opts.title || '수출포장강화')}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>
-<body><table style="border-collapse:collapse;font-family:'맑은 고딕',sans-serif;"><colgroup>${colgroup}</colgroup>
-<thead><tr>${headHtml}</tr></thead>
-<tbody>${bodyHtml}${palletTotalHtml}</tbody>
-</table></body></html>`;
-
-            const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = opts.filename || '수출포장강화_export.xls';
-            a.click();
-            URL.revokeObjectURL(url);
+            if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
+            return new Promise((resolve) => {
+                _pkgLoadXlsxLib(() => {
+                    const header = columns.map(c => c.label);
+                    const dataRows = rows.map(item => columns.map(c => (c.get ? c.get(item) : '')));
+                    const aoa = [header, ...dataRows];
+                    if (opts.showPalletTotal) {
+                        const totalRow = new Array(columns.length).fill('');
+                        totalRow[0] = _pkgTotalPalletLabel(rows);
+                        aoa.push(totalRow);
+                    }
+                    const ws = XLSX.utils.aoa_to_sheet(aoa);
+                    ws['!cols'] = columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, _pkgSafeSheetName(opts.title, '수출포장강화'));
+                    const filename = (opts.filename || '수출포장강화_export.xls').replace(/\.xls$/i, '.xlsx');
+                    XLSX.writeFile(wb, filename);
+                    resolve();
+                });
+            });
         }
 
         // ── 데이터 출력: 기본출력/포장항목 출력/상차항목 출력 선택 ───────────
