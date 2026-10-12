@@ -6495,11 +6495,14 @@ async function _qcRenderPrintPdf(opts) {
     ? `border:1px solid #000;background:#f1f5f9;color:#1e293b;font-weight:700;text-align:center;`
     : `border:1px solid #0B0F19;background:#0B0F19;color:#fff;font-weight:700;text-align:center;`;
   const bodyCellBorder = plain ? '1px solid #000' : '1px solid #e2e8f0';
-  // 건명/단품코드가 실제로 다 들어가도록 필요하면 칼럼 폭을 넓힌다(아래 함수 설명 참고).
-  const columns = _qcAutoWidenOneLineColumns(opts.columns, rows, fontSize, headerFontSize, CONTENT_WIDTH_PX);
+  // 모든 칸이 실제 내용에 맞는 폭을 갖도록 재배정한다(건명/단품명칭은 남는 폭에
+  // 맞춰 요약/말줄임, 그 외는 전부 그대로 들어가는 폭 — 아래 함수 설명 참고).
+  const columns = _qcFitPdfColumns(opts.columns, rows, fontSize, headerFontSize, CONTENT_WIDTH_PX);
 
-  // 칸 너비보다 내용이 길어도 절대 잘라서(ellipsis) 숨기지 않는다 — 줄바꿈으로 전부
-  // 보여준다(행 높이는 실측해서 페이지를 나누므로 줄이 늘어나도 페이지 경계에서 안 잘림).
+  // 모든 칸을 무조건 한 줄로 고정한다(_qcFitPdfColumns가 이미 다 들어오게 폭/글자
+  // 수를 맞춰놨으므로 줄바꿈은 필요 없다 — 줄바꿈이 칸마다 들쭉날쭉 일어나면 행
+  // 높이도 들쭉날쭉해진다는 지적, 2026-10-12). overflow:hidden은 혹시 모를 측정
+  // 오차에 대비한 안전망일 뿐 실제로 걸릴 일은 없다.
   // <table>/<tr>/<td>로 짰을 때는 vertical-align:middle도, 칸에 height를 직접 px로
   // 박아도 안 먹었다 — html2canvas가 테이블 레이아웃 알고리즘(칸마다 행 높이에 맞춰
   // 늘어나는 것)을 캡처 시점에 제대로 안 살려서, 짧은 칸들이 전부 위쪽에 붙어 보였다
