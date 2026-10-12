@@ -6802,29 +6802,80 @@
         // 엑셀에서 데이터를 고쳐서 저장하면 파일이 깨지는 문제(요청, 2026-10-12) — 예전엔
         // HTML 표를 ".xls"로 속여서 저장했는데(엑셀은 열 때는 문제없이 읽지만, 애초에 진짜
         // xls/xlsx 파일이 아니다 보니 그 상태에서 수정 후 다시 저장하면 내부 구조가 깨졌다).
-        // 진짜 xlsx 바이너리를 만들어주는 xlsx 라이브러리(_pkgLoadXlsxLib, 엑셀 업로드
-        // 기능에서 이미 쓰던 것과 동일)로 바꿔서, 받은 파일이 처음부터 진짜 엑셀 파일이라
-        // 그 안에서 자유롭게 고치고 다시 저장해도 더 이상 안 깨진다.
+        // xlsx 라이브러리(SheetJS, 엑셀 업로드 기능이 쓰던 것)로 한 번 바꿔봤는데, 그
+        // 무료 버전은 셀 서식(색깔/테두리/굵은글씨)을 저장하는 기능 자체가 없어서 꾸밈이
+        // 다 사라졌다 — 그래서 서식까지 그대로 들어가는 ExcelJS로 다시 바꿨다. 이제
+        // "진짜 엑셀 파일"이면서 "기존 꾸밈도 그대로"인 파일이 된다.
+        function _pkgLoadExcelJsLib(cb) {
+            if (window.ExcelJS) { cb(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+            s.onload = cb;
+            s.onerror = function () { alert('엑셀 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+            document.head.appendChild(s);
+        }
+        async function _pkgSaveWorkbookBuffer(wb, filename) {
+            const buf = await wb.xlsx.writeBuffer();
+            const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        const _PKG_XLS_BORDER_LIGHT = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+        const _PKG_XLS_BORDER_DARK = { top: { style: 'thin', color: { argb: 'FF0B0F19' } }, bottom: { style: 'thin', color: { argb: 'FF0B0F19' } }, left: { style: 'thin', color: { argb: 'FF0B0F19' } }, right: { style: 'thin', color: { argb: 'FF0B0F19' } } };
+        const _PKG_XLS_CENTER = { horizontal: 'center', vertical: 'middle' };
+        function _pkgArgb(hex) { return 'FF' + hex.replace('#', '').toUpperCase(); }
+        function _pkgStyleHeaderRow(ws, columns) {
+            const row = ws.addRow(columns.map(c => c.label));
+            row.eachCell(cell => {
+                cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0B0F19' } };
+                cell.alignment = _PKG_XLS_CENTER;
+                cell.border = _PKG_XLS_BORDER_DARK;
+            });
+            return row;
+        }
+        function _pkgStyleBodyRow(ws, values, idx, statusColIdx) {
+            const row = ws.addRow(values);
+            const rowFill = idx % 2 === 0 ? 'FFFFFFFF' : 'FFF8FAFC';
+            row.eachCell((cell, colNumber) => {
+                const isStatus = statusColIdx != null && (colNumber - 1) === statusColIdx;
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFill } };
+                cell.font = isStatus ? { bold: true, color: { argb: _pkgArgb(PKG_STATUS_COLOR[values[statusColIdx]] || '#1e293b') }, size: 10.5 } : { color: { argb: 'FF1E293B' }, size: 10.5 };
+                cell.alignment = _PKG_XLS_CENTER;
+                cell.border = _PKG_XLS_BORDER_LIGHT;
+            });
+            return row;
+        }
         function _pkgRenderGenericXls(opts) {
             const columns = opts.columns;
             const rows = opts.rows || [];
             if (!rows.length) { alert('내보낼 데이터가 없습니다.'); return Promise.resolve(); }
             return new Promise((resolve) => {
-                _pkgLoadXlsxLib(() => {
-                    const header = columns.map(c => c.label);
-                    const dataRows = rows.map(item => columns.map(c => (c.get ? c.get(item) : '')));
-                    const aoa = [header, ...dataRows];
+                _pkgLoadExcelJsLib(async () => {
+                    const wb = new ExcelJS.Workbook();
+                    const ws = wb.addWorksheet(_pkgSafeSheetName(opts.title, '수출포장강화'));
+                    const statusColIdx = columns.findIndex(c => c.isStatus);
+                    _pkgStyleHeaderRow(ws, columns);
+                    rows.forEach((item, idx) => {
+                        const values = columns.map(c => (c.get ? c.get(item) : ''));
+                        _pkgStyleBodyRow(ws, values, idx, statusColIdx >= 0 ? statusColIdx : null);
+                    });
                     if (opts.showPalletTotal) {
-                        const totalRow = new Array(columns.length).fill('');
-                        totalRow[0] = _pkgTotalPalletLabel(rows);
-                        aoa.push(totalRow);
+                        const totalRow = ws.addRow([_pkgTotalPalletLabel(rows)]);
+                        ws.mergeCells(totalRow.number, 1, totalRow.number, columns.length);
+                        const cell = totalRow.getCell(1);
+                        cell.font = { bold: true, color: { argb: _pkgArgb('#78350f') }, size: 10.5 };
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: _pkgArgb('#fef9c3') } };
+                        cell.alignment = _PKG_XLS_CENTER;
+                        cell.border = _PKG_XLS_BORDER_DARK;
                     }
-                    const ws = XLSX.utils.aoa_to_sheet(aoa);
-                    ws['!cols'] = columns.map(c => ({ wch: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, _pkgSafeSheetName(opts.title, '수출포장강화'));
+                    ws.columns = columns.map(c => ({ width: Math.max(8, Math.round(parseFloat(c.width || '10%') / 100 * 100)) }));
                     const filename = (opts.filename || '수출포장강화_export.xls').replace(/\.xls$/i, '.xlsx');
-                    XLSX.writeFile(wb, filename);
+                    await _pkgSaveWorkbookBuffer(wb, filename);
                     resolve();
                 });
             });
