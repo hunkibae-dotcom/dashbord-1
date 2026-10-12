@@ -8450,18 +8450,14 @@
             });
         }
 
+        // 재고용도 출고용과 동일하게, 화면에 따로 그리지 않고 구글시트 "인식표(재고)"
+        // 탭 자체를 서버에서 PDF로 받아와 그대로 다운로드한다.
         async function _pkgGenerateStockLabelPdf(res) {
-            // res.items: [NO, 건명, 단품코드, 색상, 수량, 비고] (출력물 시트와 동일)
-            await _pkgRenderLabelToPdf({
-                isStock: true,
-                mainTitle: res.palletNumber,
-                midLine: '',
-                bottomLine: '',
-                loadingDate: res.loadingDate,
-                packingDate: res.packingDate,
-                columns: ['NO', '건명', '단품코드', '색상', '수량', '비고'],
-                items: res.items
-            }, '인식표_재고용_' + (res.palletNumber || '') + '.pdf');
+            if (!res.pdfOk || !res.pdfBase64) {
+                alert('인식표 PDF 생성에 실패했습니다' + (res.pdfMessage ? (': ' + res.pdfMessage) : '') + '\n구글시트의 "인식표(재고)" 탭은 정상적으로 갱신되었습니다.');
+                return;
+            }
+            _pkgDownloadBase64Pdf(res.pdfBase64, '인식표_재고용_' + (res.palletNumber || '') + '.pdf');
         }
 
         // 출고용 인식표는 화면에 HTML로 따로 그리지 않고, 구글시트 "인식표" 탭에 값을
