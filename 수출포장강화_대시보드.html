@@ -7741,6 +7741,28 @@
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
                 }
 
+                if (palletRaw) {
+                    const sendPallet = /^\d+$/.test(palletRaw) ? '적재 ' + palletRaw : palletRaw;
+                    const items = _pkgBulkItems.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                    const res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgUpdatePalletBatch', items: items, pallet: sendPallet }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '적재번호 반영 실패');
+                    if (res.failed && res.failed.length) throw new Error('일부 저장 실패: ' + res.failed.join(', '));
+                    // 즉시 반영: 선택된 품목들에 바로 적재번호를 적용한다(다음 전체
+                    // 새로고침 전까지도 화면에 바로 보이도록 — savePkgItemDetail()의
+                    // 단일 수정과 같은 방식).
+                    const selectedKeySet = new Set(_pkgBulkItems.map(it => it.key));
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return;
+                        arr.forEach(it => {
+                            const k = window._pkgRowMap && Object.keys(window._pkgRowMap).find(kk => window._pkgRowMap[kk] === it);
+                            if (k && selectedKeySet.has(k)) it.pallet = sendPallet;
+                        });
+                    });
+                }
+
                 fb.textContent = '✓ 적용 완료되었습니다.'; fb.style.color = '#16a34a';
                 setTimeout(() => {
                     pkgCloseBulkModal();
