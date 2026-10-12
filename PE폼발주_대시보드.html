@@ -1262,6 +1262,15 @@ async function submitUsage() {
   const use = document.getElementById('usageUse').value.trim();
   if (!qty || qty <= 0) { showToast('소요 수량을 입력하세요'); return; }
 
+  // 응답이 늦게 올 때 "안 눌린 줄 알고" 여러 번 눌러서 시트에 같은 소요가
+  // 중복으로 여러 줄 올라가던 문제(요청) — 버튼을 즉시 비활성화하고 "반영 중..."
+  // 으로 글자를 바꿔서, 처리 중이라는 게 눈에 바로 보이게 한다.
+  const btn = document.getElementById('usageSubmitBtn');
+  if (btn.disabled) return; // 혹시라도 이벤트가 겹쳐 들어와도 한 번만 처리
+  const origBtnText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '반영 중...';
+
   try {
     const qs = new URLSearchParams({ action: 'addUsage', name, qty, use });
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
