@@ -6916,7 +6916,7 @@
                     pkgCloseExportChoiceModal();
                 } else {
                     statusEl.textContent = 'PDF 만드는 중...';
-                    await _pkgRenderGenericPrintPdf(Object.assign({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf' }, meta.pdfOpts || {}));
+                    await _pkgRenderGenericPrintPdf(Object.assign({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf', showPalletTotal: meta.showPalletTotal }, meta.pdfOpts || {}));
                     pkgCloseExportChoiceModal();
                 }
             } catch (e) {
