@@ -8117,8 +8117,17 @@
                 if (_pkgIsGasError(res)) return { ok: false, line: `✗ ${entry.name} 실패: ` + ((res && res.message) || '알 수 없는 오류') };
                 return { ok: true, line: `✓ ${entry.name} → 분류(수주) 완료 — 신규 ${res.newCount || 0}건, 납기변경 ${res.updatedCount || 0}건, 재고 자동반영 ${res.syncAppliedCount || 0}건` };
             } else {
-                const entries = _pkgExtractOutResultEntries(grid);
-                if (entries.length === 0) return { ok: false, line: `✗ ${entry.name}: 처리할 품목 데이터를 찾지 못했습니다(헤더 구성을 확인해주세요).` };
+                let entries = _pkgExtractOutResultEntries(grid);
+                // 마크("포장강화"/"김기원님앞")로 하나도 못 찾았으면, 지금 "미입고"인
+                // 품목과 품목코드(+수량)를 대조한 후보를 사람이 체크박스로 확인하게
+                // 한다(품질검사의 공정진행정보분류 확인 팝업과 같은 취지).
+                if (entries.length === 0) {
+                    const candidates = _pkgBuildIpgoCandidates(grid);
+                    if (!candidates.length) return { ok: false, line: `✗ ${entry.name}: 처리할 품목 데이터를 찾지 못했습니다(헤더 구성을 확인해주세요).` };
+                    const confirmed = await _pkgShowIpgoCandidateConfirm(candidates);
+                    if (!confirmed || !confirmed.length) return { ok: false, line: `✗ ${entry.name}: 확인 후 취소됨(반영된 항목 없음).` };
+                    entries = confirmed;
+                }
                 const res = await fetch(gasUrl, {
                     method: 'POST', body: JSON.stringify({ action: 'pkgClassifyIpgo', entries: entries }),
                     signal: AbortSignal.timeout(240000)
