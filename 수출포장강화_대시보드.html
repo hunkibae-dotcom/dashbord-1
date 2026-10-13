@@ -3110,40 +3110,47 @@
             const type = ov.productType || '';
             if (type && PKG_PRODUCT_TYPES.includes(type)) {
                 sel.value = type;
-                custom.classList.add('hidden');
                 custom.value = '';
             } else {
                 // 저장된 값이 없으면(최초) 기본값을 직접입력으로 — 프리셋 목록에 없는 값이
                 // 저장돼 있어도 여기로(이미 입력해둔 값을 그대로 보여줌, 요청 2026-10-13).
                 sel.value = '__custom__';
-                custom.classList.remove('hidden');
                 custom.value = type;
             }
             boxH.value = ov.boxHeight || '';
             _pkgSyncProductTypeVisibility();
         }
-        // 직접입력을 선택했는데 실제로 뭔가 입력된 상태면, 드롭다운에 그대로 적힌
-        // "직접입력"이라는 문구가 입력해둔 실제 값과 겹쳐 보여 거슬린다는 요청(2026-10-13)
-        // — 값이 채워지면 드롭다운은 숨기고 작은 연필 버튼으로만 다시 바꿀 수 있게 한다.
+        // 직접입력 모드일 땐 드롭다운 대신 입력칸+연필(변경)버튼을 "같은 한 줄"에 보여준다
+        // — 예전엔 드롭다운 줄 따로, 입력칸 줄 따로(2줄)라 박스 높이 칸(1줄)보다 한 줄
+        // 더 길어졌고, 그 폭 차이만큼 그리드가 늘려놔서 입력한 글자가 박스 아래쪽에
+        // 주저앉아 보였다(요청, 2026-10-13) — 항상 한 줄만 쓰도록 통일해서 해결.
         function _pkgSyncProductTypeVisibility() {
             const sel = document.getElementById('pkgProductTypeSelect');
             const custom = document.getElementById('pkgProductTypeCustom');
             const editBtn = document.getElementById('pkgProductTypeEditBtn');
-            const isCustomFilled = sel.value === '__custom__' && custom.value.trim() !== '';
-            sel.classList.toggle('hidden', isCustomFilled);
-            editBtn.classList.toggle('hidden', !isCustomFilled);
+            const isCustomMode = sel.value === '__custom__';
+            sel.classList.toggle('hidden', isCustomMode);
+            custom.classList.toggle('hidden', !isCustomMode);
+            editBtn.classList.toggle('hidden', !isCustomMode);
         }
         function showPkgProductTypeSelect() {
-            document.getElementById('pkgProductTypeSelect').classList.remove('hidden');
-            document.getElementById('pkgProductTypeEditBtn').classList.add('hidden');
+            // "변경" 눌러서 드롭다운으로 되돌아가는 경우 — 입력해둔 직접입력 값은 지우지
+            // 않고 그대로 두고(다시 직접입력을 고르면 그 값이 그대로 남아있게), 드롭다운만
+            // 다시 보여준다.
+            _pkgSyncProductTypeVisibilityForce(false);
             document.getElementById('pkgProductTypeSelect').focus();
+        }
+        function _pkgSyncProductTypeVisibilityForce(isCustomMode) {
+            document.getElementById('pkgProductTypeSelect').classList.toggle('hidden', isCustomMode);
+            document.getElementById('pkgProductTypeCustom').classList.toggle('hidden', !isCustomMode);
+            document.getElementById('pkgProductTypeEditBtn').classList.toggle('hidden', !isCustomMode);
         }
         function onPkgProductTypeChange(val) {
             const custom = document.getElementById('pkgProductTypeCustom');
-            if (val === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
-            else { custom.classList.add('hidden'); custom.value = ''; }
+            if (val === '__custom__') custom.value = '';
             onPkgSpecFieldEdit();
             _pkgSyncProductTypeVisibility();
+            if (val === '__custom__') custom.focus();
         }
         function onPkgSpecFieldEdit() {
             if (!_currentDetailProductCode) return;
