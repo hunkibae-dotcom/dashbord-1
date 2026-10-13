@@ -4398,6 +4398,18 @@
         _ieCode = ''; _ieRound = '';
     }
 
+    // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 이 창은 닫고 그 코드로 상세스펙
+    // 조회 화면을 바로 연다(요청, 2026-10-13).
+    function openSpecFromItemEdit() {
+        const code = _ieCode;
+        if (!code) return;
+        closeItemEdit();
+        openView('viewSpec');
+        const inp = document.getElementById('spec_code');
+        if (inp) inp.value = code;
+        runSpecSearch();
+    }
+
     function _renderIeStatus() {
         const container = document.getElementById('ieStatusOpts');
         if (!container) return;
