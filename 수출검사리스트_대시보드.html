@@ -1649,70 +1649,83 @@ try {
 </div>
 
 <!-- ===== 상세스펙 모달 ===== -->
-<div id="specModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeSpecModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col overflow-hidden">
-    <div class="border-b border-slate-200 shrink-0">
-      <div class="flex items-center justify-between px-5 pt-4">
-        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-600 text-[13px] font-bold">
-          <i class="fa-solid fa-cube"></i> 제품 상세스펙 및 이력
-        </span>
-        <button onclick="closeSpecModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-xmark"></i></button>
+<div id="specBackdrop" class="hidden fixed inset-0 z-[99] bg-black/60 backdrop-blur-sm" onclick="closeSpecModal()"></div>
+<div id="specModal" class="fixed top-0 right-0 h-full w-[1280px] max-w-full z-[100] bg-white border-l border-slate-200 shadow-2xl flex flex-col overflow-hidden transform translate-x-full transition-transform duration-300 ease-out">
+    <div class="border-b border-slate-200 shrink-0 px-5 py-4">
+      <div class="flex items-center justify-between gap-2 mb-2.5">
+        <div class="flex items-center gap-2 text-[#6D5CE8] font-bold text-[14.5px]">
+          <i class="fa-solid fa-cube text-[14px]"></i> 제품 상세스펙 및 이력
+        </div>
+        <button onclick="closeSpecModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-xmark text-[15px]"></i></button>
       </div>
-      <div class="px-5 pb-4 pt-3">
-        <div class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 클릭하여 다른 제품코드로 검색가능</span></div>
-        <input type="text" id="specCodeInput" oninput="runSpecLookupDebounced()" placeholder="단품코드를 입력하세요" class="w-full text-[15px] font-bold text-slate-800 outline-none bg-transparent border-b border-transparent focus:border-accent-500">
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 클릭하여 다른 제품코드로 검색가능</span></span>
+          <input type="text" id="specCodeInput" oninput="runSpecLookupDebounced()" onkeydown="if(event.key==='Escape') closeSpecModal();" placeholder="단품코드를 입력하세요" class="w-full text-[16px] font-bold text-slate-800 outline-none bg-transparent" style="font-family:ui-monospace,monospace;">
+        </div>
+        <button onclick="_openScanSmart()" title="바코드 스캔" class="w-9 h-9 rounded-lg bg-[#6D5CE8]/10 border border-[#6D5CE8]/25 text-[#6D5CE8] flex items-center justify-center shrink-0 hover:bg-[#6D5CE8]/20 transition-colors">
+          <i class="fa-solid fa-barcode text-[15px]"></i>
+        </button>
       </div>
     </div>
 
     <div id="specBody" class="flex-1 overflow-auto p-5">
       <div id="specEmpty" class="text-center py-16 text-slate-400">
-        <i class="fa-solid fa-barcode text-[25px] mb-2 block text-slate-300"></i>
-        단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.
+        <i class="fa-solid fa-barcode text-[34px] mb-2 block text-slate-300"></i>
+        단품코드를 입력하거나 바코드를 스캔하면<br>상세 스펙과 검사 진행 이력을 볼 수 있어요.
       </div>
 
       <div id="specContent" class="hidden">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
           <div class="border border-slate-200 rounded-xl px-3 py-2">
+            <div class="text-[10.5px] font-bold text-slate-400 mb-1">단품코드의 종류 <span class="text-slate-300 font-normal">· 선택 또는 직접입력</span></div>
+            <select id="specCodeTypeSelect" onchange="onSpecCodeTypeChange(this.value)" class="w-full bg-transparent text-[13.5px] font-semibold text-slate-800 outline-none border-none">
+              <option value="색상비">색상비</option>
+              <option value="형태비">형태비</option>
+              <option value="복합비">복합비</option>
+              <option value="기획주문품">기획주문품</option>
+              <option value="단종코드">단종코드</option>
+              <option value="기타">기타</option>
+            </select>
+            <input type="text" id="specCodeTypeCustom" oninput="onSpecFieldEdit()" placeholder="종류를 입력하세요" class="hidden w-full bg-transparent text-[13.5px] font-semibold text-slate-800 outline-none border-none mt-1.5">
+          </div>
+          <div class="border border-slate-200 rounded-xl px-3 py-2">
             <div class="text-[10.5px] font-bold text-slate-400 mb-1">표준품명 <span class="text-slate-300 font-normal">· 직접 입력/수정 가능</span></div>
             <input type="text" id="specStandardName" oninput="onSpecFieldEdit()" placeholder="표준품명을 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
           </div>
-          <div class="border border-slate-200 rounded-xl px-3 py-2">
-            <div class="text-[10.5px] font-bold text-slate-400 mb-1">단품코드의 종류 <span class="text-slate-300 font-normal">· 색상비/형태비/복합비/기획주문품/단종비 등, 직접 수정 가능</span></div>
-            <input type="text" id="specCodeType" oninput="onSpecFieldEdit()" placeholder="단품코드 종류를 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
-          </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
-          <div class="border border-slate-200 rounded-xl p-3 text-center">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">가로</div>
-            <div id="specW" class="text-[15px] font-extrabold text-slate-800">—</div>
-            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5 bg-slate-50 rounded-xl p-3 border border-slate-100">
+          <div class="text-center">
+            <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">가로(mm)</div>
+            <div id="specW" class="text-[16px] font-extrabold" style="color:#0284C7;">—</div>
+            <div id="specWRange" class="pt-0.5"></div>
           </div>
-          <div class="border border-slate-200 rounded-xl p-3 text-center">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">세로</div>
-            <div id="specD" class="text-[15px] font-extrabold text-slate-800">—</div>
-            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          <div class="text-center">
+            <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">세로(mm)</div>
+            <div id="specD" class="text-[16px] font-extrabold" style="color:#059669;">—</div>
+            <div id="specDRange" class="pt-0.5"></div>
           </div>
-          <div class="border border-slate-200 rounded-xl p-3 text-center">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">높이</div>
-            <div id="specH" class="text-[15px] font-extrabold text-slate-800">—</div>
-            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          <div class="text-center">
+            <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">높이(mm)</div>
+            <div id="specH" class="text-[16px] font-extrabold" style="color:#D97706;">—</div>
+            <div id="specHRange" class="pt-0.5"></div>
           </div>
-          <div class="border border-slate-200 rounded-xl p-3 text-center">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">중량</div>
-            <div id="specWeight" class="text-[15px] font-extrabold text-slate-800">—</div>
-            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          <div class="text-center">
+            <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">중량(kg)</div>
+            <div id="specWeight" class="text-[16px] font-extrabold" style="color:#7C3AED;">—</div>
+            <div id="specWeightRange" class="pt-0.5"></div>
           </div>
-          <div class="border border-slate-200 rounded-xl p-3 text-center">
-            <div class="text-[11px] font-bold text-slate-400 mb-1">CBM</div>
-            <div id="specCbm" class="text-[15px] font-extrabold text-slate-800">—</div>
-            <div class="text-[10px] text-slate-300 mt-0.5">오차범위 데이터 없음</div>
+          <div class="text-center">
+            <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">CBM(m³)</div>
+            <div id="specCbm" class="text-[16px] font-extrabold" style="color:#E11D48;">—</div>
+            <div id="specCbmRange" class="pt-0.5"></div>
           </div>
         </div>
 
         <div class="flex items-center justify-between mb-2">
           <h4 class="text-[14px] font-bold text-slate-800">검사 세부 진행 이력 <span id="specHistCount" class="text-[11px] font-semibold text-slate-400"></span></h4>
-          <button onclick="exportSpecHistory()" class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 hover:bg-slate-100 px-3 py-1.5 rounded-lg"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+          <button onclick="exportSpecHistoryXlsx()" class="flex items-center gap-1.5 text-[12.5px] font-semibold text-slate-500 hover:bg-slate-100 px-2.5 py-1.5 rounded-lg transition-colors"><i class="fa-solid fa-file-excel"></i> 데이터 출력</button>
         </div>
         <div class="overflow-auto border border-slate-100 rounded-xl" style="max-height:320px">
           <table class="w-full text-[13px]" style="min-width:720px">
@@ -1726,6 +1739,7 @@ try {
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('납기일')">납기일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-납기일"></i></th>
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('포장일')">포장일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-포장일"></i></th>
                 <th class="text-left py-2 pr-3 font-semibold cursor-pointer hover:text-slate-600" onclick="setSpecSort('검사일')">검사일 <i class="fa-solid fa-sort text-[9px]" id="specSortIcon-검사일"></i></th>
+                <th class="text-center py-2 pr-3 font-semibold">CBM(m³)</th>
               </tr>
             </thead>
             <tbody id="specHistBody"></tbody>
@@ -1733,7 +1747,6 @@ try {
         </div>
       </div>
     </div>
-  </div>
 </div>
 
 <!-- ===== "...외N차수" 병합 건명 상세 (시트 셀 메모에서 조회) ===== -->
