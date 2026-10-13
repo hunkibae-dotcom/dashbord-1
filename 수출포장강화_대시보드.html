@@ -3151,22 +3151,27 @@
                 return (w * d * h) / 1e9;
             }).filter(v => !isNaN(v));
 
-            let cbmAvg = '-', cbmTol = null, cbmCount = 0;
+            let cbmAvg = '-', cbmCount = 0, cbmMin = null, cbmMax = null;
             if (cbmVals.length) {
                 const avg = cbmVals.reduce((a, b) => a + b, 0) / cbmVals.length;
-                const min = Math.min(...cbmVals);
-                const max = Math.max(...cbmVals);
+                cbmMin = Math.min(...cbmVals).toFixed(4);
+                cbmMax = Math.max(...cbmVals).toFixed(4);
                 cbmAvg = avg.toFixed(4);
-                cbmTol = ((max - min) / 2).toFixed(4);
                 cbmCount = cbmVals.length;
             }
 
-            const renderTol = (tol, isZero, count) => {
-                if (tol === null) return '<span style="color:#94A3B8;">-</span>';
-                if (count <= 1) return '<span style="color:#F59E0B;">데이터 부족</span>';
-                const n = parseFloat(tol);
-                if (n === 0 || isZero) return '<span style="color:#64748B;">±0 균일</span>';
-                return '<span style="color:#475569;">±' + tol + '</span>';
+            // 범위 막대: count<=1이면 단일값, min===max면 균일, 그 외엔 min~max 막대로 표시
+            const renderSpecRange = (stat, color) => {
+                if (stat.count === 0) return '<span class="text-slate-600">-</span>';
+                if (stat.count === 1 || stat.min === stat.max) return '<span style="color:' + color + ';opacity:.65;">균일</span>';
+                const pct = 50;
+                return '<div class="flex items-center gap-1.5 justify-center">' +
+                    '<span class="text-[11px] text-slate-500">' + stat.min + '</span>' +
+                    '<div class="relative h-1.5 w-12 rounded-full" style="background:' + color + '22;">' +
+                    '<div class="absolute inset-y-0 left-0 rounded-full" style="width:' + pct + '%;background:' + color + ';"></div>' +
+                    '</div>' +
+                    '<span class="text-[11px] text-slate-500">' + stat.max + '</span>' +
+                    '</div>';
             };
 
             document.getElementById('specW').innerText = wS.avg;
@@ -3175,11 +3180,11 @@
             document.getElementById('specG').innerText = gS.avg;
             document.getElementById('specCBM').innerText = cbmAvg;
 
-            document.getElementById('specWTol').innerHTML = renderTol(wS.tol, wS.tol === '0', wS.count);
-            document.getElementById('specDTol').innerHTML = renderTol(dS.tol, dS.tol === '0', dS.count);
-            document.getElementById('specHTol').innerHTML = renderTol(hS.tol, hS.tol === '0', hS.count);
-            document.getElementById('specGTol').innerHTML = renderTol(gS.tol, gS.tol === '0', gS.count);
-            document.getElementById('specCBMTol').innerHTML = renderTol(cbmTol, cbmTol === '0.0000', cbmCount);
+            document.getElementById('specWTol').innerHTML = renderSpecRange(wS, '#38BDF8');
+            document.getElementById('specDTol').innerHTML = renderSpecRange(dS, '#34D399');
+            document.getElementById('specHTol').innerHTML = renderSpecRange(hS, '#FBBF24');
+            document.getElementById('specGTol').innerHTML = renderSpecRange(gS, '#A78BFA');
+            document.getElementById('specCBMTol').innerHTML = renderSpecRange({ count: cbmCount, min: cbmMin, max: cbmMax }, '#FB7185');
 
             const sampleN = Math.max(wS.count, dS.count, hS.count, gS.count, cbmCount);
             document.getElementById('specSampleCount').innerText = sampleN > 0 ? '(n=' + sampleN + ' 작업 기록 기준)' : '';
