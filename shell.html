@@ -4119,6 +4119,14 @@
     // ── 네이티브 Android ML Kit 결과 수신 (ScanActivity → MainActivity → JS) ──
     function onNativeScanResult(raw) {
         const { code, color } = _parseBarcodeRaw(raw);
+        // 상세스펙 조회 화면이 열려있는 중에 스캔했으면(요청, 2026-10-13) 제품검색이
+        // 아니라 그 화면에 코드를 바로 꽂아준다 — 그 외엔 기존 그대로 제품검색으로.
+        if (_currentView === 'viewSpec') {
+            const inp = document.getElementById('spec_code');
+            if (inp) inp.value = code;
+            runSpecSearch();
+            return;
+        }
         openView('viewSearch');
         document.getElementById('sf_code').value  = code;
         document.getElementById('sf_color').value = color;
