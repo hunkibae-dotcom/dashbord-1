@@ -7537,6 +7537,8 @@ function saveMItemDetail() {
     }
     if (fields.includes('검사')) _postMiSync(item, { action: 'updateStatus', status: item.검사 });
     if (fields.includes('검사일')) _postMiSync(item, { action: 'updateInspectDate', date: item.검사일 });
+    if (fields.includes('포장일')) _postMiSync(item, { action: 'updatePackDate', date: item.포장일 });
+    if (fields.includes('납기일')) _postMiSync(item, { action: 'updateDueDate', date: item.납기일 });
     if (fields.includes('비고')) _postMiSync(item, { action: 'updateNote', note: item.비고 || '' });
   }
   // setMiField()는 검사/검사일 변경만 그때그때 화면을 다시 그린다(가로/세로/높이처럼
