@@ -2786,13 +2786,14 @@
                 const w=parseFloat(_stripUnit(i.specW)), d=parseFloat(_stripUnit(i.specD)), h=parseFloat(_stripUnit(i.specH));
                 return (isNaN(w)||isNaN(d)||isNaN(h)||w<=0||d<=0||h<=0) ? NaN : (w*d*h)/1e9;
             }).filter(v=>!isNaN(v));
-            let cbmAvg='—', cbmTol=null, cbmCnt=0;
+            let cbmAvg='—', cbmStat={count:0};
             if (cbmVals.length) {
                 const avg=cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length;
-                cbmAvg=avg.toFixed(4); cbmTol=((Math.max(...cbmVals)-Math.min(...cbmVals))/2).toFixed(4); cbmCnt=cbmVals.length;
+                cbmAvg=avg.toFixed(4);
+                cbmStat={count:cbmVals.length, min:Math.min(...cbmVals), max:Math.max(...cbmVals)};
             }
 
-            const sampleN = Math.max(wS.count,dS.count,hS.count,gS.count,cbmCnt);
+            const sampleN = Math.max(wS.count,dS.count,hS.count,gS.count,cbmStat.count);
 
             // 이력
             const history = [...items].sort((a,b)=>b.regDate>a.regDate?1:-1).slice(0,10).map(d => {
