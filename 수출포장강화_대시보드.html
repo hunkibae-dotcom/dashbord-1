@@ -3799,6 +3799,10 @@
             const tbody = document.getElementById('tableBody');
             const cardsWrap = document.getElementById('tableCardsMobile');
             tbody.innerHTML = '';
+            // "다음 적재" 배지는 표 카테고리/검색 결과와 무관하게 항상 최신으로 유지한다
+            // (어떤 카테고리를 보고 있든, 결과가 0건이든 다음에 쓸 적재번호는 똑같으므로) —
+            // 아래 여러 early-return 분기 하나하나에 넣는 대신 맨 앞에서 한 번만 호출한다.
+            _pkgRenderNextPalletBadge();
 
             // 카테고리(전체/입고현황/실재고/적재/출고)를 하나도 고르지 않은 초기 상태에서는
             // 표를 비워둔다 — 예전엔 "전체"가 기본 선택이라, 코드/색상으로 검색하면 여러
