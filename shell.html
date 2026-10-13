@@ -2887,10 +2887,12 @@
         ov[field] = value;
         try { localStorage.setItem('pkgSpecOverride_' + code, JSON.stringify(ov)); } catch (e) {}
     }
-    function specCell(label, val, unit, tolHtml) {
+    // 값 숫자 자체를 지표별로 다른 색으로 — PC 웹 리디자인의 핵심(칙칙함 해결)이었는데
+    // 범위막대만 색을 넣고 정작 큰 숫자는 그대로 둔 실수를 바로잡음(요청, 2026-10-13).
+    function specCell(label, val, unit, tolHtml, color) {
         return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
             <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">${label}</div>
-            <div style="font-size:16px;font-weight:800;color:var(--text);margin-top:4px;font-family:monospace;">${val}<span style="font-size:10px;font-weight:400;color:var(--text-sub);margin-left:3px;">${val!=='—'?unit:''}</span></div>
+            <div style="font-size:16px;font-weight:800;color:${color||'var(--text)'};margin-top:4px;font-family:monospace;">${val}<span style="font-size:10px;font-weight:400;color:var(--text-sub);margin-left:3px;">${val!=='—'?unit:''}</span></div>
             <div style="margin-top:3px;min-height:14px;">${tolHtml||''}</div>
         </div>`;
     }
