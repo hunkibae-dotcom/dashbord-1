@@ -556,20 +556,13 @@
             <span class="flex-1">홈</span>
         </button>
 
-        <!-- 상세스펙 — 전엔 표에서 제품코드 글자를 눌러야만 열렸는데(그래서 그 글자를
-             누르면 복사되게 바꾸면서 갈 곳이 없어졌다), 코드를 직접 입력해 바로 조회할
-             수 있게 여기로 옮겼다. -->
-        <button type="button" class="pkg-nav-item" onclick="togglePkgSpecQuickSearch()">
+        <!-- 상세스펙 — 누르면 바로 상세스펙 패널이 열린다(코드가 없으면 빈 상태부터).
+             전엔 펼쳐서 코드를 입력해야 열리는 드롭다운이었는데, 패널 자체에 코드
+             입력칸이 있으니 그걸 없애고 바로 열리게 했다(요청, 2026-10-13). -->
+        <button type="button" class="pkg-nav-item" onclick="switchToProductDetailView('')">
             <i class="fa-solid fa-ruler-combined w-4 text-center"></i>
             <span class="flex-1">상세스펙</span>
-            <i class="fa-solid fa-chevron-down text-[11px]" id="pkgSpecQuickChevron"></i>
         </button>
-        <div id="pkgSpecQuickSearch" class="hidden flex items-center gap-1.5 px-2 pb-2">
-            <input type="text" id="pkgSpecQuickCode" placeholder="제품코드 입력" onkeydown="if(event.key==='Enter')runPkgSpecQuickSearch()"
-                style="flex:1;min-width:0;background:#0B0F19;border:1px solid #334155;border-radius:8px;padding:7px 10px;font-size:13px;color:#E2E8F0;outline:none;">
-            <button onclick="runPkgSpecQuickSearch()" style="flex-shrink:0;background:#0284c7;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:12.5px;font-weight:700;cursor:pointer;">조회</button>
-        </div>
-        <div id="pkgSpecQuickFeedback" class="px-2 text-[11.5px] text-red-400" style="min-height:14px;"></div>
 
         <div class="border-t border-borderSlate/50 my-1.5"></div>
 
