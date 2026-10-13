@@ -4063,8 +4063,13 @@
                     <td style="padding:10px 16px;text-align:center;"><span style="padding:3px 9px;border-radius:6px;font-size:12px;${badgeStyle};white-space:nowrap;">${item.statusLabel || item.status}</span></td>`;
                 tbody.appendChild(tr);
 
+                // 모바일 카드(앱에서 쓰는 화면) — 안의 복사 버튼들은 event.stopPropagation()으로
+                // 자기 클릭이 카드 자체의 클릭(수정창 열기)으로 안 번지게 막아뒀는데, 정작 카드
+                // 자체엔 그 "열기" 클릭 핸들러가 빠져있었다 — 그래서 앱(모바일 카드 화면)에서는
+                // 품목을 탭해도 제품 수정창이 아예 안 열렸다(상세스펙 버튼도 그 안에 있으니
+                // 당연히 안 보임). PC 테이블 행과 똑같이 openPkgItemDetail을 열어준다.
                 cardHtmlParts.push(`
-                    <div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl p-3 flex flex-col gap-2">
+                    <div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl p-3 flex flex-col gap-2" ${_pkgMultiSelectMode ? '' : `onclick="openPkgItemDetail('${_pkgKey}')" style="cursor:pointer;"`}>
                         <div class="flex items-center justify-between gap-2">
                             <span class="font-mono font-semibold text-[15px]" style="color:#334155;cursor:pointer;" onclick="event.stopPropagation();copyCellText('${_jsAttr(item.code)}', event)">${item.code}</span>
                             <span style="padding:3px 9px;border-radius:6px;font-size:12px;${badgeStyle}white-space:nowrap;">${item.statusLabel || item.status}</span>
