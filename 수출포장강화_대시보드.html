@@ -3101,7 +3101,20 @@
             panel.classList.remove('translate-x-full');
             panel.classList.add('translate-x-0');
 
-            document.getElementById('detailProductCode').innerText = productCode.toUpperCase();
+            const codeInput = document.getElementById('detailProductCodeInput');
+            if (codeInput && document.activeElement !== codeInput) codeInput.value = productCode.toUpperCase();
+
+            const emptyEl = document.getElementById('pkgSpecEmpty');
+            const filledEl = document.getElementById('pkgSpecFilled');
+            if (!productCode) {
+                if (emptyEl) emptyEl.classList.remove('hidden');
+                if (filledEl) { filledEl.classList.add('hidden'); filledEl.classList.remove('flex'); }
+                return;
+            }
+            if (emptyEl) emptyEl.classList.add('hidden');
+            if (filledEl) { filledEl.classList.remove('hidden'); filledEl.classList.add('flex'); }
+
+            loadPkgSpecOverride(productCode.toUpperCase());
 
             const stripUnit = (val) => {
                 if (!val || val === '-') return '-';
