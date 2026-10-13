@@ -6951,18 +6951,34 @@ function setSpecSort(key) {
   renderSpecHistory();
 }
 
-function exportSpecHistory() {
+// 예전엔 CSV였는데, 포장강화처럼 수정 가능한 .xlsx로 바꾸고 건별 CBM(m³)까지
+// 같이 뽑아 더 상세하게 보이도록 했다(요청, 2026-10-13).
+function exportSpecHistoryXlsx() {
   const code = document.getElementById('specCodeInput').value.trim();
-  exportCSV(sortByKey(specHistoryRows, specSortKey, specSortDir), `상세스펙_${code}_${new Date().toISOString().slice(0,10)}.csv`, [
-    { label:'건명', get: d => d.건명 },
-    { label:'단품코드', get: d => d.단품코드 },
-    { label:'색상', get: d => d.색상 },
-    { label:'수량', get: d => d.수량 },
-    { label:'진행', get: d => d.검사 },
-    { label:'납기일', get: d => d.납기일 },
-    { label:'포장일', get: d => d.포장일 },
-    { label:'검사일', get: d => d.검사일 },
-  ]);
+  let ov = {};
+  try { ov = JSON.parse(localStorage.getItem('specOverride_' + code) || '{}'); } catch (e) {}
+  _qcRenderGenericXls({
+    title: '상세스펙_' + code,
+    rows: sortByKey(specHistoryRows, specSortKey, specSortDir),
+    filename: `상세스펙_${code}_${new Date().toISOString().slice(0,10)}.xlsx`,
+    columns: [
+      { label: '건명', get: d => d.건명 },
+      { label: '단품코드', get: d => d.단품코드 },
+      { label: '단품코드의 종류', get: () => ov.codeType || '' },
+      { label: '표준품명', get: () => ov.standardName || '' },
+      { label: '색상', get: d => d.색상 },
+      { label: '수량', get: d => d.수량 },
+      { label: '가로(mm)', get: d => d.가로 || '' },
+      { label: '세로(mm)', get: d => d.세로 || '' },
+      { label: '높이(mm)', get: d => d.높이 || '' },
+      { label: '중량(kg)', get: d => d.중량 || '' },
+      { label: 'CBM(m³)', get: d => _qcCbmOf(d) },
+      { label: '진행', get: d => d.검사, isStatus: true },
+      { label: '납기일', get: d => d.납기일 },
+      { label: '포장일', get: d => d.포장일 },
+      { label: '검사일', get: d => d.검사일 },
+    ]
+  });
 }
 
 // ===== MOBILE =====
