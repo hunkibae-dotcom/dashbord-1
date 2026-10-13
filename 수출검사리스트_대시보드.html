@@ -6835,6 +6835,16 @@ function _qcApplyCodeTypeToUI(codeType) {
   sel.value = codeType;
 }
 
+function pickSpecCodeSuggest(code) {
+  document.getElementById('specCodeInput').value = code;
+  hideSpecCodeSuggest();
+  runSpecLookup();
+}
+function hideSpecCodeSuggest() {
+  const box = document.getElementById('specCodeSuggest');
+  if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+}
+
 function openSpecModal(code) {
   document.getElementById('specBackdrop').classList.remove('hidden');
   const panel = document.getElementById('specModal');
