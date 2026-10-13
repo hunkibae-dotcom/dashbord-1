@@ -3599,7 +3599,7 @@
         // 가능한 칸이다(품질검사와 같은 느낌, 요청 2026-10-13). Enter로 조회,
         // Escape로 패널 닫기.
         function handleProductCodeInputKey(e) {
-            if (e.key === 'Escape') { exitProductDetailView(); return; }
+            if (e.key === 'Escape') { hideProductCodeSuggest(); exitProductDetailView(); return; }
             if (e.key !== 'Enter') return;
             const input = document.getElementById('detailProductCodeInput');
             const code = input.value.trim();
@@ -3608,7 +3608,41 @@
             if (!code) return;
             const exists = (state.data || []).some(item => item.code && item.code.toLowerCase() === code.toLowerCase());
             if (!exists) { if (fb) fb.textContent = '일치하는 제품코드가 없습니다.'; return; }
+            hideProductCodeSuggest();
             switchToProductDetailView(code);
+        }
+
+        // 제품검색창처럼 글자 입력할 때마다 포함되는 코드를 바로 찾아 보여준다(정확한
+        // 전체 코드를 다 입력해야만 찾아지던 걸 개선, 요청 2026-10-14).
+        function handleProductCodeInputType() {
+            const input = document.getElementById('detailProductCodeInput');
+            const box = document.getElementById('detailCodeSuggest');
+            const fb = document.getElementById('detailCodeFeedback');
+            if (fb) fb.textContent = '';
+            const q = input.value.trim().toLowerCase();
+            if (!q) { hideProductCodeSuggest(); return; }
+            const seen = new Set();
+            const matches = [];
+            (state.data || []).forEach(item => {
+                const c = item.code;
+                if (!c) return;
+                const cl = c.toLowerCase();
+                if (cl.includes(q) && !seen.has(cl)) { seen.add(cl); matches.push(c); }
+            });
+            if (!matches.length) { hideProductCodeSuggest(); return; }
+            matches.sort((a, b) => a.localeCompare(b));
+            box.innerHTML = matches.slice(0, 8).map(c =>
+                `<div class="px-3 py-2 text-[14px] font-mono text-slate-200 hover:bg-accentBlue/10 cursor-pointer" onmousedown="pickProductCodeSuggest('${c.replace(/'/g, "\\'")}')">${c}</div>`
+            ).join('');
+            box.classList.remove('hidden');
+        }
+        function pickProductCodeSuggest(code) {
+            hideProductCodeSuggest();
+            switchToProductDetailView(code);
+        }
+        function hideProductCodeSuggest() {
+            const box = document.getElementById('detailCodeSuggest');
+            if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
         }
 
         function switchToGeneralDashboardView() {
