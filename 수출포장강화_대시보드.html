@@ -470,6 +470,9 @@
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col">
+    <!-- 임시 진단용 빌드 표시 — 앱에 반영 여부를 확실히 확인하기 위한 표식(2026-10-13).
+         문제 해결되면 삭제할 것. -->
+    <div style="position:fixed;top:0;left:0;right:0;z-index:999999;background:#FF0000;color:#fff;text-align:center;font-weight:900;font-size:13px;padding:4px;">BUILD-CHECK 2026-10-13 17:05</div>
     <div id="pkgInitLoadingOverlay" style="position:fixed;inset:0;z-index:99999;background:var(--c-darkBg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
       <i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:#00B0FF;"></i>
       <div style="font-size:13px;color:#64748b;font-weight:700;">불러오는 중...</div>
