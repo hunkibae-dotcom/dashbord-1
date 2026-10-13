@@ -1659,7 +1659,7 @@ try {
           <input type="text" id="specCodeInput" autocomplete="off" oninput="runSpecLookupDebounced()" onkeydown="if(event.key==='Escape') closeSpecModal();" onblur="setTimeout(hideSpecCodeSuggest, 150)" placeholder="단품코드를 입력하세요" class="w-full text-[16px] font-bold text-slate-800 outline-none bg-transparent" style="font-family:ui-monospace,monospace;">
           <div id="specCodeSuggest" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-56 overflow-y-auto z-50"></div>
         </div>
-        <button onclick="_openScanSmart()" title="바코드 스캔" class="w-9 h-9 rounded-lg bg-[#6D5CE8]/10 border border-[#6D5CE8]/25 text-[#6D5CE8] flex items-center justify-center shrink-0 hover:bg-[#6D5CE8]/20 transition-colors">
+        <button id="specScanBtn" onclick="_openScanSmart()" title="바코드 스캔" class="hidden w-9 h-9 rounded-lg bg-[#6D5CE8]/10 border border-[#6D5CE8]/25 text-[#6D5CE8] items-center justify-center shrink-0 hover:bg-[#6D5CE8]/20 transition-colors">
           <i class="fa-solid fa-barcode text-[15px]"></i>
         </button>
       </div>
@@ -1668,7 +1668,7 @@ try {
     <div id="specBody" class="flex-1 overflow-auto p-5">
       <div id="specEmpty" class="text-center py-16 text-slate-400">
         <i class="fa-solid fa-barcode text-[34px] mb-2 block text-slate-300"></i>
-        단품코드를 입력하거나 바코드를 스캔하면<br>상세 스펙과 검사 진행 이력을 볼 수 있어요.
+        <span id="specEmptyHint">단품코드를 입력하면<br>상세 스펙과 검사 진행 이력을 볼 수 있어요.</span>
       </div>
 
       <div id="specContent" class="hidden">
