@@ -6830,20 +6830,13 @@ function onSpecFieldEdit() {
 // 더 넣어 선택해둔다 — 사용자가 직접 다시 고르기 전까진 원래 값을 잃지 않는다.
 function _qcApplyCodeTypeToUI(codeType) {
   const sel = document.getElementById('specCodeTypeSelect');
-  const custom = document.getElementById('specCodeTypeCustom');
   Array.from(sel.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
-  if (QC_CODE_TYPES.includes(codeType)) {
-    sel.value = codeType;
-    custom.classList.add('hidden');
-    custom.value = '';
-  } else {
+  if (!QC_CODE_TYPES.includes(codeType)) {
     const opt = document.createElement('option');
     opt.value = codeType; opt.textContent = codeType + ' (이전 값)'; opt.dataset.legacy = '1';
     sel.appendChild(opt);
-    sel.value = codeType;
-    custom.classList.add('hidden');
-    custom.value = '';
   }
+  sel.value = codeType;
 }
 
 function openSpecModal(code) {
