@@ -6419,36 +6419,10 @@ function _qcLoadPdfLibs(cb) {
     loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js', cb);
   });
 }
-// 품목코드별 가로/세로/높이/중량 평균 캐시 — 포장강화의 _pkgSpecLookupCache와 같은
-// 목적. 이 파일엔 그런 전역 캐시가 따로 없었지만, runSpecLookup()이 이미 allData +
-// archiveRows 전체를 코드로 뒤져 규격을 찾는 같은 방식을 쓰고 있어 그 재료(각 행의
-// 가로/세로/높이/중량 필드)를 그대로 재사용한다 — 없는 값을 지어내는 게 아니라, 같은
-// 코드를 가진 다른 행들에 이미 기록된 실측값을 평균 낸 것이다.
-function _qcBuildSpecLookup() {
-  const pool = [...(allData || []), ...(archiveRows || [])];
-  const map = {};
-  pool.forEach(d => {
-    const code = (d.단품코드 || '').toString().trim().toUpperCase();
-    if (!code) return;
-    if (!map[code]) map[code] = { w: [], d: [], h: [], g: [] };
-    if (d.가로 > 0) map[code].w.push(d.가로);
-    if (d.세로 > 0) map[code].d.push(d.세로);
-    if (d.높이 > 0) map[code].h.push(d.높이);
-    if (d.중량 > 0) map[code].g.push(d.중량);
-  });
-  return map;
-}
-function _qcSpecForItem(d, lookup) {
-  const fb = lookup[(d.단품코드 || '').toString().trim().toUpperCase()] || { w: [], d: [], h: [], g: [] };
-  const avg = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length).toString() : '';
-  const own = v => (v && v > 0) ? String(v) : '';
-  return {
-    w: own(d.가로) || avg(fb.w),
-    d: own(d.세로) || avg(fb.d),
-    h: own(d.높이) || avg(fb.h),
-    g: own(d.중량) || avg(fb.g),
-  };
-}
+// (2026-10-13) 이 건(행) 자체에 없는 값을 같은 단품코드의 다른 건에서 평균 내
+// 채워주던 _qcBuildSpecLookup/_qcSpecForItem은 제거했다 — 출력물·차트 리포트에
+// 그 건 자체엔 입력한 적 없는 숫자가 보여서 혼란을 준다는 지적. 평균/이력을
+// 보고 싶을 때는 "상세스펙 및 이력"(runSpecLookup)을 쓴다.
 // 인쇄물 날짜 표기 — "2026. 10. 13" 같은 원본을 "10. 13"으로 줄인다(연도까지 다 적으면
 // 너무 길어진다는 요청, 포장강화 쪽 인쇄물과 같은 표기 방식). 앞에 0을 붙이지 않는다
 // (예: 10.04가 아니라 10.4).
