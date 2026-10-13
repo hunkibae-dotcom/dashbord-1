@@ -692,18 +692,23 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- 작업 인원 -->
+                        <!-- 신규 항목 (수출 현황 I열 "신규") -->
                         <div class="flex flex-col gap-1.5">
                             <div class="flex items-center justify-between">
                                 <span class="text-[13.5px] font-semibold text-slate-400 flex items-center gap-1">
-                                    <i class="fa-solid fa-users text-[12px] text-slate-500"></i> 금일 작업 인원
+                                    <i class="fa-solid fa-sparkles text-[12px] text-accentOrange"></i> 신규 항목
                                 </span>
                                 <span class="text-[10px] text-slate-600 flex items-center gap-1">
-                                    <i class="fa-solid fa-link text-[8px]"></i> 작업일지 시트 연동
+                                    <i class="fa-solid fa-link text-[8px]"></i> 수출현황 시트 연동
                                 </span>
                             </div>
-                            <div id="card1WorkerDisplay" class="min-h-[28px]">
-                                <div class="text-[12px] text-slate-600 text-center py-1">데이터 로딩 중...</div>
+                            <div class="flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3 py-2.5 border border-borderSlate/40">
+                                <div>
+                                    <span id="pkgNewCount" class="text-[21.5px] font-bold text-accentOrange leading-none">-</span>
+                                    <span class="text-[12px] font-semibold text-slate-500">건</span>
+                                    <div class="text-[11px] text-slate-500 mt-0.5">신규 추가된 품목 확인하기</div>
+                                </div>
+                                <button onclick="openPkgNewModal()" class="px-3 py-1.5 rounded-lg bg-accentBlue hover:brightness-110 text-darkBg text-[12px] font-bold shrink-0 transition active:scale-95">상세보기</button>
                             </div>
                         </div>
                     </div>
@@ -2363,7 +2368,10 @@
                 // "충주공장 재고"에만 있는 칸(수출 현황/출고 완료에는 없음) — 행 단위로
                 // 그대로 들고 있어야 같은 코드+차수가 파렛트 여러 개로 나뉘어 있을 때도
                 // (부분 포장 등) 행이 하나로 합쳐지지 않고 그대로 따로 보인다.
-                pallet: ['파렛트', 'PALET', '적재', 'pallet']
+                pallet: ['파렛트', 'PALET', '적재', 'pallet'],
+                // "수출 현황" I열 — onEdit이 자동으로 "신규"/"중복"을 적어두는 칸.
+                // 신규 항목 카드/상세보기가 이 값을 그대로 읽어서 쓴다.
+                note: ['비고', 'note']
             };
 
             let indices = {};
@@ -2476,7 +2484,8 @@
                     specW: getCell('specW'),
                     specD: getCell('specD'),
                     specH: getCell('specH'),
-                    specG: getCell('specG')
+                    specG: getCell('specG'),
+                    note: getCell('note')
                 };
                 // 이 시트에 실제로 파렛트 칸이 있을 때만(수출 현황/출고 완료는 애초에 이
                 // 칸이 없음) 행 자신의 값을 그대로 넣는다 — renderTable()은 이 값이 있으면
@@ -3532,6 +3541,7 @@
             // 카드1 상세현황은 "수출 현황" 시트 단독 데이터 사용
             const exportSheetKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const rawData = exportSheetKey ? datasetMap[exportSheetKey] : state.data;
+            refreshPkgNewCard(rawData);
             const filtered = state.filteredData;
             
             let receivedQty = 0;
@@ -7653,6 +7663,112 @@
             document.getElementById('pkgBulkModal').style.display = 'none';
         }
 
+        // ── 신규 항목(수출 현황 I열 "신규") — 카드 집계 + 상세보기 + 확인 ──────────
+        let _pkgNewSelected = new Set(); // key = CODE|round|color
+
+        function _pkgIsNewItem(it) {
+            return ((it && it.note) || '').toString().trim() === '신규';
+        }
+        function _pkgNewKey(it) {
+            return (it.code || '').toString().toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color);
+        }
+        function refreshPkgNewCard(rawData) {
+            window._pkgNewList = (rawData || []).filter(_pkgIsNewItem);
+            const el = document.getElementById('pkgNewCount');
+            if (el) el.textContent = window._pkgNewList.length;
+        }
+
+        function openPkgNewModal() {
+            _pkgNewSelected = new Set();
+            renderPkgNewList();
+            document.getElementById('pkgNewModal').style.display = 'flex';
+        }
+        function closePkgNewModal() {
+            document.getElementById('pkgNewModal').style.display = 'none';
+        }
+
+        function renderPkgNewList() {
+            const body = document.getElementById('pkgNewBody');
+            const list = window._pkgNewList || [];
+            if (!list.length) {
+                body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">신규 품목이 없습니다.</div>';
+            } else {
+                body.innerHTML = list.map(it => {
+                    const key = _pkgNewKey(it);
+                    const checked = _pkgNewSelected.has(key) ? 'checked' : '';
+                    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:10px;">
+                        <input type="checkbox" ${checked} style="margin-top:3px;width:15px;height:15px;cursor:pointer;flex-shrink:0;" onchange="_pkgNewToggleOne('${key}',this.checked)">
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                            <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
+                            <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;">
+                                <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.code)}', event)">${it.code || '-'}</span>
+                                <span>${it.color || '-'} · ${it.qty || 0}EA</span>
+                                <span>등록 ${it.regDate || it.date || '-'}</span>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+            _pkgNewUpdateSelUi();
+        }
+
+        function _pkgNewToggleOne(key, checked) {
+            if (checked) _pkgNewSelected.add(key); else _pkgNewSelected.delete(key);
+            _pkgNewUpdateSelUi();
+        }
+        function pkgNewToggleAll(checked) {
+            (window._pkgNewList || []).forEach(it => {
+                const k = _pkgNewKey(it);
+                if (checked) _pkgNewSelected.add(k); else _pkgNewSelected.delete(k);
+            });
+            renderPkgNewList();
+        }
+        function _pkgNewUpdateSelUi() {
+            const list = window._pkgNewList || [];
+            document.getElementById('pkgNewSelCount').textContent = _pkgNewSelected.size + '건 선택';
+            const allCb = document.getElementById('pkgNewSelectAll');
+            if (allCb) allCb.checked = list.length > 0 && list.every(it => _pkgNewSelected.has(_pkgNewKey(it)));
+            const btn = document.getElementById('pkgNewConfirmBtn');
+            if (btn) { btn.disabled = _pkgNewSelected.size === 0; btn.style.opacity = _pkgNewSelected.size === 0 ? '.4' : '1'; }
+        }
+
+        async function pkgNewConfirmSelected() {
+            const list = (window._pkgNewList || []).filter(it => _pkgNewSelected.has(_pkgNewKey(it)));
+            if (!list.length) return;
+            const btn = document.getElementById('pkgNewConfirmBtn');
+            btn.disabled = true;
+            const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
+            const today = new Date();
+            const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            try {
+                const gasUrl = _pkgGasUrl();
+                const res = await fetch(gasUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgConfirmNewItems', items: items, date: dateStr }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '확인 처리 실패');
+
+                // 즉시 반영: 확인한 품목들의 note(수출 현황 I열 "신규")를 로컬에서도 지운다
+                // (다음 전체 새로고침 전까지도 화면에 바로 안 보이도록).
+                const doneTuples = new Set(items.map(it => (it.code || '').toUpperCase() + '|' + it.round + '|' + _pkgNormColor(it.color)));
+                Object.keys(datasetMap).forEach(k => {
+                    if (!k.includes('수출 현황')) return;
+                    (datasetMap[k] || []).forEach(it => {
+                        const tup = (it.code || '').toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color);
+                        if (doneTuples.has(tup)) it.note = '';
+                    });
+                });
+                _pkgNewSelected = new Set();
+                updateKPIs();
+                renderPkgNewList();
+            } catch (e) {
+                alert('확인 처리 중 오류: ' + e.message);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         function _pkgRenderBulkStatusOpts() {
             const wrap = document.getElementById('pkgBulkStatusOpts');
             wrap.innerHTML = _pkgStatusGroupsHtml(_pkgBulkStatus, '_pkgSelectBulkStatus', '_pkgToggleBulkStatusGroup', _pkgBulkStatusOpenGroup);
@@ -10641,6 +10757,31 @@
             <button onclick="pkgBulkApply()" id="pkgBulkApplyBtn"
                 style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
                 <i class="fa-solid fa-check"></i> 적용
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── 신규 항목 상세보기 모달 ──────────────────────── -->
+<div id="pkgNewModal" onclick="if(event.target===this)closePkgNewModal()"
+    style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:560px;max-width:94vw;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:16px;font-weight:800;color:#1e293b;">신규 추가 품목</div>
+            <button onclick="closePkgNewModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;margin:6px 0 12px;">수출 현황 I열(비고)에 "신규"로 표시된 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:700;color:#334155;">
+                <input type="checkbox" id="pkgNewSelectAll" onchange="pkgNewToggleAll(this.checked)"> 전체선택
+            </label>
+            <span id="pkgNewSelCount" style="color:#94a3b8;font-weight:600;">0건 선택</span>
+        </div>
+        <div id="pkgNewBody" style="overflow-y:auto;flex:1;padding:6px 2px;min-height:120px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;">
+            <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
+                style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                <i class="fa-solid fa-check"></i> 확인
             </button>
         </div>
     </div>

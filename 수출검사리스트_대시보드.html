@@ -120,6 +120,9 @@ try {
   .pill-dday-soon { background:#FFEDD5; color:#C2410C; }
   .pill-dday-ok { background:#F1F5F9; color:#64748B; }
 
+  .chip-fac { background:#fff; border-color:#e2e8f0; color:#94a3b8; cursor:pointer; }
+  .chip-fac.on { background:#0ea5e9; border-color:#0ea5e9; color:#fff; }
+
 
   .dash-line { position:relative; height:2px; background-image:linear-gradient(to right,#CBD5E1 50%,transparent 50%); background-size:10px 2px; }
 
@@ -595,27 +598,27 @@ try {
           </div>
         </div>
 
-        <!-- 투입전 (미투입) -->
+        <!-- 신규품목 (각 공장 검사항목 리스트 "신규↓" 구분선 아래 품목) -->
         <div class="relative group">
           <div class="card p-4 cursor-default">
             <div class="flex items-center gap-2 mb-3">
-              <span class="kpi-icon bg-slate-100 shrink-0"><i class="fa-solid fa-clock-rotate-left text-slate-500 text-[15px]"></i></span>
-              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">투입전</span>
+              <span class="kpi-icon bg-amber-50 shrink-0"><i class="fa-solid fa-sparkles text-amber-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">신규품목</span>
             </div>
             <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between" data-factory="cj1">
                 <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f1-500"></span>충주1공장</span>
-                <span class="text-[17px] font-extrabold text-slate-500"><span id="kpiPreInCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+                <span class="text-[17px] font-extrabold text-slate-700"><span id="kpiNewCj1">—</span> <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
               </div>
               <div class="flex items-center justify-between" data-factory="cj2">
                 <span class="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-f2-500"></span>충주2공장</span>
-                <span class="text-[17px] font-extrabold text-slate-500"><span id="kpiPreInCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">CORD</span></span>
+                <span class="text-[17px] font-extrabold text-slate-700"><span id="kpiNewCj2">—</span> <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
               </div>
             </div>
           </div>
           <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
-            <div id="kpiPreInDetail" class="space-y-0.5"></div>
-            <button onclick="viewDetailInTable('미투입')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+            <div id="kpiNewDetail" class="space-y-0.5"></div>
+            <button onclick="qcOpenNewItemsModal()" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
@@ -1554,6 +1557,32 @@ try {
   </div>
 </div>
 
+<!-- ===== 신규품목 상세보기 ===== -->
+<div id="qcNewItemsModal" class="hidden fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseNewItemsModal()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 flex flex-col" style="max-height:86vh;">
+    <div class="flex items-center justify-between mb-1">
+      <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-sparkles text-amber-500 mr-1.5"></i>신규품목 확인</div>
+      <button onclick="qcCloseNewItemsModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="text-[12px] text-slate-400 my-2">각 공장 검사항목 리스트의 "신규↓" 구분선 아래 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
+    <div class="flex gap-1.5 mb-2" id="qcNewFacChips">
+      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="all" onclick="qcNewSetFac('all')">전체</button>
+      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcNewSetFac('cj1')">충주1공장</button>
+      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcNewSetFac('cj2')">충주2공장</button>
+    </div>
+    <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
+      <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcNewSelectAll" onchange="qcNewToggleAll(this.checked)"> 전체선택</label>
+      <span id="qcNewSelCount" class="text-slate-400 font-semibold">0건 선택</span>
+    </div>
+    <div id="qcNewBody" class="overflow-y-auto py-1" style="flex:1;min-height:120px;"></div>
+    <div id="qcNewStatus" class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
+    <div class="flex gap-2 justify-end border-t border-slate-100 pt-3 mt-1">
+      <button onclick="qcSortInspectList()" id="qcSortBtn" class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] flex items-center gap-1.5"><i class="fa-solid fa-arrow-down-wide-short"></i>검사리스트 정렬</button>
+      <button onclick="qcNewConfirmSelected()" id="qcNewConfirmBtn" disabled class="py-2 px-5 rounded-lg bg-accent-500 text-white font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-solid fa-check"></i>확인</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== 구글 시트 연동 설정 (충주1/충주2 각각의 웹앱 URL을 바꿀 수 있음) ===== -->
 <div id="qcSettingsModal" class="hidden fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseSettingsModal()">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
@@ -2016,11 +2045,15 @@ async function fetchArchiveData(f) {
 function parseRows(rows, factory) {
   const result = [];
   if (!rows) return result;
+  // "신규↓" 구분선 아래로 내려왔는지 — 그 아래 품목은 전부 신규품목 카드 대상이다
+  // (실제 검사리스트 정렬 매크로가 보는 것과 같은 기준, 2026-10-13).
+  let pastNewDivider = false;
   for (const row of rows) {
     if (!row) continue;
     const g = (i) => (row[i] !== null && row[i] !== undefined ? String(row[i]) : '');
     const 건명 = g(0).trim();
-    if (!건명 || 건명.includes('검사 항목') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2' || 건명.includes('신규')) continue;
+    if (건명.includes('신규')) { pastNewDivider = true; continue; }
+    if (!건명 || 건명.includes('검사 항목') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2') continue;
 
     const 단품코드val = g(1).trim();
     if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
@@ -2053,6 +2086,11 @@ function parseRows(rows, factory) {
       중량: parseFloat(g(12)) || 0,
       CBM: (가로 && 세로 && 높이) ? (가로 * 세로 * 높이 / 1e9) : null,
       비고: g(15).trim(),
+      신규: pastNewDivider,
+      // 17번째 칸(인덱스 16) — GAS getActive가 B열(단품코드) 메모를 덧붙여 보낸다.
+      // "확인" 버튼으로 남긴 메모가 있으면 신규품목 카드/목록에서 이미 처리된
+      // 것으로 보고 뺀다.
+      신규확인됨: !!g(16).trim(),
     });
   }
   return result;
@@ -2343,10 +2381,11 @@ function applyFilters() {
     // KPI·패널·차트: 진행중 데이터만
     filtered = allData.filter(matchRow);
 
-    // 테이블: 진행중 + 완료이력 통합
+    // 테이블: 진행중 + 완료이력 통합 (sourceTab으로 둘 중 하나만 볼 수도 있음)
     const allItems = [...allData, ...archiveRows];
     let display = allItems.filter(matchRow);
     if (factoryTab !== 'all') display = display.filter(d => d.공장 === factoryTab);
+    if (sourceTab !== 'all') display = display.filter(d => d.source === sourceTab);
     display = sortByKey(display, tableSortKey, tableSortDir);
     displayedRows = display;
 
@@ -2557,12 +2596,12 @@ function renderKPIs(fullData) {
   document.getElementById('kpiWaitCj2').textContent = cj2.waitInspect.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
-  // 3) 투입전 (미투입)
-  const cj1PreInput = cj1Items.filter(d => d.검사 === '미투입');
-  const cj2PreInput = cj2Items.filter(d => d.검사 === '미투입');
-  document.getElementById('kpiPreInCj1').textContent = cj1.preinput.toLocaleString();
-  document.getElementById('kpiPreInCj2').textContent = cj2.preinput.toLocaleString();
-  document.getElementById('kpiPreInDetail').innerHTML = renderDetailList(scopedPool(cj1PreInput, cj2PreInput), '납기일');
+  // 3) 신규품목 ("신규↓" 구분선 아래 + 아직 "확인" 안 한 품목)
+  const cj1New = cj1Items.filter(d => d.신규 && !d.신규확인됨);
+  const cj2New = cj2Items.filter(d => d.신규 && !d.신규확인됨);
+  document.getElementById('kpiNewCj1').textContent = cj1New.length.toLocaleString();
+  document.getElementById('kpiNewCj2').textContent = cj2New.length.toLocaleString();
+  document.getElementById('kpiNewDetail').innerHTML = renderDetailList(scopedPool(cj1New, cj2New), '납기일');
 
   // 4) 생산중 (미검사 + 재투입)
   const cj1Producing = cj1Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
@@ -7110,8 +7149,8 @@ function renderMobileKPIs() {
   setMTxt('mKpiPkd2', s2.packedToday);
   setMTxt('mKpiWt1', s1.waitInspect);
   setMTxt('mKpiWt2', s2.waitInspect);
-  setMTxt('mKpiPre1', s1.preinput.toLocaleString());
-  setMTxt('mKpiPre2', s2.preinput.toLocaleString());
+  setMTxt('mKpiPre1', cj1.filter(d => d.신규 && !d.신규확인됨).length.toLocaleString());
+  setMTxt('mKpiPre2', cj2.filter(d => d.신규 && !d.신규확인됨).length.toLocaleString());
   setMTxt('mKpiPrd1', s1.prodOngoing.toLocaleString());
   setMTxt('mKpiPrd2', s2.prodOngoing.toLocaleString());
   setMTxt('mKpiDone1', s1.prodDone.toLocaleString());
@@ -7483,6 +7522,159 @@ function _gasUrlForFactory(factoryKey) {
   if (factoryKey === 'cj1') return GAS_URL_CJ1;
   if (factoryKey === 'cj2') return GAS_URL_CJ2;
   return '';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 신규품목 상세보기 — "신규↓" 구분선 아래 + 아직 확인 안 한 품목을 공장별로 보여주고,
+// 다중선택 확인(행 메모) / 검사리스트 정렬(서버의 실제 정렬 매크로 실행)을 한다.
+// ═══════════════════════════════════════════════════════════════
+let _qcNewFac = 'all';
+let _qcNewSelected = new Set(); // key = 공장|건명|단품코드|색상
+
+function _qcNewKey(d) {
+  return d.공장 + '|' + d.건명 + '|' + d.단품코드 + '|' + (d.색상 || '');
+}
+function _qcNewItems() {
+  const items = allData.filter(d => d.신규 && !d.신규확인됨);
+  return _qcNewFac === 'all' ? items : items.filter(d => d.공장 === _qcNewFac);
+}
+
+function qcOpenNewItemsModal() {
+  _qcNewFac = 'all';
+  _qcNewSelected = new Set();
+  document.getElementById('qcNewStatus').textContent = '';
+  _qcNewRenderChips();
+  qcNewRenderList();
+  document.getElementById('qcNewItemsModal').classList.remove('hidden');
+}
+function qcCloseNewItemsModal() {
+  document.getElementById('qcNewItemsModal').classList.add('hidden');
+}
+function _qcNewRenderChips() {
+  document.querySelectorAll('#qcNewFacChips .chip-fac').forEach(b => b.classList.toggle('on', b.dataset.fac === _qcNewFac));
+}
+function qcNewSetFac(fac) {
+  _qcNewFac = fac;
+  _qcNewRenderChips();
+  qcNewRenderList();
+}
+
+function qcNewRenderList() {
+  const body = document.getElementById('qcNewBody');
+  const items = _qcNewItems();
+  if (!items.length) {
+    body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">신규 품목이 없습니다.</div>';
+  } else {
+    body.innerHTML = items.map(d => {
+      const key = _qcNewKey(d);
+      const checked = _qcNewSelected.has(key) ? 'checked' : '';
+      const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
+      const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
+      return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
+        <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcNewToggleOne('${_jsAttr(key)}', this.checked)">
+        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
+            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
+          </div>
+          <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
+            <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
+            <span>${d.색상 || '-'} · ${d.수량 || 0}EA</span>
+            <span>납기 ${d.납기일 || '—'} · 포장 ${d.포장일 || '—'}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  _qcNewUpdateSelUi();
+}
+
+function qcNewToggleOne(key, checked) {
+  if (checked) _qcNewSelected.add(key); else _qcNewSelected.delete(key);
+  _qcNewUpdateSelUi();
+}
+function qcNewToggleAll(checked) {
+  _qcNewItems().forEach(d => { const k = _qcNewKey(d); if (checked) _qcNewSelected.add(k); else _qcNewSelected.delete(k); });
+  qcNewRenderList();
+}
+function _qcNewUpdateSelUi() {
+  const items = _qcNewItems();
+  document.getElementById('qcNewSelCount').textContent = _qcNewSelected.size + '건 선택';
+  const allCb = document.getElementById('qcNewSelectAll');
+  if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcNewSelected.has(_qcNewKey(d)));
+  const btn = document.getElementById('qcNewConfirmBtn');
+  if (btn) btn.disabled = _qcNewSelected.size === 0;
+}
+
+async function qcNewConfirmSelected() {
+  const selected = allData.filter(d => d.신규 && !d.신규확인됨 && _qcNewSelected.has(_qcNewKey(d)));
+  if (!selected.length) return;
+  const statusEl = document.getElementById('qcNewStatus');
+  const btn = document.getElementById('qcNewConfirmBtn');
+  btn.disabled = true;
+  statusEl.style.color = '#64748b';
+  statusEl.textContent = '확인 처리 중...';
+  const byFac = { cj1: [], cj2: [] };
+  selected.forEach(d => { if (byFac[d.공장]) byFac[d.공장].push(d); });
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+  try {
+    for (const fac of ['cj1', 'cj2']) {
+      if (!byFac[fac].length) continue;
+      const url = _gasUrlForFactory(fac);
+      const items = byFac[fac].map(d => ({ round: d.건명, code: d.단품코드, color: d.색상, qty: String(d.수량 || '') }));
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'confirmNewItems', items: items, date: dateStr }),
+        signal: AbortSignal.timeout(60000)
+      }).then(r => r.json());
+      if (res.status !== 'success') throw new Error(res.message || (fac + ' 확인 처리 실패'));
+      byFac[fac].forEach(d => { d.신규확인됨 = true; });
+    }
+    _qcNewSelected = new Set();
+    statusEl.style.color = '#16a34a';
+    statusEl.textContent = '✓ 확인 처리했습니다.';
+    qcNewRenderList();
+    applyFilters();
+    if (isMobile()) renderMobileKPIs();
+  } catch (e) {
+    statusEl.style.color = '#dc2626';
+    statusEl.textContent = '오류: ' + e.message;
+  } finally {
+    btn.disabled = _qcNewSelected.size === 0;
+  }
+}
+
+async function qcSortInspectList() {
+  const btn = document.getElementById('qcSortBtn');
+  const statusEl = document.getElementById('qcNewStatus');
+  const targetFacs = _qcNewFac === 'all' ? ['cj1', 'cj2'] : [_qcNewFac];
+  btn.disabled = true;
+  statusEl.style.color = '#64748b';
+  statusEl.textContent = '검사리스트 정렬 중... (시간이 걸릴 수 있습니다)';
+  try {
+    const msgs = [];
+    for (const fac of targetFacs) {
+      const url = _gasUrlForFactory(fac);
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'sortInspectList' }),
+        signal: AbortSignal.timeout(120000)
+      }).then(r => r.json());
+      msgs.push((fac === 'cj1' ? '충주1' : '충주2') + ': ' + (res.message || res.status));
+      if (res.status !== 'success') throw new Error(msgs.join(' / '));
+    }
+    statusEl.style.color = '#16a34a';
+    statusEl.textContent = '✓ ' + msgs.join(' / ');
+    // 정렬로 "신규↓" 구분선 아래 구성이 실제로 바뀌었으니 최신 상태를 다시 받아온다.
+    await loadData();
+    qcNewRenderList();
+  } catch (e) {
+    statusEl.style.color = '#dc2626';
+    statusEl.textContent = '오류: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9248,22 +9440,22 @@ function onNativeScanResult(raw) {
       <!-- KPI 하단 3열 (투입전 · 생산중 · 생산완료) -->
       <div class="grid grid-cols-3 gap-3 mb-6">
 
-        <!-- 투입전 -->
-        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="setMFactory(mFactory);mSource='active';setMStatus('미투입');setMTab('list')" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
+        <!-- 신규품목 -->
+        <div class="bg-white rounded-xl p-3 cursor-pointer" onclick="qcOpenNewItemsModal()" style="box-shadow:0 2px 14px rgba(0,0,0,.07);transition:box-shadow .15s;">
           <div class="flex items-center gap-1.5 mb-2.5">
-            <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style="background:#F1F5F9;">
-              <i class="fa-solid fa-clock-rotate-left text-slate-500 text-[10px]"></i>
+            <span class="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style="background:#FFFBEB;">
+              <i class="fa-solid fa-sparkles text-amber-500 text-[10px]"></i>
             </span>
-            <span class="text-[10px] font-bold text-slate-400 truncate">투입전</span>
+            <span class="text-[10px] font-bold text-slate-400 truncate">신규품목</span>
           </div>
           <div class="flex items-end justify-around">
             <div class="text-center" data-mf="cj1">
-              <div class="text-[17px] font-extrabold text-slate-500 leading-none" id="mKpiPre1">—</div>
+              <div class="text-[17px] font-extrabold text-slate-700 leading-none" id="mKpiPre1">—</div>
               <div class="text-[9px] font-bold text-slate-400 mt-1">충1</div>
             </div>
             <div class="w-px bg-slate-100" style="height:20px;margin-bottom:1px;" data-mf-divider></div>
             <div class="text-center" data-mf="cj2">
-              <div class="text-[17px] font-extrabold text-slate-500 leading-none" id="mKpiPre2">—</div>
+              <div class="text-[17px] font-extrabold text-slate-700 leading-none" id="mKpiPre2">—</div>
               <div class="text-[9px] font-bold text-slate-400 mt-1">충2</div>
             </div>
           </div>
