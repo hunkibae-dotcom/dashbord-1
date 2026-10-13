@@ -9457,6 +9457,19 @@ function _openScanSmart() {
   openScanView();
 }
 
+// 상세스펙 패널의 바코드 스캔 버튼/문구는 앱(네이티브 Android 브릿지가 실제로 있을
+// 때)에서만 보여준다 — PC 웹 브라우저에서는 스캔 자체가 안 되니 버튼도 문구도
+// 숨긴다(요청, 2026-10-14).
+(function () {
+  const isNativeApp = (typeof Android !== 'undefined' && typeof Android.startScan === 'function');
+  if (isNativeApp) {
+    const btn = document.getElementById('specScanBtn');
+    if (btn) { btn.classList.remove('hidden'); btn.classList.add('flex'); }
+    const hint = document.getElementById('specEmptyHint');
+    if (hint) hint.innerHTML = '단품코드를 입력하거나 바코드를 스캔하면<br>상세 스펙과 검사 진행 이력을 볼 수 있어요.';
+  }
+})();
+
 function onNativeScanResult(raw) {
   // 네이티브(Kotlin)에서 evaluateJavascript로 직접 호출하는 콜백이라 여기서 예외가 나면
   // 아무 에러 표시도 없이 그대로 조용히 멈춘다 — try/catch로 방어.
