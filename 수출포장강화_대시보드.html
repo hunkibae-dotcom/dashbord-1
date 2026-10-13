@@ -6057,6 +6057,37 @@
             document.getElementById('tablePanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
+        // 제품검색 표 머리글의 "다음 적재 N" 배지 — 지금 쓰이고 있는 적재번호 중 가장
+        // 큰 숫자+1을 보여준다(요청, 2026-10-13). "미적재"는 번호가 아니라서 빼고,
+        // 숫자 추출 방식은 updatePalletSlide()와 동일하게 맞춘다(같은 데이터 기준).
+        function _pkgNextPalletNumber() {
+            const rows = state.rawStockRows;
+            if (!rows || rows.length <= 1) return null;
+            const hdr = rows[0].map(h => (h || '').toString().trim());
+            let iPallet = -1;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g, '').toUpperCase();
+                if (iPallet < 0 && (hn.includes('파렛트') || hn.includes('PALET') || hn.includes('적재'))) iPallet = i;
+            });
+            if (iPallet < 0) iPallet = 10;
+            let maxNum = 0;
+            for (let i = 1; i < rows.length; i++) {
+                const sr = rows[i];
+                if (!sr) continue;
+                const raw = (sr[iPallet] || '').toString().trim();
+                if (!raw || raw.replace(/\s+/g, '') === '미적재') continue;
+                const n = parseInt(raw.replace(/[^0-9]/g, '')) || 0;
+                if (n > maxNum) maxNum = n;
+            }
+            return maxNum + 1;
+        }
+        function _pkgRenderNextPalletBadge() {
+            const el = document.getElementById('nextPalletBadge');
+            if (!el) return;
+            const next = _pkgNextPalletNumber();
+            el.textContent = next ? ('적재 ' + next) : '-';
+        }
+
         function updatePalletSlide() {
             const body   = document.getElementById('palletSlideBody');
             const badge  = document.getElementById('palletTotalBadge');
