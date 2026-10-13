@@ -369,10 +369,11 @@
                     </div>
                     <!-- 모드 토글 -->
                     <div style="position:relative;background:var(--icon-bg);border-radius:20px;padding:3px;display:flex;margin-bottom:10px;">
-                        <div id="packingModeSliderM" style="position:absolute;top:3px;left:3px;height:calc(100% - 6px);width:calc(33.33% - 2px);background:#0284C7;border-radius:16px;transition:left .25s;pointer-events:none;"></div>
+                        <div id="packingModeSliderM" style="position:absolute;top:3px;left:3px;height:calc(100% - 6px);width:calc(25% - 2px);background:#0284C7;border-radius:16px;transition:left .25s;pointer-events:none;"></div>
                         <button id="packingBtnM_daily"   onclick="setPackingViewModeM('daily')"   style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#fff;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">일별</button>
                         <button id="packingBtnM_weekly"  onclick="setPackingViewModeM('weekly')"  style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#475569;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">주간별</button>
                         <button id="packingBtnM_monthly" onclick="setPackingViewModeM('monthly')" style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#475569;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">월간별</button>
+                        <button id="packingBtnM_yearly"  onclick="setPackingViewModeM('yearly')"  style="-webkit-appearance:none;appearance:none;flex:1;background:none;border:none;font-size:11px;font-weight:700;color:#475569;cursor:pointer;padding:5px 0;border-radius:16px;position:relative;z-index:1;">년도별</button>
                     </div>
                     <div style="position:relative;height:175px;">
                         <canvas id="mainChart"></canvas>
