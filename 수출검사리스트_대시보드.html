@@ -9327,6 +9327,14 @@ function onNativeScanResult(raw) {
   // 아무 에러 표시도 없이 그대로 조용히 멈춘다 — try/catch로 방어.
   try {
     var parsed = _parseBarcodeRaw(raw);
+    // 상세스펙 패널이 열려있는 중에 스캔했으면(요청, 2026-10-13: 스캔 시 해당 상세스펙
+    // 바로 확인) 제품검색이 아니라 그 패널에 코드를 바로 꽂아준다 — 그 외(제품검색에서
+    // 스캔한 평소 경우)엔 기존 그대로 제품검색으로 간다.
+    var specPanel = document.getElementById('specModal');
+    if (specPanel && !specPanel.classList.contains('translate-x-full')) {
+      openSpecModal(parsed.code);
+      return;
+    }
     var codeEl  = document.getElementById('psCode');
     var colorEl = document.getElementById('psColor');
     if (codeEl)  codeEl.value  = parsed.code;
