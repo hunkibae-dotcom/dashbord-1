@@ -1271,9 +1271,12 @@
                         </button>
                     </div>
                     <div class="flex items-center gap-2">
-                        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+                        <div class="flex-1 min-w-0 flex flex-col gap-0.5 relative">
                             <span class="text-[10.5px] text-slate-500">제품코드 <span class="text-slate-600">· 클릭하여 다른 제품코드로 검색가능</span></span>
-                            <input type="text" id="detailProductCodeInput" placeholder="제품코드를 입력하세요" onkeydown="handleProductCodeInputKey(event)" class="bg-transparent border-none outline-none text-[16px] font-bold text-white uppercase w-full" style="font-family:ui-monospace,monospace;">
+                            <input type="text" id="detailProductCodeInput" placeholder="제품코드를 입력하세요" autocomplete="off"
+                                oninput="handleProductCodeInputType()" onkeydown="handleProductCodeInputKey(event)" onblur="setTimeout(hideProductCodeSuggest, 150)"
+                                class="bg-transparent border-none outline-none text-[16px] font-bold text-white uppercase w-full" style="font-family:ui-monospace,monospace;">
+                            <div id="detailCodeSuggest" class="hidden absolute left-0 right-0 top-full mt-1 bg-darkBg border border-borderSlate/70 rounded-lg shadow-xl max-h-56 overflow-y-auto z-50"></div>
                         </div>
                         <button onclick="_openScanSmart()" title="바코드 스캔" class="w-9 h-9 rounded-lg bg-accentOrange/10 border border-accentOrange/25 text-accentOrange flex items-center justify-center shrink-0 hover:bg-accentOrange/20 transition-colors">
                             <i class="fa-solid fa-barcode text-[15px]"></i>
