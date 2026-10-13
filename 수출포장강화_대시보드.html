@@ -9037,8 +9037,9 @@
         // 패널보다 위라 그대로 두면 패널이 가려져 보인다) 그 코드로 상세스펙 패널을 연다.
         function openPkgSpecFromItemDetail() {
             if (!_pkgCode) return;
+            const code = _pkgCode; // closePkgItemDetail()이 _pkgCode를 비우므로 먼저 떼어둔다
             closePkgItemDetail();
-            switchToProductDetailView(_pkgCode);
+            switchToProductDetailView(code);
         }
 
         function closePkgItemDetail() {
