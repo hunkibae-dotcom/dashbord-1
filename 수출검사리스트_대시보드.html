@@ -1898,6 +1898,7 @@ let filtered = [];
 // 공장만 일시적으로 0건 응답이 와도 그 공장만 이 캐시로 되돌릴 수 있게 따로 들고 있는다.
 let _lastFactoryRows = { cj1: [], cj2: [] };
 let factoryTab = 'all';
+let sourceTab = 'all'; // 'all' | 'active'(진행중 리스트) | 'archive'(출고완료 리스트) — 제품검색 테이블 전용
 let currentView = 'all';
 let charts = {};
 
