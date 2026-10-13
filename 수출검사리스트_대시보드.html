@@ -827,10 +827,14 @@ try {
               </span>
             </span>
           </h2>
-          <div class="flex gap-2 flex-wrap">
+          <div class="flex gap-2 flex-wrap items-center">
             <button onclick="setView('all')" id="tabAll" class="tab-btn active">전체</button>
             <button onclick="setView('cj1')" id="tabCj1" class="tab-btn">충주1공장</button>
             <button onclick="setView('cj2')" id="tabCj2" class="tab-btn">충주2공장</button>
+            <span class="w-px h-5 bg-slate-200 mx-0.5"></span>
+            <button onclick="setSourceTab('all')" id="srcTabAll" class="tab-btn active">전체 이력</button>
+            <button onclick="setSourceTab('active')" id="srcTabActive" class="tab-btn">진행중 리스트</button>
+            <button onclick="setSourceTab('archive')" id="srcTabArchive" class="tab-btn">출고완료 리스트</button>
           </div>
         </div>
 
