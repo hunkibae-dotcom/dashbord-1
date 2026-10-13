@@ -3487,55 +3487,20 @@
             switchToProductDetailView(code);
         }
 
-        // 좌측 사이드바 "상세스펙" — 표에서 제품코드를 눌러 들어가던 걸 대신한다(그 글자는
-        // 이제 클릭하면 복사됨). 펼치고/접고 + 입력한 코드로 바로 조회.
-        function togglePkgSpecQuickSearch() {
-            const box = document.getElementById('pkgSpecQuickSearch');
-            const chevron = document.getElementById('pkgSpecQuickChevron');
-            const willOpen = box.classList.contains('hidden');
-            box.classList.toggle('hidden');
-            if (chevron) chevron.style.transform = willOpen ? 'rotate(180deg)' : '';
-            if (willOpen) setTimeout(() => document.getElementById('pkgSpecQuickCode')?.focus(), 50);
-        }
-        function runPkgSpecQuickSearch() {
-            const fb = document.getElementById('pkgSpecQuickFeedback');
-            const code = (document.getElementById('pkgSpecQuickCode').value || '').trim();
-            fb.textContent = '';
-            if (!code) { fb.textContent = '제품코드를 입력해주세요.'; return; }
-            const exists = (state.data || []).some(item => item.code && item.code.toLowerCase() === code.toLowerCase());
-            if (!exists) { fb.textContent = '일치하는 제품코드가 없습니다.'; return; }
-            switchToProductDetailView(code);
-            if (window.innerWidth < 1024) closeFilterDrawer(); // 모바일에선 드로어를 닫아 바로 보이게
-        }
-
-        function startEditProductCode() {
-            const label = document.getElementById('detailProductCode');
-            const input = document.getElementById('detailProductCodeInput');
-            input.value = label.innerText;
-            label.classList.add('hidden');
-            input.classList.remove('hidden');
-            input.focus();
-            input.select();
-        }
-
-        function cancelEditProductCode() {
-            const label = document.getElementById('detailProductCode');
-            const input = document.getElementById('detailProductCodeInput');
-            input.classList.add('hidden');
-            label.classList.remove('hidden');
-        }
-
+        // 상세스펙 패널 헤더의 제품코드 칸 — 이제 펼치고/접을 필요 없이 항상 입력
+        // 가능한 칸이다(품질검사와 같은 느낌, 요청 2026-10-13). Enter로 조회,
+        // Escape로 패널 닫기.
         function handleProductCodeInputKey(e) {
-            if (e.key === 'Enter') {
-                const input = document.getElementById('detailProductCodeInput');
-                const newCode = input.value.trim().toUpperCase();
-                if (!newCode) { cancelEditProductCode(); return; }
-                document.getElementById('productCodeFilter').value = newCode;
-                cancelEditProductCode();
-                applyFilters();
-            } else if (e.key === 'Escape') {
-                cancelEditProductCode();
-            }
+            if (e.key === 'Escape') { exitProductDetailView(); return; }
+            if (e.key !== 'Enter') return;
+            const input = document.getElementById('detailProductCodeInput');
+            const code = input.value.trim();
+            const fb = document.getElementById('detailCodeFeedback');
+            if (fb) fb.textContent = '';
+            if (!code) return;
+            const exists = (state.data || []).some(item => item.code && item.code.toLowerCase() === code.toLowerCase());
+            if (!exists) { if (fb) fb.textContent = '일치하는 제품코드가 없습니다.'; return; }
+            switchToProductDetailView(code);
         }
 
         function switchToGeneralDashboardView() {
