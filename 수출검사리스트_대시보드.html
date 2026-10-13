@@ -6881,15 +6881,47 @@ function runSpecLookup() {
   const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0];
   const override = loadSpecOverride(code);
   document.getElementById('specStandardName').value = override?.standardName ?? withDims.단품명칭 ?? '';
-  document.getElementById('specCodeType').value = override?.codeType ?? deriveCodeType(withDims.단품명칭);
-  document.getElementById('specW').textContent = withDims.가로 ? withDims.가로 + 'mm' : '—';
-  document.getElementById('specD').textContent = withDims.세로 ? withDims.세로 + 'mm' : '—';
-  document.getElementById('specH').textContent = withDims.높이 ? withDims.높이 + 'mm' : '—';
-  document.getElementById('specWeight').textContent = withDims.중량 ? withDims.중량 + 'kg' : '—';
-  document.getElementById('specCbm').textContent = withDims.CBM ? withDims.CBM.toFixed(3) + 'm³' : '—';
+  _qcApplyCodeTypeToUI(override?.codeType ?? deriveCodeType(withDims.단품명칭));
+
+  // W/D/H/중량/CBM 각각 min~max 범위 막대로 — 값이 하나뿐이거나 전부 같으면 "균일"만 표시.
+  const qcStat = (field) => {
+    const vals = matches.map(d => parseFloat(d[field])).filter(v => !isNaN(v) && v > 0);
+    if (!vals.length) return { count: 0 };
+    return { count: vals.length, min: Math.min(...vals), max: Math.max(...vals), avg: vals.reduce((a,b)=>a+b,0)/vals.length };
+  };
+  const qcRenderRange = (stat, color, digits) => {
+    if (!stat.count) return '<span class="text-slate-300 text-[10px]">데이터 없음</span>';
+    const fmt = n => digits ? n.toFixed(digits) : (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1));
+    if (stat.count === 1 || stat.min === stat.max) return '<span style="color:' + color + ';opacity:.65;font-size:10px;">균일</span>';
+    return '<div class="flex items-center gap-1.5 justify-center">' +
+      '<span class="text-[10px] text-slate-400">' + fmt(stat.min) + '</span>' +
+      '<div class="relative h-1.5 w-10 rounded-full" style="background:' + color + '22;">' +
+      '<div class="absolute inset-y-0 left-0 rounded-full" style="width:50%;background:' + color + ';"></div></div>' +
+      '<span class="text-[10px] text-slate-400">' + fmt(stat.max) + '</span></div>';
+  };
+  const wS = qcStat('가로'), dS = qcStat('세로'), hS = qcStat('높이'), gS = qcStat('중량');
+  const cbmVals = matches.map(d => d.CBM).filter(v => typeof v === 'number' && v > 0);
+  const cbmS = cbmVals.length ? { count: cbmVals.length, min: Math.min(...cbmVals), max: Math.max(...cbmVals), avg: cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length } : { count: 0 };
+
+  document.getElementById('specW').textContent = wS.count ? Math.round(wS.avg) : '—';
+  document.getElementById('specD').textContent = dS.count ? Math.round(dS.avg) : '—';
+  document.getElementById('specH').textContent = hS.count ? Math.round(hS.avg) : '—';
+  document.getElementById('specWeight').textContent = gS.count ? (gS.avg % 1 === 0 ? gS.avg.toFixed(0) : gS.avg.toFixed(1)) : '—';
+  document.getElementById('specCbm').textContent = cbmS.count ? cbmS.avg.toFixed(4) : '—';
+  document.getElementById('specWRange').innerHTML = qcRenderRange(wS, '#0284C7');
+  document.getElementById('specDRange').innerHTML = qcRenderRange(dS, '#059669');
+  document.getElementById('specHRange').innerHTML = qcRenderRange(hS, '#D97706');
+  document.getElementById('specWeightRange').innerHTML = qcRenderRange(gS, '#7C3AED', 1);
+  document.getElementById('specCbmRange').innerHTML = qcRenderRange(cbmS, '#E11D48', 4);
   document.getElementById('specHistCount').textContent = `(${matches.length.toLocaleString()}건)`;
 
   renderSpecHistory();
+}
+function _qcCbmOf(d) {
+  if (typeof d.CBM === 'number' && d.CBM > 0) return d.CBM.toFixed(4);
+  const w = parseFloat(d.가로), dd = parseFloat(d.세로), h = parseFloat(d.높이);
+  if (!w || !dd || !h) return '—';
+  return ((w * dd * h) / 1e9).toFixed(4);
 }
 
 function renderSpecHistory() {
