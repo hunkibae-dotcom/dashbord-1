@@ -1304,11 +1304,11 @@
                                     <option value="거울">거울</option>
                                     <option value="베이스">베이스</option>
                                 </select>
+                                <input type="text" id="pkgProductTypeCustom" placeholder="제품 종류를 입력하세요" oninput="onPkgSpecFieldEdit()" class="hidden flex-1 min-w-0 bg-transparent text-[13.5px] font-semibold text-white outline-none border-none">
                                 <button type="button" id="pkgProductTypeEditBtn" onclick="showPkgProductTypeSelect()" class="hidden text-slate-500 hover:text-white shrink-0" title="종류 변경">
                                     <i class="fa-solid fa-pen text-[11px]"></i>
                                 </button>
                             </div>
-                            <input type="text" id="pkgProductTypeCustom" placeholder="제품 종류를 입력하세요" oninput="onPkgSpecFieldEdit()" onblur="_pkgSyncProductTypeVisibility()" class="hidden w-full bg-transparent text-[13.5px] font-semibold text-white outline-none border-none mt-1.5">
                         </div>
                         <div class="border border-borderSlate/50 rounded-xl px-3 py-2 bg-darkBg/30">
                             <div class="text-[10.5px] font-bold text-slate-400 mb-1">박스 높이 <span class="text-slate-500 font-normal">· 직접 수정 가능</span></div>
