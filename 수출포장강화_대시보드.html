@@ -9033,6 +9033,14 @@
             document.getElementById('pkgItemDetailModal').style.display = 'flex';
         }
 
+        // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 누르면 이 창은 닫고(z-index가 상세스펙
+        // 패널보다 위라 그대로 두면 패널이 가려져 보인다) 그 코드로 상세스펙 패널을 연다.
+        function openPkgSpecFromItemDetail() {
+            if (!_pkgCode) return;
+            closePkgItemDetail();
+            switchToProductDetailView(_pkgCode);
+        }
+
         function closePkgItemDetail() {
             document.getElementById('pkgItemDetailModal').style.display = 'none';
             _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
