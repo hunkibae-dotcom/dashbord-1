@@ -7580,7 +7580,7 @@ function setMiField(field, value) {
   // 가로/세로/높이/중량은 목록·KPI·뱃지 표시에 영향이 없는데도, 숫자 입력칸에 한 글자
   // 칠 때마다 리스트 전체(수백 건)를 통째로 다시 그리고 있었다 — 화면에 실제로 영향을
   // 주는 검사상태·검사일 변경일 때만 무거운 재렌더링을 하도록 제한한다.
-  if (field === '검사' || field === '검사일') {
+  if (field === '검사' || field === '검사일' || field === '포장일' || field === '납기일') {
     renderMobileKPIs();
     renderMobileFactoryPanels();
     renderMobileList();
@@ -7590,6 +7590,15 @@ function setMiField(field, value) {
     if (_kpiDetailItems && _kpiDetailItems.length) _kpiDetailRender();
     if (typeof applyFilters === 'function') applyFilters(); // PC 웹 테이블도 같이 갱신
   }
+}
+// 제품 수정창의 단품코드 옆 상세스펙 버튼 — 포장강화와 동일한 위치/역할(요청,
+// 2026-10-13). 이 창은 닫고 그 코드로 상세스펙 패널을 바로 연다.
+function openMSpecFromItemDetail() {
+  if (!_miCurrent) return;
+  const code = _miCurrent.단품코드;
+  if (!code) return;
+  closeMItemDetail();
+  openSpecModal(code);
 }
 
 // "보고서 작성" 확인 시 보고서 탭을 열고, 이 품목을 검색·체크까지 해서 바로 이어서
