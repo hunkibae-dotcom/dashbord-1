@@ -6809,17 +6809,18 @@ function loadSpecOverride(code) {
   return ov;
 }
 function onSpecCodeTypeChange(val) {
-  const custom = document.getElementById('specCodeTypeCustom');
-  if (val === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
-  else { custom.classList.add('hidden'); custom.value = ''; }
+  // 레거시 값 선택지(data-legacy)를 벗어나 사용자가 정식 6개 중 하나를 직접 골랐으면
+  // 그 임시 옵션은 더 이상 필요 없으니 지운다.
+  const sel = document.getElementById('specCodeTypeSelect');
+  if (QC_CODE_TYPES.includes(val)) {
+    Array.from(sel.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
+  }
   onSpecFieldEdit();
 }
 function onSpecFieldEdit() {
   const code = document.getElementById('specCodeInput').value.trim();
   if (!code) return;
-  const sel = document.getElementById('specCodeTypeSelect');
-  const custom = document.getElementById('specCodeTypeCustom');
-  const codeType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
+  const codeType = document.getElementById('specCodeTypeSelect').value;
   localStorage.setItem('specOverride_' + code, JSON.stringify({
     standardName: document.getElementById('specStandardName').value,
     codeType,
