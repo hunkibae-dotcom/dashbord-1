@@ -2216,6 +2216,15 @@
                 wkStart.setDate(wkStart.getDate()+7);
                 if(labels.length>7) break;
             }
+        } else if (packingViewMode==='yearly') {
+            // PC 대시보드와 동일 — 연도 단위로 전부 합산, 탐색 없이 한 번에 보여준다.
+            const yearTotals={};
+            Object.keys(_packingDateQtyMap).forEach(d=>{
+                const y=d.slice(0,4);
+                yearTotals[y]=(yearTotals[y]||0)+_packingDateQtyMap[d];
+            });
+            Object.keys(yearTotals).sort().forEach(y=>{ labels.push(y+'년'); dataArr.push(yearTotals[y]); });
+            navLabel='';
         } else {
             const _today=new Date();
             const curHalfIdx=_today.getFullYear()*2+(_today.getMonth()>=6?1:0);
