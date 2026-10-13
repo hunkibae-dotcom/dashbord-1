@@ -6338,7 +6338,6 @@ function qcCloseChartExportModal() {
 // 제품별(순위 막대)로 보고 있던 중이면 시계열이 아니라서 일별로 대신 집계한다.
 async function qcRunChartReport(scope) {
   const factories = scope === 'both' ? ['cj1', 'cj2'] : [scope];
-  const lookup = _qcBuildSpecLookup();
   const summaryRows = [];
   const detailItems = [];
 
