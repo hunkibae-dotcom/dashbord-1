@@ -2161,8 +2161,8 @@
         });
         // 년도별은 PC 대시보드와 동일하게 전체 연도를 한 번에 보여줘서 이전/다음 탐색이
         // 필요 없다 — 눌러도 아무 일 없게 화살표를 숨긴다.
-        const navRow = document.getElementById('packingNavPrev');
-        const navRow2 = document.getElementById('packingNavNext');
+        const navRow = document.getElementById('packingNavPrevBtn');
+        const navRow2 = document.getElementById('packingNavNextBtn');
         const vis = packingViewMode === 'yearly' ? 'hidden' : 'visible';
         if (navRow) navRow.style.visibility = vis;
         if (navRow2) navRow2.style.visibility = vis;
