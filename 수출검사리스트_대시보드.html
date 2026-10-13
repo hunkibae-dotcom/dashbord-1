@@ -6858,19 +6858,47 @@ function runSpecLookup() {
   const empty = document.getElementById('specEmpty');
   const content = document.getElementById('specContent');
 
-  if (!code) { empty.classList.remove('hidden'); content.classList.add('hidden'); specHistoryRows = []; return; }
+  if (!code) { empty.classList.remove('hidden'); content.classList.add('hidden'); specHistoryRows = []; hideSpecCodeSuggest(); return; }
 
   const codeNorm = code.toUpperCase();
   const pool = [...allData, ...archiveRows];
-  const matches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === codeNorm);
-  specHistoryRows = matches;
+  const exactMatches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === codeNorm);
 
-  if (!matches.length) {
+  // 전체 코드를 정확히 다 입력해야만 찾아지던 걸, 제품검색처럼 입력하는 대로 포함되는
+  // 코드를 바로 보여주도록 개선(요청, 2026-10-14) — 정확히 일치하면 바로 상세를 열고,
+  // 아니면(일부만 입력) 포함되는 코드 목록을 먼저 보여준다.
+  if (!exactMatches.length) {
+    const seen = new Set(), suggestions = [];
+    pool.forEach(d => {
+      const c = (d.단품코드 || '').toString().trim();
+      if (!c) return;
+      const cu = c.toUpperCase();
+      if (cu.includes(codeNorm) && !seen.has(cu)) { seen.add(cu); suggestions.push(c); }
+    });
+    if (suggestions.length) {
+      suggestions.sort((a, b) => a.localeCompare(b));
+      const box = document.getElementById('specCodeSuggest');
+      box.innerHTML = suggestions.slice(0, 8).map(c =>
+        `<div class="px-3 py-2 text-[14px] font-mono text-slate-700 hover:bg-[#6D5CE8]/10 cursor-pointer" onmousedown="pickSpecCodeSuggest('${c.replace(/'/g, "\\'")}')">${c}</div>`
+      ).join('');
+      box.classList.remove('hidden');
+      empty.classList.remove('hidden');
+      empty.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[25px] mb-2 block text-slate-300"></i>코드를 끝까지 입력하거나 목록에서 골라주세요.`;
+      content.classList.add('hidden');
+      specHistoryRows = [];
+      return;
+    }
+    hideSpecCodeSuggest();
     empty.classList.remove('hidden');
     empty.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[25px] mb-2 block text-slate-300"></i>"${code}" 코드로 등록된 이력이 없어요.`;
     content.classList.add('hidden');
+    specHistoryRows = [];
     return;
   }
+
+  hideSpecCodeSuggest();
+  const matches = exactMatches;
+  specHistoryRows = matches;
   empty.classList.add('hidden');
   content.classList.remove('hidden');
 
