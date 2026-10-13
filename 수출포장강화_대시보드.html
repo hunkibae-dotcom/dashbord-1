@@ -3097,7 +3097,7 @@
         }
 
         // 6-1. [제품 전용 상세 뷰 렌더러]
-        // 상세스펙 패널의 "제품 종류"/"박스 높이" 필드 — 자동계산이 아니라 사용자가
+        // 상세스펙 패널의 "제품 종류"/"PE폼 높이" 필드 — 자동계산이 아니라 사용자가
         // 직접 입력해 코드별로 누적 기록해두는 값이라 localStorage에 저장한다(품질검사의
         // specOverride_ 방식과 동일, 요청 2026-10-13).
         const PKG_PRODUCT_TYPES = ['상판', '캐비닛(스크류O)', '캐비닛(스크류X)', '도어', '서랍', '철물', '거울', '베이스'];
@@ -9305,7 +9305,7 @@
                 { label: '건명', get: it => it.round },
                 { label: '제품코드', get: it => it.code },
                 { label: '제품 종류', get: () => ov.productType || '' },
-                { label: '박스 높이', get: () => ov.boxHeight || '' },
+                { label: 'PE폼 높이', get: () => ov.boxHeight || '' },
                 { label: '컬러', get: it => it.color || 'WW' },
                 { label: '수량(BOX)', get: it => it.qty },
                 { label: '강화(BOX)', get: it => it.strengthenedQty || 0 },
