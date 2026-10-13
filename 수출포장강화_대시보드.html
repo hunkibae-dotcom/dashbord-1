@@ -3093,6 +3093,44 @@
         }
 
         // 6-1. [제품 전용 상세 뷰 렌더러]
+        // 상세스펙 패널의 "제품 종류"/"박스 높이" 필드 — 자동계산이 아니라 사용자가
+        // 직접 입력해 코드별로 누적 기록해두는 값이라 localStorage에 저장한다(품질검사의
+        // specOverride_ 방식과 동일, 요청 2026-10-13).
+        const PKG_PRODUCT_TYPES = ['상판', '캐비닛(스크류O)', '캐비닛(스크류X)', '도어', '서랍', '철물', '거울', '베이스'];
+        function loadPkgSpecOverride(code) {
+            let ov = {};
+            try { ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}'); } catch (e) {}
+            const sel = document.getElementById('pkgProductTypeSelect');
+            const custom = document.getElementById('pkgProductTypeCustom');
+            const boxH = document.getElementById('pkgBoxHeight');
+            const type = ov.productType || '';
+            if (type && !PKG_PRODUCT_TYPES.includes(type)) {
+                sel.value = '__custom__';
+                custom.classList.remove('hidden');
+                custom.value = type;
+            } else {
+                sel.value = type || '상판';
+                custom.classList.add('hidden');
+                custom.value = '';
+            }
+            boxH.value = ov.boxHeight || '';
+        }
+        function onPkgProductTypeChange(val) {
+            const custom = document.getElementById('pkgProductTypeCustom');
+            if (val === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
+            else { custom.classList.add('hidden'); custom.value = ''; }
+            onPkgSpecFieldEdit();
+        }
+        function onPkgSpecFieldEdit() {
+            if (!_currentDetailProductCode) return;
+            const sel = document.getElementById('pkgProductTypeSelect');
+            const custom = document.getElementById('pkgProductTypeCustom');
+            const boxH = document.getElementById('pkgBoxHeight');
+            const productType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
+            const data = { productType, boxHeight: boxH.value.trim() };
+            try { localStorage.setItem('pkgSpecOverride_' + _currentDetailProductCode, JSON.stringify(data)); } catch (e) {}
+        }
+
         function switchToProductDetailView(productCode) {
             _currentDetailProductCode = productCode.toUpperCase();
             const panel = document.getElementById('productDetailView');
