@@ -4683,8 +4683,13 @@
     <div style="flex-shrink:0;">
       <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--divider);">
-        <div>
-          <div id="ieCode" style="font-size:16px;font-weight:800;font-family:monospace;color:var(--text);"></div>
+        <div style="min-width:0;flex:1;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div id="ieCode" style="font-size:16px;font-weight:800;font-family:monospace;color:var(--text);"></div>
+            <button onclick="openSpecFromItemEdit()" title="상세스펙 보기" style="background:rgba(0,176,255,.1);border:1px solid rgba(0,176,255,.25);color:#00B0FF;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;">
+              <i class="fa-solid fa-ruler-combined"></i>
+            </button>
+          </div>
           <div id="ieRound" style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:600;"></div>
         </div>
         <button onclick="closeItemEdit()" style="width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
