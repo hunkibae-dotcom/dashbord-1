@@ -2839,16 +2839,16 @@
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                    ${specCell('가로 (W)',wS.avg,'mm',_renderTol(wS.tol,wS.count))}
-                    ${specCell('세로 (D)',dS.avg,'mm',_renderTol(dS.tol,dS.count))}
-                    ${specCell('높이 (H)',hS.avg,'mm',_renderTol(hS.tol,hS.count))}
-                    ${specCell('무게 (G)',gS.avg,'kg',_renderTol(gS.tol,gS.count))}
+                    ${specCell('가로 (W)',wS.avg,'mm',_renderTol(wS,'#0284C7'))}
+                    ${specCell('세로 (D)',dS.avg,'mm',_renderTol(dS,'#059669'))}
+                    ${specCell('높이 (H)',hS.avg,'mm',_renderTol(hS,'#D97706'))}
+                    ${specCell('무게 (G)',gS.avg,'kg',_renderTol(gS,'#7C3AED',1))}
                     <div style="grid-column:span 2;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
                         <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">CBM (m³)</div>
                         <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px;">
-                            <span style="font-size:18px;font-weight:800;color:#00B0FF;font-family:monospace;">${cbmAvg}</span>
+                            <span style="font-size:18px;font-weight:800;color:#E11D48;font-family:monospace;">${cbmAvg}</span>
                             ${cbmAvg!=='—'?'<span style="font-size:10px;color:var(--text-sub);">m³</span>':''}
-                            <span style="margin-left:4px;">${_renderTol(cbmTol,cbmCnt)}</span>
+                            <span style="margin-left:4px;">${_renderTol(cbmStat,'#E11D48',4)}</span>
                         </div>
                     </div>
                 </div>
