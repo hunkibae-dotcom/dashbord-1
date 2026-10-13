@@ -6808,7 +6808,10 @@ function onSpecFieldEdit() {
 }
 
 function openSpecModal(code) {
-  document.getElementById('specModal').classList.remove('hidden');
+  document.getElementById('specBackdrop').classList.remove('hidden');
+  const panel = document.getElementById('specModal');
+  panel.classList.remove('translate-x-full');
+  panel.classList.add('translate-x-0');
   _armBackTrap();
   const input = document.getElementById('specCodeInput');
   if (code) input.value = code;
@@ -6816,7 +6819,10 @@ function openSpecModal(code) {
   if (!code) input.focus();
 }
 function closeSpecModal() {
-  document.getElementById('specModal').classList.add('hidden');
+  document.getElementById('specBackdrop').classList.add('hidden');
+  const panel = document.getElementById('specModal');
+  panel.classList.add('translate-x-full');
+  panel.classList.remove('translate-x-0');
 }
 
 function runSpecLookup() {
