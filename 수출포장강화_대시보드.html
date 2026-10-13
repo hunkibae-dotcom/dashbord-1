@@ -1292,18 +1292,23 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                         <div class="border border-borderSlate/50 rounded-xl px-3 py-2 bg-darkBg/30">
                             <div class="text-[10.5px] font-bold text-slate-400 mb-1">제품 종류 <span class="text-slate-500 font-normal">· 선택 또는 직접입력</span></div>
-                            <select id="pkgProductTypeSelect" onchange="onPkgProductTypeChange(this.value)" class="w-full bg-transparent text-[13.5px] font-semibold text-white outline-none border-none">
-                                <option value="상판">상판</option>
-                                <option value="캐비닛(스크류O)">캐비닛(스크류O)</option>
-                                <option value="캐비닛(스크류X)">캐비닛(스크류X)</option>
-                                <option value="도어">도어</option>
-                                <option value="서랍">서랍</option>
-                                <option value="철물">철물</option>
-                                <option value="거울">거울</option>
-                                <option value="베이스">베이스</option>
-                                <option value="__custom__">직접입력</option>
-                            </select>
-                            <input type="text" id="pkgProductTypeCustom" placeholder="제품 종류를 입력하세요" oninput="onPkgSpecFieldEdit()" class="hidden w-full bg-transparent text-[13.5px] font-semibold text-white outline-none border-none mt-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <select id="pkgProductTypeSelect" onchange="onPkgProductTypeChange(this.value)" class="flex-1 min-w-0 bg-transparent text-[13.5px] font-semibold text-white outline-none border-none">
+                                    <option value="__custom__">직접입력</option>
+                                    <option value="상판">상판</option>
+                                    <option value="캐비닛(스크류O)">캐비닛(스크류O)</option>
+                                    <option value="캐비닛(스크류X)">캐비닛(스크류X)</option>
+                                    <option value="도어">도어</option>
+                                    <option value="서랍">서랍</option>
+                                    <option value="철물">철물</option>
+                                    <option value="거울">거울</option>
+                                    <option value="베이스">베이스</option>
+                                </select>
+                                <button type="button" id="pkgProductTypeEditBtn" onclick="showPkgProductTypeSelect()" class="hidden text-slate-500 hover:text-white shrink-0" title="종류 변경">
+                                    <i class="fa-solid fa-pen text-[11px]"></i>
+                                </button>
+                            </div>
+                            <input type="text" id="pkgProductTypeCustom" placeholder="제품 종류를 입력하세요" oninput="onPkgSpecFieldEdit()" onblur="_pkgSyncProductTypeVisibility()" class="hidden w-full bg-transparent text-[13.5px] font-semibold text-white outline-none border-none mt-1.5">
                         </div>
                         <div class="border border-borderSlate/50 rounded-xl px-3 py-2 bg-darkBg/30">
                             <div class="text-[10.5px] font-bold text-slate-400 mb-1">박스 높이 <span class="text-slate-500 font-normal">· 직접 수정 가능</span></div>
