@@ -3823,6 +3823,9 @@
                 const _badge0 = document.getElementById('tableCountBadge'); if (_badge0) _badge0.textContent = '0';
                 const _rc0 = document.getElementById('tableRoundCount');    if (_rc0) _rc0.textContent = '0';
                 const _tq0 = document.getElementById('tableTotalQty');     if (_tq0) _tq0.textContent = '0';
+                // "다음 적재" 배지는 표 카테고리 선택과 무관하게 항상 최신으로 유지한다
+                // (어떤 카테고리를 보고 있든 다음에 쓸 적재번호는 똑같으므로).
+                _pkgRenderNextPalletBadge();
                 return;
             }
 
