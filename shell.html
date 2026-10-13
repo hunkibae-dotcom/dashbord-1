@@ -2152,24 +2152,33 @@
     function _updatePackingModeSliderM() {
         const slider=document.getElementById('packingModeSliderM');
         if(!slider) return;
-        const modes=['daily','weekly','monthly'];
+        const modes=['daily','weekly','monthly','yearly'];
         const idx=modes.indexOf(packingViewMode);
-        slider.style.left=(idx*33.33+0.5)+'%';
+        slider.style.left=(idx*25+0.5)+'%';
         modes.forEach((m,i)=>{
             const btn=document.getElementById('packingBtnM_'+m);
             if(btn) btn.style.color=(i===idx)?'#ffffff':'#475569';
         });
+        // 년도별은 PC 대시보드와 동일하게 전체 연도를 한 번에 보여줘서 이전/다음 탐색이
+        // 필요 없다 — 눌러도 아무 일 없게 화살표를 숨긴다.
+        const navRow = document.getElementById('packingNavPrev');
+        const navRow2 = document.getElementById('packingNavNext');
+        const vis = packingViewMode === 'yearly' ? 'hidden' : 'visible';
+        if (navRow) navRow.style.visibility = vis;
+        if (navRow2) navRow2.style.visibility = vis;
     }
     function packingNavPrev() {
         if(packingViewMode==='daily') packingDailyWeekOffset--;
         else if(packingViewMode==='weekly') packingWeeklyMonthOffset--;
-        else packingMonthlyHalfOffset--;
+        else if(packingViewMode==='monthly') packingMonthlyHalfOffset--;
+        else return;
         renderChart();
     }
     function packingNavNext() {
         if(packingViewMode==='daily'){if(packingDailyWeekOffset<0)packingDailyWeekOffset++;}
         else if(packingViewMode==='weekly'){if(packingWeeklyMonthOffset<0)packingWeeklyMonthOffset++;}
-        else{if(packingMonthlyHalfOffset<0)packingMonthlyHalfOffset++;}
+        else if(packingViewMode==='monthly'){if(packingMonthlyHalfOffset<0)packingMonthlyHalfOffset++;}
+        else return;
         renderChart();
     }
 
