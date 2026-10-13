@@ -710,36 +710,92 @@ function remainStockList() {
   }));
 }
 
-// 재고 부족·발주 대상 — "평균 1회 발주량 − 현재고" 방식은 발주 넣을 때마다 수량이
-// 들쭉날쭉해서 기준이 애매하다는 지적으로 바꿨다. 이제는 평소 자주 발주하는 품목
-// (발주 이력 2회 이상)만 대상으로 하고, 그중 현재고가 아예 없거나 100개 이하로
-// 적은 것만 "재고부족"으로 본다 — 발주 수량과 무관하게 실제 남은 양 자체로 판단.
-const PE_LOW_STOCK_MAX = 100;   // 이 개수 이하면 부족으로 본다
-const PE_FREQUENT_MIN_ORDERS = 2; // 이 횟수 이상 발주한 적 있어야 "자주 발주하는 품목"
+// 재고 부족·발주 대상 — "평균 1회 발주량 − 현재고"/"자주 발주하는 품목" 같은 간접
+// 추정 기준은 전부 접고, 유형/규격별로 "기본적으로 가져야 할" 기준 품목 20종을
+// 직접 정해뒀다(요청, 2026-10-13). 이 중 하나라도 재고가 아예 없거나 100EA 이하면
+// "재고 부족·발주 대상"이다. 1공장/2공장 재고는 합쳐서 하나로 판정한다(사용자 확인).
+//   - 일자형 : 길이 2000 · 두께 15T · 높이 20~100(10단위) → 9종
+//   - 코너형 : 150×150 · 두께 15T · 높이 20~100(10단위) → 9종
+//   - 코너형 특수 : 100×100×500 · 두께 15T → 1종
+//   - 패드형 특수 : 500×500 · 두께 20T → 1종
+const PE_LOW_STOCK_MAX = 100;   // 이 개수 이하(또는 재고 자체가 없음)면 부족으로 본다
+const PE_LOWSTOCK_BASELINE = (function () {
+  const heights = [20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const list = [];
+  heights.forEach(h => list.push({ type: '일자형', thick: 15, dims: [2000, h], label: `일자형 2000×${h} (15T)` }));
+  heights.forEach(h => list.push({ type: '코너형', thick: 15, dims: [150, 150, h], label: `코너형 150×150×${h} (15T)` }));
+  list.push({ type: '코너형', thick: 15, dims: [100, 100, 500], label: '코너형 100×100×500 (15T)' });
+  list.push({ type: '패드형', thick: 20, dims: [500, 500], label: '패드형 500×500 (20T)' });
+  return list;
+})();
+// "규격상세"(예: "2000*40*15", "150*150*40")에서 숫자만 뽑는다 — 구분자가 '*'든
+// '×'든 상관없이 동작하게 숫자가 아닌 건 전부 구분자로 본다.
+function _peSpecNums(spec) {
+  return (spec || '').toString().split(/[^0-9.]+/).map(s => parseFloat(s)).filter(n => !isNaN(n));
+}
+// nums가 want의 숫자들을 전부(중복 포함) 담고 있는지 — 코너형처럼 150이 두 번
+// 필요한 경우까지 정확히 맞춘다(부분집합/multiset 포함 검사).
+function _peNumsContain(nums, want) {
+  const pool = nums.slice();
+  for (const w of want) {
+    const idx = pool.findIndex(n => n === w);
+    if (idx === -1) return false;
+    pool.splice(idx, 1);
+  }
+  return true;
+}
+// 재고 행엔 두께(T)가 따로 없어서, 품목마스터의 코드→두께(T) 매핑으로 역으로
+// 찾는다 — 코드가 없거나 마스터에 없으면 이름/규격 텍스트에서 "NNT" 패턴을
+// 추출하는 기존 detectThickness()로 한 번 더 시도한다.
+function _peMasterThickMap() {
+  const m = {};
+  masterRows.forEach(r => { if (r.code) m[r.code] = parseFloat(r.thick) || null; });
+  return m;
+}
+function _peGroupThick(g, thickMap) {
+  const byCode = g.code ? thickMap[g.code] : null;
+  if (byCode) return byCode;
+  const t = parseFloat(detectThickness(g));
+  return isNaN(t) ? null : t;
+}
 function dashLowStockDeficitList() {
-  const stockGroups = groupStock(stockRows);
-  const orderCountByKey = {};
-  orderRows.forEach(r => {
-    const key = (r.code || r.name) + '|' + r.spec;
-    orderCountByKey[key] = (orderCountByKey[key] || 0) + 1;
-  });
-  return Object.entries(stockGroups).map(([key, g]) => {
-    const total = g.batches.reduce((s, b) => s + stkQtyNum(b.qty), 0);
-    return { key, code: g.code, name: g.name, spec: g.spec, type: g.type, unit: g.unit, total, orderCount: orderCountByKey[key] || 0 };
-  }).filter(g => g.orderCount >= PE_FREQUENT_MIN_ORDERS && g.total <= PE_LOW_STOCK_MAX)
+  const thickMap = _peMasterThickMap();
+  const stockGroupEntries = Object.entries(groupStock(stockRows)); // [key, g]
+  return PE_LOWSTOCK_BASELINE.map(b => {
+    const matched = stockGroupEntries.filter(([, g]) => {
+      if (g.type !== b.type) return false;
+      if (_peGroupThick(g, thickMap) !== b.thick) return false;
+      return _peNumsContain(_peSpecNums(g.spec), b.dims);
+    });
+    const total = matched.reduce((s, [, g]) => s + g.batches.reduce((ss, bt) => ss + stkQtyNum(bt.qty), 0), 0);
+    let repKey = '', repCode = '', repName = b.label, repSpec = '', repUnit = 'EA';
+    if (matched.length) {
+      const [key0, g0] = matched[0];
+      repKey = key0; repCode = g0.code; repName = g0.name || b.label; repSpec = g0.spec; repUnit = g0.unit || 'EA';
+    } else {
+      // 재고가 아예 없으면(매칭되는 재고 행이 하나도 없으면) 품목마스터에서 같은
+      // 기준으로 카탈로그 상 등록된 품목을 찾아 자재명/코드만 라벨로 쓴다.
+      const mst = masterRows.find(r => r.type === b.type && parseFloat(r.thick) === b.thick &&
+        _peNumsContain(_peSpecNums(r.spec), b.dims));
+      if (mst) { repCode = mst.code; repName = mst.name; repSpec = mst.spec; repUnit = mst.unit || 'EA'; }
+    }
+    return { key: repKey, code: repCode, name: repName, spec: repSpec, type: b.type, unit: repUnit, total, clickable: !!repKey };
+  }).filter(g => g.total <= PE_LOW_STOCK_MAX)
     .sort((a, b) => a.total - b.total);
 }
 function deficitCardHtml(g, fromDetailModal) {
-  const openCall = (fromDetailModal ? 'closeDashDetail();' : '') + "openDashStockDetail('" + g.key.replace(/'/g, "\\'") + "')";
+  const clickAttr = g.clickable
+    ? ' onclick="' + (fromDetailModal ? 'closeDashDetail();' : '') + "openDashStockDetail('" + g.key.replace(/'/g, "\\'") + "')\""
+    : '';
   return `<div class="stk-card">
-    <div class="stk-head" onclick="${openCall}">
+    <div class="stk-head"${clickAttr} style="${g.clickable ? '' : 'cursor:default;'}">
       ${typeIconHtml(g.type, null, detectThickness(g))}
       <div class="stk-mid">
         <div class="stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
-        <div class="stk-batches">재고부족 · 자주 발주하는 품목</div>
+        <div class="stk-batches">${g.total <= 0 ? '재고 없음 · 기준 품목' : '재고부족 · 기준 품목'}</div>
       </div>
       <div class="stk-total"><b style="color:var(--warn);">${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
-      <i class="fa-solid fa-chevron-right stk-chev"></i>
+      ${g.clickable ? '<i class="fa-solid fa-chevron-right stk-chev"></i>' : ''}
     </div>
   </div>`;
 }
