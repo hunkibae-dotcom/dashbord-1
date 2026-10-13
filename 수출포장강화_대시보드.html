@@ -9237,50 +9237,50 @@
             }
         }
 
-        function exportDetailPanelCSV() {
+        // 상세스펙 패널의 "데이터 출력" — 예전엔 직접 만든 CSV였는데, 제품검색 출력과
+        // 같은 느낌(실제 수정 가능한 .xlsx, 칼럼별 스타일)으로 바꾸고, 건별 CBM까지
+        // 같이 뽑아 더 상세하게 보이도록 했다(요청, 2026-10-13).
+        function exportDetailPanelXlsx() {
             if (!_currentDetailProductCode) return;
             const matchedList = state.data.filter(item => item.code.toLowerCase() === _currentDetailProductCode.toLowerCase());
-            if (matchedList.length === 0) return;
+            if (matchedList.length === 0) { alert('내보낼 데이터가 없습니다.'); return; }
 
-            // 스펙 데이터 (패널에 표시된 평균/오차값 가져오기)
-            const specW = document.getElementById('specW').innerText || '-';
-            const specD = document.getElementById('specD').innerText || '-';
-            const specH = document.getElementById('specH').innerText || '-';
-            const specG = document.getElementById('specG').innerText || '-';
-            const specCBM = document.getElementById('specCBM').innerText || '-';
-            const getCleanTol = id => (document.getElementById(id).innerText || '-').replace(/[^\d±.균일]/g, '') || '-';
-            const wTol = getCleanTol('specWTol');
-            const dTol = getCleanTol('specDTol');
-            const hTol = getCleanTol('specHTol');
-            const gTol = getCleanTol('specGTol');
-            const cbmTol = getCleanTol('specCBMTol');
+            let ov = {};
+            try { ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + _currentDetailProductCode) || '{}'); } catch (e) {}
 
-            const q = v => '"' + (v == null ? '' : v) + '"';
-            const row = arr => arr.map(q).join(',');
+            const su = v => { const n = parseFloat((v || '').toString().replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
+            const cbmOf = (item) => {
+                const w = su(item.specW), d = su(item.specD), h = su(item.specH);
+                if (!w || !d || !h) return '';
+                return ((w * d * h) / 1e9).toFixed(4);
+            };
 
-            const specSection = [
-                row(['제품코드', 'W 평균(mm)', 'W 오차', 'D 평균(mm)', 'D 오차', 'H 평균(mm)', 'H 오차', 'G 평균(kg)', 'G 오차', 'CBM 평균(m³)', 'CBM 오차']),
-                row([_currentDetailProductCode, specW, wTol, specD, dTol, specH, hTol, specG, gTol, specCBM, cbmTol]),
-                '',
+            const columns = [
+                { label: '등록일자(포장일)', get: it => normalizeDate(it.regDate) },
+                { label: '건명', get: it => it.round },
+                { label: '제품코드', get: it => it.code },
+                { label: '제품 종류', get: () => ov.productType || '' },
+                { label: '박스 높이', get: () => ov.boxHeight || '' },
+                { label: '컬러', get: it => it.color || 'WW' },
+                { label: '수량(BOX)', get: it => it.qty },
+                { label: '강화(BOX)', get: it => it.strengthenedQty || 0 },
+                { label: '출고(BOX)', get: it => it.shippedQty || 0 },
+                { label: 'W 가로(mm)', get: it => it.specW || '' },
+                { label: 'D 세로(mm)', get: it => it.specD || '' },
+                { label: 'H 높이(mm)', get: it => it.specH || '' },
+                { label: 'G 중량(kg)', get: it => it.specG || '' },
+                { label: 'CBM(m³)', get: it => cbmOf(it) },
+                { label: '진행', get: it => it.statusLabel || it.status, isStatus: true },
+                { label: '납기일', get: it => normalizeDate(it.dueDate) },
+                { label: '상차일', get: it => normalizeDate(it.date) },
+                { label: '적재', get: it => it.pallet || '-' },
             ];
 
-            const histHeaders = row(['등록일자(포장일)', '건명', '제품코드', '컬러', '수량', '강화(BOX)', '출고(BOX)', '진행', '납기일', '상차일']);
-            const histRows = matchedList.map(item => row([
-                normalizeDate(item.regDate), item.round, item.code,
-                item.color || 'WW', item.qty,
-                item.strengthenedQty || 0, item.shippedQty || 0,
-                item.statusLabel || item.status,
-                normalizeDate(item.dueDate), normalizeDate(item.date)
-            ]));
-
-            const csvContent = [...specSection, histHeaders, ...histRows].join('\n');
-            const blob = new Blob(['﻿' + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = '제품상세이력_' + _currentDetailProductCode + '.csv';
-            a.click();
-            URL.revokeObjectURL(url);
+            _pkgRenderGenericXls({
+                title: '제품상세이력_' + _currentDetailProductCode,
+                columns, rows: matchedList,
+                filename: '제품상세이력_' + _currentDetailProductCode + '.xlsx'
+            });
         }
 
         // 가져온 데이터가 올바른 시트인지 검증 (제품코드·수량·건명 중 2개 이상 있어야 통과)
