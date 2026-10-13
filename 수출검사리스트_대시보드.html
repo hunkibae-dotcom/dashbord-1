@@ -6786,25 +6786,64 @@ let specHistoryRows = [];
 function deriveCodeType(name) {
   if (!name) return '기타';
   if (name.includes('색상비') || name.includes('색비') || name.includes('단순비')) return '색상비';
-  if (name.includes('단종비') || name.includes('단종')) return '단종비';
+  if (name.includes('단종비') || name.includes('단종')) return '단종코드';
   if (name.includes('기획주문품') || name.includes('기획')) return '기획주문품';
   if (name.includes('형태비') || name.includes('형태')) return '형태비';
   if (name.includes('복합비') || name.includes('복합')) return '복합비';
   return '기타';
 }
 
-// 사용자가 표준품명/단품코드 종류를 직접 입력/수정한 값은 브라우저에 저장해 유지 (시트에는 없는 값이라 로컬 저장)
+const QC_CODE_TYPES = ['색상비', '형태비', '복합비', '기획주문품', '단종코드', '기타'];
+
+// 사용자가 표준품명/단품코드 종류를 직접 입력/수정한 값은 브라우저에 저장해 유지 (시트에는 없는 값이라 로컬 저장).
+// 단품코드의 종류를 고정 드롭다운으로 바꾸면서(요청, 2026-10-13) 예전에 저장된 '단종비'는
+// '단종코드'로 한 번만 옮겨준다 — 기존에 수기 입력해둔 값은 그대로 유지(덮어쓰지 않음).
 function loadSpecOverride(code) {
-  try { return JSON.parse(localStorage.getItem('specOverride_' + code) || 'null'); }
+  let ov = null;
+  try { ov = JSON.parse(localStorage.getItem('specOverride_' + code) || 'null'); }
   catch (e) { return null; }
+  if (ov && ov.codeType === '단종비') {
+    ov.codeType = '단종코드';
+    try { localStorage.setItem('specOverride_' + code, JSON.stringify(ov)); } catch (e) {}
+  }
+  return ov;
+}
+function onSpecCodeTypeChange(val) {
+  const custom = document.getElementById('specCodeTypeCustom');
+  if (val === '__custom__') { custom.classList.remove('hidden'); custom.focus(); }
+  else { custom.classList.add('hidden'); custom.value = ''; }
+  onSpecFieldEdit();
 }
 function onSpecFieldEdit() {
   const code = document.getElementById('specCodeInput').value.trim();
   if (!code) return;
+  const sel = document.getElementById('specCodeTypeSelect');
+  const custom = document.getElementById('specCodeTypeCustom');
+  const codeType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
   localStorage.setItem('specOverride_' + code, JSON.stringify({
     standardName: document.getElementById('specStandardName').value,
-    codeType: document.getElementById('specCodeType').value,
+    codeType,
   }));
+}
+// 드롭다운 6개(QC_CODE_TYPES)에 없는 값(과거 자동판별 '기타' 이전 값 등)이 저장/판별되어
+// 있으면, 조용히 첫 항목으로 바뀌어 저장될 위험이 있어 그 값 그대로의 임시 옵션을 하나
+// 더 넣어 선택해둔다 — 사용자가 직접 다시 고르기 전까진 원래 값을 잃지 않는다.
+function _qcApplyCodeTypeToUI(codeType) {
+  const sel = document.getElementById('specCodeTypeSelect');
+  const custom = document.getElementById('specCodeTypeCustom');
+  Array.from(sel.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
+  if (QC_CODE_TYPES.includes(codeType)) {
+    sel.value = codeType;
+    custom.classList.add('hidden');
+    custom.value = '';
+  } else {
+    const opt = document.createElement('option');
+    opt.value = codeType; opt.textContent = codeType + ' (이전 값)'; opt.dataset.legacy = '1';
+    sel.appendChild(opt);
+    sel.value = codeType;
+    custom.classList.add('hidden');
+    custom.value = '';
+  }
 }
 
 function openSpecModal(code) {
