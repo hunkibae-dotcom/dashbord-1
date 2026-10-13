@@ -6361,9 +6361,8 @@ async function qcRunChartReport(scope) {
       const date = parseKDate(d.검사일);
       if (!date) return;
       if (year && year !== 'all' && date.getFullYear() !== parseInt(year)) return;
-      const spec = _qcSpecForItem(d, lookup);
-      const w = parseFloat(spec.w), dd = parseFloat(spec.d), h = parseFloat(spec.h);
-      const cbm = (!isNaN(w) && w > 0 && !isNaN(dd) && dd > 0 && !isNaN(h) && h > 0) ? ((w * dd * h) / 1e9).toFixed(4) : '';
+      // 이 건 자체에 입력된 CBM만 쓴다 — 다른 건에서 평균 낸 값은 섞지 않는다(요청, 2026-10-13).
+      const cbm = d.CBM ? d.CBM.toFixed(4) : '';
       const row = { 건명: d.건명, 단품코드: d.단품코드, 색상: d.색상, 수량: d.수량, 납기일: _qcPrintMonthDay(d.납기일), 포장일: _qcPrintMonthDay(d.포장일), 검사일: _qcPrintMonthDay(d.검사일), CBM: cbm };
       if (scope === 'both') row.공장 = label;
       detailItems.push(row);
