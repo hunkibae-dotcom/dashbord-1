@@ -7499,6 +7499,8 @@ function openMItemDetail(key) {
   _refreshMiReinspectReason(d.검사);
   document.getElementById('miReasonInput').value = d.비고 || '';
   document.getElementById('miDateInput').value = _miNormDate(d.검사일);
+  document.getElementById('miPackDateInput').value = _miNormDate(d.포장일);
+  document.getElementById('miDueDateInput').value = _miNormDate(d.납기일);
   document.getElementById('miW').value = d.가로 || '';
   document.getElementById('miD').value = d.세로 || '';
   document.getElementById('miH').value = d.높이 || '';
