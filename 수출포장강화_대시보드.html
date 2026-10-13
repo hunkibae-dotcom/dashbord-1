@@ -4029,7 +4029,6 @@
             const _tblQty = state.filteredData.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
             const _rcEl = document.getElementById('tableRoundCount'); if (_rcEl) _rcEl.textContent = _tblRounds.size;
             const _tqEl = document.getElementById('tableTotalQty');   if (_tqEl) _tqEl.textContent = _tblQty.toLocaleString();
-            _pkgRenderNextPalletBadge();
 
             _pkgRenderPagination(state.filteredData.length, _pkgTotalPages);
         }
