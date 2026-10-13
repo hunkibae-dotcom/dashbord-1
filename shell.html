@@ -2845,6 +2845,15 @@
             </div>`;
         }).join('');
     }
+    // 제품 종류/PE폼 높이는 자동계산이 아니라 사람이 직접 적어서 코드별로 누적
+    // 기록해두는 값이라 localStorage에 저장한다(PC 대시보드와 같은 키 이름 사용).
+    function saveSpecOverride(code, field, value) {
+        if (!code) return;
+        let ov = {};
+        try { ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}'); } catch (e) {}
+        ov[field] = value;
+        try { localStorage.setItem('pkgSpecOverride_' + code, JSON.stringify(ov)); } catch (e) {}
+    }
     function specCell(label, val, unit, tolHtml) {
         return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
             <div style="font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--label);text-transform:uppercase;">${label}</div>
