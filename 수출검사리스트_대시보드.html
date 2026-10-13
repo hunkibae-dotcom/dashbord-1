@@ -2472,6 +2472,16 @@ function setFactoryTab(tab) {
   applyFilters();
 }
 
+// 제품검색 테이블 전용 — 진행중(active)/출고완료(archive) 중 하나만 보거나 둘 다 본다.
+// 공장 탭(전체/충주1/충주2)과는 독립적으로 같이 적용된다(applyFilters 참고).
+function setSourceTab(tab) {
+  sourceTab = tab;
+  ['all','active','archive'].forEach(t => {
+    document.getElementById('srcTab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
+  });
+  applyFilters();
+}
+
 // 사이드바 공장 클릭 시 메인화면 전체를 해당 공장 상세현황으로 전환
 function setView(view) {
   currentView = view;
