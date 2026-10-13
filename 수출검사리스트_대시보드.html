@@ -9865,63 +9865,87 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 품목 상세/수정 (모바일 리스트 항목 클릭 시) ===== -->
-<div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
-  <div style="background:var(--panel);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
+<div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 28px;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);box-sizing:border-box;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="min-width:0;">
         <div id="miTitle" style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-        <div id="miSub" style="font-size:12px;color:var(--text-sub);margin-top:2px;">—</div>
+        <div style="font-size:12px;color:var(--text-sub);margin-top:2px;display:flex;align-items:center;gap:6px;">
+          <span id="miSub">—</span>
+          <button onclick="openMSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(109,92,232,.1);border:1px solid rgba(109,92,232,.25);color:#6D5CE8;border-radius:7px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;cursor:pointer;flex-shrink:0;">
+            <i class="fa-solid fa-ruler-combined"></i>
+          </button>
+        </div>
       </div>
       <button onclick="closeMItemDetail()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;">진행상태</div>
-    <div style="display:flex;gap:6px;">
-      <button id="miStBtn_미검사" onclick="setMiField('검사','미검사')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">미검사</button>
-      <button id="miStBtn_검사"   onclick="setMiField('검사','검사')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료</button>
-      <button id="miStBtn_재투입" onclick="setMiField('검사','재투입')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">재투입</button>
-      <button id="miStBtn_양지"   onclick="setMiField('검사','양지')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">양지</button>
+    <div style="margin-top:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">진행상태</div>
+      <div style="display:flex;gap:6px;">
+        <button id="miStBtn_미검사" onclick="setMiField('검사','미검사')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">미검사</button>
+        <button id="miStBtn_검사"   onclick="setMiField('검사','검사')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료</button>
+        <button id="miStBtn_재투입" onclick="setMiField('검사','재투입')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">재투입</button>
+        <button id="miStBtn_양지"   onclick="setMiField('검사','양지')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">양지</button>
+      </div>
     </div>
 
-    <div id="miReasonWrap" style="display:none;">
-      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;margin-bottom:6px;">재투입 사유</div>
+    <div id="miReasonWrap" style="display:none;margin-top:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">재투입 사유</div>
       <input id="miReasonInput" type="text" placeholder="사유를 입력하세요 (시트 비고란에 저장됩니다)"
           onchange="setMiField('비고', this.value)"
-          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
     </div>
 
-    <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;">검사완료일</div>
-    <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)"
-        style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
-
-    <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.03em;">규격 (mm) · 무게(kg)</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div>
-        <div style="font-size:10px;color:var(--label);margin-bottom:4px;">가로</div>
-        <input id="miW" type="number" placeholder="0" oninput="setMiField('가로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">포장일</div>
+        <input id="miPackDateInput" type="date" onchange="setMiField('포장일', this.value)"
+            style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
       </div>
       <div>
-        <div style="font-size:10px;color:var(--label);margin-bottom:4px;">세로</div>
-        <input id="miD" type="number" placeholder="0" oninput="setMiField('세로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--label);margin-bottom:4px;">높이</div>
-        <input id="miH" type="number" placeholder="0" oninput="setMiField('높이', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
-      </div>
-      <div>
-        <div style="font-size:10px;color:var(--label);margin-bottom:4px;">무게</div>
-        <input id="miG" type="number" placeholder="0" oninput="setMiField('중량', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">납기일</div>
+        <input id="miDueDateInput" type="date" onchange="setMiField('납기일', this.value)"
+            style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
       </div>
     </div>
-    <div id="miCbm" style="font-size:11.5px;color:var(--text-sub);">CBM —</div>
 
-    <div id="miSaveNote" style="font-size:11px;color:var(--text-sub);background:var(--input-bg);border-radius:10px;padding:8px 10px;">
+    <div style="margin-top:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">검사완료일</div>
+      <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)"
+          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+    </div>
+
+    <div style="margin-top:18px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">규격 (mm) · 무게(kg)</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">가로</div>
+          <input id="miW" type="number" placeholder="0" oninput="setMiField('가로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">세로</div>
+          <input id="miD" type="number" placeholder="0" oninput="setMiField('세로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">높이</div>
+          <input id="miH" type="number" placeholder="0" oninput="setMiField('높이', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        </div>
+        <div>
+          <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">무게</div>
+          <input id="miG" type="number" placeholder="0" oninput="setMiField('중량', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+        </div>
+      </div>
+      <div id="miCbm" style="font-size:11.5px;color:var(--text-sub);margin-top:8px;">CBM —</div>
+    </div>
+
+    <div id="miSaveNote" style="margin-top:18px;font-size:11px;color:var(--text-sub);background:var(--input-bg);border-radius:10px;padding:8px 10px;">
       <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
       변경하면 자동으로 실제 시트에 저장됩니다
     </div>
-    <button id="miSaveBtn" onclick="saveMItemDetail()" style="width:100%;background:#6D5CE8;color:#fff;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
+    <button id="miSaveBtn" onclick="saveMItemDetail()" style="margin-top:10px;width:100%;background:#6D5CE8;color:#fff;padding:13px;border-radius:12px;border:none;font-size:14px;font-weight:800;cursor:pointer;">
       <i class="fa-solid fa-check"></i> 저장
     </button>
   </div>
