@@ -7020,11 +7020,14 @@ function onSpecCodeTypeChange(val) {
   }
   onSpecFieldEdit();
 }
+// 입력칸에 코드를 끝까지 안 쳐도(일부만 입력해도) 바로 결과가 나오게 바뀌면서
+// (요청, 2026-10-15) 입력값 그대로를 override 키로 쓰면 안 된다 — 지금 실제로 화면에
+// 보여주고 있는 "확정된" 코드를 따로 기억해두고 그 키로 저장/조회한다.
+let _qcSpecActiveCode = '';
 function onSpecFieldEdit() {
-  const code = document.getElementById('specCodeInput').value.trim();
-  if (!code) return;
+  if (!_qcSpecActiveCode) return;
   const codeType = document.getElementById('specCodeTypeSelect').value;
-  localStorage.setItem('specOverride_' + code, JSON.stringify({
+  localStorage.setItem('specOverride_' + _qcSpecActiveCode, JSON.stringify({
     standardName: document.getElementById('specStandardName').value,
     codeType,
   }));
