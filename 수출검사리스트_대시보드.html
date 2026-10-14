@@ -2623,9 +2623,9 @@ function renderKPIs(fullData) {
   document.getElementById('kpiWaitCj2').textContent = cj2.waitInspect.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
-  // 3) 신규품목 ("신규↓" 구분선 아래 + 아직 "확인" 안 한 품목)
-  const cj1New = cj1Items.filter(d => d.신규 && !d.신규확인됨);
-  const cj2New = cj2Items.filter(d => d.신규 && !d.신규확인됨);
+  // 3) 신규품목 (비고에 "신규"/"신규 차수 추가됨" 문구가 남아있는 품목)
+  const cj1New = cj1Items.filter(d => d.신규);
+  const cj2New = cj2Items.filter(d => d.신규);
   document.getElementById('kpiNewCj1').textContent = cj1New.length.toLocaleString();
   document.getElementById('kpiNewCj2').textContent = cj2New.length.toLocaleString();
   document.getElementById('kpiNewDetail').innerHTML = renderDetailList(scopedPool(cj1New, cj2New), '납기일');
