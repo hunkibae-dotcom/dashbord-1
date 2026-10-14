@@ -8632,6 +8632,16 @@ function renderMobileList() {
     else if (mStatus === '미투입') { if (d.source === 'archive' || d.검사 !== '미투입') return false; }
     else if (mStatus) { if (d.검사 !== mStatus) return false; }
     if (search && !(d.건명||'').toLowerCase().includes(search) && !(d.단품코드||'').toLowerCase().includes(search) && !(d.단품명칭||'').toLowerCase().includes(search)) return false;
+    // 달력에서 날짜를 골라 "조회"를 누르면 데스크탑 표는 _tblExactDateFilter로 걸러지는데,
+    // 모바일 목록은 이 필터를 아예 안 보고 있어서 날짜를 눌러도 아무 반응이 없었다
+    // (요청, 2026-10-14) — 데스크탑 matchRow()와 같은 방식으로 여기도 적용한다.
+    if (_tblExactDateFilter) {
+      const f = _tblExactDateFilter;
+      let matched = false;
+      if (f.field !== 'due') { const iso = _qcIsoDate(d.포장일); if (iso && f.dates.has(iso)) matched = true; }
+      if (!matched && f.field !== 'pack') { const iso = _qcIsoDate(d.납기일); if (iso && f.dates.has(iso)) matched = true; }
+      if (!matched) return false;
+    }
     return true;
   });
   setMTxt('mListCnt', items.length + '건');
