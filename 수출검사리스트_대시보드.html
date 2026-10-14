@@ -8620,7 +8620,9 @@ function renderMobileList() {
   const search = (document.getElementById('mSearch')?.value || '').toLowerCase();
   // 기본은 진행중(active)만 — 이 목록은 원래 "검사 대기 중인 품목" 기준 화면이라,
   // mSource를 'archive'로 바꾸기 전까진 이미 출고완료로 넘어간 이력을 안 섞는다.
-  const allItems = mSource === 'archive' ? archiveRows : allData;
+  // 달력 날짜조회는 진행중/출고완료를 안 가리고 둘 다 찾아야(데스크탑 표와 동일) 하므로
+  // 그때만 둘을 합친 전체 풀에서 찾는다.
+  const allItems = _tblExactDateFilter ? [...allData, ...archiveRows] : (mSource === 'archive' ? archiveRows : allData);
   const items = allItems.filter(d => {
     if (mFactory !== 'all' && d.공장 !== mFactory) return false;
     if (mStatus === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
