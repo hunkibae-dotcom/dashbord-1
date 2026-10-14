@@ -2703,10 +2703,20 @@
         // 필터에 맞는 항목은 그대로 다 보여준다 — 재고로 넘어간 항목이라도 수출현황
         // 필터를 걸었으면 수출현황 쪽 결과에 나와야 하므로, source 기준 중복 제거는 하지 않는다.
         let deduped = filtered;
-        // 상차일 기준 정렬 — 날짜 없는 항목은 항상 맨 뒤로
+        // 정렬 버튼으로 고른 기준(제품코드/건명/납기일/상차일/포장일)으로 정렬 — 날짜/문자
+        // 둘 다 값 없는 항목은 항상 맨 뒤로.
         deduped = [...deduped].sort((a,b) => {
-            const av = a.date && a.date !== '-' ? a.date : null;
-            const bv = b.date && b.date !== '-' ? b.date : null;
+            const field = _srSortKey;
+            if (field === 'code' || field === 'round') {
+                const av = (a[field] || '').toString();
+                const bv = (b[field] || '').toString();
+                if (!av && !bv) return 0;
+                if (!av) return 1;
+                if (!bv) return -1;
+                return _srSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+            }
+            const av = a[field] && a[field] !== '-' ? a[field] : null;
+            const bv = b[field] && b[field] !== '-' ? b[field] : null;
             if (av === null && bv === null) return 0;
             if (av === null) return 1;
             if (bv === null) return -1;
@@ -2715,12 +2725,18 @@
             return _srSortAsc ? cmp : -cmp;
         });
         document.getElementById('srCount').textContent = deduped.length;
+        const codeCountEl = document.getElementById('srCodeCount');
+        if (codeCountEl) codeCountEl.textContent = new Set(deduped.map(d => d.code).filter(Boolean)).size.toLocaleString();
         const qtyEl = document.getElementById('srQtySum');
         if (qtyEl) qtyEl.textContent = deduped.reduce((s,d) => s + (parseInt(d.qty) || 0), 0).toLocaleString();
+        _renderSrSortRow();
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
             return;
         }
+        // 일렬 리스트 레이아웃(앱 제품검색 시안 리디자인 반영, 2026-10-14) — 칼럼처럼
+        // 상태·적재/코드·건명/색상·수량/납기·상차 날짜가 한 줄에 정리되어, 위 정렬
+        // 버튼으로 바로 오름↔내림 정렬할 수 있다.
         document.getElementById('srList').innerHTML = deduped.slice(0,50).map(d => {
             const _dst = d.status || '';
             const sc  = d.isDone ? '#00E676' : (_dst.includes('포장대기') ? '#FF9100' : (_dst.includes('포장완료') ? '#3B82F6' : (_dst.includes('입고') ? '#38BDF8' : '#64748B')));
@@ -2728,19 +2744,30 @@
             const _sr = (d.round||'').replace(/'/g,"&#39;");
             const _scl = (d.color||'').replace(/'/g,"&#39;");
             const _pv = d.pallet || '';
-            return `<div onclick="openItemEdit('${_sc}','${_sr}','${_scl}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-                <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span style="font-size:13px;font-weight:800;font-family:monospace;color:var(--text);">${d.code||'-'}${d.color?' <span style="font-weight:500;color:#FF9100;">'+d.color+'</span>':''}</span>
-                    <span style="font-size:11px;font-weight:700;color:${sc};background:${sc}22;padding:2px 8px;border-radius:20px;">${d.status}</span>
+            return `<div onclick="openItemEdit('${_sc}','${_sr}','${_scl}')" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--divider);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+                <div style="width:50px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <span style="font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:${sc}22;color:${sc};white-space:nowrap;">${d.status||'-'}</span>
+                    <span style="font-size:9.5px;font-weight:700;color:${_pv?'#A855F7':'var(--label)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50px;">${_pv||'—'}</span>
                 </div>
-                <div style="font-size:11px;color:var(--text-sub);display:flex;gap:12px;align-items:center;">
-                    <span>${d.div || d.country}</span><span>${d.round}</span>
-                    <span style="margin-left:auto;font-weight:700;color:var(--text);">${d.qty.toLocaleString()} BOX</span>
+                <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:baseline;gap:6px;min-width:0;">
+                        <span style="font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.1px;flex-shrink:0;">${d.code||'-'}</span>
+                        <span style="font-size:11.5px;font-weight:600;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round||''}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                        ${d.color ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--input-bg);border-radius:5px;padding:1px 6px;">${d.color}</span>` : ''}
+                        <span style="font-size:10.5px;color:var(--text-sub);font-family:ui-monospace,monospace;">${(d.qty||0).toLocaleString()}BOX</span>
+                    </div>
                 </div>
-                <div style="font-size:10px;font-family:monospace;color:var(--label);">상차 ${fmtKr(d.date)} · 납기 ${fmtKr(d.dueDate)}${d.regDate && d.regDate!=='-' ? ' · 포장완료 '+fmtKr(d.regDate) : ''}</div>
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:2px;padding-top:4px;border-top:1px solid var(--divider);">
-                    <span style="font-size:10px;color:var(--label);">적재</span>
-                    <span style="font-size:11px;font-weight:700;color:${_pv?'#A855F7':'var(--text-sub)'};">${_pv||'—'}</span>
+                <div style="flex-shrink:0;">
+                    <div style="display:flex;align-items:baseline;gap:5px;white-space:nowrap;">
+                        <span style="display:inline-block;width:20px;text-align:left;font-size:8.5px;color:var(--label);font-weight:700;">납기</span>
+                        <span style="font-size:10.5px;color:var(--text);font-weight:700;font-family:ui-monospace,monospace;">${fmtKr(d.dueDate)}</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;white-space:nowrap;">
+                        <span style="display:inline-block;width:20px;text-align:left;font-size:8.5px;color:var(--label);font-weight:700;">상차</span>
+                        <span style="font-size:9.5px;color:var(--label);font-family:ui-monospace,monospace;">${fmtKr(d.date)}</span>
+                    </div>
                 </div>
             </div>`;
         }).join('');
