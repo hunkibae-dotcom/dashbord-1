@@ -2475,10 +2475,6 @@
         }
         const allBtn = document.getElementById('srSelectAllBtn');
         if (allBtn) allBtn.style.display = _sfSelectMode ? 'flex' : 'none';
-        ['sfSrcDetailBtn', 'sfDateFilterBtn', 'sfResetBtn', 'sfScanBtn'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = _sfSelectMode ? 'none' : 'flex';
-        });
         runSearch();
     }
     function _sfToggleItem(key) {
