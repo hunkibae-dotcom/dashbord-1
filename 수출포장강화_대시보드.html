@@ -7210,7 +7210,7 @@
             { label: '전산상 납기', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.dueDate) },
             { label: '확정 상차일', width: '8%', align: 'center', get: item => _pkgPrintMonthDay(item.date) },
             { label: '유형', width: '7%', align: 'center', get: item => _pkgPeTypeDisplay(item) },
-            { label: '진행', width: '6%', align: 'center', get: item => item.status || '' },
+            { label: '제품종류', width: '6%', align: 'center', get: item => _pkgProductTypeOf(item) },
             { label: '가로', width: '5.75%', align: 'right', get: () => '' },
             { label: '세로', width: '5.75%', align: 'right', get: () => '' },
             { label: '높이', width: '5.75%', align: 'right', get: () => '' },
