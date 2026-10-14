@@ -7735,8 +7735,9 @@ function _gasUrlForFactory(factoryKey) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 신규품목 상세보기 — "신규↓" 구분선 아래 + 아직 확인 안 한 품목을 공장별로 보여주고,
-// 다중선택 확인(행 메모) / 검사리스트 정렬(서버의 실제 정렬 매크로 실행)을 한다.
+// 신규품목 상세보기 — 비고에 "신규"/"신규 차수 추가됨" 문구가 남은 품목을 공장별로
+// 보여주고, 다중선택 확인(비고 문구 제거) / 검사리스트 정렬(서버의 실제 정렬 매크로
+// 실행)을 한다.
 // ═══════════════════════════════════════════════════════════════
 let _qcNewFac = 'all';
 let _qcNewSelected = new Set(); // key = 공장|건명|단품코드|색상
@@ -7745,7 +7746,7 @@ function _qcNewKey(d) {
   return d.공장 + '|' + d.건명 + '|' + d.단품코드 + '|' + (d.색상 || '');
 }
 function _qcNewItems() {
-  const items = allData.filter(d => d.신규 && !d.신규확인됨);
+  const items = allData.filter(d => d.신규);
   return _qcNewFac === 'all' ? items : items.filter(d => d.공장 === _qcNewFac);
 }
 
