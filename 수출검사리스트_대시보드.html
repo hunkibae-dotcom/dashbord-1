@@ -1684,10 +1684,10 @@ try {
         <button onclick="closeSpecModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 shrink-0"><i class="fa-solid fa-xmark text-[15px]"></i></button>
       </div>
       <div class="flex items-center gap-2">
-        <div class="flex-1 min-w-0 flex flex-col gap-0.5 relative">
-          <span class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 클릭하여 다른 제품코드로 검색가능</span></span>
-          <input type="text" id="specCodeInput" autocomplete="off" oninput="runSpecLookupDebounced()" onkeydown="if(event.key==='Escape') closeSpecModal();" onblur="setTimeout(hideSpecCodeSuggest, 150)" placeholder="단품코드를 입력하세요" class="w-full text-[16px] font-bold text-slate-800 outline-none bg-transparent" style="font-family:ui-monospace,monospace;">
-          <div id="specCodeSuggest" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-56 overflow-y-auto z-50"></div>
+        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <span class="text-[10.5px] text-slate-400">단품코드명 <span class="text-slate-300">· 입력하는 대로 바로 결과가 나와요</span></span>
+          <input type="text" id="specCodeInput" autocomplete="off" oninput="runSpecLookupDebounced()" onkeydown="if(event.key==='Escape') closeSpecModal();" placeholder="단품코드를 입력하세요" class="w-full text-[16px] font-bold text-slate-800 outline-none bg-transparent" style="font-family:ui-monospace,monospace;">
+          <div id="specCodeSuggest" class="hidden flex-wrap gap-1.5 pt-1"></div>
         </div>
         <button id="specScanBtn" onclick="_openScanSmart()" title="바코드 스캔" class="hidden w-9 h-9 rounded-lg bg-[#6D5CE8]/10 border border-[#6D5CE8]/25 text-[#6D5CE8] items-center justify-center shrink-0 hover:bg-[#6D5CE8]/20 transition-colors">
           <i class="fa-solid fa-barcode text-[15px]"></i>
