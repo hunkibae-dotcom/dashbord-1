@@ -5973,10 +5973,27 @@ function pickPsSort(key) {
   else { _psSortKey = key; _psSortAsc = true; }
   renderProductSearchResults(lastSearchResults);
 }
-// 선택/수정 — 웹의 "선택"·"수정" 일괄편집과 똑같이 동작하도록 만들 예정이라
+// 선택 — 체크박스를 켜서 품목을 여러 개 고를 수 있다(2026-10-14). 키는 공장+건명+
+// 단품코드+색상 조합(신규품목 모달의 _qcNewKey와 같은 방식)이라, 정렬 순서가
+// 바뀌어도(같은 품목이면) 선택 상태가 유지된다.
+let _psSelectMode = false;
+let _psSelected = new Set();
+function _psItemKey(d) {
+  return (d.공장 || '') + '|' + (d.건명 || '') + '|' + (d.단품코드 || '') + '|' + (d.색상 || '');
+}
+function _psToggleSelectMode() {
+  _psSelectMode = !_psSelectMode;
+  if (!_psSelectMode) _psSelected.clear();
+  renderProductSearchResults(lastSearchResults);
+}
+function _psToggleItem(key) {
+  if (_psSelected.has(key)) _psSelected.delete(key); else _psSelected.add(key);
+  renderProductSearchResults(lastSearchResults);
+}
+// "수정"(선택 품목 일괄 수정)은 웹의 일괄편집과 똑같이 동작하도록 만들 예정이라
 // 아직은 자리만 잡아둔 안내(다른 "제작중" 기능들과 같은 방식).
 function _psSelectPlaceholder() {
-  alert('선택 기능은 준비 중입니다. 조금만 기다려주세요!');
+  alert('일괄 수정 기능은 준비 중입니다. 조금만 기다려주세요!');
 }
 
 function renderProductSearchResults(results) {
