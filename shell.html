@@ -2449,10 +2449,32 @@
             return `<button onclick="pickSrSort('${k}')" style="${style}">${label} ${arrow}</button>`;
         }).join('');
     }
-    // 선택/수정 — 웹의 "선택"·"수정" 일괄편집과 똑같이 동작하도록 만들 예정이라
+    // 선택 — 체크박스를 켜서 품목을 여러 개 고를 수 있다(2026-10-14). 키는 제품코드+
+    // 건명+색상 조합이라, 정렬 순서가 바뀌어도(같은 품목이면) 선택 상태가 유지된다.
+    let _sfSelectMode = false;
+    let _sfSelected = new Set();
+    function _sfItemKey(d) {
+        return (d.code || '') + '|' + (d.round || '') + '|' + (d.color || '');
+    }
+    function _sfToggleSelectMode() {
+        _sfSelectMode = !_sfSelectMode;
+        if (!_sfSelectMode) _sfSelected.clear();
+        const btn = document.getElementById('sfSelectBtn');
+        if (btn) {
+            btn.style.cssText = _sfSelectMode
+                ? 'width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:none;background:#00B0FF;color:#0B0F19;cursor:pointer;-webkit-appearance:none;'
+                : 'width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;';
+        }
+        runSearch();
+    }
+    function _sfToggleItem(key) {
+        if (_sfSelected.has(key)) _sfSelected.delete(key); else _sfSelected.add(key);
+        runSearch();
+    }
+    // "수정"(선택 품목 일괄 수정)은 웹의 일괄편집과 똑같이 동작하도록 만들 예정이라
     // 아직은 자리만 잡아둔 안내(다른 "제작중" 기능들과 같은 방식).
     function _sfSelectPlaceholder() {
-        alert('선택 기능은 준비 중입니다. 조금만 기다려주세요!');
+        alert('일괄 수정 기능은 준비 중입니다. 조금만 기다려주세요!');
     }
     // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
     // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
