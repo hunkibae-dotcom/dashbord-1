@@ -7048,12 +7048,25 @@ function _qcApplyCodeTypeToUI(codeType) {
 
 function pickSpecCodeSuggest(code) {
   document.getElementById('specCodeInput').value = code;
-  hideSpecCodeSuggest();
   runSpecLookup();
 }
 function hideSpecCodeSuggest() {
   const box = document.getElementById('specCodeSuggest');
   if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
+}
+// 입력과 동시에 일치하는 다른 코드들을 칩으로 보여준다(포장강화 제품검색처럼 바로
+// 결과가 나오게, 요청 2026-10-15) — 예전엔 안내상자 하나를 띄워놓고 그 안에서 반드시
+// 하나를 "골라야만" 상세가 열렸는데, 이제 가장 비슷한 코드의 상세는 입력 즉시 바로
+// 보여주고, 다른 일치 코드는 탭하면 바꿔볼 수 있는 칩으로만 곁들인다.
+function _qcRenderSpecCodeMatches(codes, activeCode) {
+  const box = document.getElementById('specCodeSuggest');
+  if (!box) return;
+  const others = codes.filter(c => c.toUpperCase() !== (activeCode || '').toUpperCase());
+  if (!others.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.innerHTML = `<span class="text-[10.5px] text-slate-400 w-full">비슷한 코드 ${others.length}개</span>` + others.slice(0, 12).map(c =>
+    `<span onclick="pickSpecCodeSuggest('${c.replace(/'/g, "\\'")}')" class="px-2.5 py-1 text-[12px] font-mono text-slate-600 bg-slate-100 hover:bg-[#6D5CE8]/10 hover:text-[#6D5CE8] rounded-md cursor-pointer">${c}</span>`
+  ).join('');
+  box.classList.remove('hidden');
 }
 
 function openSpecModal(code) {
