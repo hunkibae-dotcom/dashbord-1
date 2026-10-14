@@ -7930,8 +7930,9 @@ let _spuDetected = {};
 // 다수결로 한 공장으로 봤는데, 충주1/충주2 데이터가 섞인 파일 하나를 통째로 올리면
 // (예: 둘 다 올 수도, 하나로 합쳐서 올 수도 있다는 요청) 소수 쪽 공장 행이 전부 다수
 // 쪽 공장으로 잘못 들어가 버렸다. 이제 행마다 이 화이트리스트로 직접 판정한다 —
-// 목록에 없는 제품구분(목제상품/철물류 등)은 어느 공장도 아니므로 통째로 제외한다.
-const SPU_SALES_CJ1_GROUPS = ['충주1제품', '베트남상품', 'F우레탄제품'].map(s => s.replace(/\s+/g, ''));
+// 목록에 없는 제품구분(베트남상품/목제상품/철물류 등)은 어느 공장도 아니므로 통째로
+// 제외한다 — 인정하는 제품구분은 충주1제품/충주2제품/F우레탄제품 이 3개뿐이다(요청, 2026-10-14).
+const SPU_SALES_CJ1_GROUPS = ['충주1제품', 'F우레탄제품'].map(s => s.replace(/\s+/g, ''));
 const SPU_SALES_CJ2_GROUPS = ['충주2제품'].map(s => s.replace(/\s+/g, ''));
 function _spuSalesRowFactory(productGroup) {
   const v = (productGroup || '').toString().replace(/\s+/g, '');
