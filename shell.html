@@ -2466,6 +2466,8 @@
                 ? 'width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:none;background:#00B0FF;color:#0B0F19;cursor:pointer;-webkit-appearance:none;'
                 : 'width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;';
         }
+        const allBtn = document.getElementById('srSelectAllBtn');
+        if (allBtn) allBtn.style.display = _sfSelectMode ? '' : 'none';
         runSearch();
     }
     function _sfToggleItem(key) {
