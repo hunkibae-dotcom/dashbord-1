@@ -7174,6 +7174,17 @@
             };
         }
         function _pkgPrintEsc(v) { return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        // 상세스펙 패널에서 코드별로 저장해둔 "제품 종류"(pkgSpecOverride_, loadPkgSpecOverride와
+        // 동일한 localStorage 키)를 그대로 가져온다 — 포장 항목출력의 "진행" 칸을 대신해서
+        // 보여준다(요청, 2026-10-15).
+        function _pkgProductTypeOf(item) {
+            const code = (item.code || '').toString().trim();
+            if (!code) return '';
+            try {
+                const ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code.toUpperCase()) || '{}');
+                return ov.productType || '';
+            } catch (e) { return ''; }
+        }
         // 품목구분(item.country) 원본 값에 공백이 섞여 들어오는 경우가 있어("충주1 제품"처럼) —
         // 다른 화면(피킹순서 뱃지 등)에서 이미 쓰던 것과 같은 정리 방식을 인쇄물에도 그대로 적용.
         function _pkgPrintCountry(item) { return (item.country || '').replace(/\s+/g, ''); }
