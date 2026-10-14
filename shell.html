@@ -2856,6 +2856,7 @@
             const cmp = av < bv ? -1 : 1;
             return _srSortAsc ? cmp : -cmp;
         });
+        window._srLastDeduped = deduped; // 전체선택/일괄수정이 "지금 화면에 보이는 결과" 기준으로 동작하게
         document.getElementById('srCount').textContent = deduped.length;
         const codeCountEl = document.getElementById('srCodeCount');
         if (codeCountEl) codeCountEl.textContent = new Set(deduped.map(d => d.code).filter(Boolean)).size.toLocaleString();
