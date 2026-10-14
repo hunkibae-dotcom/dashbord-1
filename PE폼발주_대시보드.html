@@ -744,27 +744,14 @@ function _peNumsContain(nums, want) {
   }
   return true;
 }
-// 재고 행엔 두께(T)가 따로 없어서, 품목마스터의 코드→두께(T) 매핑으로 역으로
-// 찾는다 — 코드가 없거나 마스터에 없으면 이름/규격 텍스트에서 "NNT" 패턴을
-// 추출하는 기존 detectThickness()로 한 번 더 시도한다.
-function _peMasterThickMap() {
-  const m = {};
-  masterRows.forEach(r => { if (r.code) m[r.code] = parseFloat(r.thick) || null; });
-  return m;
-}
-function _peGroupThick(g, thickMap) {
-  const byCode = g.code ? thickMap[g.code] : null;
-  if (byCode) return byCode;
-  const t = parseFloat(detectThickness(g));
-  return isNaN(t) ? null : t;
-}
+// 재고 부족 판정은 두께(T) 상관없이 본다(요청, 2026-10-14) — 기준 두께(15T/20T)
+// 재고가 0이어도 같은 유형·규격의 다른 두께 재고가 있으면 그걸로 충분한 것으로
+// 보고 부족 목록에서 뺀다. 그래서 두께는 더 이상 매칭 조건에 안 쓴다(라벨 표기용으로만 남김).
 function dashLowStockDeficitList() {
-  const thickMap = _peMasterThickMap();
   const stockGroupEntries = Object.entries(groupStock(stockRows)); // [key, g]
   return PE_LOWSTOCK_BASELINE.map(b => {
     const matched = stockGroupEntries.filter(([, g]) => {
       if (g.type !== b.type) return false;
-      if (_peGroupThick(g, thickMap) !== b.thick) return false;
       return _peNumsContain(_peSpecNums(g.spec), b.dims);
     });
     const total = matched.reduce((s, [, g]) => s + g.batches.reduce((ss, bt) => ss + stkQtyNum(bt.qty), 0), 0);
@@ -774,9 +761,8 @@ function dashLowStockDeficitList() {
       repKey = key0; repCode = g0.code; repName = g0.name || b.label; repSpec = g0.spec; repUnit = g0.unit || 'EA';
     } else {
       // 재고가 아예 없으면(매칭되는 재고 행이 하나도 없으면) 품목마스터에서 같은
-      // 기준으로 카탈로그 상 등록된 품목을 찾아 자재명/코드만 라벨로 쓴다.
-      const mst = masterRows.find(r => r.type === b.type && parseFloat(r.thick) === b.thick &&
-        _peNumsContain(_peSpecNums(r.spec), b.dims));
+      // 기준(두께 무관)으로 카탈로그 상 등록된 품목을 찾아 자재명/코드만 라벨로 쓴다.
+      const mst = masterRows.find(r => r.type === b.type && _peNumsContain(_peSpecNums(r.spec), b.dims));
       if (mst) { repCode = mst.code; repName = mst.name; repSpec = mst.spec; repUnit = mst.unit || 'EA'; }
     }
     return { key: repKey, code: repCode, name: repName, spec: repSpec, type: b.type, unit: repUnit, total, clickable: !!repKey };
