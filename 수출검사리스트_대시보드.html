@@ -6129,11 +6129,14 @@ function renderProductSearchResults(results) {
     : 'width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;';
   summary.innerHTML = `
   <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
-    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);white-space:nowrap;flex-shrink:0;">${results.length.toLocaleString()}건 · ${uniqueCodes.toLocaleString()}품목 · ${qtySum.toLocaleString()}EA${_psSelectMode ? ` · <span style="color:#6D5CE8;">${psSelCount}개 선택</span> · <span onclick="_psToggleSelectAll()" style="color:#6D5CE8;text-decoration:underline;cursor:pointer;">전체선택/해제</span>` : ''}</span>
+    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);white-space:nowrap;flex-shrink:0;">${results.length.toLocaleString()}건 · ${uniqueCodes.toLocaleString()}품목 · ${qtySum.toLocaleString()}EA${_psSelectMode ? ` · <span style="color:#6D5CE8;">${psSelCount}개 선택</span>` : ''}</span>
     <div style="display:flex;gap:5px;flex-wrap:wrap;">
       <button onclick="_psToggleSelectMode()" title="선택 — 여러 품목 한번에 고르기" style="${psSelectBtnStyle}">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
       </button>
+      ${_psSelectMode ? `<button onclick="_psToggleSelectAll()" title="전체선택/해제" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M8 12l2.5 2.5L16 9"></path></svg>
+      </button>` : ''}
       <button onclick="_psOpenBulkEdit()" title="선택 품목 일괄 수정" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
       </button>
