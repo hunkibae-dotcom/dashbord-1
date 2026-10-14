@@ -3786,6 +3786,20 @@ function openProductSearch() {
   runProductSearch();
   _armBackTrap();
 }
+
+// 홈 화면 KPI 카드(금일포장/검사대기/생산중/생산완료, 공장별 바로가기)를 누르면
+// 예전엔 별도의 "검사 목록" 화면(renderMobileList)으로 갔는데, 거기는 칼럼도 없고
+// 정렬도 안 돼서 제품검색 화면으로 통일한다(요청, 2026-10-14) — 각 카드가 뜻하던
+// 분류를 applyFilters()/renderMobileList()와 똑같은 정의로 제품검색에도 옮겨둔다.
+function openProductSearchForMCard(factory, category) {
+  const factorySel = document.getElementById('psFactory');
+  if (factorySel) factorySel.value = (factory && factory !== 'all') ? factory : '';
+  _psSourceFilter = 'active';
+  _psStatusFilters.clear();
+  _psSpecialCategory = category || null;
+  _updatePsSourceButtons();
+  openProductSearch();
+}
 function closeProductSearch() {
   const modal = document.getElementById('productSearchModal');
   // 데스크탑에서는 패널이 화면 오른쪽에서 28px 띄워져 있는데(#productSearchModal의
