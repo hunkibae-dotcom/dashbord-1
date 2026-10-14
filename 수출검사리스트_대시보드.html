@@ -5990,10 +5990,79 @@ function _psToggleItem(key) {
   if (_psSelected.has(key)) _psSelected.delete(key); else _psSelected.add(key);
   renderProductSearchResults(lastSearchResults);
 }
-// "수정"(선택 품목 일괄 수정)은 웹의 일괄편집과 똑같이 동작하도록 만들 예정이라
-// 아직은 자리만 잡아둔 안내(다른 "제작중" 기능들과 같은 방식).
-function _psSelectPlaceholder() {
-  alert('일괄 수정 기능은 준비 중입니다. 조금만 기다려주세요!');
+// 전체선택/해제 — 지금 화면에 보이는(필터링된) 결과 기준으로 토글한다(2026-10-14).
+function _psToggleSelectAll() {
+  const results = lastSearchResults || [];
+  const allSelected = results.length > 0 && results.every(d => _psSelected.has(_psItemKey(d)));
+  if (allSelected) results.forEach(d => _psSelected.delete(_psItemKey(d)));
+  else results.forEach(d => _psSelected.add(_psItemKey(d)));
+  renderProductSearchResults(lastSearchResults);
+}
+
+// "수정"(선택 품목 일괄 수정) — 모바일 단일 품목 수정창(mItemDetailModal)이 이미
+// 쓰는 것과 같은 진행상태/포장일/납기일 GAS 액션(updateStatus/updatePackDate/
+// updateDueDate)을 여러 품목에 그대로 반복 적용한다(2026-10-14).
+let _psBulkStatus = null;
+const _PS_BULK_STATUS_OPTS = [['미검사', '미검사'], ['검사', '검사완료'], ['재투입', '재투입'], ['양지', '양지']];
+function _psOpenBulkEdit() {
+  if (!_psSelected.size) { alert('먼저 품목을 하나 이상 선택해주세요.'); return; }
+  _psBulkStatus = null;
+  document.getElementById('psBulkCount').textContent = _psSelected.size + '개 품목 선택됨';
+  document.getElementById('psBulkPackDate').value = '';
+  document.getElementById('psBulkDueDate').value = '';
+  document.getElementById('psBulkResult').textContent = '';
+  _psRenderBulkStatusBtns();
+  document.getElementById('psBulkModal').style.display = 'flex';
+}
+function _psCloseBulkEdit() {
+  document.getElementById('psBulkModal').style.display = 'none';
+}
+function _psRenderBulkStatusBtns() {
+  const wrap = document.getElementById('psBulkStatusBtns');
+  if (!wrap) return;
+  wrap.innerHTML = _PS_BULK_STATUS_OPTS.map(([v, label]) => {
+    const on = _psBulkStatus === v;
+    return `<button type="button" onclick="_psSetBulkStatus('${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid ${on ? '#6D5CE8' : 'var(--border)'};background:${on ? '#6D5CE8' : 'var(--input-bg)'};color:${on ? '#fff' : 'var(--text-sub)'};font-size:12px;font-weight:700;cursor:pointer;">${label}</button>`;
+  }).join('');
+}
+function _psSetBulkStatus(v) {
+  _psBulkStatus = (_psBulkStatus === v) ? null : v;
+  _psRenderBulkStatusBtns();
+}
+async function _psApplyBulkEdit() {
+  const status = _psBulkStatus;
+  const packDate = (document.getElementById('psBulkPackDate').value || '').trim();
+  const dueDate = (document.getElementById('psBulkDueDate').value || '').trim();
+  const resultEl = document.getElementById('psBulkResult');
+  if (!status && !packDate && !dueDate) {
+    resultEl.textContent = '진행상태·포장일·납기일 중 하나는 선택해주세요.';
+    return;
+  }
+  const items = (lastSearchResults || []).filter(d => _psSelected.has(_psItemKey(d)));
+  if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+
+  const btn = document.getElementById('psBulkApplyBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...';
+
+  items.forEach(item => {
+    if (status) { item.검사 = status; _saveMiOverride(_miKey(item), { 검사: status }); _postMiSync(item, { action: 'updateStatus', status: status }); }
+    if (packDate) { item.포장일 = packDate; _saveMiOverride(_miKey(item), { 포장일: packDate }); _postMiSync(item, { action: 'updatePackDate', date: packDate }); }
+    if (dueDate) { item.납기일 = dueDate; _saveMiOverride(_miKey(item), { 납기일: dueDate }); _postMiSync(item, { action: 'updateDueDate', date: dueDate }); }
+  });
+
+  resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`;
+  btn.disabled = false;
+  btn.innerHTML = '적용';
+
+  renderMobileKPIs();
+  renderMobileFactoryPanels();
+  renderMobileList();
+  if (typeof applyFilters === 'function') applyFilters();
+  _psSelectMode = false;
+  _psSelected.clear();
+  renderProductSearchResults(lastSearchResults);
+  setTimeout(() => { _psCloseBulkEdit(); }, 900);
 }
 
 function renderProductSearchResults(results) {
