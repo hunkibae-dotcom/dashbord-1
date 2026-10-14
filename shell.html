@@ -557,13 +557,13 @@
                         <i class="fa-solid fa-sliders" style="font-size:12px;"></i>
                         <span id="sfSrcDetailDot" style="display:none;position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:#00B0FF;"></span>
                     </button>
-                    <button onclick="openSfDatePicker()" title="날짜 필터" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
+                    <button id="sfDateFilterBtn" onclick="openSfDatePicker()" title="날짜 필터" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
                         <i class="fa-solid fa-calendar-days" style="font-size:12px;"></i>
                     </button>
-                    <button onclick="clearSearch()" title="검색/필터 초기화" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
+                    <button id="sfResetBtn" onclick="clearSearch()" title="검색/필터 초기화" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
                         <i class="fa-solid fa-arrow-rotate-left" style="font-size:12px;"></i>
                     </button>
-                    <button onclick="_openScanSmart()" title="바코드 재스캔" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:#FF9100;cursor:pointer;-webkit-appearance:none;">
+                    <button id="sfScanBtn" onclick="_openScanSmart()" title="바코드 재스캔" style="width:28px;height:28px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:#FF9100;cursor:pointer;-webkit-appearance:none;">
                         <i class="fa-solid fa-barcode" style="font-size:12px;"></i>
                     </button>
                 </div>
