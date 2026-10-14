@@ -7104,44 +7104,39 @@ function _qcResetSpecSkeleton(histMsg) {
 function runSpecLookup() {
   const code = document.getElementById('specCodeInput').value.trim();
 
-  if (!code) { _qcResetSpecSkeleton('단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.'); hideSpecCodeSuggest(); return; }
+  if (!code) { _qcSpecActiveCode = ''; _qcResetSpecSkeleton('단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.'); hideSpecCodeSuggest(); return; }
 
   const codeNorm = code.toUpperCase();
   const pool = [...allData, ...archiveRows];
-  const exactMatches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === codeNorm);
 
-  // 전체 코드를 정확히 다 입력해야만 찾아지던 걸, 제품검색처럼 입력하는 대로 포함되는
-  // 코드를 바로 보여주도록 개선(요청, 2026-10-14) — 정확히 일치하면 바로 상세를 열고,
-  // 아니면(일부만 입력) 포함되는 코드 목록을 먼저 보여준다.
-  if (!exactMatches.length) {
-    const seen = new Set(), suggestions = [];
-    pool.forEach(d => {
-      const c = (d.단품코드 || '').toString().trim();
-      if (!c) return;
-      const cu = c.toUpperCase();
-      if (cu.includes(codeNorm) && !seen.has(cu)) { seen.add(cu); suggestions.push(c); }
-    });
-    if (suggestions.length) {
-      suggestions.sort((a, b) => a.localeCompare(b));
-      const box = document.getElementById('specCodeSuggest');
-      box.innerHTML = suggestions.slice(0, 8).map(c =>
-        `<div class="px-3 py-2 text-[14px] font-mono text-slate-700 hover:bg-[#6D5CE8]/10 cursor-pointer" onmousedown="pickSpecCodeSuggest('${c.replace(/'/g, "\\'")}')">${c}</div>`
-      ).join('');
-      box.classList.remove('hidden');
-      _qcResetSpecSkeleton('코드를 끝까지 입력하거나 목록에서 골라주세요.');
-      return;
-    }
+  // 포장강화 제품검색처럼: 코드를 끝까지 입력하거나 목록에서 "골라야만" 결과가 나오던
+  // 걸 없애고, 입력하는 대로 바로 결과가 나오게 바꿨다(요청, 2026-10-15) — 일치하는
+  // 코드 중 가장 비슷한(사전순 첫) 코드의 상세를 즉시 보여주고, 다른 일치 코드는
+  // 칩으로 곁들여 탭하면 바로 바꿔볼 수 있다.
+  const seen = new Set(), allCodes = [];
+  pool.forEach(d => {
+    const c = (d.단품코드 || '').toString().trim();
+    if (!c) return;
+    const cu = c.toUpperCase();
+    if (cu.includes(codeNorm) && !seen.has(cu)) { seen.add(cu); allCodes.push(c); }
+  });
+
+  if (!allCodes.length) {
+    _qcSpecActiveCode = '';
     hideSpecCodeSuggest();
     _qcResetSpecSkeleton(`"${code}" 코드로 등록된 이력이 없어요.`);
     return;
   }
+  allCodes.sort((a, b) => a.localeCompare(b));
+  const activeCode = allCodes.find(c => c.toUpperCase() === codeNorm) || allCodes[0];
+  _qcSpecActiveCode = activeCode;
+  _qcRenderSpecCodeMatches(allCodes, activeCode);
 
-  hideSpecCodeSuggest();
-  const matches = exactMatches;
+  const matches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === activeCode.toUpperCase());
   specHistoryRows = matches;
 
   const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0];
-  const override = loadSpecOverride(code);
+  const override = loadSpecOverride(activeCode);
   document.getElementById('specStandardName').value = override?.standardName ?? withDims.단품명칭 ?? '';
   _qcApplyCodeTypeToUI(override?.codeType ?? deriveCodeType(withDims.단품명칭));
 
