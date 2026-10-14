@@ -5995,38 +5995,58 @@ function renderProductSearchResults(results) {
   // 박제된 채로 안 바뀌었다 — 스캔 후 재검색이 "안 먹히는" 것처럼 보이던 또 다른 원인.
   try {
 
-  const inspected = results.filter(d => d.검사 === '검사').length;
-  const shipped = results.filter(d => d.source === 'archive');
-  const shippedQty = shipped.reduce((s, d) => s + (d.수량 || 0), 0);
   const uniqueCodes = new Set(results.map(d => d.단품코드).filter(Boolean)).size;
+  const qtySum = results.reduce((s, d) => s + (d.수량 || 0), 0);
 
-  summary.innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검색결과 <strong style="color:var(--text);font-size:12px;">${results.length.toLocaleString()}</strong>건</span>
-    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">단품코드 <strong style="color:var(--text);font-size:12px;">${uniqueCodes.toLocaleString()}</strong>개</span>
-    <span style="background:#DCFCE7;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">검사완료 <strong style="color:#15803D;font-size:12px;">${inspected.toLocaleString()}</strong>건</span>
-    <span style="background:#EDE9FE;border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);">출고이력 <strong style="color:#6D5CE8;font-size:12px;">${shippedQty.toLocaleString()}</strong>개 · <strong style="color:#6D5CE8;">${shipped.length.toLocaleString()}</strong>건</span>
-    <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="상세필터 — 지금 고른 시트의 진행상태"
-      style="margin-left:auto;position:relative;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
-      <i class="fa-solid fa-sliders"></i>
-      <span id="psSrcDetailDot" style="display:none;position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:#6D5CE8;"></span>
-    </button>
-    <button onclick="openPsDatePicker()" title="날짜 필터" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;">
-      <i class="fa-solid fa-calendar-days"></i>
-    </button>
-    <button onclick="resetProductSearchFilters()" title="검색/필터 초기화" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;white-space:nowrap;">
-      <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
-    </button>
-    <button id="psSortBtn" onclick="togglePsSort()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);cursor:pointer;-webkit-appearance:none;white-space:nowrap;">
-      <i class="fa-solid fa-arrow-${_psSortAsc ? 'up' : 'down'}-wide-short"></i> ${_psSortAsc ? '오래된순' : '최신순'}
-    </button>
-    <button onclick="_openScanSmart()" title="바코드 재스캔" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;padding:5px 9px;border-radius:20px;border:1px solid var(--border);background:var(--icon-bg);color:#FF9100;cursor:pointer;-webkit-appearance:none;">
-      <i class="fa-solid fa-barcode"></i>
-    </button>
-  </div>`;
+  const sortBtnsHtml = _PS_SORT_DEFS.map(([k, label]) => {
+    const active = k === _psSortKey;
+    const arrow = active ? (_psSortAsc ? '↑' : '↓') : '';
+    const style = active
+      ? 'border:none;border-radius:16px;padding:4px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#6D5CE8;color:#fff;'
+      : 'border:1px solid var(--border);border-radius:16px;padding:4px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);';
+    return `<button onclick="pickPsSort('${k}')" style="${style}">${label} ${arrow}</button>`;
+  }).join('');
 
+  summary.innerHTML = `
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+    <span style="background:var(--icon-bg);border-radius:20px;padding:4px 11px;font-size:11px;font-weight:700;color:var(--text-sub);white-space:nowrap;flex-shrink:0;">${results.length.toLocaleString()}건 · ${uniqueCodes.toLocaleString()}품목 · ${qtySum.toLocaleString()}EA</span>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button onclick="_psSelectPlaceholder()" title="선택 — 여러 품목 한번에 고르기" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+      </button>
+      <button onclick="_psSelectPlaceholder()" title="선택 품목 일괄 수정" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+      </button>
+      <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="상세필터 — 지금 고른 시트의 진행상태"
+        style="position:relative;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <i class="fa-solid fa-sliders" style="font-size:12px;"></i>
+        <span id="psSrcDetailDot" style="display:none;position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:#6D5CE8;"></span>
+      </button>
+      <button onclick="openPsDatePicker()" title="날짜 필터" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <i class="fa-solid fa-calendar-days" style="font-size:12px;"></i>
+      </button>
+      <button onclick="resetProductSearchFilters()" title="검색/필터 초기화" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <i class="fa-solid fa-arrow-rotate-left" style="font-size:12px;"></i>
+      </button>
+      <button onclick="_openScanSmart()" title="바코드 재스캔" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:#FF9100;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+        <i class="fa-solid fa-barcode" style="font-size:12px;"></i>
+      </button>
+    </div>
+  </div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;padding-bottom:6px;">${sortBtnsHtml}</div>`;
+
+  const sortField = _PS_SORT_FIELD[_psSortKey] || '납기일';
   const sorted = [...results].sort((a, b) => {
-    const da = parseKDate(a.포장일) || parseKDate(a.검사일) || parseKDate(a.납기일);
-    const db = parseKDate(b.포장일) || parseKDate(b.검사일) || parseKDate(b.납기일);
+    if (_psSortKey === 'code' || _psSortKey === 'round') {
+      const av = (a[sortField] || '').toString();
+      const bv = (b[sortField] || '').toString();
+      if (!av && !bv) return 0;
+      if (!av) return 1;
+      if (!bv) return -1;
+      return _psSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
+    const da = parseKDate(a[sortField]);
+    const db = parseKDate(b[sortField]);
     if (!da && !db) return 0;
     if (!da) return 1;
     if (!db) return -1;
