@@ -7354,8 +7354,8 @@ function renderMobileKPIs() {
   setMTxt('mKpiPkd2', s2.packedToday);
   setMTxt('mKpiWt1', s1.waitInspect);
   setMTxt('mKpiWt2', s2.waitInspect);
-  setMTxt('mKpiPre1', cj1.filter(d => d.신규 && !d.신규확인됨).length.toLocaleString());
-  setMTxt('mKpiPre2', cj2.filter(d => d.신규 && !d.신규확인됨).length.toLocaleString());
+  setMTxt('mKpiPre1', cj1.filter(d => d.신규).length.toLocaleString());
+  setMTxt('mKpiPre2', cj2.filter(d => d.신규).length.toLocaleString());
   setMTxt('mKpiPrd1', s1.prodOngoing.toLocaleString());
   setMTxt('mKpiPrd2', s2.prodOngoing.toLocaleString());
   setMTxt('mKpiDone1', s1.prodDone.toLocaleString());
