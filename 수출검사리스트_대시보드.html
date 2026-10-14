@@ -5855,6 +5855,7 @@ function resetProductSearchFilters() {
   ['psName', 'psCode', 'psColor', 'psPacker', 'psFrom', 'psTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('psFactory').value = '';
   _psSourceFilter = 'active'; _psStatusFilters.clear();
+  _psSpecialCategory = null;
   _psExactDateFilter = null;
   _updatePsSourceButtons();
   updatePsDateBtnLabel();
