@@ -6156,7 +6156,7 @@ function renderProductSearchResults(results) {
       </button>
     </div>
   </div>
-  <div style="display:flex;gap:5px;flex-wrap:wrap;padding-bottom:6px;">${sortBtnsHtml}</div>`;
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding-bottom:6px;">${sortBtnsHtml}</div>`;
 
   const sortField = _PS_SORT_FIELD[_psSortKey] || '납기일';
   const sorted = [...results].sort((a, b) => {
