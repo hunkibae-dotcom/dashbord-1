@@ -5923,7 +5923,19 @@ function runProductSearch() {
       // 진행중(검사항목 리스트, source==='active') / 출고완료(검사완료 리스트, source==='archive')를
       // 시트 기준으로 먼저 나누고, 그 안에서 세부 검사상태(d.검사)로 한 번 더 좁힌다.
       if (_psSourceFilter && d.source !== _psSourceFilter) return false;
-      if (_psStatusFilters.size && !_psStatusFilters.has(d.검사 || '미검사')) return false;
+      // 홈 화면 KPI 카드 전용 분류 — applyFilters()/renderMobileList()와 완전히 같은 정의.
+      if (_psSpecialCategory) {
+        if (_psSpecialCategory === '검사대기') { if (d.source === 'archive' || !QC_WAIT_INSPECT_STATUSES.includes(d.검사)) return false; }
+        else if (_psSpecialCategory === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
+        else if (_psSpecialCategory === '생산완료') { if (d.source === 'archive' || d.검사 !== '포장대기') return false; }
+        else if (_psSpecialCategory === '금일포장') {
+          if (d.source === 'archive') return false;
+          if (d.검사 !== '미검사' && d.검사 !== '포장대기' && !isReinspectWaiting(d)) return false;
+          if (!d.포장일) return false;
+          const dd = ddayInfo(d.포장일);
+          if (dd === null || dd > 0) return false;
+        }
+      } else if (_psStatusFilters.size && !_psStatusFilters.has(d.검사 || '미검사')) return false;
       if (_psExactDateFilter) {
         // 달력에서 고른 날짜만 정확히 매칭 — 범위(from~to) 검색이 아니다. 어떤 종류의
         // 날짜를 기준으로 골랐는지(포장일/납기일/둘 다)도 그대로 따른다.
