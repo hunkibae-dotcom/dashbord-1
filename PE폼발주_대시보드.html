@@ -733,14 +733,16 @@ const PE_LOWSTOCK_BASELINE = (function () {
 function _peSpecNums(spec) {
   return (spec || '').toString().split(/[^0-9.]+/).map(s => parseFloat(s)).filter(n => !isNaN(n));
 }
-// nums가 want의 숫자들을 전부(중복 포함) 담고 있는지 — 코너형처럼 150이 두 번
-// 필요한 경우까지 정확히 맞춘다(부분집합/multiset 포함 검사).
+// nums 맨 앞 want.length개가 want와 순서까지 정확히 같은지 — 규격이 "가로*세로*두께"
+// 처럼 치수 뒤에 두께 숫자가 더 붙는 경우가 있어서(2026-10-14 이전엔 집합 포함
+// 검사라 두께 숫자가 우연히 다른 치수값과 같으면 엉뚱하게 매칭되는 문제가 있었다 —
+// 예: 두께 20T인 "2000×30" 재고가 두께를 무시하고 보다가 높이 20 기준과도 잘못
+// 겹쳐 잡힘). 치수는 항상 규격 맨 앞에 순서대로 적힌다는 전제로, 앞쪽 자리만
+// 정확히 비교하면 뒤에 어떤 두께 숫자가 더 붙어있어도 안전하다.
 function _peNumsContain(nums, want) {
-  const pool = nums.slice();
-  for (const w of want) {
-    const idx = pool.findIndex(n => n === w);
-    if (idx === -1) return false;
-    pool.splice(idx, 1);
+  if (nums.length < want.length) return false;
+  for (let i = 0; i < want.length; i++) {
+    if (nums[i] !== want[i]) return false;
   }
   return true;
 }
