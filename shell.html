@@ -2471,10 +2471,117 @@
         if (_sfSelected.has(key)) _sfSelected.delete(key); else _sfSelected.add(key);
         runSearch();
     }
-    // "수정"(선택 품목 일괄 수정)은 웹의 일괄편집과 똑같이 동작하도록 만들 예정이라
-    // 아직은 자리만 잡아둔 안내(다른 "제작중" 기능들과 같은 방식).
-    function _sfSelectPlaceholder() {
-        alert('일괄 수정 기능은 준비 중입니다. 조금만 기다려주세요!');
+    // 전체선택/해제 — 지금 화면에 보이는(필터링된) 결과 기준으로 토글한다(2026-10-14).
+    function _sfToggleSelectAll() {
+        const results = window._srLastDeduped || [];
+        const allSelected = results.length > 0 && results.every(d => _sfSelected.has(_sfItemKey(d)));
+        if (allSelected) results.forEach(d => _sfSelected.delete(_sfItemKey(d)));
+        else results.forEach(d => _sfSelected.add(_sfItemKey(d)));
+        runSearch();
+    }
+
+    // "수정"(선택 품목 일괄 수정) — 모바일 단일 품목 수정창(itemEditSheet)이 이미 쓰는
+    // 것과 같은 진행상태/포장완료일/적재번호 GAS 액션(updateStatus/updateRegDate/
+    // updatePallet)을 여러 품목에 그대로 반복 적용한다(2026-10-14).
+    let _sfBulkStatus = null;
+    function _sfOpenBulkEdit() {
+        if (!_sfSelected.size) { alert('먼저 품목을 하나 이상 선택해주세요.'); return; }
+        _sfBulkStatus = null;
+        document.getElementById('sfBulkCount').textContent = _sfSelected.size + '개 품목 선택됨';
+        document.getElementById('sfBulkRegDate').value = '';
+        document.getElementById('sfBulkPallet').value = '';
+        document.getElementById('sfBulkResult').textContent = '';
+        _sfRenderBulkStatusBtns();
+        document.getElementById('sfBulkModal').style.display = 'flex';
+    }
+    function _sfCloseBulkEdit() {
+        document.getElementById('sfBulkModal').style.display = 'none';
+    }
+    function _sfRenderBulkStatusBtns() {
+        const wrap = document.getElementById('sfBulkStatusBtns');
+        if (!wrap) return;
+        wrap.innerHTML = _IE_STATUS_OPTS.map(opt => {
+            const on = _sfBulkStatus === opt.v;
+            return `<button type="button" onclick="_sfSetBulkStatus('${opt.v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${on ? opt.c : 'var(--border)'};background:${on ? opt.c + '22' : 'var(--input-bg)'};color:${on ? opt.c : 'var(--text-sub)'};font-size:11px;font-weight:${on ? 800 : 600};cursor:pointer;">${opt.v}</button>`;
+        }).join('');
+        const partialWrap = document.getElementById('sfBulkPartialWrap');
+        const partialRows = document.getElementById('sfBulkPartialRows');
+        if (_sfBulkStatus === '일부입고') {
+            partialWrap.style.display = 'block';
+            const items = (window._srLastDeduped || []).filter(d => _sfSelected.has(_sfItemKey(d)));
+            partialRows.innerHTML = items.map(d => `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                    <div style="flex:1;font-size:11.5px;color:var(--text-sub);font-family:monospace;">${d.code || '-'} / ${d.round || ''} <span style="color:var(--label);">(전체 ${(d.qty||0).toLocaleString()})</span></div>
+                    <input type="number" class="sf-bulk-partial-qty" data-key="${_sfItemKey(d).replace(/"/g,'&quot;')}" placeholder="입고수량"
+                        style="width:90px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:6px 9px;font-size:12.5px;color:var(--text);outline:none;box-sizing:border-box;">
+                </div>`).join('');
+        } else {
+            partialWrap.style.display = 'none';
+        }
+    }
+    function _sfSetBulkStatus(v) {
+        _sfBulkStatus = (_sfBulkStatus === v) ? null : v;
+        _sfRenderBulkStatusBtns();
+    }
+    async function _sfApplyBulkEdit() {
+        const status = _sfBulkStatus;
+        const regDate = (document.getElementById('sfBulkRegDate').value || '').trim();
+        const palletRaw = (document.getElementById('sfBulkPallet').value || '').trim();
+        const resultEl = document.getElementById('sfBulkResult');
+        if (!status && !regDate && !palletRaw) {
+            resultEl.textContent = '진행상태·포장완료일·적재번호 중 하나는 선택해주세요.';
+            return;
+        }
+        const items = (window._srLastDeduped || []).filter(d => _sfSelected.has(_sfItemKey(d)));
+        if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+
+        let partialQtyByKey = null;
+        if (status === '일부입고') {
+            partialQtyByKey = {};
+            const inputs = Array.from(document.querySelectorAll('.sf-bulk-partial-qty'));
+            for (const inp of inputs) {
+                const v = (inp.value || '').trim();
+                if (!v || isNaN(v) || Number(v) <= 0) {
+                    resultEl.textContent = '일부입고로 바꾸는 모든 품목에 수량(EA)을 입력해주세요.';
+                    return;
+                }
+                partialQtyByKey[inp.dataset.key] = v;
+            }
+        }
+
+        const btn = document.getElementById('sfBulkApplyBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...';
+        const sendPallet = palletRaw ? (/^\d+$/.test(palletRaw) ? '적재 ' + palletRaw : palletRaw) : '';
+        const tasks = [];
+        items.forEach(item => {
+            if (status) {
+                const params = { action: 'updateStatus', code: item.code, round: item.round, color: item.color, status: status };
+                if (status === '일부입고') params.note = partialQtyByKey[_sfItemKey(item)] + ' EA만 입고됨';
+                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                item.status = status;
+            }
+            if (regDate) {
+                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updateRegDate', code: item.code, round: item.round, color: item.color, regDate: regDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                item.regDate = regDate;
+            }
+            if (sendPallet) {
+                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updatePallet', code: item.code, round: item.round, color: item.color, pallet: sendPallet }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                item.pallet = sendPallet;
+            }
+        });
+        try {
+            await Promise.all(tasks);
+            resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다.`;
+        } catch (e) {
+            resultEl.textContent = '일부 반영 중 오류가 발생했습니다 — 새로고침 후 확인해주세요.';
+        }
+        btn.disabled = false;
+        btn.innerHTML = '적용';
+        _sfSelectMode = false;
+        _sfSelected.clear();
+        runSearch();
+        setTimeout(() => { _sfCloseBulkEdit(); }, 900);
     }
     // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
     // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
