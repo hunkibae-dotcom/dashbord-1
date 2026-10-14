@@ -5049,5 +5049,37 @@
     </div>
   </div>
 </div>
+
+<!-- ===== 제품검색: 선택 품목 일괄 수정 ===== -->
+<div id="sfBulkModal" onclick="if(event.target===this)_sfCloseBulkEdit()" style="display:none;position:fixed;inset:0;z-index:70;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);">
+  <div style="background:var(--panel);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:520px;max-height:86vh;overflow-y:auto;box-sizing:border-box;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <span style="font-size:15px;font-weight:800;color:var(--text);">선택 품목 일괄 수정</span>
+      <button onclick="_sfCloseBulkEdit()" style="width:30px;height:30px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-xmark" style="font-size:13px;"></i>
+      </button>
+    </div>
+    <div id="sfBulkCount" style="font-size:12px;color:var(--text-sub);margin:6px 0 16px;"></div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">진행상태 (선택 안 하면 변경 안 함)</div>
+      <div id="sfBulkStatusBtns" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+      <div id="sfBulkPartialWrap" style="display:none;margin-top:8px;">
+        <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px;">일부입고로 바꿀 품목마다 실제 입고 수량(EA)을 입력하세요</div>
+        <div id="sfBulkPartialRows"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">포장완료일 (비워두면 변경 안 함)</div>
+      <input id="sfBulkRegDate" type="date" style="width:100%;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;outline:none;box-sizing:border-box;">
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">적재번호 (비워두면 변경 안 함)</div>
+      <input id="sfBulkPallet" type="text" placeholder="예: 1, 2, A-1 ..." style="width:100%;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;outline:none;box-sizing:border-box;">
+    </div>
+    <div id="sfBulkResult" style="font-size:12px;font-weight:600;color:var(--text-sub);text-align:center;min-height:16px;margin-bottom:10px;"></div>
+    <button id="sfBulkApplyBtn" onclick="_sfApplyBulkEdit()" style="width:100%;background:var(--accent);color:#0B0F19;font-size:14px;font-weight:800;border:none;border-radius:14px;padding:13px;cursor:pointer;">적용</button>
+  </div>
+</div>
 </body>
 </html>
