@@ -2063,14 +2063,13 @@ async function fetchArchiveData(f) {
 function parseRows(rows, factory) {
   const result = [];
   if (!rows) return result;
-  // "신규↓" 구분선 아래로 내려왔는지 — 그 아래 품목은 전부 신규품목 카드 대상이다
-  // (실제 검사리스트 정렬 매크로가 보는 것과 같은 기준, 2026-10-13).
-  let pastNewDivider = false;
   for (const row of rows) {
     if (!row) continue;
     const g = (i) => (row[i] !== null && row[i] !== undefined ? String(row[i]) : '');
     const 건명 = g(0).trim();
-    if (건명.includes('신규')) { pastNewDivider = true; continue; }
+    // "신규↓" 구분선 행 자체는 실제 데이터가 아니니 건너뛴다 — 신규 여부는 더 이상
+    // 이 구분선 아래 위치로 판정하지 않는다(비고의 "신규" 문구로 판정, 아래 참고).
+    if (건명.includes('신규')) continue;
     if (!건명 || 건명.includes('검사 항목') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2') continue;
 
     const 단품코드val = g(1).trim();
