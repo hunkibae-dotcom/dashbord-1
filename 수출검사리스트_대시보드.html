@@ -7820,7 +7820,7 @@ function _qcNewUpdateSelUi() {
 }
 
 async function qcNewConfirmSelected() {
-  const selected = allData.filter(d => d.신규 && !d.신규확인됨 && _qcNewSelected.has(_qcNewKey(d)));
+  const selected = allData.filter(d => d.신규 && _qcNewSelected.has(_qcNewKey(d)));
   if (!selected.length) return;
   const statusEl = document.getElementById('qcNewStatus');
   const btn = document.getElementById('qcNewConfirmBtn');
@@ -7829,8 +7829,6 @@ async function qcNewConfirmSelected() {
   statusEl.textContent = '확인 처리 중...';
   const byFac = { cj1: [], cj2: [] };
   selected.forEach(d => { if (byFac[d.공장]) byFac[d.공장].push(d); });
-  const today = new Date();
-  const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
   try {
     for (const fac of ['cj1', 'cj2']) {
       if (!byFac[fac].length) continue;
@@ -7838,11 +7836,13 @@ async function qcNewConfirmSelected() {
       const items = byFac[fac].map(d => ({ round: d.건명, code: d.단품코드, color: d.색상, qty: String(d.수량 || '') }));
       const res = await fetch(url, {
         method: 'POST',
-        body: JSON.stringify({ action: 'confirmNewItems', items: items, date: dateStr }),
+        body: JSON.stringify({ action: 'confirmNewItems', items: items }),
         signal: AbortSignal.timeout(60000)
       }).then(r => r.json());
       if (res.status !== 'success') throw new Error(res.message || (fac + ' 확인 처리 실패'));
-      byFac[fac].forEach(d => { d.신규확인됨 = true; });
+      // GAS가 비고에서 "신규"/"신규 차수 추가됨" 문구를 지웠으니, 다음 새로고침을
+      // 기다리지 않고 화면에서도 바로 신규 표시를 뗀다.
+      byFac[fac].forEach(d => { d.신규 = false; });
     }
     _qcNewSelected = new Set();
     statusEl.style.color = '#16a34a';
