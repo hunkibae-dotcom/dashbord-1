@@ -7211,7 +7211,7 @@ function setSpecSort(key) {
 // 예전엔 CSV였는데, 포장강화처럼 수정 가능한 .xlsx로 바꾸고 건별 CBM(m³)까지
 // 같이 뽑아 더 상세하게 보이도록 했다(요청, 2026-10-13).
 function exportSpecHistoryXlsx() {
-  const code = document.getElementById('specCodeInput').value.trim();
+  const code = _qcSpecActiveCode || document.getElementById('specCodeInput').value.trim();
   let ov = {};
   try { ov = JSON.parse(localStorage.getItem('specOverride_' + code) || '{}'); } catch (e) {}
   _qcRenderGenericXls({
