@@ -6083,38 +6083,42 @@ function renderProductSearchResults(results) {
     </tr>`;
   };
 
+  // 일렬 리스트 레이아웃(앱 제품검색 시안 리디자인 반영, 2026-10-14) — 칼럼처럼
+  // 상태·공장/코드·건명/색상·수량·CBM/납기·포장 날짜가 한 줄에 정리되어, 위 정렬
+  // 버튼으로 바로 오름↔내림 정렬할 수 있다.
   const renderCard = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
     const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
     const facColor = d.공장 === 'cj1' ? '#3B82F6' : '#8B5CF6';
-    const facBg    = d.공장 === 'cj1' ? '#EFF6FF' : '#F5F3FF';
-    const cbm = d.CBM ? d.CBM.toFixed(3) + 'm³' : '';
-    const dateItems = [
-      d.납기일 ? { label: '납기', value: d.납기일 } : null,
-      d.포장일 ? { label: '포장', value: d.포장일 } : null,
-      d.검사일 ? { label: '검사', value: d.검사일 } : null
-    ].filter(Boolean);
+    const cbm = d.CBM ? d.CBM.toFixed(3) : '';
     const mik = 'mps_' + idx;
     window._mItemMap[mik] = d;
-    return `<div onclick="openMItemDetail('${mik}')" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:13px 14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
-        <span class="pill ${statusCls}" style="font-size:11px;">${statusLabel}</span>
-        <span style="font-size:11px;font-weight:700;color:${facColor};background:${facBg};padding:2px 9px;border-radius:20px;white-space:nowrap;">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span>
+    return `<div onclick="openMItemDetail('${mik}')" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--divider);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+      <div style="width:50px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span class="pill ${statusCls}" style="font-size:9.5px;white-space:nowrap;">${statusLabel}</span>
+        <span style="font-size:9.5px;font-weight:700;color:${facColor};">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span>
       </div>
-      <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;min-width:0;">
-        <span style="font-size:13px;font-weight:800;color:#2563EB;white-space:nowrap;flex-shrink:0;">${d.단품코드 || '—'}</span>
-        <span style="font-size:11px;color:var(--label);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기">${d.단품명칭 || ''}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:baseline;gap:6px;min-width:0;">
+          <span style="font-size:13px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;letter-spacing:.1px;flex-shrink:0;">${d.단품코드 || '—'}</span>
+          <span style="font-size:11.5px;font-weight:600;color:var(--text-sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || ''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+          ${d.색상 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--input-bg);border-radius:5px;padding:1px 6px;">${d.색상}</span>` : ''}
+          <span style="font-size:10.5px;color:var(--text-sub);font-family:ui-monospace,monospace;">${d.수량 || 0}EA</span>
+          ${cbm ? `<span style="font-size:10.5px;color:#2563EB;font-family:ui-monospace,monospace;">${cbm}m³</span>` : ''}
+        </div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        ${d.색상 ? `<span style="font-size:11px;font-weight:700;background:var(--panel);color:var(--text-sub);padding:3px 9px;border-radius:20px;border:1px solid var(--border);">${d.색상}</span>` : ''}
-        <span style="font-size:11px;font-weight:700;background:var(--panel);color:var(--text-sub);padding:3px 9px;border-radius:20px;border:1px solid var(--border);">${d.수량 || 0}개</span>
-        ${cbm ? `<span style="font-size:11px;font-weight:700;background:#EFF6FF;color:#2563EB;padding:3px 9px;border-radius:20px;">${cbm}</span>` : ''}
-        ${d.BOM ? `<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;${d.BOM==='Y'?'background:#DCFCE7;color:#15803D':'background:#FEE2E2;color:#B91C1C'}">BOM ${d.BOM}</span>` : ''}
+      <div style="flex-shrink:0;">
+        <div style="display:flex;align-items:baseline;gap:5px;white-space:nowrap;">
+          <span style="display:inline-block;width:20px;text-align:left;font-size:8.5px;color:var(--label);font-weight:700;">납기</span>
+          <span style="font-size:10.5px;color:var(--text);font-weight:700;font-family:ui-monospace,monospace;">${d.납기일 || '-'}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:5px;margin-top:3px;white-space:nowrap;">
+          <span style="display:inline-block;width:20px;text-align:left;font-size:8.5px;color:var(--label);font-weight:700;">포장</span>
+          <span style="font-size:9.5px;color:var(--label);font-family:ui-monospace,monospace;">${d.포장일 || '-'}</span>
+        </div>
       </div>
-      ${dateItems.length ? `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px solid var(--border);">
-        ${dateItems.map(it => `<span style="font-size:10.5px;color:var(--label);"><span>${it.label}</span> <b style="font-family:monospace;font-weight:700;color:var(--text-sub);">${it.value}</b></span>`).join('')}
-      </div>` : ''}
     </div>`;
   };
 
