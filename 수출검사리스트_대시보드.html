@@ -5963,10 +5963,21 @@ function runProductSearch() {
   }
 }
 
-let _psSortAsc = false; // 검색결과 정렬 — false=최신순(기본), true=오래된순
-function togglePsSort() {
-  _psSortAsc = !_psSortAsc;
+// 검색결과 정렬 — 단품코드/건명/납기일/포장일/검사일 중 하나를 기준으로, 버튼을
+// 다시 누르면 오름↔내림 토글 (앱 제품검색 시안 리디자인 반영, 2026-10-14).
+let _psSortKey = 'due';
+let _psSortAsc = true;
+const _PS_SORT_DEFS = [['code', '단품코드'], ['round', '건명'], ['due', '납기일'], ['pack', '포장일'], ['insp', '검사일']];
+const _PS_SORT_FIELD = { code: '단품코드', round: '건명', due: '납기일', pack: '포장일', insp: '검사일' };
+function pickPsSort(key) {
+  if (_psSortKey === key) _psSortAsc = !_psSortAsc;
+  else { _psSortKey = key; _psSortAsc = true; }
   renderProductSearchResults(lastSearchResults);
+}
+// 선택/수정 — 웹의 "선택"·"수정" 일괄편집과 똑같이 동작하도록 만들 예정이라
+// 아직은 자리만 잡아둔 안내(다른 "제작중" 기능들과 같은 방식).
+function _psSelectPlaceholder() {
+  alert('선택 기능은 준비 중입니다. 조금만 기다려주세요!');
 }
 
 function renderProductSearchResults(results) {
