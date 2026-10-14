@@ -5725,6 +5725,10 @@ let _psSourceFilter = 'active'; // 'active'(검사 진행현황) | 'archive'(검
 // 초기화하면 다시 null로 돌아가 원래의 범위 검색으로 돌아온다.
 let _psExactDateFilter = null; // { dates: Set<'YYYY-MM-DD'>, field: 'all'|'due'|'pack' } | null
 let _psStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 검사상태들 — 비어있으면 전체
+// 앱 홈 화면의 KPI 카드(금일포장/검사대기/생산중/생산완료)는 '검사' 칼럼 값 하나로
+// 딱 떨어지지 않는 화면 전용 분류라(applyFilters()/renderMobileList()와 같은 정의),
+// _psStatusFilters(정확한 값 매칭)로는 표현이 안 돼 별도 플래그로 둔다.
+let _psSpecialCategory = null; // null | '금일포장' | '검사대기' | '생산중' | '생산완료'
 let _psPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
 let _psPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
 const _PS_SOURCE_META = {
