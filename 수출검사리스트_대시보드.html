@@ -7067,12 +7067,23 @@ function closeSpecModal() {
   hideSpecCodeSuggest();
 }
 
+// 코드가 비었거나 결과가 없어도 화면 구성(2단 정보칸·치수 그리드·CBM·이력 표)은
+// 그대로 유지하고, 값만 "—"/빈 상태로 되돌린다 — 입력 상태에 따라 레이아웃 전체가
+// 통째로 사라졌다 나타났다 하지 않도록(요청, 2026-10-14).
+function _qcResetSpecSkeleton(histMsg) {
+  specHistoryRows = [];
+  document.getElementById('specStandardName').value = '';
+  _qcApplyCodeTypeToUI('색상비');
+  ['specW', 'specD', 'specH', 'specWeight', 'specCbm'].forEach(id => { document.getElementById(id).textContent = '—'; });
+  ['specWRange', 'specDRange', 'specHRange', 'specWeightRange', 'specCbmRange'].forEach(id => { document.getElementById(id).innerHTML = ''; });
+  document.getElementById('specHistCount').textContent = '';
+  document.getElementById('specHistBody').innerHTML = `<tr><td colspan="9" style="padding:28px 0;text-align:center;color:#94a3b8;font-size:12.5px;">${histMsg}</td></tr>`;
+}
+
 function runSpecLookup() {
   const code = document.getElementById('specCodeInput').value.trim();
-  const empty = document.getElementById('specEmpty');
-  const content = document.getElementById('specContent');
 
-  if (!code) { empty.classList.remove('hidden'); content.classList.add('hidden'); specHistoryRows = []; hideSpecCodeSuggest(); return; }
+  if (!code) { _qcResetSpecSkeleton('단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.'); hideSpecCodeSuggest(); return; }
 
   const codeNorm = code.toUpperCase();
   const pool = [...allData, ...archiveRows];
@@ -7096,25 +7107,17 @@ function runSpecLookup() {
         `<div class="px-3 py-2 text-[14px] font-mono text-slate-700 hover:bg-[#6D5CE8]/10 cursor-pointer" onmousedown="pickSpecCodeSuggest('${c.replace(/'/g, "\\'")}')">${c}</div>`
       ).join('');
       box.classList.remove('hidden');
-      empty.classList.remove('hidden');
-      empty.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[25px] mb-2 block text-slate-300"></i>코드를 끝까지 입력하거나 목록에서 골라주세요.`;
-      content.classList.add('hidden');
-      specHistoryRows = [];
+      _qcResetSpecSkeleton('코드를 끝까지 입력하거나 목록에서 골라주세요.');
       return;
     }
     hideSpecCodeSuggest();
-    empty.classList.remove('hidden');
-    empty.innerHTML = `<i class="fa-solid fa-circle-exclamation text-[25px] mb-2 block text-slate-300"></i>"${code}" 코드로 등록된 이력이 없어요.`;
-    content.classList.add('hidden');
-    specHistoryRows = [];
+    _qcResetSpecSkeleton(`"${code}" 코드로 등록된 이력이 없어요.`);
     return;
   }
 
   hideSpecCodeSuggest();
   const matches = exactMatches;
   specHistoryRows = matches;
-  empty.classList.add('hidden');
-  content.classList.remove('hidden');
 
   const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0];
   const override = loadSpecOverride(code);
