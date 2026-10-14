@@ -5802,6 +5802,7 @@ function applyQcSheetPicker() {
 function applyPsSourcePicker() {
   _psSourceFilter = _psPickerSource;
   _psStatusFilters = new Set(_psPickerStatuses);
+  _psSpecialCategory = null;
   closePsSourcePicker();
   _updatePsSourceButtons();
   runProductSearch();
@@ -5838,6 +5839,7 @@ function _updatePsSourceButtons() {
 // source=active로 두고 세부상태를 "검사"만으로 미리 좁혀둔 것과 완전히 같다(예전엔 이걸
 // 보려면 "검사 진행현황" 고르고 세부상태 팝업을 또 열어 "검사완료"를 체크해야 했다).
 function setPsSourceFromDropdown(value) {
+  _psSpecialCategory = null;
   if (value === 'active_done') {
     _psSourceFilter = 'active';
     _psStatusFilters = new Set(['검사']);
