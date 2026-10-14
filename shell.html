@@ -3386,7 +3386,8 @@
     // ── 상태 표시 ─────────────────────────────────────────
     function setStatus(s) {
         const bar = document.getElementById('statusBar');
-        const btn = `<button onclick="loadData(true)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i id="syncIcon" class="fa-solid fa-arrows-rotate"></i></button>`;
+        const defectBtn = `<button onclick="alert('준비 중인 기능입니다. 조금만 기다려주세요!')" title="포장 불량·조치 (제작중)" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i class="fa-solid fa-triangle-exclamation" style="color:#FF9100;"></i></button>`;
+        const btn = defectBtn + `<button onclick="loadData(true)" style="background:none;border:none;cursor:pointer;color:var(--text-sub);font-size:13px;padding:4px;"><i id="syncIcon" class="fa-solid fa-arrows-rotate"></i></button>`;
         if (s==='loading') {
             bar.innerHTML = `<i class="fa-solid fa-circle-notch spin" style="color:#00B0FF;font-size:10px;"></i><span style="color:var(--text-sub);font-size:11px;font-family:monospace;">불러오는 중...</span>${btn}`;
         } else if (s==='ok') {
