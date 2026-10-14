@@ -6113,7 +6113,14 @@ function renderProductSearchResults(results) {
     const cbm = d.CBM ? d.CBM.toFixed(3) : '';
     const mik = 'mps_' + idx;
     window._mItemMap[mik] = d;
-    return `<div onclick="openMItemDetail('${mik}')" style="display:flex;align-items:center;gap:10px;padding:10px 8px;border-bottom:1px solid var(--divider);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+    // 흰색/회색 교차 줄무늬(시안 반영, 2026-10-14) — 선택 모드에서 체크된 줄은
+    // 교차색 대신 보라색 톤으로 덮어써서 더 눈에 띄게 한다.
+    const key = _psItemKey(d);
+    const selected = _psSelectMode && _psSelected.has(key);
+    const rowBg = selected ? 'rgba(109,92,232,.14)' : (idx % 2 === 1 ? 'var(--input-bg)' : 'transparent');
+    const clickHandler = _psSelectMode ? `_psToggleItem('${_jsAttr(key)}')` : `openMItemDetail('${mik}')`;
+    return `<div onclick="${clickHandler}" style="display:flex;align-items:center;gap:8px;padding:10px 8px;border-bottom:1px solid var(--divider);cursor:pointer;-webkit-tap-highlight-color:transparent;background:${rowBg};">
+      ${_psSelectMode ? `<input type="checkbox" ${selected ? 'checked' : ''} style="width:16px;height:16px;flex-shrink:0;pointer-events:none;">` : ''}
       <div style="width:50px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;">
         <span class="pill ${statusCls}" style="font-size:9.5px;white-space:nowrap;">${statusLabel}</span>
         <span style="font-size:9.5px;font-weight:700;color:${facColor};">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span>
