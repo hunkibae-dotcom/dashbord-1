@@ -6123,7 +6123,6 @@ function renderProductSearchResults(results) {
     return `<button onclick="pickPsSort('${k}')" style="${style}">${label} ${arrow}</button>`;
   }).join('');
 
-  const psSelCount = _psSelectMode ? results.filter(d => _psSelected.has(_psItemKey(d))).length : 0;
   const psSelectBtnStyle = _psSelectMode
     ? 'width:28px;height:28px;border-radius:8px;border:none;background:#6D5CE8;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;'
     : 'width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;';
