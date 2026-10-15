@@ -6943,62 +6943,24 @@ function loadSpecOverride(code) {
   }
   return ov;
 }
-function onSpecCodeTypeChange(val) {
-  // 레거시 값 선택지(data-legacy)를 벗어나 사용자가 정식 6개 중 하나를 직접 골랐으면
-  // 그 임시 옵션은 더 이상 필요 없으니 지운다.
-  const sel = document.getElementById('specCodeTypeSelect');
-  if (QC_CODE_TYPES.includes(val)) {
-    Array.from(sel.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
+// 카드가 코드마다 동시에 여러 장 떠 있을 수 있어(요청, 2026-10-15: 포장강화처럼 일치하는
+// 코드를 전부 바로 보여주기) 더 이상 하나의 "확정된" 코드만 전역으로 기억해두고 쓸 수 없다
+// — 수정한 입력칸이 속한 카드(data-code)를 직접 찾아 그 코드로 저장한다.
+function onSpecCodeTypeChange(selectEl) {
+  const card = selectEl.closest('[data-spec-card]');
+  if (!card) return;
+  if (QC_CODE_TYPES.includes(selectEl.value)) {
+    Array.from(selectEl.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
   }
-  onSpecFieldEdit();
+  onSpecFieldEdit(card);
 }
-// 입력칸에 코드를 끝까지 안 쳐도(일부만 입력해도) 바로 결과가 나오게 바뀌면서
-// (요청, 2026-10-15) 입력값 그대로를 override 키로 쓰면 안 된다 — 지금 실제로 화면에
-// 보여주고 있는 "확정된" 코드를 따로 기억해두고 그 키로 저장/조회한다.
-let _qcSpecActiveCode = '';
-function onSpecFieldEdit() {
-  if (!_qcSpecActiveCode) return;
-  const codeType = document.getElementById('specCodeTypeSelect').value;
-  localStorage.setItem('specOverride_' + _qcSpecActiveCode, JSON.stringify({
-    standardName: document.getElementById('specStandardName').value,
-    codeType,
-  }));
-}
-// 드롭다운 6개(QC_CODE_TYPES)에 없는 값(과거 자동판별 '기타' 이전 값 등)이 저장/판별되어
-// 있으면, 조용히 첫 항목으로 바뀌어 저장될 위험이 있어 그 값 그대로의 임시 옵션을 하나
-// 더 넣어 선택해둔다 — 사용자가 직접 다시 고르기 전까진 원래 값을 잃지 않는다.
-function _qcApplyCodeTypeToUI(codeType) {
-  const sel = document.getElementById('specCodeTypeSelect');
-  Array.from(sel.querySelectorAll('option[data-legacy]')).forEach(o => o.remove());
-  if (!QC_CODE_TYPES.includes(codeType)) {
-    const opt = document.createElement('option');
-    opt.value = codeType; opt.textContent = codeType + ' (이전 값)'; opt.dataset.legacy = '1';
-    sel.appendChild(opt);
-  }
-  sel.value = codeType;
-}
-
-function pickSpecCodeSuggest(code) {
-  document.getElementById('specCodeInput').value = code;
-  runSpecLookup();
-}
-function hideSpecCodeSuggest() {
-  const box = document.getElementById('specCodeSuggest');
-  if (box) { box.classList.add('hidden'); box.innerHTML = ''; }
-}
-// 입력과 동시에 일치하는 다른 코드들을 칩으로 보여준다(포장강화 제품검색처럼 바로
-// 결과가 나오게, 요청 2026-10-15) — 예전엔 안내상자 하나를 띄워놓고 그 안에서 반드시
-// 하나를 "골라야만" 상세가 열렸는데, 이제 가장 비슷한 코드의 상세는 입력 즉시 바로
-// 보여주고, 다른 일치 코드는 탭하면 바꿔볼 수 있는 칩으로만 곁들인다.
-function _qcRenderSpecCodeMatches(codes, activeCode) {
-  const box = document.getElementById('specCodeSuggest');
-  if (!box) return;
-  const others = codes.filter(c => c.toUpperCase() !== (activeCode || '').toUpperCase());
-  if (!others.length) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.innerHTML = `<span class="text-[10.5px] text-slate-400 w-full">비슷한 코드 ${others.length}개</span>` + others.slice(0, 12).map(c =>
-    `<span onclick="pickSpecCodeSuggest('${c.replace(/'/g, "\\'")}')" class="px-2.5 py-1 text-[12px] font-mono text-slate-600 bg-slate-100 hover:bg-[#6D5CE8]/10 hover:text-[#6D5CE8] rounded-md cursor-pointer">${c}</span>`
-  ).join('');
-  box.classList.remove('hidden');
+function onSpecFieldEdit(card) {
+  if (!card) return;
+  const code = card.dataset.code;
+  if (!code) return;
+  const codeType = card.querySelector('[data-spec-codetype]').value;
+  const standardName = card.querySelector('[data-spec-standardname]').value;
+  localStorage.setItem('specOverride_' + code, JSON.stringify({ standardName, codeType }));
 }
 
 function openSpecModal(code) {
@@ -7017,34 +6979,132 @@ function closeSpecModal() {
   const panel = document.getElementById('specModal');
   panel.classList.add('translate-x-full');
   panel.classList.remove('translate-x-0');
-  hideSpecCodeSuggest();
 }
 
-// 코드가 비었거나 결과가 없어도 화면 구성(2단 정보칸·치수 그리드·CBM·이력 표)은
-// 그대로 유지하고, 값만 "—"/빈 상태로 되돌린다 — 입력 상태에 따라 레이아웃 전체가
-// 통째로 사라졌다 나타났다 하지 않도록(요청, 2026-10-14).
-function _qcResetSpecSkeleton(histMsg) {
-  specHistoryRows = [];
-  document.getElementById('specStandardName').value = '';
-  _qcApplyCodeTypeToUI('색상비');
-  ['specW', 'specD', 'specH', 'specWeight', 'specCbm'].forEach(id => { document.getElementById(id).textContent = '—'; });
-  ['specWRange', 'specDRange', 'specHRange', 'specWeightRange', 'specCbmRange'].forEach(id => { document.getElementById(id).innerHTML = ''; });
-  document.getElementById('specHistCount').textContent = '';
-  document.getElementById('specHistBody').innerHTML = `<tr><td colspan="9" style="padding:28px 0;text-align:center;color:#94a3b8;font-size:12.5px;">${histMsg}</td></tr>`;
+function _qcCbmOf(d) {
+  if (typeof d.CBM === 'number' && d.CBM > 0) return d.CBM.toFixed(4);
+  const w = parseFloat(d.가로), dd = parseFloat(d.세로), h = parseFloat(d.높이);
+  if (!w || !dd || !h) return '—';
+  return ((w * dd * h) / 1e9).toFixed(4);
+}
+
+// W/D/H/중량/CBM 각각 min~max 범위 막대로 — 값이 하나뿐이거나 전부 같으면 "균일"만 표시.
+function _qcSpecStat(matches, field) {
+  const vals = matches.map(d => parseFloat(d[field])).filter(v => !isNaN(v) && v > 0);
+  if (!vals.length) return { count: 0 };
+  return { count: vals.length, min: Math.min(...vals), max: Math.max(...vals), avg: vals.reduce((a,b)=>a+b,0)/vals.length };
+}
+function _qcSpecRenderRange(stat, color, digits) {
+  if (!stat.count) return '<span class="text-slate-300 text-[10px]">데이터 없음</span>';
+  const fmt = n => digits ? n.toFixed(digits) : (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1));
+  if (stat.count === 1 || stat.min === stat.max) return '<span style="color:' + color + ';opacity:.65;font-size:10px;">균일</span>';
+  return '<div class="flex items-center gap-1.5 justify-center">' +
+    '<span class="text-[10px] text-slate-400">' + fmt(stat.min) + '</span>' +
+    '<div class="relative h-1.5 w-10 rounded-full" style="background:' + color + '22;">' +
+    '<div class="absolute inset-y-0 left-0 rounded-full" style="width:50%;background:' + color + ';"></div></div>' +
+    '<span class="text-[10px] text-slate-400">' + fmt(stat.max) + '</span></div>';
+}
+
+// 카드 한 장(코드+단품코드 종류/표준품명+치수 그리드+CBM+이력)을 그린다 — 일치하는 코드마다
+// 이 카드를 하나씩 만들어 쌓는다(포장강화 상세스펙처럼 "골라야만" 보이던 걸 없애고 전부
+// 바로 나열, 요청 2026-10-15). CBM은 가로/세로/높이/무게 그리드와 분리된 별도 박스로
+// 둔다(요청, 2026-10-15 — 시안대로 CBM만 따로 강조).
+function _qcSpecCardHtml(code, matches, hintText) {
+  const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0] || {};
+  const override = code ? loadSpecOverride(code) : null;
+  const standardName = override?.standardName ?? withDims.단품명칭 ?? '';
+  const codeType = override?.codeType ?? deriveCodeType(withDims.단품명칭);
+  const codeAttr = (code || '').replace(/"/g, '&quot;');
+
+  const wS = _qcSpecStat(matches, '가로'), dS = _qcSpecStat(matches, '세로'), hS = _qcSpecStat(matches, '높이'), gS = _qcSpecStat(matches, '중량');
+  const cbmVals = matches.map(d => d.CBM).filter(v => typeof v === 'number' && v > 0);
+  const cbmS = cbmVals.length ? { count: cbmVals.length, min: Math.min(...cbmVals), max: Math.max(...cbmVals), avg: cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length } : { count: 0 };
+
+  const codeTypeOptions = QC_CODE_TYPES.map(t => `<option value="${t}" ${t===codeType?'selected':''}>${t}</option>`).join('')
+    + (!QC_CODE_TYPES.includes(codeType) ? `<option value="${codeType}" selected data-legacy="1">${codeType} (이전 값)</option>` : '');
+
+  if (!window._mItemMap) window._mItemMap = {};
+  const historyRows = [...matches].sort((a, b) => (a.납기일 || '').localeCompare(b.납기일 || ''));
+  const historyHtml = historyRows.length ? historyRows.map((d, idx) => {
+    const mik = 'spec_' + codeAttr + '_' + idx;
+    window._mItemMap[mik] = d;
+    const pillCls = d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':d.검사==='취소'?'pill-cancel':'pill-undone';
+    return `<div onclick="openMItemDetail('${mik}')" class="flex items-center gap-2.5 py-2.5 px-2 bg-white border border-slate-100 rounded-xl mb-1.5 cursor-pointer hover:bg-slate-50">
+      <span class="pill ${pillCls} shrink-0" style="font-size:9.5px;padding:2px 7px;">${d.검사 || '—'}</span>
+      <div class="flex-1 min-w-0">
+        <div class="text-[12.5px] font-extrabold text-slate-800 truncate">${d.건명 || '—'}</div>
+        <div class="text-[10.5px] text-slate-400 mt-0.5">${d.색상 || '—'} · ${(d.수량||0).toLocaleString()}개 · CBM ${_qcCbmOf(d)}m³</div>
+      </div>
+      <div class="shrink-0 text-right text-[9.5px] text-slate-400" style="font-family:ui-monospace,monospace;">
+        <div>납기 ${d.납기일 || '—'}</div>
+        <div class="mt-0.5">포장 ${d.포장일 || '—'}</div>
+      </div>
+    </div>`;
+  }).join('') : `<div class="text-center py-6 text-slate-400 text-[12.5px]">${hintText || '이력이 없어요.'}</div>`;
+
+  return `<div data-spec-card data-code="${codeAttr}" class="border border-slate-200 rounded-2xl p-4">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-[14px] font-extrabold text-slate-800" style="font-family:ui-monospace,monospace;">${code || '—'}</span>
+      ${matches.length ? `<span class="text-[10px] text-slate-400" style="font-family:ui-monospace,monospace;">n=${matches.length}</span>` : ''}
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div class="border border-slate-200 rounded-xl px-3 py-2">
+        <div class="text-[10.5px] font-bold text-slate-400 mb-1">단품코드의 종류</div>
+        <select data-spec-codetype onchange="onSpecCodeTypeChange(this)" ${code?'':'disabled'} class="w-full bg-transparent text-[13.5px] font-semibold text-slate-800 outline-none border-none">${codeTypeOptions}</select>
+      </div>
+      <div class="border border-slate-200 rounded-xl px-3 py-2">
+        <div class="text-[10.5px] font-bold text-slate-400 mb-1">표준품명</div>
+        <input type="text" data-spec-standardname value="${standardName.replace(/"/g,'&quot;')}" oninput="onSpecFieldEdit(this.closest('[data-spec-card]'))" ${code?'':'disabled'} placeholder="표준품명을 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
+      </div>
+    </div>
+    <div class="text-[10.5px] text-slate-400 leading-snug mb-2">해당 치수는 박스포장 상태 기준입니다. 각 치수는 평균값을 나타냅니다.</div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
+      <div class="text-center">
+        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">가로(mm)</div>
+        <div class="text-[16px] font-extrabold" style="color:#0284C7;">${wS.count ? Math.round(wS.avg) : '—'}</div>
+        <div class="pt-0.5">${_qcSpecRenderRange(wS, '#0284C7')}</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">세로(mm)</div>
+        <div class="text-[16px] font-extrabold" style="color:#059669;">${dS.count ? Math.round(dS.avg) : '—'}</div>
+        <div class="pt-0.5">${_qcSpecRenderRange(dS, '#059669')}</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">높이(mm)</div>
+        <div class="text-[16px] font-extrabold" style="color:#D97706;">${hS.count ? Math.round(hS.avg) : '—'}</div>
+        <div class="pt-0.5">${_qcSpecRenderRange(hS, '#D97706')}</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">무게(kg)</div>
+        <div class="text-[16px] font-extrabold" style="color:#7C3AED;">${gS.count ? (gS.avg % 1 === 0 ? gS.avg.toFixed(0) : gS.avg.toFixed(1)) : '—'}</div>
+        <div class="pt-0.5">${_qcSpecRenderRange(gS, '#7C3AED', 1)}</div>
+      </div>
+    </div>
+    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center mb-3">
+      <div class="text-[11px] font-bold text-slate-400 mb-1">CBM (m³)</div>
+      <div style="font-size:18px;font-weight:800;color:#E11D48;">${cbmS.count ? cbmS.avg.toFixed(4) : '—'}</div>
+      <div class="pt-1 flex items-center justify-center">${_qcSpecRenderRange(cbmS, '#E11D48', 4)}</div>
+    </div>
+    <div class="flex items-center justify-between mb-2">
+      <h4 class="text-[13px] font-bold text-slate-800">검사 세부 진행 이력 <span class="text-[11px] font-semibold text-slate-400">${matches.length ? '('+matches.length.toLocaleString()+'건)' : ''}</span></h4>
+    </div>
+    <div>${historyHtml}</div>
+  </div>`;
 }
 
 function runSpecLookup() {
   const code = document.getElementById('specCodeInput').value.trim();
+  const list = document.getElementById('specResultsList');
 
-  if (!code) { _qcSpecActiveCode = ''; _qcResetSpecSkeleton('단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.'); hideSpecCodeSuggest(); return; }
+  if (!code) {
+    specHistoryRows = [];
+    list.innerHTML = _qcSpecCardHtml('', [], '단품코드를 입력하면 상세 스펙과 검사 진행 이력을 볼 수 있어요.');
+    return;
+  }
 
   const codeNorm = code.toUpperCase();
   const pool = [...allData, ...archiveRows];
 
-  // 포장강화 제품검색처럼: 코드를 끝까지 입력하거나 목록에서 "골라야만" 결과가 나오던
-  // 걸 없애고, 입력하는 대로 바로 결과가 나오게 바꿨다(요청, 2026-10-15) — 일치하는
-  // 코드 중 가장 비슷한(사전순 첫) 코드의 상세를 즉시 보여주고, 다른 일치 코드는
-  // 칩으로 곁들여 탭하면 바로 바꿔볼 수 있다.
   const seen = new Set(), allCodes = [];
   pool.forEach(d => {
     const c = (d.단품코드 || '').toString().trim();
@@ -7054,107 +7114,46 @@ function runSpecLookup() {
   });
 
   if (!allCodes.length) {
-    _qcSpecActiveCode = '';
-    hideSpecCodeSuggest();
-    _qcResetSpecSkeleton(`"${code}" 코드로 등록된 이력이 없어요.`);
+    specHistoryRows = [];
+    list.innerHTML = _qcSpecCardHtml(code.toUpperCase(), [], `"${code}" 코드로 등록된 이력이 없어요.`);
     return;
   }
   allCodes.sort((a, b) => a.localeCompare(b));
-  const activeCode = allCodes.find(c => c.toUpperCase() === codeNorm) || allCodes[0];
-  _qcSpecActiveCode = activeCode;
-  _qcRenderSpecCodeMatches(allCodes, activeCode);
 
-  const matches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === activeCode.toUpperCase());
-  specHistoryRows = matches;
-
-  const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0];
-  const override = loadSpecOverride(activeCode);
-  document.getElementById('specStandardName').value = override?.standardName ?? withDims.단품명칭 ?? '';
-  _qcApplyCodeTypeToUI(override?.codeType ?? deriveCodeType(withDims.단품명칭));
-
-  // W/D/H/중량/CBM 각각 min~max 범위 막대로 — 값이 하나뿐이거나 전부 같으면 "균일"만 표시.
-  const qcStat = (field) => {
-    const vals = matches.map(d => parseFloat(d[field])).filter(v => !isNaN(v) && v > 0);
-    if (!vals.length) return { count: 0 };
-    return { count: vals.length, min: Math.min(...vals), max: Math.max(...vals), avg: vals.reduce((a,b)=>a+b,0)/vals.length };
-  };
-  const qcRenderRange = (stat, color, digits) => {
-    if (!stat.count) return '<span class="text-slate-300 text-[10px]">데이터 없음</span>';
-    const fmt = n => digits ? n.toFixed(digits) : (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1));
-    if (stat.count === 1 || stat.min === stat.max) return '<span style="color:' + color + ';opacity:.65;font-size:10px;">균일</span>';
-    return '<div class="flex items-center gap-1.5 justify-center">' +
-      '<span class="text-[10px] text-slate-400">' + fmt(stat.min) + '</span>' +
-      '<div class="relative h-1.5 w-10 rounded-full" style="background:' + color + '22;">' +
-      '<div class="absolute inset-y-0 left-0 rounded-full" style="width:50%;background:' + color + ';"></div></div>' +
-      '<span class="text-[10px] text-slate-400">' + fmt(stat.max) + '</span></div>';
-  };
-  const wS = qcStat('가로'), dS = qcStat('세로'), hS = qcStat('높이'), gS = qcStat('중량');
-  const cbmVals = matches.map(d => d.CBM).filter(v => typeof v === 'number' && v > 0);
-  const cbmS = cbmVals.length ? { count: cbmVals.length, min: Math.min(...cbmVals), max: Math.max(...cbmVals), avg: cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length } : { count: 0 };
-
-  document.getElementById('specW').textContent = wS.count ? Math.round(wS.avg) : '—';
-  document.getElementById('specD').textContent = dS.count ? Math.round(dS.avg) : '—';
-  document.getElementById('specH').textContent = hS.count ? Math.round(hS.avg) : '—';
-  document.getElementById('specWeight').textContent = gS.count ? (gS.avg % 1 === 0 ? gS.avg.toFixed(0) : gS.avg.toFixed(1)) : '—';
-  document.getElementById('specCbm').textContent = cbmS.count ? cbmS.avg.toFixed(4) : '—';
-  document.getElementById('specWRange').innerHTML = qcRenderRange(wS, '#0284C7');
-  document.getElementById('specDRange').innerHTML = qcRenderRange(dS, '#059669');
-  document.getElementById('specHRange').innerHTML = qcRenderRange(hS, '#D97706');
-  document.getElementById('specWeightRange').innerHTML = qcRenderRange(gS, '#7C3AED', 1);
-  document.getElementById('specCbmRange').innerHTML = qcRenderRange(cbmS, '#E11D48', 4);
-  document.getElementById('specHistCount').textContent = `(${matches.length.toLocaleString()}건)`;
-
-  renderSpecHistory();
-}
-function _qcCbmOf(d) {
-  if (typeof d.CBM === 'number' && d.CBM > 0) return d.CBM.toFixed(4);
-  const w = parseFloat(d.가로), dd = parseFloat(d.세로), h = parseFloat(d.높이);
-  if (!w || !dd || !h) return '—';
-  return ((w * dd * h) / 1e9).toFixed(4);
-}
-
-function renderSpecHistory() {
-  const rows = sortByKey(specHistoryRows, specSortKey, specSortDir);
-  if (!window._mItemMap) window._mItemMap = {};
-  document.getElementById('specHistBody').innerHTML = rows.map((d, idx) => {
-    const mik = 'msh_' + idx;
-    window._mItemMap[mik] = d;
-    return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;">
-    <td class="py-2 pl-3 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
-    <td class="py-2 pr-3 font-mono text-slate-500 text-[12px]">${d.단품코드 || '—'}</td>
-    <td class="py-2 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
-    <td class="py-2 pr-3 text-center font-mono">${d.수량 || 0}</td>
-    <td class="py-2 pr-3 text-center"><span class="pill ${d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':d.검사==='취소'?'pill-cancel':'pill-undone'}">${d.검사}</span></td>
-    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.납기일 || '—'}</td>
-    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.포장일 || '—'}</td>
-    <td class="py-2 pr-3 font-mono text-[12px] whitespace-nowrap">${d.검사일 || '—'}</td>
-    <td class="py-2 pr-3 text-center font-mono text-[12px]">${_qcCbmOf(d)}</td>
-  </tr>`;
+  // 포장강화 상세스펙처럼: 일치하는 코드를 하나만 고르게 하지 않고 전부(최대 5개)
+  // 카드로 바로 나열한다(요청, 2026-10-15).
+  const shown = allCodes.slice(0, 5);
+  let allShownRows = [];
+  list.innerHTML = shown.map(c => {
+    const matches = pool.filter(d => (d.단품코드 || '').toString().trim().toUpperCase() === c.toUpperCase());
+    allShownRows = allShownRows.concat(matches);
+    return _qcSpecCardHtml(c, matches);
   }).join('');
-}
-
-function setSpecSort(key) {
-  if (specSortKey === key) specSortDir = specSortDir === 'asc' ? 'desc' : 'asc';
-  else { specSortKey = key; specSortDir = 'asc'; }
-  updateSortIcons('specSortIcon', key, specSortDir);
-  renderSpecHistory();
+  specHistoryRows = allShownRows;
 }
 
 // 예전엔 CSV였는데, 포장강화처럼 수정 가능한 .xlsx로 바꾸고 건별 CBM(m³)까지
-// 같이 뽑아 더 상세하게 보이도록 했다(요청, 2026-10-13).
+// 같이 뽑아 더 상세하게 보이도록 했다(요청, 2026-10-13). 카드가 여러 코드로 동시에
+// 나열될 수 있어(요청, 2026-10-15) 행마다 자기 코드의 단품코드 종류/표준품명을 따로 찾는다.
 function exportSpecHistoryXlsx() {
-  const code = _qcSpecActiveCode || document.getElementById('specCodeInput').value.trim();
-  let ov = {};
-  try { ov = JSON.parse(localStorage.getItem('specOverride_' + code) || '{}'); } catch (e) {}
+  const searchText = document.getElementById('specCodeInput').value.trim();
+  const ovCache = {};
+  const ovOf = (rawCode) => {
+    const code = (rawCode || '').toString().trim();
+    if (!(code in ovCache)) {
+      try { ovCache[code] = JSON.parse(localStorage.getItem('specOverride_' + code) || '{}'); } catch (e) { ovCache[code] = {}; }
+    }
+    return ovCache[code];
+  };
   _qcRenderGenericXls({
-    title: '상세스펙_' + code,
-    rows: sortByKey(specHistoryRows, specSortKey, specSortDir),
-    filename: `상세스펙_${code}_${new Date().toISOString().slice(0,10)}.xlsx`,
+    title: '상세스펙_' + searchText,
+    rows: specHistoryRows,
+    filename: `상세스펙_${searchText}_${new Date().toISOString().slice(0,10)}.xlsx`,
     columns: [
       { label: '건명', get: d => d.건명 },
       { label: '단품코드', get: d => d.단품코드 },
-      { label: '단품코드의 종류', get: () => ov.codeType || '' },
-      { label: '표준품명', get: () => ov.standardName || '' },
+      { label: '단품코드의 종류', get: d => ovOf(d.단품코드).codeType || '' },
+      { label: '표준품명', get: d => ovOf(d.단품코드).standardName || '' },
       { label: '색상', get: d => d.색상 },
       { label: '수량', get: d => d.수량 },
       { label: '가로(mm)', get: d => d.가로 || '' },
