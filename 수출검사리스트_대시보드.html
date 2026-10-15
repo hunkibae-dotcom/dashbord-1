@@ -6140,7 +6140,6 @@ function renderProductSearchResults(results) {
       <button onclick="_psOpenBulkEdit()" title="선택 품목 일괄 수정" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"></path></svg>
       </button>
-      ${_psSelectMode ? '' : `
       <button id="psSrcDetailBtn" onclick="openPsSourcePicker(_psSourceFilter || 'active')" title="상세필터 — 지금 고른 시트의 진행상태"
         style="position:relative;width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
         <i class="fa-solid fa-sliders" style="font-size:12px;"></i>
@@ -6154,7 +6153,7 @@ function renderProductSearchResults(results) {
       </button>
       <button onclick="_openScanSmart()" title="바코드 재스캔" style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:#FF9100;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
         <i class="fa-solid fa-barcode" style="font-size:12px;"></i>
-      </button>`}
+      </button>
     </div>
   </div>
   <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding-bottom:6px;">${sortBtnsHtml}</div>`;
