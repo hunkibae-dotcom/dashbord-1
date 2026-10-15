@@ -2874,15 +2874,7 @@
         const qtyEl = document.getElementById('srQtySum');
         if (qtyEl) qtyEl.textContent = deduped.reduce((s,d) => s + (parseInt(d.qty) || 0), 0).toLocaleString();
         const selCountEl = document.getElementById('srSelCount');
-        if (selCountEl) {
-            if (_sfSelectMode) {
-                const selCount = deduped.filter(d => _sfSelected.has(_sfItemKey(d))).length;
-                selCountEl.style.display = '';
-                selCountEl.textContent = ' · ' + selCount + '개 선택';
-            } else {
-                selCountEl.style.display = 'none';
-            }
-        }
+        if (selCountEl) selCountEl.style.display = 'none';
         _renderSrSortRow();
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
