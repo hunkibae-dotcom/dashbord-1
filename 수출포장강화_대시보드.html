@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
+    /* 앱(포장강화)에서 들어올 땐 ?shell=1이 붙는데, 예전엔 이 파일 전체(Tailwind·
+       FontAwesome·Chart.js·구글폰트 CDN 로딩 + 구글시트 동기화까지)가 다 끝나야만
+       맨 아래 스크립트가 실행되면서 shell.html로 넘어갔다 — 그래서 네트워크가 느리거나
+       CDN 중 하나라도 느려지면 "불러오는 중" 화면에서 하염없이 멈춰 보였다(요청, 여러 번
+       반복됨, 2026-10-15). head 맨 위, 다른 외부 리소스를 하나도 불러오기 전에 바로
+       체크해서 — 앱에서 들어온 거라면 이 무거운 파일을 아예 그릴 필요도 없이 즉시
+       shell.html로 넘어가게 한다. */
+    if (new URLSearchParams(location.search).get('shell')) {
+        location.replace('shell.html' + location.search);
+    }
     /* 설정의 "웹으로 열기(PC 대시보드)"로 진입 시(?forceDesktop=1) — 실제 PC에서 보는 화면과 동일하게
        나오도록 뷰포트를 데스크톱 폭으로 고정. 이게 없으면 폰 브라우저에서 열어도 화면폭이 좁아서
        모바일 반응형(@media max-width) 레이아웃이 그대로 적용돼버림 */
