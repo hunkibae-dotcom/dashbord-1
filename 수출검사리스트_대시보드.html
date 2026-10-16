@@ -7951,7 +7951,7 @@ function setMiField(field, value) {
   // 버튼을 눌렀을 때 한 번에 한다.
   if (field === '검사') _refreshMiStatusButtons(value);
   _miPendingSync[field] = value;
-  _miSyncViewMirrors(true);
+  _miSyncViewMirrors();
 }
 // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 포장강화와 동일한 위치/역할(요청,
 // 2026-10-13). 이 창은 닫고 그 코드로 상세스펙 패널을 바로 연다.
