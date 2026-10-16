@@ -998,6 +998,8 @@ function _fiCloseTopOverlay() {
     const el = document.getElementById(id);
     return !!el && el.style.display === 'flex';
   };
+  if (isOpen('fiPhotoViewerModal')) { fiClosePhotoViewer(); return true; }
+  if (isOpen('fiPhotoActionModal')) { fiCloseDetPhotoAction(); return true; }
   if (isOpen('fiRegisterModal')) { fiCloseRegister(); return true; }
   if (isOpen('fiDetailModal'))   { fiCloseDetail();   return true; }
   if (isOpen('fiProfileModal'))  { document.getElementById('fiProfileModal').style.display = 'none'; return true; }
