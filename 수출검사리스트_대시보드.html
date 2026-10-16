@@ -5330,6 +5330,7 @@ function openRpNoteEditor(key) {
 function closeRpEditModal() {
   document.getElementById('rpEditModal').style.display = 'none';
   _rpEditKey = null; _rpEditMode = null;
+  _rpEditPendingPhotoAction = null;
 }
 
 // 보고서에서 CBM·특이사항을 수기 입력하면, 로컬(localStorage)뿐 아니라 실제 구글시트
