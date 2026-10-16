@@ -7718,7 +7718,8 @@ function selectMiBasis(key) {
   _miBasis = key;
   _miRenderBasisTabs();
   const set = _miStatusSet();
-  if (_miCurrent && !set.includes(_miCurrent.검사)) setMiField('검사', set[0]);
+  const curStatus = ('검사' in _miPendingSync) ? _miPendingSync.검사 : (_miCurrent && _miCurrent.검사);
+  if (_miCurrent && !set.includes(curStatus)) setMiField('검사', set[0]);
   _miRenderStatusButtons();
 }
 
@@ -7727,7 +7728,7 @@ function _miRenderStatusButtons() {
   if (!wrap || !_miCurrent) return;
   const set = _miStatusSet();
   wrap.innerHTML = set.map(v => `<button data-mi-status="${v}" onclick="setMiField('검사','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${_miStatusLabel(v)}</button>`).join('');
-  _refreshMiStatusButtons(_miCurrent.검사);
+  _refreshMiStatusButtons(('검사' in _miPendingSync) ? _miPendingSync.검사 : _miCurrent.검사);
 }
 function _refreshMiStatusButtons(status) {
   document.querySelectorAll('#miStatusBtns [data-mi-status]').forEach(btn => {
