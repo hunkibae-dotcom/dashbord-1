@@ -7660,6 +7660,12 @@ function applyMiOverrides(list) {
 let _miCurrent = null;
 let _miOriginalStatus = null; // 상세창을 연 시점의 검사상태 — "저장" 시점에 검사완료로 새로 바뀐 건지 비교용
 let _miPendingSync = {}; // 저장 버튼을 누르기 전까지 모아두는 변경사항(field → value)
+// 검사사진/포장사진도 다른 필드와 똑같이 "저장" 버튼을 눌러야 서버에 반영돼야 하는데,
+// 보고서 탭과 공유하는 _rpUploadPhotoToServer/_rpClearPhotoOnServer가 예전엔 사진을
+// 바꾸는 즉시 호출돼서 저장 버튼을 건너뛰고 있었다(2026-10-16 지적) — 이 상세창이
+// 열려있는 동안은 그 호출을 바로 하지 않고 여기 쌓아뒀다가 saveMItemDetail()에서
+// 같이 보낸다. { product: {action:'upload',dataUrl}|{action:'clear'}, package: {...} }
+let _miPendingPhotoActions = {};
 let _miEditStatus = false, _miEditSchedule = false, _miEditSpec = false; // 카드별 보기/수정 토글(요청, 2026-10-15)
 
 // 진행중 시트와 출고완료(이관) 시트는 검사상태로 쓰는 값 자체가 다르다(요청, 2026-10-15) —
