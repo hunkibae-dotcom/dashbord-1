@@ -5047,7 +5047,10 @@ function rpPhotoEditConfirm() {
   if (side === 'product') _reportSelected[key].productPhoto = rec;
   else _reportSelected[key].packagePhoto = rec;
   _rpSaveToStorage(true);
-  _rpUploadPhotoToServer(key, side, rec.dataUrl);
+  // 품목 수정창(저장 버튼 있음)에서 올린 사진이면 저장을 눌러야 서버에 반영되도록
+  // 큐에만 쌓아둔다 — 보고서 탭(저장 버튼 없는 실시간 화면)에서 올린 거면 예전처럼 즉시.
+  if (_miCurrent && _miKey(_miCurrent) === key) _miPendingPhotoActions[side] = { action: 'upload', dataUrl: rec.dataUrl };
+  else _rpUploadPhotoToServer(key, side, rec.dataUrl);
   closeRpPhotoEdit();
   _rpRefreshRow(key);
 }
