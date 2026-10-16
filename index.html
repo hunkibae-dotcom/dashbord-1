@@ -215,6 +215,7 @@
         .fi-blue  { background: linear-gradient(135deg, #0055FF, #00B0FF); }
         .fi-green { background: linear-gradient(135deg, #00A878, #00E676); }
         .fi-amber { background: linear-gradient(135deg, #E8590C, #FF9F1C); }
+        .fi-red   { background: linear-gradient(135deg, #DC2626, #FB7185); }
 
         .feat-txt { flex: 1; min-width: 0; }
         .feat-name { font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 9px; }
@@ -609,6 +610,22 @@
             <div class="feat-arr">›</div>
         </div>
 
+        <!-- 현장검사 -->
+        <div class="feat red" onclick="openSub('fieldinspect')" role="button">
+            <div class="feat-ico fi-red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/>
+                    <path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/>
+                    <circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/>
+                </svg>
+            </div>
+            <div class="feat-txt">
+                <div class="feat-name">현장검사</div>
+                <div class="feat-desc">현장 하자·부적합 조회 및 조치 관리<br>등록 · 사진 첨부 · 진행상태 추적</div>
+            </div>
+            <div class="feat-arr">›</div>
+        </div>
+
         <!-- PE폼 발주 -->
         <div class="feat amber" onclick="openSub('pe')" role="button">
             <div class="feat-ico fi-amber">
@@ -825,6 +842,13 @@ var MENUS = {
         sheets: 'https://docs.google.com/spreadsheets/d/19y40Q2Dznx5E6Jzsh57u8YKECTGA9-seC86BZjZjWXk/edit?gid=1744450987#gid=1744450987',
         icoBg: 'linear-gradient(135deg,#E8590C,#FF9F1C)',
         icoSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="8.5" y="3" width="7" height="4" rx="1"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>'
+    },
+    fieldinspect: {
+        title: '현장검사',
+        dashboard: '현장검사_대시보드.html',
+        sheets: 'https://docs.google.com/spreadsheets/d/1YRMrQHqcVERgC4LM0uBKbkPpJNIU8TJCG8Coahou-Jk/edit',
+        icoBg: 'linear-gradient(135deg,#DC2626,#FB7185)',
+        icoSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/><path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/><circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/></svg>'
     }
 };
 
@@ -838,9 +862,10 @@ function openSub(type){
     var sub = document.getElementById('sub');
     sub.style.pointerEvents = '';   /* 인라인 스타일 초기화 — CSS 클래스가 제어 */
     sub.classList.add('open');
-    /* PE폼 발주는 자재를 스캔하는 기능이 없어서 바코드 스캐너 바로가기를 숨긴다 */
+    /* PE폼 발주/현장검사는 자재·단품코드를 스캔하는 기능이 아직 없어서 바코드 스캐너
+       바로가기를 숨긴다 */
     var scanItem = document.getElementById('scanMenuItem');
-    if (scanItem) scanItem.style.display = (type === 'pe') ? 'none' : '';
+    if (scanItem) scanItem.style.display = (type === 'pe' || type === 'fieldinspect') ? 'none' : '';
 }
 
 function closeSub(){

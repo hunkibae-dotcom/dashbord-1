@@ -4653,6 +4653,7 @@ function _rpRowEl(key) {
   try { return document.querySelector('[data-mikey="' + CSS.escape(key) + '"]'); } catch (e) { return null; }
 }
 function _rpRefreshRow(key) {
+  _miRefreshPhotoBoxesIfOpen(key);
   const el = _rpRowEl(key);
   if (!el) return;
   const d = _rpFindByKey(key);
@@ -6988,27 +6989,25 @@ function _qcCbmOf(d) {
   return ((w * dd * h) / 1e9).toFixed(4);
 }
 
-// W/D/H/중량/CBM 각각 min~max 범위 막대로 — 값이 하나뿐이거나 전부 같으면 "균일"만 표시.
+// W/D/H/중량 각각 min~max 텍스트로 — 값이 하나뿐이거나 전부 같으면 범위 자체를 표시하지
+// 않는다(시안 그대로: 막대 없이 작은 회색 글자로만, 요청 2026-10-15).
 function _qcSpecStat(matches, field) {
   const vals = matches.map(d => parseFloat(d[field])).filter(v => !isNaN(v) && v > 0);
   if (!vals.length) return { count: 0 };
   return { count: vals.length, min: Math.min(...vals), max: Math.max(...vals), avg: vals.reduce((a,b)=>a+b,0)/vals.length };
 }
-function _qcSpecRenderRange(stat, color, digits) {
-  if (!stat.count) return '<span class="text-slate-300 text-[10px]">데이터 없음</span>';
+function _qcSpecRangeText(stat, digits) {
+  if (!stat.count || stat.count === 1 || stat.min === stat.max) return '';
   const fmt = n => digits ? n.toFixed(digits) : (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1));
-  if (stat.count === 1 || stat.min === stat.max) return '<span style="color:' + color + ';opacity:.65;font-size:10px;">균일</span>';
-  return '<div class="flex items-center gap-1.5 justify-center">' +
-    '<span class="text-[10px] text-slate-400">' + fmt(stat.min) + '</span>' +
-    '<div class="relative h-1.5 w-10 rounded-full" style="background:' + color + '22;">' +
-    '<div class="absolute inset-y-0 left-0 rounded-full" style="width:50%;background:' + color + ';"></div></div>' +
-    '<span class="text-[10px] text-slate-400">' + fmt(stat.max) + '</span></div>';
+  return `<div style="font-size:9.5px;color:#94A3B8;margin-top:3px;">${fmt(stat.min)} ~ ${fmt(stat.max)}</div>`;
 }
 
 // 카드 한 장(코드+단품코드 종류/표준품명+치수 그리드+CBM+이력)을 그린다 — 일치하는 코드마다
 // 이 카드를 하나씩 만들어 쌓는다(포장강화 상세스펙처럼 "골라야만" 보이던 걸 없애고 전부
-// 바로 나열, 요청 2026-10-15). CBM은 가로/세로/높이/무게 그리드와 분리된 별도 박스로
-// 둔다(요청, 2026-10-15 — 시안대로 CBM만 따로 강조).
+// 바로 나열, 요청 2026-10-15). 시안(품질검사 상세스펙 시안)의 스타일을 그대로 이식한다 —
+// 단품코드의 종류/표준품명은 폭이 좁아도 항상 2열로 나란히, 치수+CBM은 하나의 흰 카드
+// 안에 CBM만 연회색 박스로 끼워넣은 구조(요청, 2026-10-15 — 간격/위치/박스색이 시안과
+// 다르다는 지적 반영).
 function _qcSpecCardHtml(code, matches, hintText) {
   const withDims = matches.find(d => d.가로 && d.세로 && d.높이) || matches[0] || {};
   const override = code ? loadSpecOverride(code) : null;
@@ -7018,7 +7017,7 @@ function _qcSpecCardHtml(code, matches, hintText) {
 
   const wS = _qcSpecStat(matches, '가로'), dS = _qcSpecStat(matches, '세로'), hS = _qcSpecStat(matches, '높이'), gS = _qcSpecStat(matches, '중량');
   const cbmVals = matches.map(d => d.CBM).filter(v => typeof v === 'number' && v > 0);
-  const cbmS = cbmVals.length ? { count: cbmVals.length, min: Math.min(...cbmVals), max: Math.max(...cbmVals), avg: cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length } : { count: 0 };
+  const cbmS = cbmVals.length ? { count: cbmVals.length, avg: cbmVals.reduce((a,b)=>a+b,0)/cbmVals.length } : { count: 0 };
 
   const codeTypeOptions = QC_CODE_TYPES.map(t => `<option value="${t}" ${t===codeType?'selected':''}>${t}</option>`).join('')
     + (!QC_CODE_TYPES.includes(codeType) ? `<option value="${codeType}" selected data-legacy="1">${codeType} (이전 값)</option>` : '');
@@ -7028,65 +7027,74 @@ function _qcSpecCardHtml(code, matches, hintText) {
   const historyHtml = historyRows.length ? historyRows.map((d, idx) => {
     const mik = 'spec_' + codeAttr + '_' + idx;
     window._mItemMap[mik] = d;
-    const pillCls = d.검사==='검사'?'pill-done':d.검사==='양지'?'pill-yangji':d.검사==='재투입'?'pill-reinspect':d.검사==='미투입'?'pill-preinput':d.검사==='취소'?'pill-cancel':'pill-undone';
-    return `<div onclick="openMItemDetail('${mik}')" class="flex items-center gap-2.5 py-2.5 px-2 bg-white border border-slate-100 rounded-xl mb-1.5 cursor-pointer hover:bg-slate-50">
-      <span class="pill ${pillCls} shrink-0" style="font-size:9.5px;padding:2px 7px;">${d.검사 || '—'}</span>
-      <div class="flex-1 min-w-0">
-        <div class="text-[12.5px] font-extrabold text-slate-800 truncate">${d.건명 || '—'}</div>
-        <div class="text-[10.5px] text-slate-400 mt-0.5">${d.색상 || '—'} · ${(d.수량||0).toLocaleString()}개 · CBM ${_qcCbmOf(d)}m³</div>
+    const xc = _qcStatusXlsColor(d);
+    return `<div onclick="openMItemDetail('${mik}')" style="display:flex;align-items:center;gap:10px;padding:10px 8px;background:#fff;border:1px solid #EDF1F5;border-radius:12px;margin-bottom:6px;cursor:pointer;">
+      <div style="width:46px;flex-shrink:0;">
+        <span style="font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:5px;background:${xc.bg};color:${xc.color};white-space:nowrap;">${d.검사 || '—'}</span>
       </div>
-      <div class="shrink-0 text-right text-[9.5px] text-slate-400" style="font-family:ui-monospace,monospace;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;font-weight:800;color:#1E293B;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.건명 || '—'}</div>
+        <div style="font-size:10.5px;color:#94A3B8;margin-top:2px;">${d.색상 || '—'} · ${(d.수량||0).toLocaleString()}개 · CBM ${_qcCbmOf(d)}m³</div>
+      </div>
+      <div style="flex-shrink:0;text-align:right;font-size:9.5px;color:#94A3B8;font-family:ui-monospace,monospace;">
         <div>납기 ${d.납기일 || '—'}</div>
-        <div class="mt-0.5">포장 ${d.포장일 || '—'}</div>
+        <div style="margin-top:2px;">포장 ${d.포장일 || '—'}</div>
       </div>
     </div>`;
-  }).join('') : `<div class="text-center py-6 text-slate-400 text-[12.5px]">${hintText || '이력이 없어요.'}</div>`;
+  }).join('') : `<div style="text-align:center;padding:24px 0;color:#94A3B8;font-size:12.5px;">${hintText || '이력이 없어요.'}</div>`;
 
-  return `<div data-spec-card data-code="${codeAttr}" class="border border-slate-200 rounded-2xl p-4">
-    <div class="flex items-center justify-between mb-3">
-      <span class="text-[14px] font-extrabold text-slate-800" style="font-family:ui-monospace,monospace;">${code || '—'}</span>
-      ${matches.length ? `<span class="text-[10px] text-slate-400" style="font-family:ui-monospace,monospace;">n=${matches.length}</span>` : ''}
+  return `<div data-spec-card data-code="${codeAttr}" style="border:1px solid #E2E8F0;border-radius:14px;padding:16px;background:#fff;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <span style="font-size:14px;font-weight:800;color:#1E293B;font-family:ui-monospace,monospace;">${code || '—'}</span>
+      ${matches.length ? `<span style="font-size:10px;color:#94A3B8;font-family:ui-monospace,monospace;">n=${matches.length}</span>` : ''}
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-      <div class="border border-slate-200 rounded-xl px-3 py-2">
-        <div class="text-[10.5px] font-bold text-slate-400 mb-1">단품코드의 종류</div>
-        <select data-spec-codetype onchange="onSpecCodeTypeChange(this)" ${code?'':'disabled'} class="w-full bg-transparent text-[13.5px] font-semibold text-slate-800 outline-none border-none">${codeTypeOptions}</select>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:10px 12px;">
+        <div style="font-size:9.5px;font-weight:700;color:#94A3B8;margin-bottom:4px;">단품코드의 종류</div>
+        <select data-spec-codetype onchange="onSpecCodeTypeChange(this)" ${code?'':'disabled'} style="width:100%;background:transparent;border:none;outline:none;font-size:13px;font-weight:800;color:#1E293B;padding:0;">${codeTypeOptions}</select>
       </div>
-      <div class="border border-slate-200 rounded-xl px-3 py-2">
-        <div class="text-[10.5px] font-bold text-slate-400 mb-1">표준품명</div>
-        <input type="text" data-spec-standardname value="${standardName.replace(/"/g,'&quot;')}" oninput="onSpecFieldEdit(this.closest('[data-spec-card]'))" ${code?'':'disabled'} placeholder="표준품명을 입력하세요" class="w-full text-[13.5px] font-semibold text-slate-800 outline-none bg-transparent">
-      </div>
-    </div>
-    <div class="text-[10.5px] text-slate-400 leading-snug mb-2">해당 치수는 박스포장 상태 기준입니다. 각 치수는 평균값을 나타냅니다.</div>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3 bg-slate-50 rounded-xl p-3 border border-slate-100">
-      <div class="text-center">
-        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">가로(mm)</div>
-        <div class="text-[16px] font-extrabold" style="color:#0284C7;">${wS.count ? Math.round(wS.avg) : '—'}</div>
-        <div class="pt-0.5">${_qcSpecRenderRange(wS, '#0284C7')}</div>
-      </div>
-      <div class="text-center">
-        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">세로(mm)</div>
-        <div class="text-[16px] font-extrabold" style="color:#059669;">${dS.count ? Math.round(dS.avg) : '—'}</div>
-        <div class="pt-0.5">${_qcSpecRenderRange(dS, '#059669')}</div>
-      </div>
-      <div class="text-center">
-        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">높이(mm)</div>
-        <div class="text-[16px] font-extrabold" style="color:#D97706;">${hS.count ? Math.round(hS.avg) : '—'}</div>
-        <div class="pt-0.5">${_qcSpecRenderRange(hS, '#D97706')}</div>
-      </div>
-      <div class="text-center">
-        <div class="text-[11px] font-bold text-slate-400 border-b border-slate-200 pb-1 mb-1">무게(kg)</div>
-        <div class="text-[16px] font-extrabold" style="color:#7C3AED;">${gS.count ? (gS.avg % 1 === 0 ? gS.avg.toFixed(0) : gS.avg.toFixed(1)) : '—'}</div>
-        <div class="pt-0.5">${_qcSpecRenderRange(gS, '#7C3AED', 1)}</div>
+      <div style="background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:10px 12px;">
+        <div style="font-size:9.5px;font-weight:700;color:#94A3B8;margin-bottom:4px;">표준품명</div>
+        <input type="text" data-spec-standardname value="${standardName.replace(/"/g,'&quot;')}" oninput="onSpecFieldEdit(this.closest('[data-spec-card]'))" ${code?'':'disabled'} placeholder="표준품명을 입력하세요" style="width:100%;background:transparent;border:none;outline:none;font-size:13px;font-weight:800;color:#1E293B;padding:0;">
       </div>
     </div>
-    <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 text-center mb-3">
-      <div class="text-[11px] font-bold text-slate-400 mb-1">CBM (m³)</div>
-      <div style="font-size:18px;font-weight:800;color:#E11D48;">${cbmS.count ? cbmS.avg.toFixed(4) : '—'}</div>
-      <div class="pt-1 flex items-center justify-center">${_qcSpecRenderRange(cbmS, '#E11D48', 4)}</div>
+
+    <div style="background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:9.5px;color:#94A3B8;line-height:1.5;margin-bottom:8px;">해당 치수는 박스포장 상태 기준입니다. 각 치수는 평균값을 나타냅니다.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:#94A3B8;border-bottom:1px solid #F1F5F9;padding-bottom:5px;margin-bottom:5px;">가로(mm)</div>
+          <div style="font-size:16px;font-weight:800;color:#0284C7;">${wS.count ? Math.round(wS.avg) : '—'}</div>
+          ${_qcSpecRangeText(wS)}
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:#94A3B8;border-bottom:1px solid #F1F5F9;padding-bottom:5px;margin-bottom:5px;">세로(mm)</div>
+          <div style="font-size:16px;font-weight:800;color:#059669;">${dS.count ? Math.round(dS.avg) : '—'}</div>
+          ${_qcSpecRangeText(dS)}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:#94A3B8;border-bottom:1px solid #F1F5F9;padding-bottom:5px;margin-bottom:5px;">높이(mm)</div>
+          <div style="font-size:16px;font-weight:800;color:#D97706;">${hS.count ? Math.round(hS.avg) : '—'}</div>
+          ${_qcSpecRangeText(hS)}
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:#94A3B8;border-bottom:1px solid #F1F5F9;padding-bottom:5px;margin-bottom:5px;">무게(kg)</div>
+          <div style="font-size:16px;font-weight:800;color:#7C3AED;">${gS.count ? (gS.avg % 1 === 0 ? gS.avg.toFixed(0) : gS.avg.toFixed(1)) : '—'}</div>
+          ${_qcSpecRangeText(gS, 1)}
+        </div>
+      </div>
+      <div style="background:#F8FAFC;border-radius:10px;padding:10px 12px;text-align:center;">
+        <div style="font-size:9.5px;font-weight:700;color:#94A3B8;margin-bottom:4px;">CBM (m³)</div>
+        <div style="font-size:18px;font-weight:800;color:#E11D48;">${cbmS.count ? cbmS.avg.toFixed(4) : '—'}</div>
+      </div>
+      ${cbmS.count ? `<div style="font-size:10px;color:#94A3B8;text-align:right;margin-top:6px;">(n=${cbmS.count} 작업 기록 기준)</div>` : ''}
     </div>
-    <div class="flex items-center justify-between mb-2">
-      <h4 class="text-[13px] font-bold text-slate-800">검사 세부 진행 이력 <span class="text-[11px] font-semibold text-slate-400">${matches.length ? '('+matches.length.toLocaleString()+'건)' : ''}</span></h4>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <span style="font-size:13px;font-weight:800;color:#1E293B;">검사 세부 진행 이력 <span style="font-size:11px;color:#94A3B8;font-weight:600;">${matches.length ? '('+matches.length.toLocaleString()+'건)' : ''}</span></span>
     </div>
     <div>${historyHtml}</div>
   </div>`;
@@ -7652,21 +7660,132 @@ function applyMiOverrides(list) {
 let _miCurrent = null;
 let _miOriginalStatus = null; // 상세창을 연 시점의 검사상태 — "저장" 시점에 검사완료로 새로 바뀐 건지 비교용
 let _miPendingSync = {}; // 저장 버튼을 누르기 전까지 모아두는 변경사항(field → value)
+let _miEditStatus = false, _miEditSchedule = false, _miEditSpec = false; // 카드별 보기/수정 토글(요청, 2026-10-15)
+
+// 진행중 시트와 출고완료(이관) 시트는 검사상태로 쓰는 값 자체가 다르다(요청, 2026-10-15) —
+// 이관된 품목(archiveRows 출신, d.source==='archive')인지로 기본 기준(_miBasis)을 미리
+// 골라두되, 시안대로 탭을 눌러 다른 기준으로도 전환해 볼 수 있게 한다.
+const MI_STATUS_SET_INPROGRESS = ['미검사', '검사', '재투입', '양지'];
+const MI_STATUS_SET_SHIPPED = ['검사', '미검사', '외관검사', '양지검사'];
+const MI_STATUS_SET_BY_BASIS = { inprogress: MI_STATUS_SET_INPROGRESS, shipped: MI_STATUS_SET_SHIPPED };
+const MI_BASIS_LIST = [
+  { key: 'inprogress', label: '진행중' },
+  { key: 'shipped', label: '출고완료' }
+];
+const MI_STATUS_LABEL = { 검사: '검사완료' }; // 버튼/알약 표기만 다르게(실제 저장값은 '검사')
+let _miBasis = 'inprogress';
+function _miStatusSet() {
+  return MI_STATUS_SET_BY_BASIS[_miBasis] || MI_STATUS_SET_INPROGRESS;
+}
+function _miStatusLabel(v) { return MI_STATUS_LABEL[v] || v || '—'; }
+
+function _miRenderBasisTabs() {
+  const wrap = document.getElementById('miBasisTabs');
+  if (!wrap) return;
+  wrap.innerHTML = MI_BASIS_LIST.map(b => {
+    const active = b.key === _miBasis;
+    return `<button onclick="selectMiBasis('${b.key}')" style="flex:1;border:none;border-radius:7px;padding:6px 0;font-size:10.5px;font-weight:${active ? 800 : 700};cursor:pointer;background:${active ? 'var(--panel)' : 'transparent'};color:${active ? '#6D5CE8' : 'var(--text-sub)'};${active ? 'box-shadow:0 1px 2px rgba(0,0,0,.15);' : ''}">${b.label}</button>`;
+  }).join('');
+}
+// 기준 탭을 바꾸면 그 기준에 없는 값은 의미가 없으므로 그 기준의 첫 상태로 다시 맞춘다
+// — 단 원래 값이 새 기준에도 있으면 그대로 둔다. 실제 저장은 상태 버튼을 눌러야 반영된다.
+function selectMiBasis(key) {
+  _miBasis = key;
+  _miRenderBasisTabs();
+  const set = _miStatusSet();
+  if (_miCurrent && !set.includes(_miCurrent.검사)) setMiField('검사', set[0]);
+  _miRenderStatusButtons();
+}
+
+function _miRenderStatusButtons() {
+  const wrap = document.getElementById('miStatusBtns');
+  if (!wrap || !_miCurrent) return;
+  const set = _miStatusSet();
+  wrap.innerHTML = set.map(v => `<button data-mi-status="${v}" onclick="setMiField('검사','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${_miStatusLabel(v)}</button>`).join('');
+  _refreshMiStatusButtons(_miCurrent.검사);
+}
 function _refreshMiStatusButtons(status) {
-  ['미검사', '검사', '재투입', '양지'].forEach(v => {
-    const btn = document.getElementById('miStBtn_' + v);
-    if (!btn) return;
-    const on = status === v;
-    btn.style.background = on ? '#6D5CE8' : 'var(--input-bg)';
+  document.querySelectorAll('#miStatusBtns [data-mi-status]').forEach(btn => {
+    const on = btn.dataset.miStatus === status;
+    btn.style.background = on ? '#6D5CE8' : 'var(--panel)';
     btn.style.color = on ? '#fff' : 'var(--text-sub)';
     btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
   });
+  const pillText = document.getElementById('miStatusPillText');
+  if (pillText) pillText.textContent = _miStatusLabel(status);
 }
-// 재투입일 때만 사유 입력칸을 보여준다 — 그 외 상태에서는 사유가 의미 없다.
-function _refreshMiReinspectReason(status) {
-  const wrap = document.getElementById('miReasonWrap');
-  if (wrap) wrap.style.display = status === '재투입' ? 'block' : 'none';
+
+// 진행상태/일정/규격 카드는 각각 따로 보기↔수정을 토글한다(요청, 2026-10-15) —
+// 예전처럼 창 전체를 한 번에 다 수정 상태로 두지 않는다.
+function toggleMiStatusEdit() { _miEditStatus = !_miEditStatus; _miApplyCardToggle('miStatus', _miEditStatus); }
+function toggleMiScheduleEdit() { _miEditSchedule = !_miEditSchedule; _miApplyCardToggle('miSchedule', _miEditSchedule); }
+function toggleMiSpecEdit() { _miEditSpec = !_miEditSpec; _miApplyCardToggle('miSpec', _miEditSpec); }
+function _miApplyCardToggle(prefix, editing) {
+  const viewEl = document.getElementById(prefix + 'ViewWrap');
+  const editEl = document.getElementById(prefix + 'EditWrap');
+  const iconEl = document.getElementById(prefix + 'ToggleIcon');
+  const shownDisplay = prefix === 'miStatus' ? 'block' : 'grid';
+  if (viewEl) viewEl.style.display = editing ? 'none' : shownDisplay;
+  if (editEl) editEl.style.display = editing ? shownDisplay : 'none';
+  if (iconEl) iconEl.innerHTML = editing
+    ? '<i class="fa-solid fa-check" style="font-size:10px;"></i>'
+    : '<i class="fa-solid fa-pen" style="font-size:10px;"></i>';
 }
+
+function _miDisplayDate(v) {
+  const n = _miNormDate(v);
+  if (!n) return '—';
+  const p = n.split('-');
+  return p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
+}
+// 보기 모드 글자들은 입력칸과 별개 엘리먼트라, 값이 바뀔 때마다(초기 로드·수정 중) 같이 맞춰준다.
+function _miSyncViewMirrors() {
+  if (!_miCurrent) return;
+  const d = _miCurrent;
+  const dv = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = _miDisplayDate(v); };
+  dv('miPackDateView', d.포장일);
+  dv('miDueDateView', d.납기일);
+  dv('miInspectDateView', d.검사일);
+  const nv = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = (v === '' || v == null) ? '—' : v; };
+  nv('miWView', d.가로);
+  nv('miDView', d.세로);
+  nv('miHView', d.높이);
+  nv('miGView', d.중량);
+  // 진행상태 알약 옆의 "변경" 날짜 — 실제로 추적하는 "상태 변경 시각"은 없어서, 지금
+  // 상태와 가장 직접적으로 연결된 실제 필드(검사일)를 그대로 보여준다(시안의 캡션 자리,
+  // 값은 지어내지 않고 실제 검사일을 씀).
+  const changedEl = document.getElementById('miStatusChangedDate');
+  if (changedEl) { const disp = _miDisplayDate(d.검사일); changedEl.textContent = disp === '—' ? '' : disp + ' 변경'; }
+}
+
+// 검사사진/포장사진 — 새로 만들지 않고 보고서 탭의 기존 업로드·크롭·변경/다운로드/비우기
+// 파이프라인(_rpPhotoBox 등)을 그대로 재사용한다. 보고서와 이 상세창은 같은 키(_miKey)를
+// 쓰므로 여기서 올린 사진이 그대로 보고서에도 등록된다.
+function _miRenderPhotoBoxes() {
+  const wrap = document.getElementById('miPhotoCardWrap');
+  if (!wrap || !_miCurrent) return;
+  const key = _miKey(_miCurrent);
+  _rpEnsureRecord(key);
+  const sel = _reportSelected[key];
+  wrap.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div style="text-align:center;">
+        <div style="font-size:9.5px;color:var(--label);margin-bottom:5px;">검사사진</div>
+        ${_rpPhotoBox(key, 'product', sel, 72)}
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:9.5px;color:var(--label);margin-bottom:5px;">포장사진</div>
+        ${_rpPhotoBox(key, 'package', sel, 72)}
+      </div>
+    </div>`;
+}
+// 보고서 쪽에서 사진을 바꾸면(변경/비우기/크롭 확정 등) 이 상세창이 같은 품목을 연 채로
+// 떠있을 수 있어서, 그 저장 경로(_rpRefreshRow)에서 같이 불려 미리보기를 맞춘다.
+function _miRefreshPhotoBoxesIfOpen(key) {
+  if (!_miCurrent || _miKey(_miCurrent) !== key) return;
+  _miRenderPhotoBoxes();
+}
+
 function _updateMiCbm() {
   const w = parseFloat(document.getElementById('miW').value) || 0;
   const d = parseFloat(document.getElementById('miD').value) || 0;
@@ -7686,10 +7805,20 @@ function openMItemDetail(key) {
   const saveBtn = document.getElementById('miSaveBtn');
   if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
   const _miCountry = _rpCountryLabel(d.건명);
-  document.getElementById('miTitle').textContent = (d.건명 || '—') + (_miCountry ? ` (${_miCountry})` : '');
-  document.getElementById('miSub').innerHTML = `<b style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</b> · ${d.색상 || '—'} · ${(d.수량 || 0)}개 · ${d.공장 === 'cj1' ? '충주1' : '충주2'}`;
-  _refreshMiStatusButtons(d.검사);
-  _refreshMiReinspectReason(d.검사);
+  document.getElementById('miCode').textContent = d.단품코드 || '—';
+  const _miOv = loadSpecOverride(d.단품코드);
+  document.getElementById('miCodeType').textContent = _miOv?.codeType || deriveCodeType(d.단품명칭);
+  document.getElementById('miTitle').innerHTML = (d.건명 || '—') + (_miCountry ? ` <span style="color:var(--text-sub);">· ${_miCountry}</span>` : '');
+  document.getElementById('miChipFactory').textContent = d.공장 === 'cj1' ? '충주1공장' : '충주2공장';
+  document.getElementById('miChipColor').textContent = d.색상 || '—';
+  document.getElementById('miChipQty').textContent = (d.수량 || 0) + 'EA';
+  _miEditStatus = false; _miEditSchedule = false; _miEditSpec = false;
+  _miApplyCardToggle('miStatus', false);
+  _miApplyCardToggle('miSchedule', false);
+  _miApplyCardToggle('miSpec', false);
+  _miBasis = (d.source === 'archive') ? 'shipped' : 'inprogress';
+  _miRenderBasisTabs();
+  _miRenderStatusButtons();
   document.getElementById('miReasonInput').value = d.비고 || '';
   document.getElementById('miDateInput').value = _miNormDate(d.검사일);
   document.getElementById('miPackDateInput').value = _miNormDate(d.포장일);
@@ -7699,6 +7828,8 @@ function openMItemDetail(key) {
   document.getElementById('miH').value = d.높이 || '';
   document.getElementById('miG').value = d.중량 || '';
   _updateMiCbm();
+  _miSyncViewMirrors();
+  _miRenderPhotoBoxes();
   _miPendingSync = {};
   _setMiSyncNote('저장 버튼을 눌러야 실제 시트에 반영됩니다', false);
   document.getElementById('mItemDetailModal').style.display = 'flex';
@@ -7721,6 +7852,16 @@ function saveMItemDetail() {
   const item = _miCurrent;
   const pending = _miPendingSync;
   _miPendingSync = {};
+  // 검사완료로 바꾸면서 검사완료일을 따로 안 골랐으면 오늘 날짜로 자동 입력(요청, 2026-10-15,
+  // 포장강화의 포장완료일 자동입력과 동일한 규칙).
+  if (pending.검사 === '검사' && !item.검사일) {
+    const _today = new Date();
+    const _todayStr = _today.getFullYear() + '-' + String(_today.getMonth() + 1).padStart(2, '0') + '-' + String(_today.getDate()).padStart(2, '0');
+    item.검사일 = _todayStr;
+    pending.검사일 = _todayStr;
+    const inp = document.getElementById('miDateInput'); if (inp) inp.value = _todayStr;
+    _miSyncViewMirrors();
+  }
   const fields = Object.keys(pending);
   // 응답을 기다리면(느린 시트 반영 때문에) 화면이 멈춘 것처럼 느껴지므로, 화면은 이미
   // 최신 상태라 응답을 기다리지 않고 백그라운드로 보낸다(결과는 인라인 문구로 계속 표시).
@@ -7759,9 +7900,10 @@ function setMiField(field, value) {
     _updateMiCbm();
   }
   _miCurrent[field] = value;
-  if (field === '검사') { _refreshMiStatusButtons(value); _refreshMiReinspectReason(value); }
+  if (field === '검사') _refreshMiStatusButtons(value);
   _saveMiOverride(_miKey(_miCurrent), { [field]: value });
   _miPendingSync[field] = value; // 실제 시트 반영은 "저장" 버튼을 눌렀을 때 한 번에
+  _miSyncViewMirrors();
   // 가로/세로/높이/중량은 목록·KPI·뱃지 표시에 영향이 없는데도, 숫자 입력칸에 한 글자
   // 칠 때마다 리스트 전체(수백 건)를 통째로 다시 그리고 있었다 — 화면에 실제로 영향을
   // 주는 검사상태·검사일 변경일 때만 무거운 재렌더링을 하도록 제한한다.
@@ -10101,80 +10243,144 @@ function onNativeScanResult(raw) {
 <div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 28px;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);box-sizing:border-box;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-      <div style="min-width:0;">
-        <div id="miTitle" style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
-        <div style="font-size:12px;color:var(--text-sub);margin-top:2px;display:flex;align-items:center;gap:6px;">
-          <span id="miSub">—</span>
-          <button onclick="openMSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(109,92,232,.1);border:1px solid rgba(109,92,232,.25);color:#6D5CE8;border-radius:7px;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;cursor:pointer;flex-shrink:0;">
-            <i class="fa-solid fa-ruler-combined"></i>
-          </button>
+      <div style="min-width:0;flex:1;">
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span id="miCode" style="font-size:15px;font-weight:800;font-family:ui-monospace,monospace;color:var(--text);">—</span>
+          <span id="miCodeType" style="font-size:10px;font-weight:700;color:#6D5CE8;background:rgba(109,92,232,.1);padding:2px 7px;border-radius:6px;flex-shrink:0;"></span>
+        </div>
+        <div id="miTitle" style="font-size:10.5px;color:var(--label);margin-top:2px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">—</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:8px;">
+        <button title="검사 불량조치 (준비중)" style="background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);color:#D97706;border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:default;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><circle cx="12" cy="17" r=".9" fill="currentColor"></circle></svg>
+        </button>
+        <button onclick="openMSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(109,92,232,.1);border:1px solid rgba(109,92,232,.25);color:#6D5CE8;border-radius:8px;height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+          <i class="fa-solid fa-ruler-combined"></i> 상세스펙
+        </button>
+        <button onclick="closeMItemDetail()" style="width:26px;height:26px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:12px;">
+      <span id="miChipFactory" style="font-size:10.5px;padding:3px 9px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;"></span>
+      <span id="miChipColor" style="font-size:10.5px;padding:3px 9px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;font-family:ui-monospace,monospace;"></span>
+      <span id="miChipQty" style="font-size:10.5px;padding:3px 9px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:800;font-family:ui-monospace,monospace;"></span>
+    </div>
+
+    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleMiStatusEdit()">
+        <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">진행상태</span>
+        <span id="miStatusToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+      </div>
+      <div id="miBasisTabs" style="display:flex;gap:3px;background:var(--panel);border-radius:9px;padding:3px;margin-bottom:10px;"></div>
+      <div id="miStatusViewWrap">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <span style="display:inline-flex;align-items:center;gap:6px;background:#6D5CE8;color:#fff;font-size:12.5px;font-weight:800;padding:7px 16px;border-radius:20px;">
+            <i class="fa-solid fa-check"></i> <span id="miStatusPillText">—</span>
+          </span>
+          <span id="miStatusChangedDate" style="font-size:10px;color:var(--label);font-family:ui-monospace,monospace;"></span>
         </div>
       </div>
-      <button onclick="closeMItemDetail()" style="width:34px;height:34px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <div style="margin-top:18px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">진행상태</div>
-      <div style="display:flex;gap:6px;">
-        <button id="miStBtn_미검사" onclick="setMiField('검사','미검사')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">미검사</button>
-        <button id="miStBtn_검사"   onclick="setMiField('검사','검사')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">검사완료</button>
-        <button id="miStBtn_재투입" onclick="setMiField('검사','재투입')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">재투입</button>
-        <button id="miStBtn_양지"   onclick="setMiField('검사','양지')"   style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--input-bg);color:var(--text-sub);">양지</button>
+      <div id="miStatusEditWrap" style="display:none;">
+        <div id="miStatusBtns" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
       </div>
     </div>
 
-    <div id="miReasonWrap" style="display:none;margin-top:14px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">재투입 사유</div>
-      <input id="miReasonInput" type="text" placeholder="사유를 입력하세요 (시트 비고란에 저장됩니다)"
-          onchange="setMiField('비고', this.value)"
-          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
-    </div>
-
-    <div style="margin-top:18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">포장일</div>
-        <input id="miPackDateInput" type="date" onchange="setMiField('포장일', this.value)"
-            style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleMiScheduleEdit()">
+        <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">일정</span>
+        <span id="miScheduleToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
       </div>
-      <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">납기일</div>
-        <input id="miDueDateInput" type="date" onchange="setMiField('납기일', this.value)"
-            style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
+      <div id="miScheduleViewWrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#0284C7;"></i> 포장일</div>
+          <div id="miPackDateView" style="font-size:12.5px;font-weight:800;color:#0284C7;">—</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#D97706;"></i> 납기일</div>
+          <div id="miDueDateView" style="font-size:12.5px;font-weight:800;color:#D97706;">—</div>
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#7C3AED;"></i> 검사일</div>
+          <div id="miInspectDateView" style="font-size:12.5px;font-weight:800;color:#7C3AED;">—</div>
+        </div>
+      </div>
+      <div id="miScheduleEditWrap" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">포장일</div>
+          <input id="miPackDateInput" type="date" onchange="setMiField('포장일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">납기일</div>
+          <input id="miDueDateInput" type="date" onchange="setMiField('납기일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+        </div>
+        <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">검사일</div>
+          <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+        </div>
       </div>
     </div>
 
-    <div style="margin-top:18px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">검사완료일</div>
-      <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)"
-          style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;">
-    </div>
-
-    <div style="margin-top:18px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">규격 (mm) · 무게(kg)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleMiSpecEdit()">
+        <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">규격 (mm) · 무게(kg)</span>
+        <span id="miSpecToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+      </div>
+      <div id="miSpecViewWrap" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:5px;">가로 (mm)</div>
+          <div id="miWView" style="font-size:16px;font-weight:800;color:#0284C7;">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:5px;">세로 (mm)</div>
+          <div id="miDView" style="font-size:16px;font-weight:800;color:#059669;">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:5px;">높이 (mm)</div>
+          <div id="miHView" style="font-size:16px;font-weight:800;color:#D97706;">—</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:5px;">무게 (kg)</div>
+          <div id="miGView" style="font-size:16px;font-weight:800;color:#7C3AED;">—</div>
+        </div>
+      </div>
+      <div id="miSpecEditWrap" style="display:none;grid-template-columns:1fr 1fr;gap:7px;">
         <div>
           <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">가로</div>
-          <input id="miW" type="number" placeholder="0" oninput="setMiField('가로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+          <input id="miW" type="number" placeholder="0" oninput="setMiField('가로', this.value)" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
         </div>
         <div>
           <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">세로</div>
-          <input id="miD" type="number" placeholder="0" oninput="setMiField('세로', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+          <input id="miD" type="number" placeholder="0" oninput="setMiField('세로', this.value)" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
         </div>
         <div>
           <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">높이</div>
-          <input id="miH" type="number" placeholder="0" oninput="setMiField('높이', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+          <input id="miH" type="number" placeholder="0" oninput="setMiField('높이', this.value)" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
         </div>
         <div>
           <div style="font-size:10.5px;color:var(--label);margin-bottom:4px;">무게</div>
-          <input id="miG" type="number" placeholder="0" oninput="setMiField('중량', this.value)" style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
+          <input id="miG" type="number" placeholder="0" oninput="setMiField('중량', this.value)" style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:9px 8px;font-size:13px;outline:none;text-align:center;width:100%;box-sizing:border-box;">
         </div>
       </div>
-      <div id="miCbm" style="font-size:11.5px;color:var(--text-sub);margin-top:8px;">CBM —</div>
+      <div id="miCbm" style="margin-top:9px;font-size:10.5px;color:var(--label);">CBM —</div>
     </div>
 
-    <div id="miSaveNote" style="margin-top:18px;font-size:11px;color:var(--text-sub);background:var(--input-bg);border-radius:10px;padding:8px 10px;">
+    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
+      <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:4px;">검사사진 / 포장사진</div>
+      <div style="font-size:9.5px;color:var(--label);margin-bottom:10px;">각 한 장씩 — 여기서 올리면 보고서에도 바로 등록됩니다.</div>
+      <div id="miPhotoCardWrap"></div>
+    </div>
+
+    <div id="miReasonWrap" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
+      <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:4px;">특이사항</div>
+      <div style="font-size:9.5px;color:var(--label);margin-bottom:8px;">실제 시트의 비고란과 연동됩니다 — 기존에 적힌 내용이 있으면 그대로 불러와 보여줍니다.</div>
+      <textarea id="miReasonInput" rows="3" placeholder="특이사항을 입력하세요 (시트 비고란에 저장됩니다)"
+          onchange="setMiField('비고', this.value)"
+          style="background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;outline:none;width:100%;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+    </div>
+
+    <div id="miSaveNote" style="margin-top:14px;font-size:11px;color:var(--text-sub);background:var(--input-bg);border-radius:10px;padding:8px 10px;">
       <i class="fa-solid fa-circle-info" style="margin-right:4px;"></i>
       변경하면 자동으로 실제 시트에 저장됩니다
     </div>

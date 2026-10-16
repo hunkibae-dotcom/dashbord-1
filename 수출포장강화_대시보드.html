@@ -9095,9 +9095,18 @@
             document.getElementById('pkgD').value = _pkgOrigD;
             document.getElementById('pkgH').value = _pkgOrigH;
             document.getElementById('pkgG').value = _pkgOrigG;
+            _pkgUpdateDetailCbm();
 
             document.getElementById('pkgDetailFeedback').textContent = '';
             document.getElementById('pkgItemDetailModal').style.display = 'flex';
+        }
+
+        function _pkgUpdateDetailCbm() {
+            const w = parseFloat(document.getElementById('pkgW').value) || 0;
+            const d = parseFloat(document.getElementById('pkgD').value) || 0;
+            const h = parseFloat(document.getElementById('pkgH').value) || 0;
+            const cbm = (w && d && h) ? (w * d * h) / 1e9 : 0;
+            document.getElementById('pkgDetailCbm').textContent = cbm ? 'CBM ' + cbm.toFixed(4) + 'm³' : 'CBM —';
         }
 
         // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 누르면 이 창은 닫고(z-index가 상세스펙
@@ -10797,107 +10806,126 @@
 <!-- ── 행 상세수정 모달(진행상태/포장완료일/적재번호/CBM) ─────────── -->
 <div id="pkgItemDetailModal" onclick="if(event.target===this)closePkgItemDetail()"
     style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:440px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-            <div>
-                <div style="display:flex;align-items:center;gap:6px;">
-                    <div id="pkgCodeLabel" style="font-size:17px;font-weight:800;font-family:monospace;color:#1e293b;"></div>
-                    <button onclick="openPkgSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.25);color:#0284c7;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;">
-                        <i class="fa-solid fa-ruler-combined"></i>
-                    </button>
-                </div>
-                <div id="pkgRoundLabel" style="font-size:12.5px;color:#64748b;margin-top:2px;font-weight:600;"></div>
-            </div>
-            <button onclick="closePkgItemDetail()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:14px 0 20px;">
-            <span id="pkgColorBadge" style="font-size:11px;padding:3px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#475569;font-weight:700;font-family:monospace;"></span>
-            <span id="pkgQtyBadge" style="font-size:11px;padding:3px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#1e293b;font-weight:800;font-family:monospace;"></span>
-            <span id="pkgDueBadge" style="font-size:11px;color:#64748b;font-family:monospace;"></span>
-            <span id="pkgDateBadge" style="font-size:11px;color:#64748b;font-family:monospace;margin-left:auto;"></span>
-        </div>
-        <div style="margin-bottom:20px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">진행상태</div>
-            <div id="pkgStatusOpts" style="display:flex;flex-direction:column;gap:6px;"></div>
-            <div id="pkgPartialQtyWrap" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px;">
-                <div style="font-size:12.5px;color:#92400e;font-weight:700;margin-bottom:6px;">일부입고 수량 입력</div>
-                <div style="font-size:11.5px;color:#92400e;margin-bottom:8px;" id="pkgPartialQtyHint"></div>
-                <input id="pkgPartialQty" type="number" placeholder="실제 입고된 수량"
-                    style="width:100%;background:#fff;border:1.5px solid #fbbf24;border-radius:8px;padding:9px 12px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
-            </div>
-        </div>
-        <div style="margin-bottom:20px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">포장완료일</div>
-            <input id="pkgRegDate" type="date"
-                style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
-        </div>
-        <div style="margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-            <div>
-                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">납기일</div>
-                <input id="pkgDueDate" type="date"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-            <div>
-                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">상차일</div>
-                <input id="pkgShipDate" type="date"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-            </div>
-        </div>
-        <div style="margin-bottom:20px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">적재번호</div>
-            <input id="pkgPallet" type="text" placeholder="예: 1, 2, A-1 ..."
-                style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'"
-                onkeydown="if(event.key==='Enter')savePkgItemDetail()">
-        </div>
-        <div style="margin-bottom:20px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">PE폼 유형</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-                <input id="pkgPeType" type="text" list="pkgPeTypeOptions" placeholder="예: 일자형" onchange="_pkgOnPeTypeChange()"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;"
-                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-                <datalist id="pkgPeTypeOptions">
-                    <option value="일자형"><option value="코너형"><option value="패드형"><option value="롤형">
-                </datalist>
-                <input id="pkgPeSpec" type="text" list="pkgPeSpecOptions" placeholder="목록에서 고르거나 직접 입력"
-                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;"
-                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-                <datalist id="pkgPeSpecOptions"></datalist>
-            </div>
-            <div style="font-size:11px;color:#94a3b8;margin-top:6px;">목록에 없으면 직접 입력해도 됩니다. 이 선택은 구글시트에는 반영되지 않고 이 대시보드(이 브라우저)에만 기억됩니다.</div>
-        </div>
-        <div style="margin-bottom:22px;">
-            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">규격 (CBM)</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;width:460px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="padding:22px 26px 0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                 <div>
-                    <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">가로 (mm)</div>
-                    <input id="pkgW" type="number" placeholder="—" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <div id="pkgCodeLabel" style="font-size:17px;font-weight:800;font-family:monospace;color:#1e293b;"></div>
+                        <button onclick="openPkgSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.25);color:#0284c7;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;">
+                            <i class="fa-solid fa-ruler-combined"></i>
+                        </button>
+                    </div>
+                    <div id="pkgRoundLabel" style="font-size:12.5px;color:#64748b;margin-top:2px;font-weight:600;"></div>
+                </div>
+                <button onclick="closePkgItemDetail()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:12px 0 18px;">
+                <span id="pkgColorBadge" style="font-size:11px;padding:3px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#475569;font-weight:700;font-family:monospace;"></span>
+                <span id="pkgQtyBadge" style="font-size:11px;padding:3px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#1e293b;font-weight:800;font-family:monospace;"></span>
+                <span id="pkgDueBadge" style="font-size:11px;color:#64748b;font-family:monospace;"></span>
+                <span id="pkgDateBadge" style="font-size:11px;color:#64748b;font-family:monospace;margin-left:auto;"></span>
+            </div>
+        </div>
+        <div style="padding:0 26px 22px;display:flex;flex-direction:column;gap:12px;">
+
+            <!-- 진행상태 카드 -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">진행상태</div>
+                <div id="pkgStatusOpts" style="display:flex;flex-direction:column;gap:6px;"></div>
+                <div id="pkgPartialQtyWrap" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px;">
+                    <div style="font-size:12.5px;color:#92400e;font-weight:700;margin-bottom:6px;">일부입고 수량 입력</div>
+                    <div style="font-size:11.5px;color:#92400e;margin-bottom:8px;" id="pkgPartialQtyHint"></div>
+                    <input id="pkgPartialQty" type="number" placeholder="실제 입고된 수량"
+                        style="width:100%;background:#fff;border:1.5px solid #fbbf24;border-radius:8px;padding:9px 12px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+                </div>
+            </div>
+
+            <!-- 일정 카드 -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">일정</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">납기일</div>
+                        <input id="pkgDueDate" type="date"
+                            style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                            onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">상차일</div>
+                        <input id="pkgShipDate" type="date"
+                            style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                            onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
                 </div>
                 <div>
-                    <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">세로 (mm)</div>
-                    <input id="pkgD" type="number" placeholder="—" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">높이 (mm)</div>
-                    <input id="pkgH" type="number" placeholder="—" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-                </div>
-                <div>
-                    <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">중량 (kg)</div>
-                    <input id="pkgG" type="number" step="0.01" placeholder="—" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">포장완료일</div>
+                    <input id="pkgRegDate" type="date"
+                        style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                        onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <div style="font-size:10.5px;color:#94a3b8;margin-top:6px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
                 </div>
             </div>
-        </div>
-        <div id="pkgDetailFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin-bottom:10px;"></div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
-            <button onclick="closePkgItemDetail()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
-            <button onclick="savePkgItemDetail()" id="pkgDetailSaveBtn"
-                style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
-                <i class="fa-solid fa-check"></i> 저장
-            </button>
+
+            <!-- 규격 카드 -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">규격 (mm) · 무게(kg)</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">가로 (mm)</div>
+                        <input id="pkgW" type="number" placeholder="—" oninput="_pkgUpdateDetailCbm()" style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">세로 (mm)</div>
+                        <input id="pkgD" type="number" placeholder="—" oninput="_pkgUpdateDetailCbm()" style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">높이 (mm)</div>
+                        <input id="pkgH" type="number" placeholder="—" oninput="_pkgUpdateDetailCbm()" style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                    <div>
+                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:4px;">중량 (kg)</div>
+                        <input id="pkgG" type="number" step="0.01" placeholder="—" style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:8px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    </div>
+                </div>
+                <div id="pkgDetailCbm" style="margin-top:9px;font-size:11.5px;color:#94a3b8;">CBM —</div>
+            </div>
+
+            <!-- 적재번호 카드 -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">적재번호</div>
+                <input id="pkgPallet" type="text" placeholder="예: 1, 2, A-1 ..."
+                    style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'"
+                    onkeydown="if(event.key==='Enter')savePkgItemDetail()">
+            </div>
+
+            <!-- PE폼 유형 카드 -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">PE폼 유형</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+                    <input id="pkgPeType" type="text" list="pkgPeTypeOptions" placeholder="예: 일자형" onchange="_pkgOnPeTypeChange()"
+                        style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <datalist id="pkgPeTypeOptions">
+                        <option value="일자형"><option value="코너형"><option value="패드형"><option value="롤형">
+                    </datalist>
+                    <input id="pkgPeSpec" type="text" list="pkgPeSpecOptions" placeholder="목록에서 고르거나 직접 입력"
+                        style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;"
+                        onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                    <datalist id="pkgPeSpecOptions"></datalist>
+                </div>
+                <div style="font-size:10.5px;color:#94a3b8;margin-top:6px;">목록에 없으면 직접 입력해도 됩니다. 이 선택은 구글시트에는 반영되지 않고 이 대시보드(이 브라우저)에만 기억됩니다.</div>
+            </div>
+
+            <div id="pkgDetailFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
+                <button onclick="closePkgItemDetail()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
+                <button onclick="savePkgItemDetail()" id="pkgDetailSaveBtn"
+                    style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-check"></i> 저장
+                </button>
+            </div>
         </div>
     </div>
 </div>

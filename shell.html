@@ -1290,6 +1290,7 @@
         const iSpecD  = fi('세로','깊이','DEPTH','specd');
         const iSpecH  = fi('높이','HEIGHT','spech');
         const iSpecG  = fi('무게','중량','KG','specg');
+        const iMemo   = fi('비고','memo','note');
 
         // 시트명으로 공장 구분 및 소스 태그 보완
         const st = sheetTag || '';
@@ -1332,10 +1333,11 @@
             const specD  = iSpecD >= 0 && r[iSpecD] ? r[iSpecD].toString().trim() : '';
             const specH  = iSpecH >= 0 && r[iSpecH] ? r[iSpecH].toString().trim() : '';
             const specG  = iSpecG >= 0 && r[iSpecG] ? r[iSpecG].toString().trim() : '';
+            const memo   = iMemo >= 0 && r[iMemo] ? r[iMemo].toString().trim() : '';
             // 적재번호는 행 고유값이라 code+round로 다시 찾지 않고 매핑 시점에 그대로 들고 감
             // — 같은 품목코드가 여러 행에 걸쳐 있으면 code+round 키만으론 구분이 안 돼 마지막 값으로 겹쳐 보이는 문제가 있었음
             const pallet = srcTag === 'stock' ? (r[iPallet] || '').toString().trim() : '';
-            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, pallet });
+            result.push({ code, qty, status, date, regDate, round, dueDate, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, memo, pallet });
         }
         return result;
     }
@@ -4611,6 +4613,103 @@
     let _ieOrigPallet = '';
     let _ieOrigRegDate = '';
     let _ieOrigW = '', _ieOrigD = '', _ieOrigH = '', _ieOrigG = '';
+    let _ieOrigShipDate = '', _ieOrigDueDate = '';
+    let _ieOrigMemo = '';
+    let _ieEditStatus = false, _ieEditSchedule = false, _ieEditSpec = false; // 카드별 보기/수정 토글(요청, 2026-10-15)
+
+    // 품목 하나의 보기 기준(수출현황/충주공장 재고/출고완료)마다 진행상태로 쓸 수 있는
+    // 값 자체가 다르다(요청, 2026-10-15) — 같은 품목(code+round)이 시트 2~3개에 동시에
+    // 남아있을 수 있어서(_mergeStockSpecsIntoAllData 주석 참고), 상세창을 열 땐 그 행이
+    // 실제로 온 시트(item.source: standard/stock/shipped)를 기본 기준으로 보여주되
+    // 다른 기준으로도 전환해 볼 수 있게 한다.
+    const PKG_STATUS_GROUPS = {
+        standard: ['포장대기', '포장완료', '피킹', '출고', '재고활용'],
+        stock:    ['미확인', '포장대기', '포장완료', '철물', '미포장'],
+        shipped:  ['출고', '피킹', '미포장'],
+    };
+    const PKG_BASIS_DEFAULT_STATUS = { standard: '포장완료', stock: '미확인', shipped: '출고' };
+    const PKG_BASIS_LIST = [
+        { key: 'standard', label: '수출현황' },
+        { key: 'stock', label: '충주공장 재고' },
+        { key: 'shipped', label: '출고완료' },
+    ];
+    const PKG_STATUS_COLOR = { 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
+    let _ieBasis = 'standard';
+
+    function _ieApplyCardToggle(prefix, editing) {
+        const viewEl = document.getElementById(prefix + 'ViewWrap');
+        const editEl = document.getElementById(prefix + 'EditWrap');
+        const iconEl = document.getElementById(prefix + 'ToggleIcon');
+        const shownDisplay = prefix === 'ieStatus' ? 'block' : 'grid';
+        if (viewEl) viewEl.style.display = editing ? 'none' : shownDisplay;
+        if (editEl) editEl.style.display = editing ? shownDisplay : 'none';
+        if (iconEl) iconEl.innerHTML = editing
+            ? '<i class="fa-solid fa-check" style="font-size:10px;"></i>'
+            : '<i class="fa-solid fa-pen" style="font-size:10px;"></i>';
+    }
+    function toggleIeStatusEdit()   { _ieEditStatus = !_ieEditStatus;     _ieApplyCardToggle('ieStatus', _ieEditStatus); }
+    function toggleIeScheduleEdit() {
+        _ieEditSchedule = !_ieEditSchedule;
+        _ieApplyCardToggle('ieSchedule', _ieEditSchedule);
+        const hint = document.getElementById('ieScheduleHint');
+        if (hint) hint.style.display = _ieEditSchedule ? 'block' : 'none';
+    }
+    function toggleIeSpecEdit()     { _ieEditSpec = !_ieEditSpec;         _ieApplyCardToggle('ieSpec', _ieEditSpec); }
+
+    function _renderIeBasisTabs() {
+        const wrap = document.getElementById('ieBasisTabs');
+        if (!wrap) return;
+        wrap.innerHTML = PKG_BASIS_LIST.map(b => {
+            const active = b.key === _ieBasis;
+            return `<button onclick="selectIeBasis('${b.key}')" style="flex:1;border:none;border-radius:7px;padding:6px 2px;font-size:9.5px;font-weight:${active?800:700};cursor:pointer;background:${active?'var(--panel)':'transparent'};color:${active?'#00B0FF':'var(--text-sub)'};${active?'box-shadow:0 1px 2px rgba(0,0,0,.15);':''}">${b.label}</button>`;
+        }).join('');
+    }
+    function selectIeBasis(key) {
+        _ieBasis = key;
+        // 기준을 바꾸면 그 기준에 없는 상태값은 의미가 없으므로 기본 상태로 다시 맞춘다
+        // — 단 원래 상태가 새 기준에도 있는 값이면 그대로 유지한다.
+        const set = PKG_STATUS_GROUPS[key];
+        if (!set.includes(_ieCurStatus)) _ieCurStatus = PKG_BASIS_DEFAULT_STATUS[key];
+        _renderIeBasisTabs();
+        _renderIeStatus();
+        _renderIeStatusView();
+    }
+    function _renderIeStatusView() {
+        const pill = document.getElementById('ieStatusPillText');
+        if (pill) pill.textContent = _ieCurStatus || '—';
+    }
+    function _ieSyncPalletView() {
+        const el = document.getElementById('iePalletView');
+        if (el) el.textContent = (document.getElementById('iePallet')?.value || '') || '—';
+    }
+    function _updateIeCbm() {
+        const w = parseFloat(document.getElementById('ieW')?.value) || 0;
+        const d = parseFloat(document.getElementById('ieD')?.value) || 0;
+        const h = parseFloat(document.getElementById('ieH')?.value) || 0;
+        const cbm = (w && d && h) ? (w * d * h) / 1e9 : 0;
+        const el = document.getElementById('ieCbm');
+        if (el) el.textContent = cbm ? 'CBM ' + cbm.toFixed(4) + 'm³' : 'CBM —';
+    }
+    function _ieSyncSpecView() {
+        const nv = (viewId, inpId) => { const el = document.getElementById(viewId); const v = document.getElementById(inpId)?.value; if (el) el.textContent = (v === '' || v == null) ? '—' : v; };
+        nv('ieWView', 'ieW'); nv('ieDView', 'ieD'); nv('ieHView', 'ieH'); nv('ieGView', 'ieG');
+    }
+    function _ieDisplayDate(v) {
+        if (!v || v === '-') return '—';
+        const n = _nd(v);
+        if (!n) return '—';
+        const p = n.split('-');
+        return p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
+    }
+    function _ieSyncScheduleView() {
+        const dv = (viewId, inpId) => { const el = document.getElementById(viewId); if (el) el.textContent = _ieDisplayDate(document.getElementById(inpId)?.value); };
+        dv('ieDueDateView', 'ieDueDate'); dv('ieShipDateView', 'ieShipDate'); dv('ieRegDateView', 'ieRegDate');
+        // 진행상태 알약 옆의 "변경" 날짜 — 실제로 추적하는 "상태 변경 시각"은 없어서,
+        // 지금 상태와 가장 직접적으로 연결된 실제 필드(포장일)를 그대로 보여준다(시안의
+        // 캡션 자리, 값은 지어내지 않고 실제 포장일을 씀).
+        const changedEl = document.getElementById('ieStatusChangedDate');
+        if (changedEl) { const disp = _ieDisplayDate(document.getElementById('ieRegDate')?.value); changedEl.textContent = disp === '—' ? '' : disp + ' 변경'; }
+    }
 
     // color까지 넘어오면 그걸로 정확히 지목하고, 안 넘어오면(이전 호출부 호환) 예전처럼 code+round 첫 매치.
     // 같은 code+round인데 색상만 다른 행이 여러 개 있으면 색상 없이는 항상 같은(첫) 행만 열려서
@@ -4629,40 +4728,66 @@
             const ieColor = document.getElementById('ieColor');
             const ieCountry = document.getElementById('ieCountry');
             const ieQty = document.getElementById('ieQty');
-            const ieDate = document.getElementById('ieDate');
-            const ieDue = document.getElementById('ieDue');
             if (ieColor) ieColor.textContent = item.color || '—';
             if (ieCountry) ieCountry.textContent = item.div || item.country || '—';
             if (ieQty) ieQty.textContent = (item.qty||0).toLocaleString() + ' BOX';
-            if (ieDate) ieDate.textContent = fmtKr(item.date);
-            if (ieDue) ieDue.textContent = fmtKr(item.dueDate);
+            // 제품종류(상판 등, 헤더 배지) / 유형(일자형 등, 칩) — 둘 다 아직 시트엔 없어서
+            // 코드별로 브라우저에 직접 적어두는 값(pkgSpecOverride_<code>.productType, 요청,
+            // 2026-10-13). 상세스펙 화면(_pkgSpecCardHtml)과 같은 값을 그대로 읽어와 보여준다.
+            let _ieOv = {};
+            try { _ieOv = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}'); } catch (e) {}
+            const ieCodeTypeEl = document.getElementById('ieCodeType');
+            const ieTypeEl = document.getElementById('ieType');
+            if (ieCodeTypeEl) ieCodeTypeEl.textContent = _ieOv.productType || '—';
+            if (ieTypeEl) ieTypeEl.textContent = _ieOv.productType || '—';
             _ieOrigRegDate = item.regDate && item.regDate !== '-' ? _nd(item.regDate) : '';
+            _ieOrigShipDate = item.date && item.date !== '-' ? _nd(item.date) : '';
+            _ieOrigDueDate = item.dueDate && item.dueDate !== '-' ? _nd(item.dueDate) : '';
             const ieRegDateInp = document.getElementById('ieRegDate');
             if (ieRegDateInp) ieRegDateInp.value = _ieOrigRegDate;
+            const ieShipDateInp = document.getElementById('ieShipDate');
+            if (ieShipDateInp) ieShipDateInp.value = _ieOrigShipDate;
+            const ieDueDateInp = document.getElementById('ieDueDate');
+            if (ieDueDateInp) ieDueDateInp.value = _ieOrigDueDate;
             _ieOrigStatus = item.status || '';
             _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigD = (item.specD||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigH = (item.specH||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigG = (item.specG||'').toString().replace(/[^0-9.]/g,'');
+            _ieOrigMemo = item.memo || '';
+            _ieBasis = PKG_STATUS_GROUPS[item.source] ? item.source : 'standard';
         } else {
-            ['ieColor','ieCountry','ieQty','ieDate','ieDue'].forEach(id => {
+            ['ieColor','ieCountry','ieQty','ieCodeType','ieType'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
             });
-            _ieOrigRegDate = '';
+            _ieOrigRegDate = ''; _ieOrigShipDate = ''; _ieOrigDueDate = '';
             const ieRegDateInp = document.getElementById('ieRegDate');
             if (ieRegDateInp) ieRegDateInp.value = '';
+            const ieShipDateInp = document.getElementById('ieShipDate');
+            if (ieShipDateInp) ieShipDateInp.value = '';
+            const ieDueDateInp = document.getElementById('ieDueDate');
+            if (ieDueDateInp) ieDueDateInp.value = '';
             _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
+            _ieOrigMemo = '';
+            _ieBasis = 'standard';
         }
         _ieCurStatus = _ieOrigStatus;
-        const partialQtyInp = document.getElementById('iePartialQty');
-        if (partialQtyInp) partialQtyInp.value = '';
+        const memoInp = document.getElementById('ieMemo');
+        if (memoInp) memoInp.value = _ieOrigMemo;
+        _ieEditStatus = false; _ieEditSchedule = false; _ieEditSpec = false;
+        _ieApplyCardToggle('ieStatus', false);
+        _ieApplyCardToggle('ieSchedule', false);
+        _ieApplyCardToggle('ieSpec', false);
+        _renderIeBasisTabs();
         _renderIeStatus();
+        _renderIeStatusView();
         const pm = _buildPalletMap();
         // 시트엔 "적재 99" 형식으로 저장돼있는데, 숫자만 입력하기 편하도록 편집창엔 접두사 빼고 보여줌
         _ieOrigPallet = (pm[(code||'').toUpperCase() + '|' + round] || '').replace(/^적재\s*/, '');
         const palInp = document.getElementById('iePallet');
         if (palInp) palInp.value = _ieOrigPallet;
         _checkIePalletExists();
+        _ieSyncPalletView();
         const ieW = document.getElementById('ieW');
         const ieD = document.getElementById('ieD');
         const ieH = document.getElementById('ieH');
@@ -4671,6 +4796,9 @@
         if (ieD) ieD.value = _ieOrigD;
         if (ieH) ieH.value = _ieOrigH;
         if (ieG) ieG.value = _ieOrigG;
+        _updateIeCbm();
+        _ieSyncSpecView();
+        _ieSyncScheduleView();
         const fb = document.getElementById('ieFeedback');
         if (fb) { fb.textContent = ''; fb.style.color = ''; }
         const sheet = document.getElementById('itemEditSheet');
@@ -4709,55 +4837,63 @@
     function _renderIeStatus() {
         const container = document.getElementById('ieStatusOpts');
         if (!container) return;
-        container.innerHTML = _IE_STATUS_OPTS.map(opt => {
-            const active = opt.v === _ieCurStatus;
-            return `<button onclick="selectIeStatus('${opt.v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${active?opt.c:'var(--border)'};background:${active?opt.c+'22':'var(--input-bg)'};color:${active?opt.c:'var(--text-sub)'};font-size:11px;font-weight:${active?800:600};cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;">${opt.v}</button>`;
+        const set = PKG_STATUS_GROUPS[_ieBasis];
+        container.innerHTML = set.map(v => {
+            const active = v === _ieCurStatus;
+            const c = PKG_STATUS_COLOR[v] || '#64748B';
+            return `<button onclick="selectIeStatus('${v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${active?c:'var(--border)'};background:${active?c+'22':'var(--input-bg)'};color:${active?c:'var(--text-sub)'};font-size:11px;font-weight:${active?800:600};cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;">${v}</button>`;
         }).join('');
-        const partialRow = document.getElementById('iePartialRow');
-        if (partialRow) partialRow.style.display = (_ieCurStatus === '일부입고') ? 'block' : 'none';
     }
 
     function selectIeStatus(v) {
         _ieCurStatus = v;
         _renderIeStatus();
+        _renderIeStatusView();
     }
 
     async function saveItemEdit() {
         if (!_ieCode) return;
         const btn = document.getElementById('ieSaveBtn');
         const fb  = document.getElementById('ieFeedback');
-        // 일부입고 선택 시 수량을 안 적으면 시트에 뭘 적어야 할지 알 수 없으니 먼저 확인
-        if (_ieCurStatus === '일부입고') {
-            const q = (document.getElementById('iePartialQty')?.value || '').trim();
-            if (!q || isNaN(q) || Number(q) <= 0) {
-                if (fb) { fb.textContent = '일부입고 수량(EA)을 입력하세요.'; fb.style.color = '#FF4444'; }
-                document.getElementById('iePartialQty')?.focus();
-                return;
-            }
-        }
         if (fb) { fb.textContent = '저장 중...'; fb.style.color = 'var(--text-sub)'; }
         if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...'; }
         const newPallet = (document.getElementById('iePallet')?.value || '').trim();
         // 포장완료로 저장하는데 포장완료일을 따로 안 골랐으면 오늘 날짜로 자동 입력
         let newRegDate = (document.getElementById('ieRegDate')?.value || '').trim();
         if (_ieCurStatus === '포장완료' && !newRegDate) newRegDate = todayStr();
+        const newShipDate = (document.getElementById('ieShipDate')?.value || '').trim();
+        const newDueDate = (document.getElementById('ieDueDate')?.value || '').trim();
         const newW = (document.getElementById('ieW')?.value || '').trim();
         const newD = (document.getElementById('ieD')?.value || '').trim();
         const newH = (document.getElementById('ieH')?.value || '').trim();
         const newG = (document.getElementById('ieG')?.value || '').trim();
+        const newMemo = (document.getElementById('ieMemo')?.value || '').trim();
         const tasks = [];
         const changed = {};
+        // 기준(수출현황/충주공장 재고/출고완료)마다 진행상태를 실제로 쓰는 시트·칸이
+        // 다르다(요청, 2026-10-15) — 그 기준에 맞는 액션으로만 보낸다.
         if (_ieCurStatus && _ieCurStatus !== _ieOrigStatus) {
-            const statusParams = { action:'updateStatus', code:_ieCode, round:_ieRound, color:_ieColor, status:_ieCurStatus };
-            if (_ieCurStatus === '일부입고') {
-                const q = (document.getElementById('iePartialQty')?.value || '').trim();
-                statusParams.note = q + ' EA만 입고됨';
-            }
+            const statusAction = _ieBasis === 'standard' ? 'updateMainStatus' : _ieBasis === 'shipped' ? 'updateShippedStatus' : 'updateStatus';
             tasks.push(
-                fetch(GAS_URL + '?' + new URLSearchParams(statusParams),
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:statusAction, code:_ieCode, round:_ieRound, color:_ieColor, status:_ieCurStatus }),
                     { signal: AbortSignal.timeout(15000) }).then(r => r.text())
             );
             changed.status = _ieCurStatus;
+        }
+        if (newShipDate !== _ieOrigShipDate || newDueDate !== _ieOrigDueDate) {
+            const dateBody = { action:'pkgUpdateShipDate', items:[{ code:_ieCode, round:_ieRound, color:_ieColor }] };
+            if (newShipDate !== _ieOrigShipDate) { dateBody.shipDate = newShipDate; changed.shipDate = newShipDate; }
+            if (newDueDate !== _ieOrigDueDate) { dateBody.dueDate = newDueDate; changed.dueDate = newDueDate; }
+            tasks.push(
+                fetch(GAS_URL, { method:'POST', body: JSON.stringify(dateBody), signal: AbortSignal.timeout(30000) }).then(r => r.json())
+            );
+        }
+        if (newMemo !== _ieOrigMemo) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateNote', code:_ieCode, round:_ieRound, color:_ieColor, note:newMemo }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.memo = newMemo;
         }
         if (newPallet !== _ieOrigPallet) {
             // 숫자만 입력했으면 시트 형식("적재 99")에 맞춰 접두사를 붙여서 보냄 — 문자 섞인 라벨(예: A-1)은 그대로 전송
@@ -4810,6 +4946,15 @@
             }
             if (changed.regDate !== undefined) {
                 allData.forEach(it => { if (_ieMatch(it)) it.regDate = changed.regDate; });
+            }
+            if (changed.shipDate !== undefined) {
+                allData.forEach(it => { if (_ieMatch(it)) it.date = changed.shipDate; });
+            }
+            if (changed.dueDate !== undefined) {
+                allData.forEach(it => { if (_ieMatch(it)) it.dueDate = changed.dueDate; });
+            }
+            if (changed.memo !== undefined) {
+                allData.forEach(it => { if (_ieMatch(it)) it.memo = changed.memo; });
             }
             if (changed.pallet !== undefined && rawStockRows && rawStockRows.length > 1) {
                 const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
@@ -4992,76 +5137,151 @@
       <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--divider);">
         <div style="min-width:0;flex:1;">
-          <div style="display:flex;align-items:center;gap:6px;">
+          <div style="display:flex;align-items:baseline;gap:6px;">
             <div id="ieCode" style="font-size:16px;font-weight:800;font-family:monospace;color:var(--text);"></div>
-            <button onclick="openSpecFromItemEdit()" title="상세스펙 보기" style="background:rgba(0,176,255,.1);border:1px solid rgba(0,176,255,.25);color:#00B0FF;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;">
-              <i class="fa-solid fa-ruler-combined"></i>
-            </button>
+            <span id="ieCodeType" style="font-size:10px;font-weight:700;color:#00B0FF;background:rgba(0,176,255,.1);padding:2px 7px;border-radius:6px;flex-shrink:0;"></span>
           </div>
           <div id="ieRound" style="font-size:11px;color:var(--text-sub);margin-top:2px;font-weight:600;"></div>
         </div>
-        <button onclick="closeItemEdit()" style="width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;">
+          <button title="포장 불량조치 (준비중)" style="background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.25);color:#D97706;border-radius:8px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:default;flex-shrink:0;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+          </button>
+          <button onclick="openSpecFromItemEdit()" title="상세스펙 보기" style="background:rgba(0,176,255,.1);border:1px solid rgba(0,176,255,.25);color:#00B0FF;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;">
+            <i class="fa-solid fa-ruler-combined"></i>
+          </button>
+          <button onclick="closeItemEdit()" style="width:32px;height:32px;border-radius:10px;border:none;background:var(--icon-bg);color:var(--text-sub);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div class="no-scrollbar" style="overflow-y:auto;flex:1;padding:16px 20px 8px;">
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
-        <span id="ieColor" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;font-family:monospace;"></span>
         <span id="ieCountry" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;"></span>
-        <span id="ieQty" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:800;margin-left:auto;font-family:monospace;"></span>
+        <span id="ieColor" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;font-family:monospace;"></span>
+        <span id="ieQty" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:800;font-family:monospace;"></span>
+        <span id="ieType" style="font-size:11px;padding:3px 10px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text-sub);font-weight:700;"></span>
       </div>
-      <div style="display:flex;gap:12px;margin-bottom:16px;font-size:11px;font-family:monospace;flex-wrap:wrap;">
-        <span style="color:var(--label);">상차 <span id="ieDate" style="color:var(--text-sub);font-weight:700;"></span></span>
-        <span style="color:var(--label);">납기 <span id="ieDue" style="color:var(--text-sub);font-weight:700;"></span></span>
-      </div>
-      <div style="margin-bottom:18px;">
-        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">진행상태</div>
-        <div id="ieStatusOpts" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
-        <div id="iePartialRow" style="display:none;margin-top:8px;">
-          <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px;">원래 수량 중 몇 개(EA)가 입고됐는지 입력하세요</div>
-          <input id="iePartialQty" type="number" placeholder="예: 5" inputmode="numeric"
-            style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
-            onfocus="this.style.borderColor='#F59E0B'" onblur="this.style.borderColor='var(--border)'">
+
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleIeStatusEdit()">
+          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">진행상태</span>
+          <span id="ieStatusToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+        </div>
+        <div id="ieBasisTabs" style="display:flex;gap:3px;background:var(--panel);border-radius:9px;padding:3px;margin-bottom:10px;"></div>
+        <div id="ieStatusViewWrap">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="display:inline-flex;align-items:center;gap:6px;background:#00B0FF;color:#0B0F19;font-size:12.5px;font-weight:800;padding:7px 16px;border-radius:20px;">
+              <i class="fa-solid fa-check"></i> <span id="ieStatusPillText">-</span>
+            </span>
+            <span id="ieStatusChangedDate" style="font-size:10px;color:var(--label);font-family:monospace;"></span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);">
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);">적재번호</span>
+            <span id="iePalletView" style="font-size:13px;font-weight:800;color:var(--text);font-family:monospace;">-</span>
+          </div>
+        </div>
+        <div id="ieStatusEditWrap" style="display:none;">
+          <div id="ieStatusOpts" style="display:flex;gap:4px;flex-wrap:wrap;"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);">
+            <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);flex-shrink:0;">적재번호</span>
+            <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
+              style="flex:1;min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:12.5px;color:var(--text);outline:none;box-sizing:border-box;text-align:right;font-family:monospace;"
+              oninput="_checkIePalletExists();_ieSyncPalletView();"
+              onkeydown="if(event.key==='Enter')saveItemEdit()">
+          </div>
+          <div id="iePalletWarning" style="display:none;font-size:11px;color:#F59E0B;margin-top:6px;"></div>
         </div>
       </div>
-      <div style="margin-bottom:18px;">
-        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">포장완료일</div>
-        <input id="ieRegDate" type="date"
-          style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-        <div style="font-size:10.5px;color:var(--label);margin-top:6px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
+
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleIeScheduleEdit()">
+          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">일정</span>
+          <span id="ieScheduleToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+        </div>
+        <div id="ieScheduleViewWrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">납기일</div>
+            <div id="ieDueDateView" style="font-size:12.5px;font-weight:800;color:#F59E0B;">-</div>
+          </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">상차일</div>
+            <div id="ieShipDateView" style="font-size:12.5px;font-weight:800;color:#059669;">-</div>
+          </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">포장일</div>
+            <div id="ieRegDateView" style="font-size:12.5px;font-weight:800;color:#00B0FF;">-</div>
+          </div>
+        </div>
+        <div id="ieScheduleEditWrap" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">납기일</div>
+            <input id="ieDueDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+          </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">상차일</div>
+            <input id="ieShipDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+          </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">포장일</div>
+            <input id="ieRegDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+          </div>
+        </div>
+        <div id="ieScheduleHint" style="display:none;font-size:10.5px;color:var(--label);margin-top:8px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
       </div>
-      <div style="margin-bottom:18px;">
-        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">적재번호</div>
-        <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
-          style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'"
-          oninput="_checkIePalletExists()"
-          onkeydown="if(event.key==='Enter')saveItemEdit()">
-        <div id="iePalletWarning" style="display:none;font-size:11px;color:#F59E0B;margin-top:6px;"></div>
-      </div>
-      <div style="margin-bottom:20px;">
-        <div style="font-size:11px;font-weight:700;color:var(--label);margin-bottom:8px;letter-spacing:.04em;">규격</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleIeSpecEdit()">
+          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">규격 (mm) 무게(kg)</span>
+          <span id="ieSpecToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+        </div>
+        <div id="ieSpecViewWrap" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="text-align:center;">
+            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">가로 (mm)</div>
+            <div id="ieWView" style="font-size:16px;font-weight:800;color:#0284C7;">-</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">세로 (mm)</div>
+            <div id="ieDView" style="font-size:16px;font-weight:800;color:#059669;">-</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">높이 (mm)</div>
+            <div id="ieHView" style="font-size:16px;font-weight:800;color:#D97706;">-</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">무게 (kg)</div>
+            <div id="ieGView" style="font-size:16px;font-weight:800;color:#7C3AED;">-</div>
+          </div>
+        </div>
+        <div id="ieSpecEditWrap" style="display:none;grid-template-columns:1fr 1fr;gap:8px;">
           <div>
             <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">가로 (mm)</div>
-            <input id="ieW" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <input id="ieW" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
           </div>
           <div>
             <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">세로 (mm)</div>
-            <input id="ieD" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <input id="ieD" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
           </div>
           <div>
             <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">높이 (mm)</div>
-            <input id="ieH" type="number" placeholder="—" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <input id="ieH" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
           </div>
           <div>
             <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">무게 (kg)</div>
-            <input id="ieG" type="number" placeholder="—" step="0.01" style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <input id="ieG" type="number" placeholder="—" step="0.01" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
           </div>
         </div>
+        <div id="ieCbm" style="margin-top:9px;font-size:10.5px;color:var(--label);">CBM —</div>
       </div>
+
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:6px;">특이사항</div>
+        <div style="font-size:10px;color:var(--label);margin-bottom:8px;">실제 시트의 비고란과 연동됩니다 — 기존에 적힌 내용이 있으면 그대로 불러와 보여줍니다.</div>
+        <textarea id="ieMemo" rows="3" placeholder="특이사항을 입력하세요 (시트 비고란에 저장됩니다)"
+          style="width:100%;background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;outline:none;box-sizing:border-box;resize:vertical;font-family:inherit;"></textarea>
+      </div>
+
       <div id="ieFeedback" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-bottom:8px;"></div>
       <button id="ieSaveBtn" onclick="saveItemEdit()"
         style="width:100%;background:var(--accent);color:#0B0F19;font-size:14px;font-weight:800;border:none;border-radius:14px;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;-webkit-tap-highlight-color:transparent;">

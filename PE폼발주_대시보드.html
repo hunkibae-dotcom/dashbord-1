@@ -260,10 +260,6 @@ try {
       <button id="syncBtn" onclick="manualRefresh()" title="새로고침" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;">
         <i class="fa-solid fa-arrows-rotate" id="syncIcon"></i>
       </button>
-      <label class="theme-toggle">
-        <input type="checkbox" id="themeCheck" onchange="toggleTheme()">
-        <span class="toggle-slider"></span>
-      </label>
     </div>
   </header>
 
@@ -378,6 +374,28 @@ try {
       <div class="list" id="mstList"></div>
     </div>
 
+    <!-- ══ 설정 ══ -->
+    <div class="tab-view" id="tab-settings" style="gap:10px;">
+      <a href="https://docs.google.com/spreadsheets/d/19y40Q2Dznx5E6Jzsh57u8YKECTGA9-seC86BZjZjWXk/edit?gid=1744450987#gid=1744450987" target="_blank" style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:12px;font-size:13.5px;font-weight:700;color:var(--text);text-decoration:none;box-shadow:var(--shadow);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        PE폼 데이터시트 바로가기
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.4" style="margin-left:auto;"><path d="M7 17L17 7"></path><path d="M7 7h10v10"></path></svg>
+      </a>
+      <button onclick="openPeWebDashboard()" style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--text);width:100%;text-align:left;box-shadow:var(--shadow);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        웹으로 열기 (PC 대시보드)
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.4" style="margin-left:auto;"><path d="M7 17L17 7"></path><path d="M7 7h10v10"></path></svg>
+      </button>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:15px 16px;display:flex;align-items:center;gap:12px;font-size:13.5px;font-weight:700;box-shadow:var(--shadow);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2"><path d="M12 3a6 6 0 109 9 9 9 0 11-9-9z"/></svg>
+        다크 모드
+        <label class="theme-toggle" style="margin-left:auto;">
+          <input type="checkbox" id="themeCheck" onchange="toggleTheme()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
   </div>
 
   <nav id="pnav">
@@ -385,6 +403,7 @@ try {
     <button class="pnav-item" data-tab="orders" onclick="switchTab('orders')"><i class="fa-solid fa-clock-rotate-left"></i>발주이력</button>
     <button class="pnav-item" data-tab="stock" onclick="switchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i>재고 현황</button>
     <button class="pnav-item" data-tab="master" onclick="switchTab('master')"><i class="fa-solid fa-tag"></i>품목마스터</button>
+    <button class="pnav-item" data-tab="settings" onclick="switchTab('settings')"><i class="fa-solid fa-gear"></i>설정</button>
   </nav>
 </div>
 
@@ -1413,6 +1432,17 @@ function switchTab(name) {
   document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   document.querySelectorAll('.pnav-item').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+}
+
+// ── PC 대시보드 웹으로 열기 (다른 대시보드들과 같은 패턴) ──
+function openPeWebDashboard() {
+  const url = 'https://hunkibae-dotcom.github.io/dashbord-1/PE%ED%8F%BC%EB%B0%9C%EC%A3%BC_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1';
+  if (/Android/i.test(navigator.userAgent)) {
+    // Android TWA/PWA scope 내부 URL → intent:// 로 Chrome 외부 브라우저 강제 실행
+    window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/PE%ED%8F%BC%EB%B0%9C%EC%A3%BC_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }
 }
 
 // ═══ 테마 ═══
