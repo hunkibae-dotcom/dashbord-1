@@ -819,12 +819,15 @@ function fiRenderDetPhotos() {
   wrap.innerHTML = fiDetPhotos.map(function (p, i) {
     return '<div style="position:relative;width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--input-bg);">' +
       fiPhotoImgTag(p, 'width:100%;height:100%;object-fit:cover;') +
-      '<span onclick="fiRemoveDetPhoto(' + i + ')" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+      '<span onclick="fiOpenDetPhotoAction(' + i + ')" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
     '</div>';
   }).join('') + '<div onclick="document.getElementById(\'fiDetPhotoFile\').click()" style="width:72px;height:72px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;">' +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>' +
     '<span style="font-size:8px;color:var(--label);font-weight:600;">추가</span></div>';
+  const viewAllBtn = document.getElementById('fiDetPhotoViewAllBtn');
+  if (viewAllBtn) viewAllBtn.style.display = fiDetPhotos.length ? 'flex' : 'none';
 }
+let fiDetPhotoChangeIndex = null; // "변경"을 고르면, 다음에 고르는 사진으로 이 위치를 바꿔치기한다
 function fiHandleDetPhotoFile(input) {
   const file = input.files && input.files[0];
   input.value = '';
@@ -832,9 +835,41 @@ function fiHandleDetPhotoFile(input) {
   // 저장을 누르기 전엔 서버에 아무것도 보내지 않는다 — 화면에만 임시로 더해두고
   // (dataUrl만 있는 "아직 안 올린 사진"), 실제 업로드는 fiSaveDetail()에서 한다.
   fiCompressImageFile(file, function (dataUrl) {
-    fiDetPhotos.push({ dataUrl: dataUrl });
+    if (fiDetPhotoChangeIndex != null) {
+      const i = fiDetPhotoChangeIndex;
+      fiDetPhotoChangeIndex = null;
+      const old = fiDetPhotos[i];
+      if (old && old.fileId) fiDetRemovedFileIds.push(old.fileId);
+      fiDetPhotos[i] = { dataUrl: dataUrl };
+    } else {
+      fiDetPhotos.push({ dataUrl: dataUrl });
+    }
     fiRenderDetPhotos();
   });
+}
+// ✕를 누르면 바로 지우지 않고 "변경/삭제"를 먼저 고르게 한다.
+let fiDetPhotoActionIndex = null;
+function fiOpenDetPhotoAction(i) {
+  fiDetPhotoActionIndex = i;
+  document.getElementById('fiPhotoActionModal').style.display = 'flex';
+  _fiArmBackTrap();
+}
+function fiCloseDetPhotoAction() {
+  document.getElementById('fiPhotoActionModal').style.display = 'none';
+  fiDetPhotoActionIndex = null;
+}
+function fiDetPhotoActionChange() {
+  const i = fiDetPhotoActionIndex;
+  fiCloseDetPhotoAction();
+  if (i == null) return;
+  fiDetPhotoChangeIndex = i;
+  document.getElementById('fiDetPhotoFile').click();
+}
+function fiDetPhotoActionDelete() {
+  const i = fiDetPhotoActionIndex;
+  fiCloseDetPhotoAction();
+  if (i == null) return;
+  fiRemoveDetPhoto(i);
 }
 function fiRemoveDetPhoto(i) {
   if (!fiDetKey) return;
