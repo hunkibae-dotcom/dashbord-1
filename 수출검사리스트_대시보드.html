@@ -8080,21 +8080,58 @@ function _qcNewUpdateSelUi() {
   if (copyBtn) copyBtn.disabled = _qcNewSelected.size === 0;
 }
 
-// 한 줄(단품코드/색상/단품명칭/수량)을 탭으로 구분해 복사 — 시트의 단품코드 칸에
-// 붙여넣으면 그 오른쪽 색상/단품명칭/수량 칸까지 한 번에 채워진다.
+// 한 줄(단품코드/색상/단품명칭/수량)을 복사 — 구글 "시트"에 붙여넣을 땐 탭 구분
+// 일반텍스트만으로도 칸이 자동으로 나뉘지만, 구글 "문서(Docs)" 안의 표는 그렇지
+// 않아서(탭 글자가 그냥 한 칸 안에 통째로 들어가버림, 2026-10-16 확인) 클립보드에
+// 진짜 <table> HTML도 같이 담아 보낸다 — 엑셀/시트를 복사해서 문서 표에 붙여넣을 때
+// 칸이 맞춰지는 것과 같은 원리. HTML 클립보드가 안 되는 구형 환경에서는 탭 구분
+// 텍스트로 자동 대체된다.
 function _qcNewRowText(code, color, name, qty) {
   return [code || '', color || '', name || '', qty != null ? qty : ''].join('\t');
 }
-function qcNewCopyRow(code, color, name, qty, e) {
-  copyCellText(_qcNewRowText(code, color, name, qty), e);
+function _qcNewRowHtmlCells(code, color, name, qty) {
+  const esc = s => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return '<tr><td>' + esc(code) + '</td><td>' + esc(color) + '</td><td>' + esc(name) + '</td><td>' + esc(qty) + '</td></tr>';
 }
-// 체크된 만큼 여러 줄을 한 번에 복사 — 줄바꿈으로 구분해서, 시트에 붙여넣으면
-// 선택한 품목 수만큼 아래로 여러 행이 한 번에 채워진다.
+function _qcNewShowCopyToast(e, label) {
+  const toast = document.createElement('div');
+  toast.textContent = label;
+  toast.style.cssText = 'position:fixed;z-index:99999;background:#1E293B;color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:8px;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.28);transition:opacity .35s,transform .35s;opacity:1;white-space:nowrap;';
+  const x = e ? e.clientX : window.innerWidth / 2, y = e ? e.clientY : window.innerHeight / 2;
+  toast.style.left = Math.min(Math.max(x, 80), window.innerWidth - 80) + 'px';
+  toast.style.top = Math.max(y - 40, 8) + 'px';
+  toast.style.transform = 'translate(-50%,0)';
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%,-8px)'; });
+  setTimeout(() => toast.remove(), 550);
+}
+async function _qcNewCopyRows(rowsHtmlCells, plainText, e, label) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      const html = '<table>' + rowsHtmlCells + '</table>';
+      const item = new ClipboardItem({
+        'text/plain': new Blob([plainText], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' })
+      });
+      await navigator.clipboard.write([item]);
+      _qcNewShowCopyToast(e, label);
+      return;
+    } catch (err) { /* 아래 일반 텍스트 복사로 대체 */ }
+  }
+  copyCellText(plainText, e);
+}
+function qcNewCopyRow(code, color, name, qty, e) {
+  _qcNewCopyRows(_qcNewRowHtmlCells(code, color, name, qty), _qcNewRowText(code, color, name, qty), e, '1건 복사됨 (표에 붙여넣기 가능)');
+}
+// 체크된 만큼 여러 줄을 한 번에 복사 — 문서 표에 붙여넣으면 선택한 품목 수만큼
+// 아래로 여러 행이 한 번에 채워진다.
 function qcNewCopySelected(e) {
   const selected = _qcNewItems().filter(d => _qcNewSelected.has(_qcNewKey(d)));
   if (!selected.length) return;
-  const text = selected.map(d => _qcNewRowText(d.단품코드, d.색상, d.단품명칭, d.수량)).join('\n');
-  copyCellText(text, e);
+  const htmlRows = selected.map(d => _qcNewRowHtmlCells(d.단품코드, d.색상, d.단품명칭, d.수량)).join('');
+  const plainText = selected.map(d => _qcNewRowText(d.단품코드, d.색상, d.단품명칭, d.수량)).join('\n');
+  _qcNewCopyRows(htmlRows, plainText, e, selected.length + '건 복사됨 (표에 붙여넣기 가능)');
 }
 
 async function qcNewConfirmSelected() {
