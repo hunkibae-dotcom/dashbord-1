@@ -370,6 +370,31 @@ try {
     </div>
   </div>
 
+  <!-- 사진 변경/삭제 선택 (업로드된 사진의 ✕를 누르면 뜸) -->
+  <div id="fiPhotoActionModal" onclick="if(event.target===this)fiCloseDetPhotoAction()" style="display:none; position:fixed; inset:0; z-index:96; align-items:center; justify-content:center; background:rgba(0,0,0,.5);">
+    <div style="background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:8px; width:260px; max-width:88%; overflow:hidden;">
+      <button onclick="fiDetPhotoActionChange()" style="width:100%; text-align:left; background:none; border:none; padding:14px 12px; font-size:13.5px; font-weight:700; color:var(--text); cursor:pointer; border-bottom:1px solid var(--divider); display:flex; align-items:center; gap:10px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        사진 변경
+      </button>
+      <button onclick="fiDetPhotoActionDelete()" style="width:100%; text-align:left; background:none; border:none; padding:14px 12px; font-size:13.5px; font-weight:700; color:#DC2626; cursor:pointer; display:flex; align-items:center; gap:10px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path></svg>
+        사진 삭제
+      </button>
+    </div>
+  </div>
+
+  <!-- 사진 크게보기(라이트박스) — 부적합조회 카드/하자상세 "전체보기"에서 공용으로 사용 -->
+  <div id="fiPhotoViewerModal" onclick="if(event.target===this)fiClosePhotoViewer()" style="display:none; position:fixed; inset:0; z-index:97; background:rgba(0,0,0,.92); align-items:center; justify-content:center; flex-direction:column;">
+    <button onclick="fiClosePhotoViewer()" style="position:absolute; top:max(14px,env(safe-area-inset-top)); right:14px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;">✕</button>
+    <div id="fiPhotoViewerCounter" style="display:none; position:absolute; top:max(18px,env(safe-area-inset-top)); left:50%; transform:translateX(-50%); color:#fff; font-size:12px; font-weight:700; background:rgba(255,255,255,.15); padding:5px 13px; border-radius:20px;"></div>
+    <img id="fiPhotoViewerImg" style="max-width:92vw; max-height:78vh; object-fit:contain; border-radius:4px;">
+    <div id="fiPhotoViewerNav" style="display:none; position:absolute; bottom:max(24px,env(safe-area-inset-bottom)); left:0; right:0; justify-content:space-between; padding:0 18px;">
+      <button onclick="fiPhotoViewerPrev()" style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:18px; cursor:pointer;">‹</button>
+      <button onclick="fiPhotoViewerNext()" style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:18px; cursor:pointer;">›</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
