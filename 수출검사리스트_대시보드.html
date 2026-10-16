@@ -8076,6 +8076,25 @@ function _qcNewUpdateSelUi() {
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcNewSelected.has(_qcNewKey(d)));
   const btn = document.getElementById('qcNewConfirmBtn');
   if (btn) btn.disabled = _qcNewSelected.size === 0;
+  const copyBtn = document.getElementById('qcNewCopySelBtn');
+  if (copyBtn) copyBtn.disabled = _qcNewSelected.size === 0;
+}
+
+// 한 줄(단품코드/색상/단품명칭/수량)을 탭으로 구분해 복사 — 시트의 단품코드 칸에
+// 붙여넣으면 그 오른쪽 색상/단품명칭/수량 칸까지 한 번에 채워진다.
+function _qcNewRowText(code, color, name, qty) {
+  return [code || '', color || '', name || '', qty != null ? qty : ''].join('\t');
+}
+function qcNewCopyRow(code, color, name, qty, e) {
+  copyCellText(_qcNewRowText(code, color, name, qty), e);
+}
+// 체크된 만큼 여러 줄을 한 번에 복사 — 줄바꿈으로 구분해서, 시트에 붙여넣으면
+// 선택한 품목 수만큼 아래로 여러 행이 한 번에 채워진다.
+function qcNewCopySelected(e) {
+  const selected = _qcNewItems().filter(d => _qcNewSelected.has(_qcNewKey(d)));
+  if (!selected.length) return;
+  const text = selected.map(d => _qcNewRowText(d.단품코드, d.색상, d.단품명칭, d.수량)).join('\n');
+  copyCellText(text, e);
 }
 
 async function qcNewConfirmSelected() {
