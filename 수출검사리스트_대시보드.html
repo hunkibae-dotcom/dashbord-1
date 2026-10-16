@@ -5308,6 +5308,7 @@ function openRpNoteEditor(key) {
   const sel = _reportSelected[key];
   if (!sel) return;
   _rpEditKey = key; _rpEditMode = 'note';
+  _rpEditPendingPhotoAction = null;
   const notePhotoEff = _rpEffectivePhoto(sel, 'note');
   const photoUrl = notePhotoEff && notePhotoEff.src;
   document.getElementById('rpEditTitle').textContent = '검사 특이사항';
