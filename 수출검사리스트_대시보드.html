@@ -7895,16 +7895,27 @@ function saveMItemDetail() {
     });
   }
   // 검사완료로 바꾸면서 검사완료일을 따로 안 골랐으면 오늘 날짜로 자동 입력(요청, 2026-10-15,
-  // 포장강화의 포장완료일 자동입력과 동일한 규칙).
-  if (pending.검사 === '검사' && !item.검사일) {
+  // 포장강화의 포장완료일 자동입력과 동일한 규칙). item은 아직 저장 전 원래 값이므로
+  // pending.검사일(이번에 직접 고른 값)과 item.검사일(원래 시트값) 둘 다 없을 때만 채운다.
+  if (pending.검사 === '검사' && !(pending.검사일 || item.검사일)) {
     const _today = new Date();
     const _todayStr = _today.getFullYear() + '-' + String(_today.getMonth() + 1).padStart(2, '0') + '-' + String(_today.getDate()).padStart(2, '0');
-    item.검사일 = _todayStr;
     pending.검사일 = _todayStr;
     const inp = document.getElementById('miDateInput'); if (inp) inp.value = _todayStr;
-    _miSyncViewMirrors();
   }
   const fields = Object.keys(pending);
+  // 이 시점까지는 _miCurrent(목록·제품검색 등이 참조하는 실제 객체)에 아무 것도 안
+  // 건드렸다 — 저장 버튼을 누른 지금에야 한 번에 실제 반영한다(2026-10-16, "저장 안
+  // 눌러도 미리 반영되는 것 같다" 지적 — setMiField에서 하던 즉시반영을 전부 여기로 옮김).
+  if (item && fields.length) {
+    Object.assign(item, pending);
+    if (fields.some(f => ['가로', '세로', '높이'].includes(f))) {
+      const w = parseFloat(item.가로) || 0, d = parseFloat(item.세로) || 0, h = parseFloat(item.높이) || 0;
+      item.CBM = (w && d && h) ? (w * d * h) / 1e9 : 0;
+    }
+    _saveMiOverride(_miKey(item), pending);
+    _miSyncViewMirrors();
+  }
   // 응답을 기다리면(느린 시트 반영 때문에) 화면이 멈춘 것처럼 느껴지므로, 화면은 이미
   // 최신 상태라 응답을 기다리지 않고 백그라운드로 보낸다(결과는 인라인 문구로 계속 표시).
   if (item && fields.length) {
@@ -7917,11 +7928,8 @@ function saveMItemDetail() {
     if (fields.includes('납기일')) _postMiSync(item, { action: 'updateDueDate', date: item.납기일 });
     if (fields.includes('비고')) _postMiSync(item, { action: 'updateNote', note: item.비고 || '' });
   }
-  // setMiField()는 검사/검사일 변경만 그때그때 화면을 다시 그린다(가로/세로/높이처럼
-  // 숫자칸에 한 글자씩 칠 때마다 수백 건짜리 목록을 통째로 다시 그리면 느려지므로
-  // 일부러 뺐다 — 위 주석 참고). 그래서 규격(CBM)만 바꾸고 저장하면 그 숫자 변경이
-  // 화면(제품검색 등)에 끝내 한 번도 반영되지 않았다. "저장"은 모든 변경을 실제로
-  // 확정하는 시점이니, 바뀐 필드 종류와 상관없이 여기서 한 번 더 확실하게 다시 그린다.
+  // "저장"은 모든 변경을 실제로 확정하는 시점이니, 바뀐 필드 종류와 상관없이 목록·KPI·
+  // 제품검색·PC 웹 테이블을 전부 한 번 더 확실하게 다시 그린다.
   if (item && fields.length) {
     renderMobileKPIs();
     renderMobileFactoryPanels();
