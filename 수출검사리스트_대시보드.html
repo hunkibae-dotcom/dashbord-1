@@ -7837,6 +7837,7 @@ function openMItemDetail(key) {
   _miSyncViewMirrors();
   _miRenderPhotoBoxes();
   _miPendingSync = {};
+  _miPendingPhotoActions = {};
   _setMiSyncNote('저장 버튼을 눌러야 실제 시트에 반영됩니다', false);
   document.getElementById('mItemDetailModal').style.display = 'flex';
   _armBackTrap();
