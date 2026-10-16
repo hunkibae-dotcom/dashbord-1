@@ -7863,6 +7863,7 @@ function openMItemDetail(key) {
 function closeMItemDetail() {
   document.getElementById('mItemDetailModal').style.display = 'none';
   _miCurrent = null;
+  _miPendingPhotoActions = {};
 }
 // 이 창의 입력칸(진행상태/검사완료일/규격/재투입 사유)은 예전엔 건드리는 즉시 시트에
 // 반영됐는데, 그러면 하단 "저장" 버튼이 이미 다 끝난 일을 다시 누르는 것 같은 의미
