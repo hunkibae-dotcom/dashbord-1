@@ -5410,7 +5410,8 @@ function _rpShowToast(message, isError) {
   setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, life);
 }
 
-// 사진은 선택 즉시(저장 버튼과 무관하게) 반영한다 — 제품/포장완료 사진칸과 동일한 동작.
+// 이 모달에 "저장" 버튼(_rpSaveEditModal)이 있으니, 사진도 다른 필드처럼 그 버튼을
+// 눌러야 서버에 반영되게 큐에만 쌓아둔다(이 기기 미리보기는 그대로 즉시 바뀜).
 function _rpHandleNotePhoto(input) {
   const file = input.files && input.files[0];
   const key = _rpEditKey;
@@ -5419,7 +5420,7 @@ function _rpHandleNotePhoto(input) {
     if (!_reportSelected[key]) return;
     _reportSelected[key].notePhoto = rec;
     _rpSaveToStorage(true);
-    _rpUploadPhotoToServer(key, 'note', rec.dataUrl);
+    _rpEditPendingPhotoAction = { action: 'upload', dataUrl: rec.dataUrl };
     if (_rpEditKey === key) openRpNoteEditor(key); // 미리보기 갱신
   });
 }
@@ -5430,7 +5431,7 @@ function _rpRemoveNotePhoto() {
   _reportSelected[key].notePhotoRemote = null;
   _reportSelected[key]._updatedAt = Date.now();
   _rpSaveToStorage(true);
-  _rpClearPhotoOnServer(key, 'note');
+  _rpEditPendingPhotoAction = { action: 'clear' };
   openRpNoteEditor(key);
 }
 
