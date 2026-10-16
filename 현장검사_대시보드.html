@@ -794,7 +794,7 @@ function fiOpenDetail(sheet, row) {
   document.getElementById('fiDetailModal').style.display = 'flex';
   _fiArmBackTrap();
 }
-function fiCloseDetail() { document.getElementById('fiDetailModal').style.display = 'none'; fiDetKey = null; fiDetRemovedFileIds = []; }
+function fiCloseDetail() { document.getElementById('fiDetailModal').style.display = 'none'; fiDetKey = null; fiDetRemovedFileIds = []; fiDetPhotoChangeIndex = null; }
 function fiRenderDetTypeBtns() {
   document.getElementById('fiDetTypeBtns').innerHTML = FI_TYPE_LIST.map(function (t) {
     const active = fiDetTypes.indexOf(t) >= 0;
