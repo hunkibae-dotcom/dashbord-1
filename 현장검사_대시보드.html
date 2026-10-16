@@ -782,6 +782,7 @@ function fiOpenDetail(sheet, row) {
   fiDetStatus = d.status;
   fiDetPhotos = (d.photos || []).slice();
   fiDetRemovedFileIds = [];
+  fiDetPhotoChangeIndex = null;
   document.getElementById('fiDetCode').textContent = d.code || '—';
   document.getElementById('fiDetColor').textContent = d.color || '—';
   document.getElementById('fiDetQty').textContent = d.qty || '—';
