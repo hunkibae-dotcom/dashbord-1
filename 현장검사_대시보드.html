@@ -466,6 +466,42 @@ function fiPhotoImgTag(photo, styleAttr) {
   return '<img src="' + src + '"' + onerr + ' style="' + styleAttr + '">';
 }
 
+// ── 사진 크게보기(라이트박스) — 부적합조회 카드 썸네일, 하자상세 "전체보기"에서 공용 ──
+let fiViewerPhotos = [], fiViewerIndex = 0;
+function fiOpenPhotoViewer(photos, startIndex) {
+  if (!photos || !photos.length) return;
+  fiViewerPhotos = photos;
+  fiViewerIndex = startIndex || 0;
+  _fiRenderPhotoViewer();
+  document.getElementById('fiPhotoViewerModal').style.display = 'flex';
+  _fiArmBackTrap();
+}
+function fiOpenPhotoViewerFor(key) {
+  const parts = key.split('|');
+  const d = fiFindEntry(parts[0], Number(parts[1]));
+  if (!d) return;
+  fiOpenPhotoViewer(d.photos || [], 0);
+}
+function fiClosePhotoViewer() {
+  document.getElementById('fiPhotoViewerModal').style.display = 'none';
+  fiViewerPhotos = [];
+}
+function _fiRenderPhotoViewer() {
+  const p = fiViewerPhotos[fiViewerIndex];
+  if (!p) { fiClosePhotoViewer(); return; }
+  const img = document.getElementById('fiPhotoViewerImg');
+  img.onerror = null;
+  img.src = p.dataUrl || p.viewUrl;
+  if (p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
+  const multi = fiViewerPhotos.length > 1;
+  const counter = document.getElementById('fiPhotoViewerCounter');
+  counter.style.display = multi ? 'block' : 'none';
+  counter.textContent = (fiViewerIndex + 1) + ' / ' + fiViewerPhotos.length;
+  document.getElementById('fiPhotoViewerNav').style.display = multi ? 'flex' : 'none';
+}
+function fiPhotoViewerPrev() { fiViewerIndex = (fiViewerIndex - 1 + fiViewerPhotos.length) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
+function fiPhotoViewerNext() { fiViewerIndex = (fiViewerIndex + 1) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
+
 function fiTodayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
