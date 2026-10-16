@@ -325,7 +325,13 @@ try {
         <span id="fiDetDate" style="font-size:10.5px; padding:3px 9px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-sub); font-weight:700; font-family:ui-monospace,monospace; margin-left:auto;"></span>
       </div>
       <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px;">
-        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:4px;">현장 사진</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+          <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em;">현장 사진</div>
+          <button type="button" id="fiDetPhotoViewAllBtn" onclick="fiOpenPhotoViewer(fiDetPhotos, 0)" style="display:none; font-size:10px; font-weight:700; color:#D97706; background:none; border:none; cursor:pointer; padding:2px 4px; align-items:center; gap:3px;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
+            전체보기
+          </button>
+        </div>
         <div style="font-size:9px; color:var(--label); margin-bottom:10px;">여러 장 등록 가능</div>
         <div id="fiDetPhotos" style="display:flex; gap:10px; align-items:flex-start; flex-wrap:wrap;"></div>
         <input type="file" id="fiDetPhotoFile" accept="image/*" style="display:none;" onchange="fiHandleDetPhotoFile(this)">
