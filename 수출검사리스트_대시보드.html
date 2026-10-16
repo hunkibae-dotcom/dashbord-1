@@ -5307,8 +5307,10 @@ function openRpNoteEditor(key) {
   _rpEnsureRecord(key);
   const sel = _reportSelected[key];
   if (!sel) return;
+  // 사진 선택/삭제 직후에도 미리보기를 다시 그리려고 이 함수를 재호출하는데, 그때
+  // 큐에 쌓아둔 pending 액션까지 같이 지워버리면 안 되므로 "진짜 새로 여는 경우"에만 리셋.
+  if (_rpEditKey !== key || _rpEditMode !== 'note') _rpEditPendingPhotoAction = null;
   _rpEditKey = key; _rpEditMode = 'note';
-  _rpEditPendingPhotoAction = null;
   const notePhotoEff = _rpEffectivePhoto(sel, 'note');
   const photoUrl = notePhotoEff && notePhotoEff.src;
   document.getElementById('rpEditTitle').textContent = '검사 특이사항';
