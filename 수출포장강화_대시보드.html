@@ -9103,6 +9103,9 @@
             document.getElementById('pkgG').value = _pkgOrigG;
             _pkgUpdateDetailCbm();
 
+            _pkgOrigNote = (item.note || '').toString();
+            document.getElementById('pkgNote').value = _pkgOrigNote;
+
             document.getElementById('pkgDetailFeedback').textContent = '';
             document.getElementById('pkgItemDetailModal').style.display = 'flex';
         }
