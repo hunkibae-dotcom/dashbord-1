@@ -9048,6 +9048,10 @@
             _pkgCode = item.code || ''; _pkgRound = item.round || ''; _pkgColor = item.color || '';
             _pkgItemQty = parseFloat(item.qty) || 0;
             document.getElementById('pkgCodeLabel').textContent = _pkgCode || '—';
+            const _pkgCodeTypeEl = document.getElementById('pkgCodeType');
+            const _pkgCodeTypeVal = _pkgProductTypeOf(item);
+            _pkgCodeTypeEl.textContent = _pkgCodeTypeVal;
+            _pkgCodeTypeEl.style.display = _pkgCodeTypeVal ? 'inline-block' : 'none';
             document.getElementById('pkgRoundLabel').textContent = _pkgRound || '—';
             document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
             document.getElementById('pkgQtyBadge').textContent = (item.qty || 0).toLocaleString() + ' BOX';
