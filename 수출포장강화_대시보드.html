@@ -10939,6 +10939,15 @@
 
             </div>
 
+            <!-- 특이사항 — 앱(shell.html)의 #itemEditSheet 특이사항 칸과 동일(실제 시트 비고란 연동) -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-top:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:6px;">특이사항</div>
+                <div style="font-size:10.5px;color:#94a3b8;margin-bottom:8px;">실제 시트의 비고란과 연동됩니다 — 기존에 적힌 내용이 있으면 그대로 불러와 보여줍니다.</div>
+                <textarea id="pkgNote" rows="3" placeholder="특이사항을 입력하세요 (시트 비고란에 저장됩니다)"
+                    style="width:100%;background:#fff;color:#1e293b;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 12px;font-size:13px;outline:none;box-sizing:border-box;resize:vertical;font-family:inherit;transition:border-color .15s;"
+                    onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+            </div>
+
             <div id="pkgDetailFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin-top:14px;"></div>
             <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;margin-top:14px;">
                 <button onclick="closePkgItemDetail()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
