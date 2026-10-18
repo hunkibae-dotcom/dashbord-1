@@ -9180,6 +9180,7 @@
             const newPeType = (document.getElementById('pkgPeType').value || '').trim();
             const newPeSpec = (document.getElementById('pkgPeSpec').value || '').trim();
             const peChanged = newPeType !== _pkgOrigPeType || newPeSpec !== _pkgOrigPeSpec;
+            const newNote = (document.getElementById('pkgNote').value || '').trim();
 
             // "일부입고"로 바꾸려면 구글시트의 일부입고 팝업과 똑같이 실제 입고 수량을
             // 반드시 입력해야 한다.
