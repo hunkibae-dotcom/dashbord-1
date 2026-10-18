@@ -9053,6 +9053,7 @@
             _pkgCodeTypeEl.textContent = _pkgCodeTypeVal;
             _pkgCodeTypeEl.style.display = _pkgCodeTypeVal ? 'inline-block' : 'none';
             document.getElementById('pkgRoundLabel').textContent = _pkgRound || '—';
+            document.getElementById('pkgCatBadge').textContent = (item.country || '').toString().trim() || '—';
             document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
             document.getElementById('pkgQtyBadge').textContent = (item.qty || 0).toLocaleString() + ' BOX';
             document.getElementById('pkgDueBadge').textContent = '납기 ' + shortDate(item.dueDate);
