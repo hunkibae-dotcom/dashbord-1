@@ -10342,8 +10342,20 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 품목 상세/수정 (모바일 리스트 항목 클릭 시) ===== -->
+<!-- 포장강화 웹 수정창(#pkgItemDetailModal)과 PC 폭을 맞춘다(요청, 2026-10-19) — 이 모달은
+     모바일 앱과 공유하는 모달이라 폭 자체는 그대로 460px를 기본값으로 두고, 화면이 넓을
+     때(PC 웹)만 미디어쿼리로 820px + 일정/규격 2단 그리드로 넓어지게 한다. 모바일 앱
+     화면(좁은 뷰포트)은 전혀 영향 없음. -->
+<style>
+  @media (min-width: 900px) {
+    #mItemDetailModal .mi-modal-box { width: 820px; }
+    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    #mItemDetailModal .mi-grid2 > div { margin-top: 0 !important; }
+  }
+  #mItemDetailModal .mi-grid2 { display: contents; }
+</style>
 <div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
-  <div style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 28px;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);box-sizing:border-box;">
+  <div class="mi-modal-box" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 28px;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);box-sizing:border-box;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
       <div style="min-width:0;flex:1;">
         <div style="display:flex;align-items:baseline;gap:6px;">
