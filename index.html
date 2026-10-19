@@ -691,6 +691,23 @@
             <div class="mi-arr">›</div>
         </div>
 
+        <!-- 현장검사 — 품질검사 카테고리에서만 보임(요청, 2026-10-19: F.WORK > 현장검사
+             단독 메뉴였던 걸 F.WORK > 품질검사 > 현장검사로 편입) -->
+        <div class="mitem" id="fieldInspectMenuItem" onclick="goFieldInspect()">
+            <div class="mi-ico" style="background:rgba(220,38,38,.12);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/>
+                    <path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/>
+                    <circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/>
+                </svg>
+            </div>
+            <div class="mi-txt">
+                <div class="mi-title">현장검사</div>
+                <div class="mi-desc">현장 하자·부적합 조회 및 조치 관리</div>
+            </div>
+            <div class="mi-arr">›</div>
+        </div>
+
         <!-- 스프레드시트 -->
         <div class="mitem" onclick="goSheets()">
             <div class="mi-ico mi-sheet">
