@@ -787,10 +787,9 @@ function fiRenderAll() {
 // PC 브라우저에서 열리니 이 기준으로 충분하다.
 function fiIsPc() { return !(('ontouchstart' in window) || navigator.maxTouchPoints > 0); }
 function fiPcDate(v) {
-  const n = _fiNormDate ? _fiNormDate(v) : v;
-  if (!n) return '—';
-  const p = (n || '').toString().split('-');
-  if (p.length !== 3) return n || '—';
+  if (!v) return '—';
+  const p = v.toString().split('-');
+  if (p.length !== 3) return v.toString();
   return p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
 }
 function fiPcCardHtml(d) {
