@@ -7123,7 +7123,21 @@
             _pkgExportPendingKind = null;
             document.getElementById('pkgExportChoiceStatus').textContent = '';
             document.getElementById('pkgExportFormatStep').style.display = 'none';
+            document.getElementById('pkgExportOrientStep').style.display = 'none';
             document.getElementById('pkgExportKindStep').style.display = 'block';
+        }
+        // PDF는 용지 방향(세로/가로)을 한 번 더 물어본다 — 건명처럼 긴 항목이 세로(190mm
+        // 폭)로는 좁아서 줄바꿈이 많아진다는 요청으로 추가(2026-10-19). 엑셀은 방향 개념이
+        // 없으니 그대로 바로 받는다.
+        function pkgShowOrientStep() {
+            document.getElementById('pkgExportChoiceStatus').textContent = '';
+            document.getElementById('pkgExportFormatStep').style.display = 'none';
+            document.getElementById('pkgExportOrientStep').style.display = 'block';
+        }
+        function pkgBackToExportFormat() {
+            document.getElementById('pkgExportChoiceStatus').textContent = '';
+            document.getElementById('pkgExportOrientStep').style.display = 'none';
+            document.getElementById('pkgExportFormatStep').style.display = 'block';
         }
         // 파일명만 봐도 몇 품목·몇 건·총 몇 BOX인지 바로 보이게 — 실제로 내보내는 rows
         // 기준(기본/포장항목/상차항목 전부 공통)으로 품목 수·건명(수주건명) 중복 제거한
