@@ -7856,6 +7856,85 @@ function _miRefreshPhotoBoxesIfOpen(key) {
   _miRenderPhotoBoxes();
 }
 
+// ── 불량사진(특이사항 위, 여러 장 업로드) ────────────────────────────
+// 비고(특이사항)는 글자만 저장되지만 사진도 같이 남기고 싶다는 요청(2026-10-19)으로
+// 추가 — 현장검사 사진 등록과 같은 "저장 누르기 전까진 로컬에만" 방식. 기존 사진
+// (fileId 있음)과 새로 추가한 사진(dataUrl만 있음)을 한 배열로 같이 들고 있다가,
+// 저장 버튼을 누르면 새 사진만 업로드하고 삭제 표시된 기존 사진만 지운다. 비고
+// 칼럼 바로 다음 칸(noteCol+1)에 JSON 배열로 저장된다(GAS updateDefectPhotos 참고).
+let _miDefectPhotos = [];
+let _miDefectRemovedFileIds = [];
+function _miParseDefectPhotos(cell) {
+  const s = (cell || '').toString().trim();
+  if (!s || s.charAt(0) !== '[') return [];
+  try { return JSON.parse(s); } catch (e) { return []; }
+}
+function _miRenderDefectPhotos() {
+  const wrap = document.getElementById('miDefectPhotoWrap');
+  if (!wrap) return;
+  const factoryKey = _miCurrent ? _miCurrent.공장 : '';
+  wrap.innerHTML = _miDefectPhotos.map(function (p, i) {
+    const src = p.dataUrl || p.viewUrl;
+    const onerr = (!p.dataUrl && p.fileId) ? (' onerror="this.onerror=null;_rpImgFallback(this,\'' + p.fileId + '\',\'' + factoryKey + '\')"') : '';
+    return '<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;">' +
+      '<img src="' + src + '"' + onerr + ' style="width:100%;height:100%;object-fit:cover;">' +
+      '<span onclick="_miRemoveDefectPhoto(' + i + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+    '</div>';
+  }).join('') + '<div onclick="document.getElementById(\'miDefectPhotoFile\').click()" style="width:64px;height:64px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">' +
+    '<i class="fa-solid fa-plus" style="color:#94A3B8;font-size:13px;"></i>' +
+    '<span style="font-size:8px;color:var(--label);font-weight:600;">추가</span></div>';
+}
+function _miCompressImageFile(file, cb) {
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const MAX = 1280;
+      const ratio = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * ratio)), h = Math.max(1, Math.round(img.naturalHeight * ratio));
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function _miHandleDefectPhotoFile(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  _miCompressImageFile(file, function (dataUrl) {
+    _miDefectPhotos.push({ dataUrl: dataUrl });
+    _miRenderDefectPhotos();
+  });
+}
+function _miRemoveDefectPhoto(i) {
+  const p = _miDefectPhotos[i];
+  if (p && p.fileId) _miDefectRemovedFileIds.push(p.fileId);
+  _miDefectPhotos.splice(i, 1);
+  _miRenderDefectPhotos();
+}
+// 저장 버튼을 눌렀을 때만 호출 — 새로 추가한 사진(fileId 없음)만 업로드하고, 삭제
+// 표시된 기존 사진만 지운다. 둘 다 없으면(사진은 안 건드렸으면) 아예 요청을 안 보낸다.
+async function _miSyncDefectPhotos(item) {
+  const newOnes = _miDefectPhotos.filter(function (p) { return !p.fileId; }).map(function (p) { return p.dataUrl; });
+  const removed = _miDefectRemovedFileIds.slice();
+  if (!newOnes.length && !removed.length) return;
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) return;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateDefectPhotos', round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: item.수량 || '', newPhotos: newOnes, removedFileIds: removed }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const json = await res.json().catch(function () { return null; });
+    if (json && json.status === 'success') item.불량사진 = JSON.stringify(json.photos || []);
+  } catch (e) { /* 실패해도 특이사항 등 다른 저장은 이미 끝난 뒤라 조용히 무시 */ }
+}
+
 function _updateMiCbm() {
   const w = parseFloat(document.getElementById('miW').value) || 0;
   const d = parseFloat(document.getElementById('miD').value) || 0;
