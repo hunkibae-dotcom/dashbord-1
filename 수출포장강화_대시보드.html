@@ -9170,10 +9170,14 @@
             if (!s || s.charAt(0) !== '[') return [];
             try { return JSON.parse(s); } catch (e) { return []; }
         }
+        // 특이사항 및 사진(품목 수정창)과 포장불량조치(불량조치 등록/수정창)는 같은
+        // 품목의 "불량사진"을 같이 쓴다(요청, 2026-10-19: "서로 연결되어야 한다") — 두
+        // 모달에 각각 있는 사진 박스(.pkg-defect-photo-wrap 클래스 공통) 전부에 같은
+        // 내용을 그려서, 어느 창에서 사진을 추가/삭제해도 둘 다 바로 맞춰진다.
         function _pkgRenderDefectPhotos() {
-            const wrap = document.getElementById('pkgDefectPhotoWrap');
-            if (!wrap) return;
-            wrap.innerHTML = _pkgDefectPhotos.map((p, i) => {
+            const wraps = document.querySelectorAll('.pkg-defect-photo-wrap');
+            if (!wraps.length) return;
+            const html = _pkgDefectPhotos.map((p, i) => {
                 const src = p.dataUrl || p.viewUrl;
                 const onerr = (!p.dataUrl && p.fileId) ? ` onerror="this.onerror=null;_pkgImgFallback(this,'${p.fileId}')"` : '';
                 return `<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:#f1f5f9;flex-shrink:0;">
@@ -9184,6 +9188,7 @@
                 <i class="fa-solid fa-plus" style="color:#94a3b8;font-size:13px;"></i>
                 <span style="font-size:8px;color:#94a3b8;font-weight:600;">추가</span>
             </div>`;
+            wraps.forEach(w => { w.innerHTML = html; });
         }
         // Drive "링크가 있는 모든 사용자" 공유가 조직 정책으로 조용히 제한돼 직접 링크가
         // 안 열리는 경우를 대비한 안전장치(현장검사/품질검사와 동일) — 실패할 때만 한 번
