@@ -156,9 +156,14 @@
         <iframe id="pkgDefectActionFrame" src="" style="flex:1;width:100%;border:none;"></iframe>
     </div>
     <script>
+    let _pkgDefectActionFrameLoaded = false;
     function openPkgDefectActionOverlay() {
+        // (버그 수정, 2026-10-20) iframe src=""는 브라우저가 "이 페이지 자신의 주소"로
+        // 해석해버려서 f.src가 처음부터 빈 문자열이 아니었다 — if(!f.src)가 절대
+        // 참이 안 돼 포장불량조치 대신 이 shell.html 자신을 무한히 또 불러들이고
+        // 있었다(현장검사와 동일한 원인의 버그). 별도 플래그로 기억한다.
         const f = document.getElementById('pkgDefectActionFrame');
-        if (!f.src) f.src = '수출포장강화_대시보드.html?forceDesktop=1&openDefectAction=1';
+        if (!_pkgDefectActionFrameLoaded) { f.src = '수출포장강화_대시보드.html?forceDesktop=1&openDefectAction=1'; _pkgDefectActionFrameLoaded = true; }
         document.getElementById('pkgDefectActionOverlay').style.display = 'flex';
     }
     function closePkgDefectActionOverlay() {
