@@ -381,7 +381,7 @@ try {
             <div style="font-size:9.5px; color:var(--label); margin-bottom:4px;">단품코드</div>
             <div style="display:flex; gap:6px;">
               <input type="text" id="fiRegCode" placeholder="코드 입력" oninput="this.value=this.value.toUpperCase();" style="width:100%; min-width:0; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:12.5px; font-family:ui-monospace,monospace; color:var(--text); outline:none; box-sizing:border-box;">
-              <button type="button" onclick="fiOpenScanner('fiRegCode')" title="바코드 스캔" style="flex-shrink:0; width:34px; height:34px; border-radius:10px; border:1px solid rgba(217,119,6,.25); background:rgba(217,119,6,.08); color:#D97706; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+              <button type="button" id="fiRegScanBtn" onclick="fiOpenScanner('fiRegCode')" title="바코드 스캔" style="flex-shrink:0; width:34px; height:34px; border-radius:10px; border:1px solid rgba(217,119,6,.25); background:rgba(217,119,6,.08); color:#D97706; display:flex; align-items:center; justify-content:center; cursor:pointer;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="2" height="16"></rect><rect x="7" y="4" width="1" height="16"></rect><rect x="10" y="4" width="3" height="16"></rect><rect x="15" y="4" width="1" height="16"></rect><rect x="18" y="4" width="3" height="16"></rect></svg>
               </button>
             </div>
