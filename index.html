@@ -867,6 +867,14 @@ function openSub(type){
        숨긴다 — 현장검사는 2026-10-19부터 새 하자 등록에 스캔 기능이 생겨서 더 이상 숨기지 않음 */
     var scanItem = document.getElementById('scanMenuItem');
     if (scanItem) scanItem.style.display = (type === 'pe') ? 'none' : '';
+    /* 현장검사는 더 이상 F.WORK 홈의 독립 카테고리가 아니라 품질검사 하위 메뉴다
+       (요청, 2026-10-19) — 품질검사 카테고리를 열었을 때만 보인다. */
+    var fieldInspectItem = document.getElementById('fieldInspectMenuItem');
+    if (fieldInspectItem) fieldInspectItem.style.display = (type === 'quality') ? '' : 'none';
+}
+
+function goFieldInspect(){
+    _navigate(MENUS.fieldinspect.dashboard);
 }
 
 function closeSub(){
