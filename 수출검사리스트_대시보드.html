@@ -10349,7 +10349,8 @@ function onNativeScanResult(raw) {
 <style>
   @media (min-width: 900px) {
     #mItemDetailModal .mi-modal-box { width: 820px !important; }
-    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: stretch; }
+    #mItemDetailModal .mi-grid2 > div { height: 100%; box-sizing: border-box; }
     #mItemDetailModal .mi-grid2 > div { margin-top: 0 !important; }
   }
   #mItemDetailModal .mi-grid2 { display: contents; }
