@@ -76,6 +76,16 @@ try {
   .fipc-icon-btn.edit { background:var(--input-bg); color:var(--text-sub); }
   .fipc-icon-btn.del { background:rgba(220,38,38,.1); color:#DC2626; }
   .fipc-status-pill { font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:20px; flex-shrink:0; }
+
+  /* 모바일에선 기존 그대로 전체화면, PC에서만 가운데 820px 다이얼로그 + 백드롭으로 보이게 */
+  .fi-dialog-box { display:contents; }
+  @media (min-width:900px) {
+    #fiRegisterModal, #fiDetailModal { align-items:center; justify-content:center; background:rgba(15,23,42,.55) !important; }
+    #fiRegisterModal .fi-dialog-box, #fiDetailModal .fi-dialog-box {
+      display:flex; flex-direction:column; width:820px; max-width:92vw; max-height:88vh;
+      background:var(--panel); border-radius:18px; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.35);
+    }
+  }
 </style>
 </head>
 <body>
