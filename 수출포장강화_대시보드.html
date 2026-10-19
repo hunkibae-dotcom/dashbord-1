@@ -8563,6 +8563,274 @@
             return res;
         }
 
+        // ══════════════ 포장불량조치 ══════════════
+        // 품질검사 "보고서"와 동일한 구조: 숨김 시트(포장불량조치 임시저장)에 품목당
+        // 한 줄로 저장 + localStorage 캐시로 빠르게 반응. 사진은 특이사항 및 사진과
+        // 완전히 같은 저장소(불량사진 칼럼)를 쓴다(요청, 2026-10-19 "서로 연결되어야
+        // 한다") — _pkgDefectPhotos/_pkgRenderDefectPhotos/_pkgSyncDefectPhotosTask를
+        // 그대로 재사용하고, 여는 순간 _pkgCode/_pkgRound/_pkgColor를 그 품목으로 맞춘다.
+        const PKG_DA_STORAGE_KEY = 'pkg_defect_actions_v1';
+        const PKG_DA_TYPES = ['박스파손', '라벨오류', '수량불일치', '포장불량', '기타'];
+        const PKG_DA_STATUS_LIST = ['미조치', '조치중', '조치완료'];
+        let _pkgDefectActions = {}; // key(코드|건명|색상) -> {code,round,color,qty,types[],content,status,actionText,updatedAt}
+        let _pkgDefectActionEditKey = null;
+        let _pkgDefectActionTypes = [];
+        let _pkgDefectActionStatus = '미조치';
+
+        function _pkgDefectKey(item) {
+            return [(item.code || '').toUpperCase(), item.round || '', item.color || ''].join('|');
+        }
+        function _pkgFindItemByKey(key) {
+            return (state.data || []).find(it => _pkgDefectKey(it) === key) || null;
+        }
+        function _pkgLoadDefectActionsFromStorage() {
+            try {
+                const raw = localStorage.getItem(PKG_DA_STORAGE_KEY);
+                _pkgDefectActions = raw ? (JSON.parse(raw) || {}) : {};
+            } catch (e) { _pkgDefectActions = {}; }
+        }
+        function _pkgSaveDefectActionsToStorage() {
+            try { localStorage.setItem(PKG_DA_STORAGE_KEY, JSON.stringify(_pkgDefectActions)); } catch (e) {}
+        }
+        // 서버 쪽 updatedAt이 내가 마지막으로 반영한 시점보다 최신일 때만 덮어써서,
+        // 아직 서버로 못 올라간 내 최근 변경을 되돌리지 않는다(보고서의
+        // _rpFetchSharedReportData와 동일한 생각).
+        async function _pkgFetchDefectActions() {
+            const url = _pkgGasUrl();
+            if (!url) return;
+            try {
+                const res = await fetch(url + '?' + new URLSearchParams({ action: 'getPkgDefectActions' }), { signal: AbortSignal.timeout(20000) }).then(r => r.json());
+                if (res.result !== 'success' || !res.items) return;
+                Object.keys(res.items).forEach(k => {
+                    const remote = res.items[k];
+                    const localUpdatedAt = (_pkgDefectActions[k] && _pkgDefectActions[k].updatedAt) || 0;
+                    if (remote.updatedAt && remote.updatedAt <= localUpdatedAt) return;
+                    _pkgDefectActions[k] = {
+                        code: remote.code, round: remote.round, color: remote.color, qty: remote.qty,
+                        types: (remote.types || '').toString().split(',').filter(Boolean),
+                        content: remote.content || '', status: remote.status || '', actionText: remote.actionText || '',
+                        updatedAt: remote.updatedAt || 0
+                    };
+                });
+                // 서버에서 지워진(다른 사람이 삭제한) 항목은 이 기기에서도 정리한다.
+                Object.keys(_pkgDefectActions).forEach(k => { if (!res.items[k]) delete _pkgDefectActions[k]; });
+                _pkgSaveDefectActionsToStorage();
+                const view = document.getElementById('pkgDefectActionView');
+                if (view && !view.classList.contains('hidden')) _pkgRenderDefectActionList();
+            } catch (e) { /* 네트워크 실패는 조용히 무시 — 로컬 캐시로 계속 작업 가능 */ }
+        }
+
+        function openPkgDefectActionView() {
+            document.getElementById('pkgDefectActionView').classList.remove('hidden');
+            _pkgLoadDefectActionsFromStorage();
+            _pkgRenderDefectActionList();
+            _pkgFetchDefectActions();
+        }
+        function closePkgDefectActionView() {
+            document.getElementById('pkgDefectActionView').classList.add('hidden');
+        }
+
+        function _pkgDaStatusPillStyle(status) {
+            if (status === '조치완료') return 'background:rgba(22,163,74,.1);color:#16a34a;';
+            if (status === '조치중') return 'background:rgba(217,119,6,.1);color:#d97706;';
+            return 'background:rgba(220,38,38,.08);color:#dc2626;';
+        }
+        function _pkgDefectActionCardHtml(e) {
+            const item = _pkgFindItemByKey(e.key);
+            const photos = item ? _pkgParseDefectPhotos(item.defectPhotos) : [];
+            const photo = photos[0];
+            const photoSrc = photo ? (photo.dataUrl || photo.viewUrl) : '';
+            const typesHtml = (e.types || []).map(t => `<span style="display:inline-flex;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;border:1.5px solid #0284c7;background:rgba(2,132,199,.1);color:#0284c7;width:fit-content;">${t}</span>`).join(' ');
+            return `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;">
+                <div style="display:flex;gap:12px;">
+                    ${photoSrc
+                        ? `<img src="${photoSrc}" style="width:96px;height:96px;border-radius:12px;object-fit:cover;flex-shrink:0;background:#f1f5f9;">`
+                        : `<div style="width:96px;height:96px;border-radius:12px;background:#f1f5f9;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-camera" style="color:#cbd5e1;font-size:22px;"></i></div>`}
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                            <span style="font-size:13.5px;font-weight:800;font-family:ui-monospace,monospace;">${e.code || '—'}</span>
+                            <div style="display:flex;gap:4px;flex-shrink:0;">
+                                <button onclick="event.stopPropagation();openPkgDefectActionEdit('${e.key.replace(/'/g, "\\'")}')" title="수정" style="width:22px;height:22px;border-radius:6px;border:none;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></button>
+                                <button onclick="event.stopPropagation();_pkgDeleteDefectActionCard('${e.key.replace(/'/g, "\\'")}')" title="삭제" style="width:22px;height:22px;border-radius:6px;border:none;background:rgba(220,38,38,.1);color:#dc2626;display:flex;align-items:center;justify-content:center;cursor:pointer;"><i class="fa-solid fa-trash" style="font-size:10px;"></i></button>
+                            </div>
+                        </div>
+                        <div style="font-size:11px;color:#64748b;">${e.color || '-'} · ${(parseInt(e.qty) || 0).toLocaleString()} BOX</div>
+                        <div>${typesHtml}</div>
+                        <div style="font-size:12px;color:#1e293b;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${(e.content || '').replace(/</g, '&lt;')}</div>
+                        <div style="display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:8px;border-top:1px dashed #e2e8f0;">
+                            <span style="font-size:10.5px;color:#64748b;font-family:ui-monospace,monospace;">${e.round || ''}</span>
+                            <span style="margin-left:auto;display:inline-flex;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:20px;${_pkgDaStatusPillStyle(e.status)}">${e.status || '미조치'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        function _pkgRenderDefectActionList() {
+            const entries = Object.keys(_pkgDefectActions).map(k => Object.assign({ key: k }, _pkgDefectActions[k]));
+            const total = entries.length;
+            const open = entries.filter(e => e.status === '미조치' || !e.status).length;
+            const mid = entries.filter(e => e.status === '조치중').length;
+            const done = entries.filter(e => e.status === '조치완료').length;
+            document.getElementById('pkgDaKpiTotal').textContent = total + ' 건';
+            document.getElementById('pkgDaKpiOpen').textContent = open + ' 건';
+            document.getElementById('pkgDaKpiMid').textContent = mid + ' 건';
+            document.getElementById('pkgDaKpiRate').textContent = total ? Math.round(done / total * 100) + '%' : '0%';
+
+            const statusF = document.getElementById('pkgDaStatusFilter').value;
+            const typeF = document.getElementById('pkgDaTypeFilter').value;
+            const q = (document.getElementById('pkgDaSearchInput').value || '').trim().toUpperCase();
+            const filtered = entries.filter(e => {
+                if (statusF !== '전체' && (e.status || '미조치') !== statusF) return false;
+                if (typeF !== '전체' && (e.types || []).indexOf(typeF) < 0) return false;
+                if (q && !((e.code || '').toUpperCase().includes(q) || (e.content || '').toUpperCase().includes(q))) return false;
+                return true;
+            });
+            filtered.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+            const grid = document.getElementById('pkgDaGrid');
+            grid.innerHTML = filtered.length
+                ? filtered.map(_pkgDefectActionCardHtml).join('')
+                : '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:#94a3b8;font-size:13px;">등록된 불량조치가 없습니다.</div>';
+        }
+
+        // ── 등록 시 품목 먼저 검색/선택 ──
+        let _pkgDaPickerMatches = [];
+        function openPkgDefectActionPicker() {
+            document.getElementById('pkgDaPickerModal').style.display = 'flex';
+            document.getElementById('pkgDaPickerInput').value = '';
+            _pkgRenderDefectActionPickerResults('');
+        }
+        function closePkgDefectActionPicker() {
+            document.getElementById('pkgDaPickerModal').style.display = 'none';
+        }
+        function _pkgRenderDefectActionPickerResults(q) {
+            q = (q || '').trim().toUpperCase();
+            const wrap = document.getElementById('pkgDaPickerResults');
+            if (!q) { wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12.5px;">품목코드나 건명을 입력하세요</div>'; _pkgDaPickerMatches = []; return; }
+            _pkgDaPickerMatches = (state.data || []).filter(it =>
+                (it.code || '').toUpperCase().includes(q) || (it.round || '').toUpperCase().includes(q)
+            ).slice(0, 30);
+            wrap.innerHTML = _pkgDaPickerMatches.length
+                ? _pkgDaPickerMatches.map((it, i) => `
+                    <div onclick="_pkgPickDefectActionItem(${i})" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:13px;font-weight:800;font-family:ui-monospace,monospace;">${it.code || '—'}</div>
+                            <div style="font-size:10.5px;color:#64748b;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.round || '-'} · ${it.color || '-'} · ${(it.qty || 0).toLocaleString()} BOX</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right" style="color:#94a3b8;font-size:12px;"></i>
+                    </div>`).join('')
+                : '<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12.5px;">검색결과가 없습니다</div>';
+        }
+        function _pkgPickDefectActionItem(i) {
+            const item = _pkgDaPickerMatches[i];
+            if (!item) return;
+            closePkgDefectActionPicker();
+            openPkgDefectActionEdit(_pkgDefectKey(item));
+        }
+
+        // ── 등록/수정 창 ──
+        function _pkgRenderDefectActionTypeChips() {
+            document.getElementById('pkgDaTypeChips').innerHTML = PKG_DA_TYPES.map(t => {
+                const on = _pkgDefectActionTypes.indexOf(t) >= 0;
+                return `<span onclick="_pkgToggleDefectActionType('${t}')" style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:7px 13px;border-radius:20px;border:1.5px solid ${on ? '#0284c7' : '#e2e8f0'};color:${on ? '#0284c7' : '#64748b'};background:${on ? 'rgba(2,132,199,.1)' : '#fff'};cursor:pointer;">${t}</span>`;
+            }).join('');
+        }
+        function _pkgToggleDefectActionType(t) {
+            const i = _pkgDefectActionTypes.indexOf(t);
+            if (i >= 0) _pkgDefectActionTypes.splice(i, 1); else _pkgDefectActionTypes.push(t);
+            _pkgRenderDefectActionTypeChips();
+        }
+        function _pkgRenderDefectActionStatusBtns() {
+            document.getElementById('pkgDaStatusBtns').innerHTML = PKG_DA_STATUS_LIST.map(s => {
+                const on = _pkgDefectActionStatus === s;
+                const c = s === '조치완료' ? '#16a34a' : s === '조치중' ? '#d97706' : '#dc2626';
+                return `<button type="button" onclick="_pkgPickDefectActionStatus('${s}')" style="flex:1;text-align:center;padding:9px 0;border-radius:10px;border:1.5px solid ${on ? c : '#e2e8f0'};font-size:12px;font-weight:700;color:${on ? c : '#64748b'};background:${on ? c + '1A' : '#fff'};cursor:pointer;">${s}</button>`;
+            }).join('');
+        }
+        function _pkgPickDefectActionStatus(s) { _pkgDefectActionStatus = s; _pkgRenderDefectActionStatusBtns(); }
+
+        function openPkgDefectActionEdit(key) {
+            const item = _pkgFindItemByKey(key);
+            if (!item) { alert('품목 정보를 찾을 수 없습니다 — 새로고침 후 다시 시도해주세요.'); return; }
+            const entry = _pkgDefectActions[key] || null;
+            _pkgDefectActionEditKey = key;
+            _pkgCode = item.code || ''; _pkgRound = item.round || ''; _pkgColor = item.color || '';
+            _pkgDefectPhotos = _pkgParseDefectPhotos(item.defectPhotos);
+            _pkgDefectRemovedFileIds = [];
+            _pkgDefectActionTypes = entry ? (entry.types || []).slice() : [];
+            _pkgDefectActionStatus = entry ? (entry.status || '미조치') : '미조치';
+            document.getElementById('pkgDaCode').textContent = item.code || '—';
+            document.getElementById('pkgDaMeta').textContent = `${item.round || '-'} · ${item.color || '-'} · ${(item.qty || 0).toLocaleString()} BOX`;
+            document.getElementById('pkgDaContent').value = entry ? (entry.content || '') : '';
+            document.getElementById('pkgDaActionText').value = entry ? (entry.actionText || '') : '';
+            document.getElementById('pkgDaDeleteBtn').style.display = entry ? 'flex' : 'none';
+            document.getElementById('pkgDaFeedback').textContent = '';
+            _pkgRenderDefectActionTypeChips();
+            _pkgRenderDefectActionStatusBtns();
+            _pkgRenderDefectPhotos();
+            document.getElementById('pkgDefectActionEditModal').style.display = 'flex';
+        }
+        function closePkgDefectActionEdit() {
+            document.getElementById('pkgDefectActionEditModal').style.display = 'none';
+            _pkgDefectActionEditKey = null;
+            _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
+            _pkgDefectPhotos = []; _pkgDefectRemovedFileIds = [];
+        }
+        async function savePkgDefectAction() {
+            const key = _pkgDefectActionEditKey;
+            const item = _pkgFindItemByKey(key);
+            if (!item) return;
+            const content = document.getElementById('pkgDaContent').value.trim();
+            const actionText = document.getElementById('pkgDaActionText').value.trim();
+            const fb = document.getElementById('pkgDaFeedback');
+            fb.textContent = '저장 중...'; fb.style.color = '#64748b';
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'savePkgDefectAction', item: { code: item.code, round: item.round, color: item.color, qty: item.qty }, types: _pkgDefectActionTypes, content, status: _pkgDefectActionStatus, actionText }),
+                    signal: AbortSignal.timeout(20000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error(res.message || '저장 실패');
+                _pkgDefectActions[key] = {
+                    code: item.code, round: item.round, color: item.color, qty: item.qty,
+                    types: _pkgDefectActionTypes.slice(), content, status: _pkgDefectActionStatus, actionText,
+                    updatedAt: res.updatedAt || Date.now()
+                };
+                _pkgSaveDefectActionsToStorage();
+                const photosChanged = _pkgDefectPhotos.some(p => !p.fileId) || _pkgDefectRemovedFileIds.length > 0;
+                if (photosChanged) {
+                    try { await _pkgSyncDefectPhotosTask(); }
+                    catch (e) { fb.textContent = '저장됨 (사진 반영 실패: ' + e.message + ')'; fb.style.color = '#d97706'; }
+                }
+                if (!fb.textContent.includes('실패')) { fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#16a34a'; }
+                setTimeout(() => { closePkgDefectActionEdit(); _pkgRenderDefectActionList(); }, 400);
+            } catch (e) {
+                fb.textContent = '저장 실패: ' + e.message; fb.style.color = '#dc2626';
+            }
+        }
+        async function _pkgDeleteDefectActionByKey(key) {
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST', body: JSON.stringify({ action: 'deletePkgDefectAction', key }), signal: AbortSignal.timeout(20000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error(res.message || '삭제 실패');
+                delete _pkgDefectActions[key];
+                _pkgSaveDefectActionsToStorage();
+                return true;
+            } catch (e) { alert('삭제 실패: ' + e.message); return false; }
+        }
+        async function deletePkgDefectAction() {
+            if (!_pkgDefectActionEditKey) return;
+            if (!confirm('이 불량조치 등록을 삭제하시겠습니까? (사진은 특이사항과 공유 중이라 같이 지워지지 않습니다)')) return;
+            if (await _pkgDeleteDefectActionByKey(_pkgDefectActionEditKey)) {
+                closePkgDefectActionEdit();
+                _pkgRenderDefectActionList();
+            }
+        }
+        async function _pkgDeleteDefectActionCard(key) {
+            if (!confirm('이 불량조치 등록을 삭제하시겠습니까? (사진은 특이사항과 공유 중이라 같이 지워지지 않습니다)')) return;
+            if (await _pkgDeleteDefectActionByKey(key)) _pkgRenderDefectActionList();
+        }
+
         // GET 기반 단건 수정 액션(updateStatus/updatePallet/updateRegDate/updateSpec)
         // 공통 호출기 — 전엔 응답을 .text()로만 받고 내용을 안 봐서, 서버가 "실패했지만
         // 못 찾아서 아무것도 안 바꿨다"는 뜻으로 {result:'error'}를 돌려줘도 그대로
