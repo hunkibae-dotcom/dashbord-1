@@ -1139,9 +1139,9 @@ function fiPickDetStatus(s) { fiDetStatus = s; fiRenderDetStatusBtns(); }
 function fiRenderDetPhotos() {
   const wrap = document.getElementById('fiDetPhotos');
   wrap.innerHTML = fiDetPhotos.map(function (p, i) {
-    return '<div style="position:relative;width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--input-bg);">' +
+    return '<div onclick="fiOpenPhotoViewer(fiDetPhotos,' + i + ',\'det\')" style="position:relative;width:72px;height:72px;border-radius:12px;overflow:hidden;background:var(--input-bg);cursor:zoom-in;">' +
       fiPhotoImgTag(p, 'width:100%;height:100%;object-fit:cover;') +
-      '<span onclick="fiOpenDetPhotoAction(' + i + ')" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+      '<span onclick="event.stopPropagation();fiOpenDetPhotoAction(' + i + ')" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
     '</div>';
   }).join('') + '<div onclick="document.getElementById(\'fiDetPhotoFile\').click()" style="width:72px;height:72px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;">' +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>' +
