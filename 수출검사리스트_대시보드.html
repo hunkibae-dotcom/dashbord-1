@@ -10614,6 +10614,13 @@ function onNativeScanResult(raw) {
       <div id="miPhotoCardWrap"></div>
     </div>
 
+    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
+      <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:4px;">불량사진</div>
+      <div style="font-size:9.5px;color:var(--label);margin-bottom:10px;">여러 장 등록 가능 — 저장 버튼을 눌러야 실제로 반영됩니다.</div>
+      <div id="miDefectPhotoWrap" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+      <input type="file" id="miDefectPhotoFile" accept="image/*" style="display:none;" onchange="_miHandleDefectPhotoFile(this)">
+    </div>
+
     <div id="miReasonWrap" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
       <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:4px;">특이사항</div>
       <div style="font-size:9.5px;color:var(--label);margin-bottom:8px;">실제 시트의 비고란과 연동됩니다 — 기존에 적힌 내용이 있으면 그대로 불러와 보여줍니다.</div>
