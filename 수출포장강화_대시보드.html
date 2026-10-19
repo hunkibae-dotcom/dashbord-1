@@ -1925,6 +1925,20 @@
             } catch (e) { /* 복사 실패는 조용히 무시 */ }
         }
 
+        // 포장강화 앱(shell.html) 하단탭 "포장불량조치"에서 이 대시보드를 iframe으로
+        // 띄우면서 ?openDefectAction=1을 붙여 보낸다 — 데이터가 다 불러와지면(그래야
+        // 카드에 사진·품목정보가 제대로 뜸) 자동으로 그 화면을 연다(요청, 2026-10-19).
+        if (new URLSearchParams(location.search).get('openDefectAction') === '1') {
+            let _pkgAutoOpenTries = 0;
+            const _pkgAutoOpenTimer = setInterval(() => {
+                _pkgAutoOpenTries++;
+                if ((state.data && state.data.length) || _pkgAutoOpenTries > 30) {
+                    clearInterval(_pkgAutoOpenTimer);
+                    if (typeof openPkgDefectActionView === 'function') openPkgDefectActionView();
+                }
+            }, 300);
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             initCard1();
             _presenceInit();
