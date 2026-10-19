@@ -844,6 +844,18 @@ function fiPcCardHtml(d) {
     '</div>' +
   '</div>';
 }
+// 상단 KPI 카드(총 조회건수/미조치/조치 진행중/조치완료율) 클릭 시 그 조건으로
+// 바로 필터링해서 카드 목록을 보여준다 — 숫자만 보여주지 말고 눌러서 바로 그
+// 목록을 보고 싶다는 요청(2026-10-19). 다른 필터(유형/날짜/검색)는 초기화해서
+// 카드에 적힌 숫자와 실제로 보이는 목록 건수가 항상 일치하게 한다.
+function fiPcGoKpiFilter(status) {
+  document.getElementById('fipcStatusFilter').value = status;
+  document.getElementById('fipcTypeFilter').value = '전체';
+  document.getElementById('fipcDateFrom').value = '';
+  document.getElementById('fipcDateTo').value = '';
+  document.getElementById('fipcSearchInput').value = '';
+  fiPcRender();
+}
 function fiPcRender() {
   const k = fiKpiCounts();
   document.getElementById('fipcKpiTotal').textContent = k.total + ' 건';
