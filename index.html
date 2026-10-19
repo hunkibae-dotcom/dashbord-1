@@ -862,10 +862,10 @@ function openSub(type){
     var sub = document.getElementById('sub');
     sub.style.pointerEvents = '';   /* 인라인 스타일 초기화 — CSS 클래스가 제어 */
     sub.classList.add('open');
-    /* PE폼 발주/현장검사는 자재·단품코드를 스캔하는 기능이 아직 없어서 바코드 스캐너
-       바로가기를 숨긴다 */
+    /* PE폼 발주는 자재·단품코드를 스캔하는 기능이 아직 없어서 바코드 스캐너 바로가기를
+       숨긴다 — 현장검사는 2026-10-19부터 새 하자 등록에 스캔 기능이 생겨서 더 이상 숨기지 않음 */
     var scanItem = document.getElementById('scanMenuItem');
-    if (scanItem) scanItem.style.display = (type === 'pe' || type === 'fieldinspect') ? 'none' : '';
+    if (scanItem) scanItem.style.display = (type === 'pe') ? 'none' : '';
 }
 
 function closeSub(){
