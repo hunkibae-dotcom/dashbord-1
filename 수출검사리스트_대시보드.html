@@ -5475,31 +5475,6 @@ function _rpShowToast(message, isError) {
   setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 400); }, life);
 }
 
-// 이 모달에 "저장" 버튼(_rpSaveEditModal)이 있으니, 사진도 다른 필드처럼 그 버튼을
-// 눌러야 서버에 반영되게 큐에만 쌓아둔다(이 기기 미리보기는 그대로 즉시 바뀜).
-function _rpHandleNotePhoto(input) {
-  const file = input.files && input.files[0];
-  const key = _rpEditKey;
-  if (!file || !key || !_reportSelected[key]) return;
-  _rpCompressImage(file, function(rec) {
-    if (!_reportSelected[key]) return;
-    _reportSelected[key].notePhoto = rec;
-    _rpSaveToStorage(true);
-    _rpEditPendingPhotoAction = { action: 'upload', dataUrl: rec.dataUrl };
-    if (_rpEditKey === key) openRpNoteEditor(key); // 미리보기 갱신
-  });
-}
-function _rpRemoveNotePhoto() {
-  const key = _rpEditKey;
-  if (!key || !_reportSelected[key]) return;
-  _reportSelected[key].notePhoto = null;
-  _reportSelected[key].notePhotoRemote = null;
-  _reportSelected[key]._updatedAt = Date.now();
-  _rpSaveToStorage(true);
-  _rpEditPendingPhotoAction = { action: 'clear' };
-  openRpNoteEditor(key);
-}
-
 function _loadPptxGenJS(cb) {
   if (window.PptxGenJS) { cb(); return; }
   const s = document.createElement('script');
