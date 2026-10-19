@@ -6327,7 +6327,7 @@ function _qcExportKindMeta(kind, sourceRows, format) {
   }
   return null;
 }
-async function qcRunExport(format) {
+async function qcRunExport(format, orientation) {
   const kind = _qcExportPendingKind;
   if (!kind) return;
   const statusEl = document.getElementById('qcExportChoiceStatus');
@@ -6341,7 +6341,7 @@ async function qcRunExport(format) {
       qcCloseExportChoiceModal();
     } else {
       statusEl.textContent = 'PDF 만드는 중...';
-      await _qcRenderPrintPdf({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf', plain: !!meta.plain });
+      await _qcRenderPrintPdf({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf', plain: !!meta.plain, orientation: orientation || 'portrait' });
       qcCloseExportChoiceModal();
     }
   } catch (e) {
