@@ -672,6 +672,7 @@ function _fiRenderPhotoViewer() {
   counter.style.display = multi ? 'block' : 'none';
   counter.textContent = isAddSlide ? '사진 추가' : ((fiViewerIndex + 1) + ' / ' + fiViewerPhotos.length);
   document.getElementById('fiPhotoViewerNav').style.display = multi ? 'flex' : 'none';
+  _fiViewerResetZoom(); // 사진이 바뀌거나 뷰어를 새로 열 때마다 확대 배율을 원점으로
 }
 function fiPhotoViewerPrev() { const total = _fiPhotoViewerTotal(); fiViewerIndex = (fiViewerIndex - 1 + total) % total; _fiRenderPhotoViewer(); }
 function fiPhotoViewerNext() { const total = _fiPhotoViewerTotal(); fiViewerIndex = (fiViewerIndex + 1) % total; _fiRenderPhotoViewer(); }
