@@ -6823,9 +6823,9 @@ async function _qcRenderPrintPdf(opts) {
     document.body.removeChild(host);
     const imgData = canvas.toDataURL('image/png');
     if (p > 0) pdf.addPage();
-    const imgWmm = 190;
+    const imgWmm = CONTENT_W_MM;
     const imgHmm = canvas.height / canvas.width * imgWmm;
-    pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
+    pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, CONTENT_H_MM));
 
     // 페이지 하단 날짜(모든 페이지 공통) — 표가 페이지를 다 못 채워도 항상 실제 페이지
     // 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다(포장강화 대시보드의
@@ -6842,9 +6842,9 @@ async function _qcRenderPrintPdf(opts) {
     const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(footerHost);
     const footerImgData = footerCanvas.toDataURL('image/png');
-    const footerWmm = 190;
+    const footerWmm = CONTENT_W_MM;
     const footerHmm = footerCanvas.height / footerCanvas.width * footerWmm;
-    pdf.addImage(footerImgData, 'PNG', 10, 297 - 10 - footerHmm, footerWmm, footerHmm);
+    pdf.addImage(footerImgData, 'PNG', 10, PAGE_H_MM - 10 - footerHmm, footerWmm, footerHmm);
   }
   pdf.save(opts.filename);
 }
