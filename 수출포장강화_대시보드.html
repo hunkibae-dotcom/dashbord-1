@@ -7418,9 +7418,9 @@
                 document.body.removeChild(host);
                 const imgData = canvas.toDataURL('image/png');
                 if (p > 0) pdf.addPage();
-                const imgWmm = 190;
+                const imgWmm = CONTENT_W_MM;
                 const imgHmm = canvas.height / canvas.width * imgWmm;
-                pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, 277));
+                pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, CONTENT_H_MM));
 
                 // 페이지 하단 날짜(모든 데이터 출력 PDF 공통) — 표가 페이지를 다 못 채워도
                 // 항상 실제 페이지 맨 아래에 붙도록, 표 이미지와 별개로 고정 y좌표에 넣는다.
