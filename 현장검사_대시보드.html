@@ -536,6 +536,7 @@ async function fiOpenScanner(targetInputId) {
   _fiScanTargetId = targetInputId;
   document.getElementById('fiScanModal').style.display = 'flex';
   document.getElementById('fiScanStatus').textContent = '카메라 초기화 중...';
+  _fiArmBackTrap();
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } });
     _fiScanStream = stream;
