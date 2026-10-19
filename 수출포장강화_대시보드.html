@@ -9443,6 +9443,7 @@
             _pkgDefectPhotos = _pkgParseDefectPhotos(item.defectPhotos);
             _pkgDefectRemovedFileIds = [];
             _pkgRenderDefectPhotos();
+            _pkgRenderItemDefectActionSummary(item);
 
             document.getElementById('pkgDetailFeedback').textContent = '';
             document.getElementById('pkgItemDetailModal').style.display = 'flex';
