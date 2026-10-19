@@ -686,6 +686,96 @@ function fiViewerDeleteCurrent() {
   _fiRenderPhotoViewer();
 }
 
+// ── 사진 확대/축소 — PC에선 마우스 휠, 터치에선 두 손가락 핀치, 더블클릭/더블탭으론
+// 토글(1배↔2.4배). 확대된 상태에선 드래그(한 손가락)로 끌어서 볼 수 있다(요청,
+// 2026-10-19 "현장검사 웹에서 사진볼때 확대 축소 가능했으면 좋겠어"). Pointer Events로
+// 마우스/터치를 한 코드로 같이 처리한다.
+let _fiViewerScale = 1, _fiViewerPanX = 0, _fiViewerPanY = 0;
+const _fiViewerPointers = {};
+let _fiViewerPinchStartDist = 0, _fiViewerPinchStartScale = 1;
+let _fiViewerDragStart = null;
+function _fiViewerApplyTransform() {
+  const img = document.getElementById('fiPhotoViewerImg');
+  if (!img) return;
+  img.style.transform = 'translate(' + _fiViewerPanX + 'px,' + _fiViewerPanY + 'px) scale(' + _fiViewerScale + ')';
+  img.style.cursor = _fiViewerScale > 1 ? 'grab' : 'zoom-in';
+}
+function _fiViewerResetZoom() {
+  _fiViewerScale = 1; _fiViewerPanX = 0; _fiViewerPanY = 0;
+  _fiViewerApplyTransform();
+}
+function _fiViewerClampPan() {
+  // 사진이 화면 밖으로 너무 멀리 끌려가지 않게 배율에 비례한 범위로만 제한한다(정밀한
+  // 실측 대신 넉넉한 근사치 — 핵심은 "아예 놓쳐서 안 보이는 일"만 막는 것).
+  const maxPan = 300 * (_fiViewerScale - 1);
+  if (maxPan <= 0) { _fiViewerPanX = 0; _fiViewerPanY = 0; return; }
+  _fiViewerPanX = Math.max(-maxPan, Math.min(maxPan, _fiViewerPanX));
+  _fiViewerPanY = Math.max(-maxPan, Math.min(maxPan, _fiViewerPanY));
+}
+function _fiViewerWheelZoom(e) {
+  if (document.getElementById('fiPhotoViewerModal').style.display !== 'flex') return;
+  e.preventDefault();
+  _fiViewerScale = Math.max(1, Math.min(4, _fiViewerScale + (e.deltaY < 0 ? 0.25 : -0.25)));
+  _fiViewerClampPan();
+  _fiViewerApplyTransform();
+}
+function _fiViewerDblClick() {
+  _fiViewerScale = _fiViewerScale > 1 ? 1 : 2.4;
+  _fiViewerPanX = 0; _fiViewerPanY = 0;
+  _fiViewerApplyTransform();
+}
+function _fiViewerPointerDown(e) {
+  e.preventDefault();
+  _fiViewerPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+  const ids = Object.keys(_fiViewerPointers);
+  if (ids.length === 2) {
+    const pts = ids.map(id => _fiViewerPointers[id]);
+    _fiViewerPinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    _fiViewerPinchStartScale = _fiViewerScale;
+    _fiViewerDragStart = null;
+  } else if (ids.length === 1 && _fiViewerScale > 1) {
+    _fiViewerDragStart = { x: e.clientX, y: e.clientY, panX: _fiViewerPanX, panY: _fiViewerPanY };
+    e.target.style.cursor = 'grabbing';
+  }
+}
+function _fiViewerPointerMove(e) {
+  if (!(e.pointerId in _fiViewerPointers)) return;
+  _fiViewerPointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+  const ids = Object.keys(_fiViewerPointers);
+  if (ids.length === 2) {
+    const pts = ids.map(id => _fiViewerPointers[id]);
+    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+    if (_fiViewerPinchStartDist > 0) {
+      _fiViewerScale = Math.max(1, Math.min(4, _fiViewerPinchStartScale * (dist / _fiViewerPinchStartDist)));
+      _fiViewerClampPan();
+      _fiViewerApplyTransform();
+    }
+  } else if (ids.length === 1 && _fiViewerDragStart) {
+    _fiViewerPanX = _fiViewerDragStart.panX + (e.clientX - _fiViewerDragStart.x);
+    _fiViewerPanY = _fiViewerDragStart.panY + (e.clientY - _fiViewerDragStart.y);
+    _fiViewerClampPan();
+    _fiViewerApplyTransform();
+  }
+}
+function _fiViewerPointerUp(e) {
+  delete _fiViewerPointers[e.pointerId];
+  _fiViewerDragStart = null;
+  _fiViewerPinchStartDist = 0;
+  const img = document.getElementById('fiPhotoViewerImg');
+  if (img) img.style.cursor = _fiViewerScale > 1 ? 'grab' : 'zoom-in';
+  if (_fiViewerScale <= 1.02) _fiViewerResetZoom();
+}
+(function () {
+  const img = document.getElementById('fiPhotoViewerImg');
+  if (!img) return;
+  img.addEventListener('wheel', _fiViewerWheelZoom, { passive: false });
+  img.addEventListener('dblclick', _fiViewerDblClick);
+  img.addEventListener('pointerdown', _fiViewerPointerDown);
+  window.addEventListener('pointermove', _fiViewerPointerMove);
+  window.addEventListener('pointerup', _fiViewerPointerUp);
+  window.addEventListener('pointercancel', _fiViewerPointerUp);
+})();
+
 // ── 바코드 스캐너 — 단품코드 입력칸 옆 버튼에서 열림, 다른 대시보드(품질검사/포장강화)와
 // 같은 BarcodeDetector API를 쓰되, 여긴 "입력칸에 바로 채우기"만 하면 되니 손전등·수동
 // 초점 같은 고급 기능 없이 가장 단순한 형태로 둔다.
