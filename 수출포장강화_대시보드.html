@@ -10868,30 +10868,33 @@
             <!-- PC 화면 폭을 활용하는 2단 그리드: 일정|규격, 적재번호|PE폼유형 -->
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
 
-                <!-- 일정 카드 -->
+                <!-- 일정 카드 (품질검사 수정창과 스타일 통일 — 요청, 2026-10-19: 아이콘+라벨 위,
+                     큰 글씨·색상 구분된 값 가운데정렬. 실제 입력은 그대로 이 칸에 바로 한다
+                     — 품질검사처럼 보기/수정 모드를 나누는 토글은 추가하지 않았다, 여기서
+                     요청한 건 "스타일"만이라 상태값·저장로직은 전혀 안 건드림.) -->
                 <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;">
                     <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">일정</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-                        <div>
-                            <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">납기일</div>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
+                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">📅 납기일</div>
                             <input id="pkgDueDate" type="date"
-                                style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                                onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                                style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#D97706;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;"
+                                onfocus="this.style.color='#B45309'" onblur="this.style.color='#D97706'">
                         </div>
-                        <div>
-                            <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">상차일</div>
+                        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
+                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">🚚 상차일</div>
                             <input id="pkgShipDate" type="date"
-                                style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                                onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
+                                style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#7C3AED;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;"
+                                onfocus="this.style.color='#6D28D9'" onblur="this.style.color='#7C3AED'">
                         </div>
                     </div>
-                    <div>
-                        <div style="font-size:10.5px;color:#94a3b8;margin-bottom:5px;">포장완료일</div>
+                    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
+                        <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">📦 포장완료일</div>
                         <input id="pkgRegDate" type="date"
-                            style="width:100%;background:#fff;border:1.5px solid #e2e8f0;border-radius:9px;padding:9px 11px;font-size:13.5px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .15s;"
-                            onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e2e8f0'">
-                        <div style="font-size:10.5px;color:#94a3b8;margin-top:6px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
+                            style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#0284c7;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;"
+                            onfocus="this.style.color='#0369A1'" onblur="this.style.color='#0284c7'">
                     </div>
+                    <div style="font-size:10.5px;color:#94a3b8;margin-top:8px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
                 </div>
 
                 <!-- 규격 카드 -->
