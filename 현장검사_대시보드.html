@@ -169,19 +169,19 @@ try {
       <div style="font-size:10.5px; color:var(--label); font-weight:600; margin-bottom:12px;">조회 대상: <span id="fiHomeSheetLabel">전체 월</span> 현장검사 대장 <span style="color:var(--text-sub);">· 품질보증팀</span></div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:7px; margin-bottom:16px;">
-        <div style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center;">
+        <div onclick="fiGoKpiFilter('전체')" style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center; cursor:pointer;">
           <div id="fiKpiTotal" style="font-size:16px; font-weight:800;">—</div>
           <div style="font-size:9px; color:var(--label); font-weight:700; margin-top:2px;">총 조회건</div>
         </div>
-        <div style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center;">
+        <div onclick="fiGoKpiFilter('미조치')" style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center; cursor:pointer;">
           <div id="fiKpiOpen" style="font-size:16px; font-weight:800; color:#DC2626;">—</div>
           <div style="font-size:9px; color:var(--label); font-weight:700; margin-top:2px;">미조치</div>
         </div>
-        <div style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center;">
+        <div onclick="fiGoKpiFilter('조치중')" style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center; cursor:pointer;">
           <div id="fiKpiProgress" style="font-size:16px; font-weight:800; color:#D97706;">—</div>
           <div style="font-size:9px; color:var(--label); font-weight:700; margin-top:2px;">조치중</div>
         </div>
-        <div style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center;">
+        <div onclick="fiGoKpiFilter('조치완료')" style="background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:11px 4px; text-align:center; cursor:pointer;">
           <div id="fiKpiRate" style="font-size:16px; font-weight:800; color:#16A34A;">—</div>
           <div style="font-size:9px; color:var(--label); font-weight:700; margin-top:2px;">완료율</div>
         </div>
