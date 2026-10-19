@@ -5289,9 +5289,10 @@ function _rpCompressImage(file, cb) {
 
 // ── CBM(가로/세로/높이/무게) · 특이사항 입력 모달 ──
 let _rpEditKey = null, _rpEditMode = null; // 'cbm' | 'note'
-// 이 모달에도 "저장" 버튼(_rpSaveEditModal)이 있는데 참고사진만 선택/삭제 즉시 서버에
-// 반영되고 있었다(2026-10-16 지적) — 다른 필드처럼 저장 버튼을 눌러야 나가도록 큐잉.
-let _rpEditPendingPhotoAction = null; // {action:'upload',dataUrl}|{action:'clear'}|null
+// 특이사항 참고사진(여러 장) — 품목 수정창의 "불량사진"과 같은 저장소를 쓴다(요청,
+// 2026-10-19). 다른 필드처럼 저장 버튼을 눌러야 실제 반영되도록 로컬에만 쌓아둔다.
+let _rpNoteDefectPhotos = [];
+let _rpNoteDefectRemovedFileIds = [];
 
 function openRpCbmEditor(key) {
   _rpEnsureRecord(key);
