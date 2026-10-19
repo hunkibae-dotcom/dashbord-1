@@ -1565,8 +1565,22 @@ try {
         <button onclick="qcRunExport('xls')" class="flex-1 py-[18px] px-2 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 font-bold text-[13.5px] text-center">
           <i class="fa-solid fa-file-excel block text-[20px] mb-1.5"></i>엑셀(.xls)
         </button>
-        <button onclick="qcRunExport('pdf')" class="flex-1 py-[18px] px-2 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold text-[13.5px] text-center">
+        <button onclick="qcShowOrientStep()" class="flex-1 py-[18px] px-2 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold text-[13.5px] text-center">
           <i class="fa-solid fa-file-pdf block text-[20px] mb-1.5"></i>PDF
+        </button>
+      </div>
+    </div>
+    <div id="qcExportOrientStep" class="hidden">
+      <div class="flex items-center gap-2 my-3">
+        <button onclick="qcBackToExportFormat()" class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 text-[13px] flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-arrow-left"></i></button>
+        <div class="text-[13px] text-slate-500">용지 방향을 선택해 주세요. (내용이 긴 항목은 가로가 편합니다)</div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="qcRunExport('pdf','portrait')" class="flex-1 py-[18px] px-2 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold text-[13.5px] text-center">
+          <i class="fa-solid fa-file-pdf block text-[20px] mb-1.5"></i>세로
+        </button>
+        <button onclick="qcRunExport('pdf','landscape')" class="flex-1 py-[18px] px-2 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold text-[13.5px] text-center">
+          <i class="fa-solid fa-file-pdf block text-[20px] mb-1.5" style="transform:rotate(90deg);"></i>가로
         </button>
       </div>
     </div>
