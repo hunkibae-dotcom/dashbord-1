@@ -1288,6 +1288,10 @@ document.getElementById('fiGasUrlInput').value = fiGasUrl();
 document.getElementById('fiRegDate').value = fiTodayStr();
 fiRenderStatusFilterTabs();
 fiGoTab('home');
+if (fiIsPc()) {
+  document.getElementById('fiApp').style.display = 'none';
+  document.getElementById('fiPcApp').style.display = 'block';
+}
 // F.WORK 홈화면 메뉴의 "바코드스캐너"로 들어오면(?scan=코드) 새 하자 등록 창을 그
 // 코드로 미리 채운 채 바로 연다.
 (function () {
