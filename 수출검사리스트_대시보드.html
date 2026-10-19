@@ -455,6 +455,14 @@ try {
       <span class="flex-1">수주 · 공정 업데이트</span>
     </div>
 
+    <!-- 현장검사 — 별도 대시보드(현장검사_대시보드.html)를 새 탭으로 바로 열기. F.WORK
+         홈메뉴 구조가 "품질검사 > 현장검사"로 바뀌면서(요청, 2026-10-19), 품질검사
+         대시보드 안에서도 여기 바로가기를 둔다. -->
+    <div class="nav-item w-full" id="navFieldInspect" onclick="window.open('현장검사_대시보드.html?forceDesktop=1','_blank')">
+      <i class="fa-solid fa-triangle-exclamation w-4 text-center"></i>
+      <span class="flex-1">현장검사</span>
+    </div>
+
     <div class="border-t border-slate-300 my-1"></div>
 
     <button id="syncBtn" onclick="loadData()" class="nav-item w-full">
