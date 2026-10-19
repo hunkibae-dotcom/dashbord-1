@@ -9433,6 +9433,10 @@
                 if (changed.note !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.note = changed.note; }); });
                 }
+                if (changed.defectPhotos !== undefined) {
+                    const defectPhotosJson = JSON.stringify(changed.defectPhotos);
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.defectPhotos = defectPhotosJson; }); });
+                }
                 if (changed.pallet !== undefined && state.rawStockRows && state.rawStockRows.length > 1) {
                     const hdr = state.rawStockRows[0].map(h => (h||'').toString().trim());
                     const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
