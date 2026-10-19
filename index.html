@@ -874,7 +874,10 @@ function openSub(type){
 }
 
 function goFieldInspect(){
-    _navigate(MENUS.fieldinspect.dashboard);
+    /* 품질검사 대시보드 "안에서" 현장검사를 여는 것과 똑같은 화면이 나와야 하므로
+       (요청, 2026-10-19), 현장검사 대시보드로 바로 가지 않고 품질검사 대시보드로
+       가서 그 안의 iframe 오버레이가 자동으로 열리게 한다. */
+    _navigate(MENUS.quality.dashboard + '?openFieldInspect=1');
 }
 
 function closeSub(){
