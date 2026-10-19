@@ -7358,12 +7358,21 @@
             const rows = opts.rows || [];
             const fontSize = opts.fontSize || 11;
             const headerFontSize = opts.headerFontSize || 11.5;
-            const CONTENT_WIDTH_PX = 718; // A4 190mm 폭(여백 10mm씩 제외)에 해당하는 CSS px
+            // 용지 방향(세로/가로) — 건명처럼 긴 항목이 세로 190mm 폭엔 좁아서 줄바꿈이
+            // 많아진다는 요청(2026-10-19)으로 가로도 고를 수 있게 했다. mm→px 비율은
+            // 기존 세로 출력에서 이미 검증된 718px/190mm을 그대로 재사용한다.
+            const orientation = opts.orientation === 'landscape' ? 'landscape' : 'portrait';
+            const PAGE_W_MM = orientation === 'landscape' ? 297 : 210;
+            const PAGE_H_MM = orientation === 'landscape' ? 210 : 297;
+            const CONTENT_W_MM = PAGE_W_MM - 20; // 좌우 여백 10mm씩 제외
+            const CONTENT_H_MM = PAGE_H_MM - 20; // 상하 여백 10mm씩 제외
+            const MM_TO_PX = 718 / 190;
+            const CONTENT_WIDTH_PX = Math.round(CONTENT_W_MM * MM_TO_PX);
             const columns = _pkgAutoWidenOneLineColumns(opts.columns, rows, fontSize, headerFontSize, CONTENT_WIDTH_PX);
             // idx(줄무늬용)를 빠뜨리면 모든 행이 같은 색으로 나온다 — map 콜백에 그대로 전달.
             const rowHtml = (item, idx) => _pkgGenericRowHtml(item, columns, fontSize, idx);
 
-            const PAGE_BUDGET_PX = 980;   // A4 277mm 높이(여백 제외)에서 제목줄만큼 뺀 여유값
+            const PAGE_BUDGET_PX = Math.round(CONTENT_H_MM * MM_TO_PX) - 67; // 기존 세로 출력과 동일한 여유값(제목줄 분량) 유지
             const HEADER_ROW_PX = 32;
             const TITLE_PX = 30;
 
