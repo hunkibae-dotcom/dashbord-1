@@ -325,6 +325,28 @@ try {
   <div style="font-size:13px;color:#64748b;font-weight:700;">불러오는 중...</div>
 </div>
 
+<!-- 현장검사 — 새 탭/새 페이지로 나가지 않고 품질검사 대시보드 "안에서" 뜨도록
+     iframe으로 띄운다(요청, 2026-10-19). PC 사이드바/모바일 하단탭 둘 다 공용. -->
+<div id="fieldInspectOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;">
+  <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--border);">
+    <button onclick="closeFieldInspectOverlay()" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--icon-bg,#f1f5f9);color:var(--text-sub,#64748b);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <span style="font-size:13.5px;font-weight:800;color:var(--text,#1e293b);">현장검사</span>
+  </div>
+  <iframe id="fieldInspectFrame" src="" style="flex:1;width:100%;border:none;"></iframe>
+</div>
+<script>
+  function openFieldInspectOverlay() {
+    const f = document.getElementById('fieldInspectFrame');
+    if (!f.src) f.src = '현장검사_대시보드.html?forceDesktop=1';
+    document.getElementById('fieldInspectOverlay').style.display = 'flex';
+  }
+  function closeFieldInspectOverlay() {
+    document.getElementById('fieldInspectOverlay').style.display = 'none';
+  }
+</script>
+
 <!-- ── 접속현황(현재 이 대시보드를 보고 있는 사람) ── 레이아웃(데스크톱/모바일) 상관없이
      항상 같은 자리에 뜨도록 화면에 고정으로 띄운다. -->
 <div id="presenceBarWrap" style="position:fixed;top:8px;right:10px;z-index:9998;display:none;align-items:center;gap:0;touch-action:none;">
