@@ -345,7 +345,7 @@ try {
 </div>
 
   <!-- ══════════════ "새 하자 등록" 오버레이 ══════════════ -->
-  <div id="fiRegisterModal" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
+  <div id="fiRegisterModal" onclick="if(event.target===this)fiCloseRegister()" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
    <div class="fi-dialog-box">
     <div style="flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 16px;">
       <div style="display:flex; align-items:center; gap:8px;">
@@ -405,7 +405,7 @@ try {
   </div>
 
   <!-- ══════════════ "하자 상세" 오버레이 ══════════════ -->
-  <div id="fiDetailModal" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
+  <div id="fiDetailModal" onclick="if(event.target===this)fiCloseDetail()" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
    <div class="fi-dialog-box">
     <div style="flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 16px;">
       <div style="display:flex; align-items:center; gap:8px;">
