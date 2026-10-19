@@ -11115,8 +11115,22 @@
                 <button onclick="pkgRunExport('xls')" style="flex:1;padding:18px 6px;border:1.5px solid #bbf7d0;border-radius:12px;background:#f0fdf4;color:#15803d;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
                     <i class="fa-solid fa-file-excel" style="display:block;font-size:20px;margin-bottom:6px;"></i>엑셀(.xls)
                 </button>
-                <button onclick="pkgRunExport('pdf')" style="flex:1;padding:18px 6px;border:1.5px solid #fecaca;border-radius:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                <button onclick="pkgShowOrientStep()" style="flex:1;padding:18px 6px;border:1.5px solid #fecaca;border-radius:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
                     <i class="fa-solid fa-file-pdf" style="display:block;font-size:20px;margin-bottom:6px;"></i>PDF
+                </button>
+            </div>
+        </div>
+        <div id="pkgExportOrientStep" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;margin:14px 0;">
+                <button onclick="pkgBackToExportFormat()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:13px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div style="font-size:13px;color:#64748b;">용지 방향을 선택해 주세요. (내용이 긴 항목은 가로가 편합니다)</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button onclick="pkgRunExport('pdf','portrait')" style="flex:1;padding:18px 6px;border:1.5px solid #fecaca;border-radius:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:20px;margin-bottom:6px;transform:rotate(0deg);"></i>세로
+                </button>
+                <button onclick="pkgRunExport('pdf','landscape')" style="flex:1;padding:18px 6px;border:1.5px solid #fecaca;border-radius:12px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:20px;margin-bottom:6px;transform:rotate(90deg);"></i>가로
                 </button>
             </div>
         </div>
