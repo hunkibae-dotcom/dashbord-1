@@ -1167,6 +1167,10 @@ function fiHandleDetPhotoFile(input) {
       fiDetPhotos.push({ dataUrl: dataUrl });
     }
     fiRenderDetPhotos();
+    if (fiViewerEditable === 'det' && document.getElementById('fiPhotoViewerModal').style.display === 'flex') {
+      fiViewerIndex = fiDetPhotos.length - 1;
+      _fiRenderPhotoViewer();
+    }
   });
 }
 // ✕를 누르면 바로 지우지 않고 "변경/삭제"를 먼저 고르게 한다.
