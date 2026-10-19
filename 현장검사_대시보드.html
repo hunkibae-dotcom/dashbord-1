@@ -770,9 +770,12 @@ async function fiFetchList() {
   }
 }
 function fiRefresh() {
-  const btn = document.getElementById('fiRefreshBtn');
-  if (btn) btn.style.transform = 'rotate(360deg)';
-  fiFetchList().finally(function () { if (btn) setTimeout(function () { btn.style.transform = ''; }, 300); });
+  document.querySelectorAll('.fi-refresh-icon-inner').forEach(function (el) {
+    el.classList.remove('fi-refresh-spin');
+    void el.offsetWidth; // 강제 리플로우 — 연속 클릭해도 애니메이션이 처음부터 다시 돌게
+    el.classList.add('fi-refresh-spin');
+  });
+  fiFetchList();
 }
 
 function fiRenderAll() {
