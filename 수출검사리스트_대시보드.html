@@ -8678,7 +8678,13 @@ function _spuDateStr(v) {
 // 된다. 접두어(하이픈/언더바 앞부분) 기준으로 대소문자 구분 없이 비교한다.
 const SPU_DOMESTIC_NAME_OVERRIDES = ['IMC'];
 function _spuIsDomesticRound(roundName) {
-  const n = (roundName || '').trim();
+  // "VAN외4차수"처럼 여러 차수를 하나로 묶어 보여주는 표시명("...외N차수")은 실제
+  // 차수들이 전부 수출건(한글 없는 코드)이어도 "외"/"차수"라는 한글 때문에 내수로
+  // 잘못 판정돼, 그 안에 포함된 단품코드가 보고서 검색에서 아예 안 나오는 문제가
+  // 있었다(2026-10-19 지적, 예: MCICAB260288 → 건명 "VAN외4차수"). 내수 판정 전에
+  // 이 병합 표시 접미사부터 떼고 본다 — 실제 내수 거래처명(한글)이 앞에 남아있으면
+  // 그대로 내수로 판정되니 안전하다.
+  const n = (roundName || '').trim().replace(/외\d+차수\s*$/, '');
   if (/[가-힣]/.test(n)) return true; // 한글이 하나라도 있으면 내수
   const prefix = n.split(/[-_]/)[0].trim().toUpperCase();
   return SPU_DOMESTIC_NAME_OVERRIDES.some(p => prefix === p.toUpperCase());
