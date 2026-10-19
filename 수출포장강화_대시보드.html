@@ -9141,8 +9141,64 @@
             _pkgOrigNote = (item.note || '').toString();
             document.getElementById('pkgNote').value = _pkgOrigNote;
 
+            _pkgDefectPhotos = _pkgParseDefectPhotos(item.defectPhotos);
+            _pkgDefectRemovedFileIds = [];
+            _pkgRenderDefectPhotos();
+
             document.getElementById('pkgDetailFeedback').textContent = '';
             document.getElementById('pkgItemDetailModal').style.display = 'flex';
+        }
+        function _pkgParseDefectPhotos(cell) {
+            const s = (cell || '').toString().trim();
+            if (!s || s.charAt(0) !== '[') return [];
+            try { return JSON.parse(s); } catch (e) { return []; }
+        }
+        function _pkgRenderDefectPhotos() {
+            const wrap = document.getElementById('pkgDefectPhotoWrap');
+            if (!wrap) return;
+            wrap.innerHTML = _pkgDefectPhotos.map((p, i) => {
+                const src = p.dataUrl || p.viewUrl;
+                const onerr = (!p.dataUrl && p.fileId) ? ` onerror="this.onerror=null;this.src='${p.viewUrl || ''}'"` : '';
+                return `<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:#f1f5f9;flex-shrink:0;">
+                    <img src="${src}"${onerr} style="width:100%;height:100%;object-fit:cover;">
+                    <span onclick="_pkgRemoveDefectPhoto(${i})" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>
+                </div>`;
+            }).join('') + `<div onclick="document.getElementById('pkgDefectPhotoFile').click()" style="width:64px;height:64px;background:#f1f5f9;border:1.5px dashed #e2e8f0;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">
+                <i class="fa-solid fa-plus" style="color:#94a3b8;font-size:13px;"></i>
+                <span style="font-size:8px;color:#94a3b8;font-weight:600;">추가</span>
+            </div>`;
+        }
+        function _pkgCompressImageFile(file, cb) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 1280;
+                    const ratio = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
+                    const w = Math.max(1, Math.round(img.naturalWidth * ratio)), h = Math.max(1, Math.round(img.naturalHeight * ratio));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    cb(canvas.toDataURL('image/jpeg', 0.72));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        function _pkgHandleDefectPhotoFile(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            _pkgCompressImageFile(file, (dataUrl) => {
+                _pkgDefectPhotos.push({ dataUrl });
+                _pkgRenderDefectPhotos();
+            });
+        }
+        function _pkgRemoveDefectPhoto(i) {
+            const p = _pkgDefectPhotos[i];
+            if (p && p.fileId) _pkgDefectRemovedFileIds.push(p.fileId);
+            _pkgDefectPhotos.splice(i, 1);
+            _pkgRenderDefectPhotos();
         }
 
         function _pkgUpdateDetailCbm() {
