@@ -525,6 +525,55 @@ function _fiRenderPhotoViewer() {
 function fiPhotoViewerPrev() { fiViewerIndex = (fiViewerIndex - 1 + fiViewerPhotos.length) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
 function fiPhotoViewerNext() { fiViewerIndex = (fiViewerIndex + 1) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
 
+// ── 바코드 스캐너 — 단품코드 입력칸 옆 버튼에서 열림, 다른 대시보드(품질검사/포장강화)와
+// 같은 BarcodeDetector API를 쓰되, 여긴 "입력칸에 바로 채우기"만 하면 되니 손전등·수동
+// 초점 같은 고급 기능 없이 가장 단순한 형태로 둔다.
+let _fiScanStream = null, _fiScanDetector = null, _fiScanRaf = null, _fiScanTargetId = null;
+async function fiOpenScanner(targetInputId) {
+  const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (!hasTouch) { alert('모바일 기기에서만 사용 가능합니다.'); return; }
+  if (!('BarcodeDetector' in window)) { alert('이 기기는 바코드 자동 인식을 지원하지 않습니다.'); return; }
+  _fiScanTargetId = targetInputId;
+  document.getElementById('fiScanModal').style.display = 'flex';
+  document.getElementById('fiScanStatus').textContent = '카메라 초기화 중...';
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } });
+    _fiScanStream = stream;
+    const vid = document.getElementById('fiScanVideo');
+    vid.srcObject = stream;
+    await vid.play();
+    const fmts = await BarcodeDetector.getSupportedFormats().catch(() => ['code_128', 'code_39', 'ean_13', 'qr_code']);
+    _fiScanDetector = new BarcodeDetector({ formats: fmts });
+    document.getElementById('fiScanStatus').textContent = '바코드를 노란 테두리 안에 맞춰주세요';
+    _fiScanRaf = requestAnimationFrame(_fiScanTick);
+  } catch (e) {
+    document.getElementById('fiScanStatus').textContent = '카메라 권한이 필요합니다.';
+  }
+}
+async function _fiScanTick() {
+  if (!_fiScanStream || !_fiScanDetector) return;
+  try {
+    const codes = await _fiScanDetector.detect(document.getElementById('fiScanVideo'));
+    if (codes && codes.length) {
+      const val = (codes[0].rawValue || '').trim();
+      if (val) {
+        const inp = document.getElementById(_fiScanTargetId);
+        if (inp) inp.value = val.toUpperCase();
+        document.getElementById('fiScanStatus').textContent = '인식됨: ' + val;
+        setTimeout(fiCloseScanner, 350);
+        return;
+      }
+    }
+  } catch (e) { /* 프레임 하나 인식 실패는 무시하고 계속 시도 */ }
+  _fiScanRaf = requestAnimationFrame(_fiScanTick);
+}
+function fiCloseScanner() {
+  if (_fiScanRaf) cancelAnimationFrame(_fiScanRaf);
+  _fiScanRaf = null; _fiScanDetector = null;
+  if (_fiScanStream) { _fiScanStream.getTracks().forEach(function (t) { t.stop(); }); _fiScanStream = null; }
+  document.getElementById('fiScanModal').style.display = 'none';
+}
+
 function fiTodayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
