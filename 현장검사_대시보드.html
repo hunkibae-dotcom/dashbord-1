@@ -583,11 +583,15 @@ function fiPhotoImgTag(photo, styleAttr) {
   return '<img src="' + src + '"' + onerr + ' style="' + styleAttr + '">';
 }
 
-// ── 사진 크게보기(라이트박스) — 부적합조회 카드 썸네일, 하자상세 "전체보기"에서 공용 ──
-let fiViewerPhotos = [], fiViewerIndex = 0;
-function fiOpenPhotoViewer(photos, startIndex) {
-  if (!photos || !photos.length) return;
-  fiViewerPhotos = photos;
+// ── 사진 크게보기(라이트박스) — 부적합조회 카드 썸네일(읽기전용), 등록/상세 수정 중
+// 사진 썸네일(editable: 'reg'|'det')에서 공용으로 쓴다. editable일 땐 맨 끝에 "사진 추가"
+// 슬라이드가 하나 더 붙고, 좌상단에 삭제 버튼도 뜬다 — 단, 여기서 지우거나 추가해도
+// 등록/저장 버튼을 누르기 전까진 서버엔 아무 일도 안 일어난다(기존 배열을 그대로 참조).
+let fiViewerPhotos = [], fiViewerIndex = 0, fiViewerEditable = null;
+function fiOpenPhotoViewer(photos, startIndex, editable) {
+  fiViewerPhotos = photos || [];
+  fiViewerEditable = editable || null;
+  if (!fiViewerPhotos.length && !fiViewerEditable) return;
   fiViewerIndex = startIndex || 0;
   _fiRenderPhotoViewer();
   document.getElementById('fiPhotoViewerModal').style.display = 'flex';
@@ -602,22 +606,47 @@ function fiOpenPhotoViewerFor(key) {
 function fiClosePhotoViewer() {
   document.getElementById('fiPhotoViewerModal').style.display = 'none';
   fiViewerPhotos = [];
+  fiViewerEditable = null;
 }
+function _fiPhotoViewerTotal() { return fiViewerPhotos.length + (fiViewerEditable ? 1 : 0); }
 function _fiRenderPhotoViewer() {
-  const p = fiViewerPhotos[fiViewerIndex];
-  if (!p) { fiClosePhotoViewer(); return; }
+  const total = _fiPhotoViewerTotal();
+  if (!total) { fiClosePhotoViewer(); return; }
+  if (fiViewerIndex >= total) fiViewerIndex = total - 1;
+  const isAddSlide = !!fiViewerEditable && fiViewerIndex === fiViewerPhotos.length;
   const img = document.getElementById('fiPhotoViewerImg');
-  img.onerror = null;
-  img.src = p.dataUrl || p.viewUrl;
-  if (p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
-  const multi = fiViewerPhotos.length > 1;
+  const addBox = document.getElementById('fiPhotoViewerAddBox');
+  const delBtn = document.getElementById('fiPhotoViewerDelBtn');
+  if (isAddSlide) {
+    img.style.display = 'none';
+    addBox.style.display = 'flex';
+    delBtn.style.display = 'none';
+  } else {
+    const p = fiViewerPhotos[fiViewerIndex];
+    img.style.display = '';
+    addBox.style.display = 'none';
+    img.onerror = null;
+    img.src = p.dataUrl || p.viewUrl;
+    if (p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
+    delBtn.style.display = fiViewerEditable ? 'flex' : 'none';
+  }
+  const multi = total > 1;
   const counter = document.getElementById('fiPhotoViewerCounter');
   counter.style.display = multi ? 'block' : 'none';
-  counter.textContent = (fiViewerIndex + 1) + ' / ' + fiViewerPhotos.length;
+  counter.textContent = isAddSlide ? '사진 추가' : ((fiViewerIndex + 1) + ' / ' + fiViewerPhotos.length);
   document.getElementById('fiPhotoViewerNav').style.display = multi ? 'flex' : 'none';
 }
-function fiPhotoViewerPrev() { fiViewerIndex = (fiViewerIndex - 1 + fiViewerPhotos.length) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
-function fiPhotoViewerNext() { fiViewerIndex = (fiViewerIndex + 1) % fiViewerPhotos.length; _fiRenderPhotoViewer(); }
+function fiPhotoViewerPrev() { const total = _fiPhotoViewerTotal(); fiViewerIndex = (fiViewerIndex - 1 + total) % total; _fiRenderPhotoViewer(); }
+function fiPhotoViewerNext() { const total = _fiPhotoViewerTotal(); fiViewerIndex = (fiViewerIndex + 1) % total; _fiRenderPhotoViewer(); }
+function fiViewerDeleteCurrent() {
+  if (!fiViewerEditable || fiViewerIndex >= fiViewerPhotos.length) return;
+  const i = fiViewerIndex;
+  if (fiViewerEditable === 'reg') fiRemoveRegPhoto(i);
+  else if (fiViewerEditable === 'det') fiRemoveDetPhoto(i);
+  if (fiViewerIndex > 0 && fiViewerIndex >= fiViewerPhotos.length) fiViewerIndex--;
+  if (!fiViewerPhotos.length && !fiViewerEditable) { fiClosePhotoViewer(); return; }
+  _fiRenderPhotoViewer();
+}
 
 // ── 바코드 스캐너 — 단품코드 입력칸 옆 버튼에서 열림, 다른 대시보드(품질검사/포장강화)와
 // 같은 BarcodeDetector API를 쓰되, 여긴 "입력칸에 바로 채우기"만 하면 되니 손전등·수동
