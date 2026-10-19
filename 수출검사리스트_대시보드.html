@@ -7978,6 +7978,9 @@ function openMItemDetail(key) {
   _updateMiCbm();
   _miSyncViewMirrors();
   _miRenderPhotoBoxes();
+  _miDefectPhotos = _miParseDefectPhotos(d.불량사진);
+  _miDefectRemovedFileIds = [];
+  _miRenderDefectPhotos();
   _miPendingSync = {};
   _miPendingPhotoActions = {};
   _setMiSyncNote('저장 버튼을 눌러야 실제 시트에 반영됩니다', false);
