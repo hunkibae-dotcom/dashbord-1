@@ -7440,9 +7440,9 @@
                     const footerCanvas = await window.html2canvas(footerHost, { scale: 2, backgroundColor: '#ffffff' });
                     document.body.removeChild(footerHost);
                     const footerImgData = footerCanvas.toDataURL('image/png');
-                    const footerWmm = 190;
+                    const footerWmm = CONTENT_W_MM;
                     const footerHmm = footerCanvas.height / footerCanvas.width * footerWmm;
-                    pdf.addImage(footerImgData, 'PNG', 10, 297 - 10 - footerHmm, footerWmm, footerHmm);
+                    pdf.addImage(footerImgData, 'PNG', 10, PAGE_H_MM - 10 - footerHmm, footerWmm, footerHmm);
                 }
             }
             pdf.save(opts.filename);
