@@ -9373,6 +9373,10 @@
                 tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateNote', code:_pkgCode, round:_pkgRound, color:_pkgColor, note:newNote }), '특이사항 저장'));
                 changed.note = newNote;
             }
+            const defectPhotosChanged = _pkgDefectPhotos.some(p => !p.fileId) || _pkgDefectRemovedFileIds.length > 0;
+            if (defectPhotosChanged) {
+                tasks.push(_pkgSyncDefectPhotosTask().then(res => { changed.defectPhotos = res.photos || []; }));
+            }
             // PE폼 유형/규격은 구글시트와 무관하게 이 브라우저에만 저장하는 값이라 네트워크
             // 요청이 필요 없다 — 다른 변경사항과 별개로 바로 기억해둔다.
             if (peChanged) {
