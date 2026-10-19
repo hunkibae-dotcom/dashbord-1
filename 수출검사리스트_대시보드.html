@@ -5381,6 +5381,26 @@ async function _rpSyncNoteToSheet(item, noteText) {
     return json.status === 'success';
   } catch (e) { return false; }
 }
+// 특이사항 "참고 사진"은 이제 보고서 전용 저장소(보고서 임시저장 시트)가 아니라, 품목
+// 수정창의 "불량사진"과 완전히 같은 곳(비고 칼럼 옆 칸)에 저장한다 — 어느 화면에서
+// 올리거나 지워도 똑같이 보이게 하기 위함(요청, 2026-10-19). 로직은 _miSyncDefectPhotos와
+// 같지만 이 모달 자신의 로컬 상태(_rpNoteDefectPhotos/_rpNoteDefectRemovedFileIds)를 쓴다.
+async function _rpSyncNoteDefectPhotos(item) {
+  const newOnes = _rpNoteDefectPhotos.filter(function (p) { return !p.fileId; }).map(function (p) { return p.dataUrl; });
+  const removed = _rpNoteDefectRemovedFileIds.slice();
+  if (!newOnes.length && !removed.length) return;
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) return;
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateDefectPhotos', round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: item.수량 || '', newPhotos: newOnes, removedFileIds: removed }),
+      signal: AbortSignal.timeout(30000)
+    });
+    const json = await res.json().catch(function () { return null; });
+    if (json && json.status === 'success') item.불량사진 = JSON.stringify(json.photos || []);
+  } catch (e) { /* 실패해도 특이사항 글자 저장은 이미 끝난 뒤라 조용히 무시 */ }
+}
 
 // 구글 앱스스크립트 호출(시트 반영)은 실제로 재보니 건당 2~4초, 느릴 땐 그 이상 걸렸다 —
 // 예전엔 이 저장 버튼이 그 응답을 기다렸다가("저장 중..." 표시) 창을 닫아서, 보고서에서
