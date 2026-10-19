@@ -49,6 +49,8 @@ try {
   #fiApp { max-width:480px; margin:0 auto; min-height:100vh; background:var(--bg); display:flex; flex-direction:column; position:relative; overflow:hidden; }
   .fi-tabpanel { display:none; flex:1; overflow-y:auto; }
   .fi-tabpanel.active { display:block; }
+  @keyframes fiRefreshSpin { to { transform: rotate(360deg); } }
+  .fi-refresh-spin { animation: fiRefreshSpin .6s linear; }
 
   /* ══ PC 전용 대시보드(fiIsPc()가 true일 때만 보임, 모바일 앱 쪽은 전혀 안 건드림) ══ */
   #fiPcApp { display:none; min-height:100vh; background:var(--bg); }
