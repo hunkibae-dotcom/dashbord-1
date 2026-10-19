@@ -8789,6 +8789,38 @@
             _pkgCode = ''; _pkgRound = ''; _pkgColor = '';
             _pkgDefectPhotos = []; _pkgDefectRemovedFileIds = [];
         }
+        // 품목 수정창의 "포장불량조치" 요약 카드 — 등록된 내용이 있으면 유형/상태/내용
+        // 미리보기 + "수정" 버튼을, 없으면 "불량조치 등록" 버튼만 보여준다(요청,
+        // 2026-10-19: 텍스트를 억지로 합치는 대신 여기서 바로 보고/고칠 수 있게).
+        function _pkgRenderItemDefectActionSummary(item) {
+            const key = _pkgDefectKey(item);
+            const entry = _pkgDefectActions[key];
+            const wrap = document.getElementById('pkgDaItemSummaryContent');
+            if (!wrap) return;
+            const safeKey = key.replace(/'/g, "\\'");
+            if (!entry) {
+                wrap.innerHTML = `
+                    <div style="font-size:11.5px;color:#94a3b8;margin-bottom:10px;">등록된 불량조치가 없습니다.</div>
+                    <button onclick="_pkgGoToDefectActionFromItemDetail('${safeKey}')" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:8px 14px;border-radius:9px;border:none;background:#0284c7;color:#fff;cursor:pointer;">
+                        <i class="fa-solid fa-plus"></i> 불량조치 등록
+                    </button>`;
+                return;
+            }
+            const typesHtml = (entry.types || []).map(t => `<span style="display:inline-flex;font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;border:1.5px solid #0284c7;background:rgba(2,132,199,.1);color:#0284c7;">${t}</span>`).join(' ');
+            wrap.innerHTML = `
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
+                    ${typesHtml}
+                    <span style="margin-left:auto;display:inline-flex;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:20px;${_pkgDaStatusPillStyle(entry.status)}">${entry.status || '미조치'}</span>
+                </div>
+                <div style="font-size:12px;color:#1e293b;line-height:1.4;margin-bottom:10px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${(entry.content || '').replace(/</g, '&lt;') || '-'}</div>
+                <button onclick="_pkgGoToDefectActionFromItemDetail('${safeKey}')" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:8px 14px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;">
+                    <i class="fa-solid fa-pen"></i> 수정
+                </button>`;
+        }
+        function _pkgGoToDefectActionFromItemDetail(key) {
+            closePkgItemDetail();
+            openPkgDefectActionEdit(key);
+        }
         async function savePkgDefectAction() {
             const key = _pkgDefectActionEditKey;
             const item = _pkgFindItemByKey(key);
