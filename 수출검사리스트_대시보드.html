@@ -7850,6 +7850,15 @@ function _miRefreshPhotoBoxesIfOpen(key) {
   if (!_miCurrent || _miKey(_miCurrent) !== key) return;
   _miRenderPhotoBoxes();
 }
+// 보고서의 "특이사항" 참고사진도 이제 이 "불량사진"과 완전히 같은 저장소를 쓰므로
+// (요청, 2026-10-19), 보고서 쪽에서 저장하면 이 상세창이 같은 품목을 연 채로 떠있어도
+// 미리보기가 같이 맞춰지게 한다.
+function _miRefreshDefectPhotosIfOpen(key) {
+  if (!_miCurrent || _miKey(_miCurrent) !== key) return;
+  _miDefectPhotos = _miParseDefectPhotos(_miCurrent.불량사진);
+  _miDefectRemovedFileIds = [];
+  _miRenderDefectPhotos();
+}
 
 // ── 불량사진(특이사항 위, 여러 장 업로드) ────────────────────────────
 // 비고(특이사항)는 글자만 저장되지만 사진도 같이 남기고 싶다는 요청(2026-10-19)으로
