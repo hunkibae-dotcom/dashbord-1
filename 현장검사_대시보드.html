@@ -1036,7 +1036,14 @@ function fiHandleRegPhotoFile(input) {
   const file = input.files && input.files[0];
   input.value = '';
   if (!file) return;
-  fiCompressImageFile(file, function (dataUrl) { fiRegPhotos.push({ dataUrl: dataUrl }); fiRenderRegPhotos(); });
+  fiCompressImageFile(file, function (dataUrl) {
+    fiRegPhotos.push({ dataUrl: dataUrl });
+    fiRenderRegPhotos();
+    if (fiViewerEditable === 'reg' && document.getElementById('fiPhotoViewerModal').style.display === 'flex') {
+      fiViewerIndex = fiRegPhotos.length - 1;
+      _fiRenderPhotoViewer();
+    }
+  });
 }
 function fiOpenRegister() {
   fiRegTypes = []; fiRegStatus = '미조치'; fiRegPhotos = [];
