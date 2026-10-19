@@ -1943,6 +1943,11 @@
             initCard1();
             _presenceInit();
 
+            // 포장불량조치 — 품목 수정창 요약 카드가 정확히 뜨려면(탭을 아직 한 번도
+            // 안 열어봤어도) 이 시점에 미리 로컬캐시+서버에서 받아와 둔다.
+            _pkgLoadDefectActionsFromStorage();
+            _pkgFetchDefectActions();
+
             // 0. 모바일 캐러셀 초기화 — window.load 이후로 지연 (레이아웃 확정 후 실행)
             window.addEventListener('load', function() {
                 _initDots('topCardGrid', 'topCardDots');
