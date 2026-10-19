@@ -8101,6 +8101,21 @@ function saveMItemDetail() {
       const w = parseFloat(item.가로) || 0, d = parseFloat(item.세로) || 0, h = parseFloat(item.높이) || 0;
       item.CBM = (w && d && h) ? (w * d * h) / 1e9 : 0;
     }
+    // 보고서 탭의 CBM 칸(_rpCbmCell)은 _reportSelected[key].cbm이 한 번이라도 채워진
+    // 적 있으면 그 값을 무조건 우선해서 보여준다 — 그래서 예전에 보고서에서 CBM을
+    // 입력해둔 품목을 이 수정창에서 다시 고치면, 시트엔 반영돼도 보고서 쪽 칸은 옛날
+    // 값 그대로 남아 "연동이 안 된다"는 지적(2026-10-19)이 있었다. 여기서 수정한 CBM을
+    // 보고서 쪽 캐시에도 같이 반영해서 항상 최신 값이 보이게 한다.
+    if (fields.some(f => ['가로', '세로', '높이', '중량'].includes(f))) {
+      const rpKey = _miKey(item);
+      _rpEnsureRecord(rpKey);
+      if (_reportSelected[rpKey]) {
+        _reportSelected[rpKey].cbm = { w: item.가로 || null, d: item.세로 || null, h: item.높이 || null, weight: item.중량 || null };
+        _reportSelected[rpKey]._updatedAt = Date.now();
+        _rpSaveToStorage();
+        _rpRefreshRow(rpKey);
+      }
+    }
     _saveMiOverride(_miKey(item), pending);
     _miSyncViewMirrors();
   }
