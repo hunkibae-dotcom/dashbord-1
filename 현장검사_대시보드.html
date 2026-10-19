@@ -1006,9 +1006,9 @@ function fiPickRegStatus(s) { fiRegStatus = s; fiRenderRegStatusBtns(); }
 function fiRenderRegPhotos() {
   const wrap = document.getElementById('fiRegPhotos');
   wrap.innerHTML = fiRegPhotos.map(function (p, i) {
-    return '<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;">' +
+    return '<div onclick="fiOpenPhotoViewer(fiRegPhotos,' + i + ',\'reg\')" style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;cursor:zoom-in;">' +
       '<img src="' + p.dataUrl + '" style="width:100%;height:100%;object-fit:cover;">' +
-      '<span onclick="fiRemoveRegPhoto(' + i + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+      '<span onclick="event.stopPropagation();fiRemoveRegPhoto(' + i + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
     '</div>';
   }).join('') + '<div onclick="document.getElementById(\'fiRegPhotoFile\').click()" style="width:64px;height:64px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">' +
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>' +
