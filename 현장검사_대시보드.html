@@ -49,6 +49,33 @@ try {
   #fiApp { max-width:480px; margin:0 auto; min-height:100vh; background:var(--bg); display:flex; flex-direction:column; position:relative; overflow:hidden; }
   .fi-tabpanel { display:none; flex:1; overflow-y:auto; }
   .fi-tabpanel.active { display:block; }
+
+  /* ══ PC 전용 대시보드(fiIsPc()가 true일 때만 보임, 모바일 앱 쪽은 전혀 안 건드림) ══ */
+  #fiPcApp { display:none; min-height:100vh; background:var(--bg); }
+  .fipc-topbar { display:flex; align-items:center; gap:12px; padding:16px 24px; background:var(--panel); border-bottom:1px solid var(--border); }
+  .fipc-badge { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#DC2626,#FB7185); display:flex; align-items:center; justify-content:center; color:#fff; font-size:16px; flex-shrink:0; }
+  .fipc-title { font-size:17px; font-weight:800; }
+  .fipc-sub { font-size:11.5px; color:var(--text-sub); margin-top:1px; }
+  .fipc-btn { display:flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:8px 14px; border-radius:9px; border:1px solid var(--border); background:var(--panel); color:var(--text-sub); cursor:pointer; white-space:nowrap; }
+  .fipc-btn.primary { background:#D97706; border-color:#D97706; color:#fff; }
+  .fipc-wrap { padding:20px 24px 40px; max-width:1400px; margin:0 auto; }
+  .fipc-kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+  .fipc-kpi { background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:16px 18px; }
+  .fipc-kpi-label { font-size:11.5px; font-weight:700; color:var(--text-sub); display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .fipc-kpi-val { font-size:26px; font-weight:800; letter-spacing:-.02em; }
+  .fipc-filter-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:12px 14px; margin-bottom:18px; }
+  .fipc-filter-bar select, .fipc-filter-bar input[type=date] { font-size:12.5px; font-weight:700; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-family:inherit; }
+  .fipc-search { flex:1; min-width:200px; display:flex; align-items:center; gap:8px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; padding:8px 12px; }
+  .fipc-search input { border:none; background:none; outline:none; font-size:12.5px; color:var(--text); width:100%; }
+  .fipc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+  .fipc-card { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; gap:12px; }
+  .fipc-photo { width:96px; height:96px; border-radius:12px; flex-shrink:0; object-fit:cover; background:var(--input-bg); cursor:zoom-in; }
+  .fipc-photo.empty { display:flex; align-items:center; justify-content:center; color:var(--label); font-size:20px; cursor:default; }
+  .fipc-top-btns { display:flex; gap:4px; flex-shrink:0; }
+  .fipc-icon-btn { width:22px; height:22px; border-radius:6px; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .fipc-icon-btn.edit { background:var(--input-bg); color:var(--text-sub); }
+  .fipc-icon-btn.del { background:rgba(220,38,38,.1); color:#DC2626; }
+  .fipc-status-pill { font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:20px; flex-shrink:0; }
 </style>
 </head>
 <body>
