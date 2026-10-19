@@ -991,6 +991,19 @@ function fiRenderStatusFilterTabs() {
   }).join('');
 }
 function fiPickStatusFilter(s) { fiStatusFilter = s; fiRenderStatusFilterTabs(); fiRenderList(); }
+// 상단 KPI 카드(총 조회건/미조치/조치중/완료율) 클릭 시 그 조건으로 바로 필터링해서
+// 부적합조회 목록을 보여준다 — 숫자만 보여주지 말고 눌러서 바로 그 목록을 보고
+// 싶다는 요청(2026-10-19). 홈 탭에서 눌러도, 부적합조회 탭에서 눌러도 동일하게 동작.
+function fiGoKpiFilter(status) {
+  fiTypeFilter = '전체';
+  document.getElementById('fiDateFilter').value = '';
+  document.getElementById('fiSearchInput').value = '';
+  document.getElementById('fiTypeDropdownLabel').textContent = '전체';
+  document.getElementById('fiTypeDropdownLabel').style.color = 'var(--label)';
+  fiStatusFilter = status;
+  fiRenderStatusFilterTabs();
+  fiGoTab('list');
+}
 function fiResetFilters() {
   fiStatusFilter = '전체'; fiTypeFilter = '전체';
   document.getElementById('fiDateFilter').value = '';
