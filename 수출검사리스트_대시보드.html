@@ -5321,30 +5321,59 @@ function openRpNoteEditor(key) {
   _rpEnsureRecord(key);
   const sel = _reportSelected[key];
   if (!sel) return;
-  // 사진 선택/삭제 직후에도 미리보기를 다시 그리려고 이 함수를 재호출하는데, 그때
-  // 큐에 쌓아둔 pending 액션까지 같이 지워버리면 안 되므로 "진짜 새로 여는 경우"에만 리셋.
-  if (_rpEditKey !== key || _rpEditMode !== 'note') _rpEditPendingPhotoAction = null;
+  // 사진 추가/삭제 직후에도 미리보기를 다시 그리려고 이 함수를 재호출하는데, 그때
+  // 로컬에 쌓아둔 변경사항까지 같이 지워버리면 안 되므로 "진짜 새로 여는 경우"에만 리셋.
+  if (_rpEditKey !== key || _rpEditMode !== 'note') {
+    _rpNoteDefectPhotos = _miParseDefectPhotos(sel.item && sel.item.불량사진);
+    _rpNoteDefectRemovedFileIds = [];
+  }
   _rpEditKey = key; _rpEditMode = 'note';
-  const notePhotoEff = _rpEffectivePhoto(sel, 'note');
-  const photoUrl = notePhotoEff && notePhotoEff.src;
   document.getElementById('rpEditTitle').textContent = '검사 특이사항';
   document.getElementById('rpEditBody').innerHTML = `
     <textarea id="rpNoteText" rows="4" placeholder="특이사항을 입력하세요 (PPTX에는 이 글자만 들어갑니다)" style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;">${(sel.note || '').replace(/</g, '&lt;')}</textarea>
-    <div style="font-size:11px;color:var(--label);margin:10px 0 4px;">참고 사진 (PPTX에는 포함되지 않음)</div>
-    <div onclick="document.getElementById('rpNotePhotoInput').click()" style="width:100%;height:120px;border-radius:10px;border:1.5px dashed var(--border);background:${photoUrl ? 'none' : 'var(--icon-bg)'};display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;">
-      ${photoUrl ? `<img src="${photoUrl}"${notePhotoEff.isRemoteOnly && sel.item && sel.item.공장 ? ` onerror="this.onerror=null;_rpImgFallback(this,'${notePhotoEff.fileId}','${sel.item.공장}')"` : ''} style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-camera" style="color:var(--label);font-size:22px;"></i>`}
-    </div>
-    <input type="file" id="rpNotePhotoInput" accept="image/*" style="display:none;" onchange="_rpHandleNotePhoto(this)">
-    ${photoUrl ? `<button type="button" onclick="_rpRemoveNotePhoto()" style="margin-top:6px;background:none;border:none;color:#EF4444;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0;">사진 삭제</button>` : ''}
+    <div style="font-size:11px;color:var(--label);margin:10px 0 6px;">참고 사진 (여러 장 가능, PPTX에는 포함되지 않음) — 품목 수정창의 "불량사진"과 같은 사진입니다.</div>
+    <div id="rpNoteDefectPhotoWrap" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    <input type="file" id="rpNoteDefectPhotoFile" accept="image/*" style="display:none;" onchange="_rpHandleNoteDefectPhotoFile(this)">
   `;
+  _rpRenderNoteDefectPhotos();
   document.getElementById('rpEditModal').style.display = 'flex';
   _armBackTrap();
+}
+function _rpRenderNoteDefectPhotos() {
+  const wrap = document.getElementById('rpNoteDefectPhotoWrap');
+  if (!wrap) return;
+  const sel = _rpEditKey && _reportSelected[_rpEditKey];
+  const factoryKey = (sel && sel.item) ? sel.item.공장 : '';
+  wrap.innerHTML = _rpNoteDefectPhotos.map(function (p, i) {
+    const src = p.dataUrl || p.viewUrl;
+    const onerr = (!p.dataUrl && p.fileId) ? (' onerror="this.onerror=null;_rpImgFallback(this,\'' + p.fileId + '\',\'' + factoryKey + '\')"') : '';
+    return '<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;">' +
+      '<img src="' + src + '"' + onerr + ' style="width:100%;height:100%;object-fit:cover;">' +
+      '<span onclick="_rpRemoveNoteDefectPhoto(' + i + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+    '</div>';
+  }).join('') + '<div onclick="document.getElementById(\'rpNoteDefectPhotoFile\').click()" style="width:64px;height:64px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">' +
+    '<i class="fa-solid fa-plus" style="color:#94A3B8;font-size:13px;"></i>' +
+    '<span style="font-size:8px;color:var(--label);font-weight:600;">추가</span></div>';
+}
+function _rpHandleNoteDefectPhotoFile(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file) return;
+  _rpCompressImage(file, function (rec) {
+    _rpNoteDefectPhotos.push({ dataUrl: rec.dataUrl });
+    _rpRenderNoteDefectPhotos();
+  });
+}
+function _rpRemoveNoteDefectPhoto(i) {
+  const p = _rpNoteDefectPhotos[i];
+  if (p && p.fileId) _rpNoteDefectRemovedFileIds.push(p.fileId);
+  _rpNoteDefectPhotos.splice(i, 1);
+  _rpRenderNoteDefectPhotos();
 }
 
 function closeRpEditModal() {
   document.getElementById('rpEditModal').style.display = 'none';
   _rpEditKey = null; _rpEditMode = null;
-  _rpEditPendingPhotoAction = null;
 }
 
 // 보고서에서 CBM·특이사항을 수기 입력하면, 로컬(localStorage)뿐 아니라 실제 구글시트
