@@ -395,6 +395,18 @@ try {
     </div>
   </div>
 
+  <!-- 바코드 스캐너 — 단품코드 입력칸 옆 버튼으로 열림, 인식되면 그 칸에 바로 채워줌 -->
+  <div id="fiScanModal" style="display:none; position:fixed; inset:0; z-index:98; background:#000; flex-direction:column;">
+    <div style="position:relative; flex:1; overflow:hidden; background:#000;">
+      <video id="fiScanVideo" autoplay playsinline muted style="width:100%; height:100%; object-fit:cover;"></video>
+      <button onclick="fiCloseScanner()" style="position:absolute; top:max(14px,env(safe-area-inset-top)); right:14px; width:36px; height:36px; border-radius:50%; background:rgba(0,0,0,.5); border:none; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</button>
+      <div style="position:absolute; left:12%; right:12%; top:38%; height:90px; border:2.5px solid #FBBF24; border-radius:10px; box-shadow:0 0 0 2000px rgba(0,0,0,.4);"></div>
+    </div>
+    <div style="flex-shrink:0; background:#111; padding:16px; padding-bottom:max(16px,env(safe-area-inset-bottom));">
+      <div id="fiScanStatus" style="text-align:center; color:#fff; font-size:12.5px; font-weight:600;">카메라 준비 중...</div>
+    </div>
+  </div>
+
   <!-- 사진 크게보기(라이트박스) — 부적합조회 카드/하자상세 "전체보기"에서 공용으로 사용 -->
   <div id="fiPhotoViewerModal" onclick="if(event.target===this)fiClosePhotoViewer()" style="display:none; position:fixed; inset:0; z-index:97; background:rgba(0,0,0,.92); align-items:center; justify-content:center; flex-direction:column;">
     <button onclick="fiClosePhotoViewer()" style="position:absolute; top:max(14px,env(safe-area-inset-top)); right:14px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;">✕</button>
