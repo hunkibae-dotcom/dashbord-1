@@ -329,8 +329,10 @@ try {
     </div>
   </div>
 
+</div>
+
   <!-- ══════════════ "새 하자 등록" 오버레이 ══════════════ -->
-  <div id="fiRegisterModal" style="display:none; position:absolute; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
+  <div id="fiRegisterModal" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
     <div style="flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 16px;">
       <div style="display:flex; align-items:center; gap:8px;">
         <button onclick="fiCloseRegister()" style="width:26px; height:26px; border-radius:8px; border:none; background:var(--icon-bg); color:var(--text-sub); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;">
@@ -388,7 +390,7 @@ try {
   </div>
 
   <!-- ══════════════ "하자 상세" 오버레이 ══════════════ -->
-  <div id="fiDetailModal" style="display:none; position:absolute; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
+  <div id="fiDetailModal" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
     <div style="flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 16px;">
       <div style="display:flex; align-items:center; gap:8px;">
         <button onclick="fiCloseDetail()" style="width:26px; height:26px; border-radius:8px; border:none; background:var(--icon-bg); color:var(--text-sub); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;">
@@ -490,7 +492,6 @@ try {
     </div>
   </div>
 
-</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════
