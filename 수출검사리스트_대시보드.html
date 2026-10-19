@@ -338,8 +338,11 @@ try {
 </div>
 <script>
   function openFieldInspectOverlay() {
+    // forceDesktop을 강제로 안 붙인다 — 이 iframe 자체가 실제 기기의 터치 여부를
+    // 그대로 물려받으므로(모바일 앱에서 열면 모바일 화면, PC에서 열면 PC 화면),
+    // 현장검사 대시보드 안의 fiIsPc() 판단에 그냥 맡겨두는 게 맞다.
     const f = document.getElementById('fieldInspectFrame');
-    if (!f.src) f.src = '현장검사_대시보드.html?forceDesktop=1';
+    if (!f.src) f.src = '현장검사_대시보드.html';
     document.getElementById('fieldInspectOverlay').style.display = 'flex';
   }
   function closeFieldInspectOverlay() {
