@@ -5451,13 +5451,8 @@ function _rpSaveEditModal() {
   } else if (mode === 'note') {
     sel.note = document.getElementById('rpNoteText').value.trim();
     syncPromise = _rpSyncNoteToSheet(sel.item, sel.note);
-    const photoAct = _rpEditPendingPhotoAction;
-    if (photoAct) {
-      if (photoAct.action === 'upload') _rpUploadPhotoToServer(key, 'note', photoAct.dataUrl);
-      else if (photoAct.action === 'clear') _rpClearPhotoOnServer(key, 'note');
-    }
+    _rpSyncNoteDefectPhotos(sel.item);
   }
-  _rpEditPendingPhotoAction = null;
   _rpSaveToStorage();
   _rpRefreshRow(key);
   closeRpEditModal();
