@@ -966,6 +966,26 @@ async function fiSaveDetail() {
     btn.disabled = false;
   }
 }
+// 앱 목록과 실제 시트(월별 행 2줄 + 그 사진들) 둘 다에서 완전히 지운다 — 되돌릴 수 없어서
+// 반드시 한 번 더 확인받는다.
+async function fiDeleteEntry() {
+  if (!fiDetKey) return;
+  if (!confirm('이 하자 항목을 삭제할까요? 시트에서도 완전히 삭제되며 되돌릴 수 없습니다.')) return;
+  const url = fiGasUrl();
+  const fb = document.getElementById('fiDetFeedback');
+  if (!url) { fb.textContent = '설정 탭에서 GAS 연동 주소를 먼저 등록해주세요.'; fb.style.color = '#DC2626'; return; }
+  fb.textContent = '삭제 중...'; fb.style.color = 'var(--text-sub)';
+  try {
+    const res = await fetch(url, { method: 'POST', body: JSON.stringify({ action: 'deleteEntry', sheet: fiDetKey.sheet, row: fiDetKey.row }), signal: AbortSignal.timeout(20000) });
+    const json = await res.json();
+    if (json.status !== 'success') throw new Error(json.message || '삭제 실패');
+    fb.textContent = '✓ 삭제 완료'; fb.style.color = '#16A34A';
+    await fiFetchList();
+    setTimeout(fiCloseDetail, 400);
+  } catch (e) {
+    fb.textContent = '삭제 실패: ' + e.message; fb.style.color = '#DC2626';
+  }
+}
 
 // ── 설정 ──
 function fiOpenWebDashboard() {
