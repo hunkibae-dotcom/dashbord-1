@@ -7402,7 +7402,7 @@
 
             // 3) 페이지마다 실제로 그려서 캔버스로 캡처 → A4 PDF 페이지에 넣는다.
             const jsPDFCtor = window.jspdf.jsPDF;
-            const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: orientation });
             for (let p = 0; p < pages.length; p++) {
                 const host = document.createElement('div');
                 host.style.cssText = `position:fixed;left:-99999px;top:0;width:${CONTENT_WIDTH_PX}px;background:#fff;font-family:'맑은 고딕',sans-serif;`;
