@@ -11365,6 +11365,16 @@
 
             </div>
 
+            <!-- 포장불량조치 요약 — 특이사항 및 사진과는 따로 저장되지만(요청, 2026-10-19:
+                 "따로되면안돼, 같이 연동되어야해" → 텍스트를 억지로 합치는 대신, 여기서
+                 바로 보고 수정할 수 있게 함), 이 품목에 등록된 불량조치가 있으면 바로
+                 보여주고 수정창으로 이어준다. 사진은 바로 아래 특이사항 박스와 같은
+                 저장소라 여기서 또 안 보여준다. -->
+            <div id="pkgDaItemSummaryBox" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-top:14px;">
+                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">포장불량조치</div>
+                <div id="pkgDaItemSummaryContent"></div>
+            </div>
+
             <!-- 특이사항 및 사진 — 앱(shell.html)의 #itemEditSheet 특이사항 칸과 동일(실제 시트
                  비고란 연동), 사진은 품질검사 수정창과 같은 방식(여러 장, 비고 옆 새 칼럼) -->
             <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-top:14px;">
