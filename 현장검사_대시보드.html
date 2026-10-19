@@ -87,6 +87,51 @@ try {
   <div style="font-size:13px; color:var(--text-sub); font-weight:700;">불러오는 중...</div>
 </div>
 <style>@keyframes fiSpin{to{transform:rotate(360deg);}}</style>
+
+<!-- ══════════════ PC 전용 대시보드 ══════════════ -->
+<div id="fiPcApp">
+  <div class="fipc-topbar">
+    <div class="fipc-badge">⚠</div>
+    <div>
+      <div class="fipc-title">현장검사 대시보드</div>
+      <div class="fipc-sub" id="fipcSub">조회 대상: 전체 월</div>
+    </div>
+    <div style="display:flex; gap:8px; margin-left:auto;">
+      <button class="fipc-btn" onclick="fiRefresh()">↻ 새로고침</button>
+      <a class="fipc-btn" id="fipcSheetLink" href="https://docs.google.com/spreadsheets/d/1YRMrQHqcVERgC4LM0uBKbkPpJNIU8TJCG8Coahou-Jk/edit" target="_blank" style="text-decoration:none;">📄 시트에서 보기</a>
+      <button class="fipc-btn primary" onclick="fiOpenRegister()">+ 새 하자 등록</button>
+    </div>
+  </div>
+  <div class="fipc-wrap">
+    <div class="fipc-kpi-row">
+      <div class="fipc-kpi"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:var(--text-sub);display:inline-block;"></span>총 조회건수</div><div class="fipc-kpi-val" id="fipcKpiTotal">–</div></div>
+      <div class="fipc-kpi"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;display:inline-block;"></span>미조치</div><div class="fipc-kpi-val" id="fipcKpiOpen" style="color:#DC2626;">–</div></div>
+      <div class="fipc-kpi"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:#D97706;display:inline-block;"></span>조치 진행중</div><div class="fipc-kpi-val" id="fipcKpiProgress" style="color:#D97706;">–</div></div>
+      <div class="fipc-kpi"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:#16A34A;display:inline-block;"></span>조치완료율</div><div class="fipc-kpi-val" id="fipcKpiRate" style="color:#16A34A;">–</div></div>
+    </div>
+    <div class="fipc-filter-bar">
+      <select id="fipcStatusFilter" onchange="fiPcRender()">
+        <option value="전체">조치상태: 전체</option>
+        <option value="미조치">미조치</option>
+        <option value="조치중">조치중</option>
+        <option value="조치완료">조치완료</option>
+      </select>
+      <select id="fipcTypeFilter" onchange="fiPcRender()">
+        <option value="전체">하자유형: 전체</option>
+        <option value="외관">외관</option>
+        <option value="제품·코드일치">제품·코드일치</option>
+        <option value="별도·조립철물">별도·조립철물</option>
+        <option value="포장">포장</option>
+      </select>
+      <input type="date" id="fipcDateFrom" onchange="fiPcRender()">
+      <span style="color:var(--label); font-size:12px;">~</span>
+      <input type="date" id="fipcDateTo" onchange="fiPcRender()">
+      <div class="fipc-search">🔍<input id="fipcSearchInput" oninput="this.value=this.value.toUpperCase();fiPcRender()" placeholder="단품코드 / 부적합 내용 검색"></div>
+    </div>
+    <div class="fipc-grid" id="fipcGrid"></div>
+  </div>
+</div>
+
 <div id="fiApp">
 
   <!-- ══════════════ 홈 탭 ══════════════ -->
