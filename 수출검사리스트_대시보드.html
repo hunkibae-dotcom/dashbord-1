@@ -6291,7 +6291,20 @@ function qcBackToExportKind() {
   _qcExportPendingKind = null;
   document.getElementById('qcExportChoiceStatus').textContent = '';
   document.getElementById('qcExportFormatStep').classList.add('hidden');
+  document.getElementById('qcExportOrientStep').classList.add('hidden');
   document.getElementById('qcExportKindStep').classList.remove('hidden');
+}
+// PDF는 용지 방향(세로/가로)을 한 번 더 물어본다 — 포장강화 쪽과 동일한 흐름
+// (2026-10-19 추가). 엑셀은 방향 개념이 없으니 그대로 바로 받는다.
+function qcShowOrientStep() {
+  document.getElementById('qcExportChoiceStatus').textContent = '';
+  document.getElementById('qcExportFormatStep').classList.add('hidden');
+  document.getElementById('qcExportOrientStep').classList.remove('hidden');
+}
+function qcBackToExportFormat() {
+  document.getElementById('qcExportChoiceStatus').textContent = '';
+  document.getElementById('qcExportOrientStep').classList.add('hidden');
+  document.getElementById('qcExportFormatStep').classList.remove('hidden');
 }
 function _qcExportKindMeta(kind, sourceRows, format) {
   if (kind === 'manage') {
