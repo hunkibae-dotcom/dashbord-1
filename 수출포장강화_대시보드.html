@@ -8546,6 +8546,23 @@
             return !res || res.ok === false || res.result === 'error';
         }
 
+        // 불량사진(특이사항 위, 여러 장) 저장 — base64라 POST로 보낸다. 기존 사진 중
+        // 남길 것(fileId 있는 것)은 그대로, 새로 추가한 것(dataUrl만 있는 것)만 업로드,
+        // ✕로 지운 것만 삭제 — GAS updateDefectPhotos가 세 시트(수출현황/재고/출고완료)
+        // 전부에 반영한다(품질검사 수정창과 동일한 생각).
+        async function _pkgSyncDefectPhotosTask() {
+            const newOnes = _pkgDefectPhotos.filter(p => !p.fileId).map(p => p.dataUrl);
+            const kept = _pkgDefectPhotos.filter(p => p.fileId).map(p => ({ fileId: p.fileId, viewUrl: p.viewUrl, downloadUrl: p.downloadUrl }));
+            const removed = _pkgDefectRemovedFileIds.slice();
+            const res = await fetch(_pkgGasUrl(), {
+                method: 'POST',
+                body: JSON.stringify({ action: 'updateDefectPhotos', code: _pkgCode, round: _pkgRound, color: _pkgColor, newPhotos: newOnes, keptPhotos: kept, removedFileIds: removed }),
+                signal: AbortSignal.timeout(30000)
+            }).then(r => r.json());
+            if (_pkgIsGasError(res)) throw new Error('불량사진 저장 실패: ' + ((res && res.message) || '알 수 없는 오류'));
+            return res;
+        }
+
         // GET 기반 단건 수정 액션(updateStatus/updatePallet/updateRegDate/updateSpec)
         // 공통 호출기 — 전엔 응답을 .text()로만 받고 내용을 안 봐서, 서버가 "실패했지만
         // 못 찾아서 아무것도 안 바꿨다"는 뜻으로 {result:'error'}를 돌려줘도 그대로
