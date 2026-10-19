@@ -10347,13 +10347,17 @@ function onNativeScanResult(raw) {
      때(PC 웹)만 미디어쿼리로 820px + 일정/규격 2단 그리드로 넓어지게 한다. 모바일 앱
      화면(좁은 뷰포트)은 전혀 영향 없음. -->
 <style>
+  /* 기본(모바일) 값이 먼저 와야 한다 — 아래 미디어쿼리와 똑같은 선택자(.mi-grid2)를
+     쓰는데, CSS는 같은 우선순위면 "나중에 적힌 게" 이긴다. 이걸 미디어쿼리 "뒤"에
+     적어뒀던 게 버그였다(2026-10-19) — PC 화면에서도 미디어쿼리 조건을 만족하는 순간
+     이 줄이 다시 덮어써서 2단 그리드가 한 번도 적용된 적이 없었다. */
+  #mItemDetailModal .mi-grid2 { display: contents; }
   @media (min-width: 900px) {
     #mItemDetailModal .mi-modal-box { width: 820px !important; }
     #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: stretch; }
     #mItemDetailModal .mi-grid2 > div { height: 100%; box-sizing: border-box; }
     #mItemDetailModal .mi-grid2 > div { margin-top: 0 !important; }
   }
-  #mItemDetailModal .mi-grid2 { display: contents; }
 </style>
 <div id="mItemDetailModal" onclick="if(event.target===this)closeMItemDetail()" style="display:none;position:fixed;inset:0;z-index:130;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
   <div class="mi-modal-box" style="background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:26px 28px;width:460px;max-width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);box-sizing:border-box;">
