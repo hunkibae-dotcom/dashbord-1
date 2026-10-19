@@ -874,8 +874,17 @@ async function fiFetchList() {
     fiAllData = json.items || [];
     fiRenderAll();
   } catch (e) {
+    // 전엔 이 에러가 #fiHomeEmptyNote(모바일 홈탭 안)에만 떠서, PC 화면(#fiApp이
+    // display:none)에서는 아무 데이터도 안 뜨는데 에러 문구조차 안 보여 "그냥 하얗게
+    // 비어있다"처럼 보였다(2026-10-19 지적) — 콘솔에도 남기고, PC 화면에도 똑같이
+    // 보이게 한다.
+    console.error('[현장검사] fiFetchList 실패:', e);
     document.getElementById('fiHomeEmptyNote').style.display = 'block';
     document.getElementById('fiHomeEmptyNote').textContent = '불러오기 실패: ' + e.message;
+    if (fiIsPc()) {
+      const grid = document.getElementById('fipcGrid');
+      if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:#DC2626;font-size:13px;">불러오기 실패: ' + (e && e.message || e) + '<br><span style="color:var(--label);font-size:11.5px;">자세한 내용은 F12 콘솔을 확인해주세요.</span></div>';
+    }
   }
 }
 function fiRefresh() {
