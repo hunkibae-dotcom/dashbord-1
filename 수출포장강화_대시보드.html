@@ -2414,7 +2414,10 @@
                 pallet: ['파렛트', 'PALET', '적재', 'pallet'],
                 // "수출 현황" I열 — onEdit이 자동으로 "신규"/"중복"을 적어두는 칸.
                 // 신규 항목 카드/상세보기가 이 값을 그대로 읽어서 쓴다.
-                note: ['비고', 'note']
+                note: ['비고', 'note'],
+                // 특이사항 위 "불량사진"(여러 장) — 비고 옆에 새로 생긴 칸, 없으면 getCell이
+                // '-'를 주는데 _pkgParseDefectPhotos가 그걸 빈 배열로 처리한다.
+                defectPhotos: ['불량사진', 'defectPhotos']
             };
 
             let indices = {};
