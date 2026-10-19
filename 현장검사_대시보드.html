@@ -1311,6 +1311,16 @@ function fiSaveGasUrl() {
   if (v) localStorage.setItem('fi_gas_url', v); else localStorage.removeItem('fi_gas_url');
   location.reload();
 }
+function fiOpenPcSettings() {
+  document.getElementById('fipcGasUrlInput').value = fiGasUrl();
+  document.getElementById('fiPcSettingsModal').style.display = 'flex';
+}
+function fiClosePcSettings() { document.getElementById('fiPcSettingsModal').style.display = 'none'; }
+function fiPcSaveGasUrl() {
+  const v = document.getElementById('fipcGasUrlInput').value.trim();
+  if (v) localStorage.setItem('fi_gas_url', v); else localStorage.removeItem('fi_gas_url');
+  location.reload();
+}
 
 // ── 폰 기본 뒤로가기 버튼 처리 (shell.html의 같은 패턴) ──────────────
 // 열려있는 오버레이(새 하자 등록/하자 상세)가 있으면 그것만 닫고, 없으면 지금 탭이
