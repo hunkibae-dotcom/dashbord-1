@@ -4666,6 +4666,7 @@ function _rpRowEl(key) {
 }
 function _rpRefreshRow(key) {
   _miRefreshPhotoBoxesIfOpen(key);
+  _miRefreshDefectPhotosIfOpen(key);
   const el = _rpRowEl(key);
   if (!el) return;
   const d = _rpFindByKey(key);
