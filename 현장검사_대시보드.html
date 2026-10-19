@@ -1408,6 +1408,10 @@ fiGoTab('home');
 if (fiIsPc()) {
   document.getElementById('fiApp').style.display = 'none';
   document.getElementById('fiPcApp').style.display = 'block';
+  // PC(웹)에서는 카메라 바코드 스캔이 의미 없으니 새 하자 등록 창의 스캔 버튼은 숨긴다
+  // (포장강화 PC 등록창과 동일한 처리, 요청 2026-10-19).
+  var _fiScanBtn = document.getElementById('fiRegScanBtn');
+  if (_fiScanBtn) _fiScanBtn.style.display = 'none';
 }
 // F.WORK 홈화면 메뉴의 "바코드스캐너"로 들어오면(?scan=코드) 새 하자 등록 창을 그
 // 코드로 미리 채운 채 바로 연다.
