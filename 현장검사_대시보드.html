@@ -1421,7 +1421,7 @@ async function _fiRenderReportXlsx(items, opts) {
   const LABEL_FONT = { size: 7.5, bold: true, color: { argb: 'FF94A3B8' } };
   function labeledRun(label, value, valueSize) {
     return [
-      Object.assign({}, LABEL_FONT, { text: label + ' ' }),
+      { font: LABEL_FONT, text: label + ' ' },
       { font: { size: valueSize || 10.5, bold: true, color: { argb: 'FF0F172A' } }, text: value + '   ' },
     ];
   }
