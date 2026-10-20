@@ -1058,6 +1058,14 @@ function fiPcGoKpiFilter(status) {
   document.getElementById('fipcSearchInput').value = '';
   fiPcRender();
 }
+function fiPcResetFilters() {
+  document.getElementById('fipcStatusFilter').value = '전체';
+  document.getElementById('fipcTypeFilter').value = '전체';
+  document.getElementById('fipcDateFrom').value = '';
+  document.getElementById('fipcDateTo').value = '';
+  document.getElementById('fipcSearchInput').value = '';
+  fiPcRender();
+}
 function fiPcRender() {
   const k = fiKpiCounts();
   document.getElementById('fipcKpiTotal').textContent = k.total + ' 건';
