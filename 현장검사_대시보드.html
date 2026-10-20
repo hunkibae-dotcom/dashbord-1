@@ -111,11 +111,19 @@ try {
     <div style="display:flex; gap:8px; margin-left:auto;">
       <button class="fipc-btn" onclick="fiRefresh()"><span class="fi-refresh-icon-inner" style="display:inline-block;">↻</span> 새로고침</button>
       <a class="fipc-btn" id="fipcSheetLink" href="https://docs.google.com/spreadsheets/d/1YRMrQHqcVERgC4LM0uBKbkPpJNIU8TJCG8Coahou-Jk/edit" target="_blank" style="text-decoration:none;">📄 시트에서 보기</a>
+      <button class="fipc-btn" id="fipcSelectModeBtn" onclick="fiToggleSelectMode()">☑ 선택</button>
       <button class="fipc-btn" onclick="fiOpenPcSettings()">⚙ 설정</button>
       <button class="fipc-btn primary" onclick="fiOpenRegister()">+ 새 하자 등록</button>
     </div>
   </div>
   <div class="fipc-wrap">
+    <div class="fipc-filter-bar" id="fipcSelectBar" style="display:none;background:#FFFBEB;border-color:#FDE68A;">
+      <span style="font-size:12.5px;font-weight:800;color:#92400E;" id="fipcSelectCount">0건 선택됨</span>
+      <button class="fipc-btn" onclick="fiSelectAllVisible()">전체선택</button>
+      <button class="fipc-btn" onclick="fiClearSelection()">선택해제</button>
+      <div style="flex:1;"></div>
+      <button class="fipc-btn primary" id="fipcReportBtn" onclick="fiOpenReportBuilder()" disabled style="opacity:.5;cursor:not-allowed;">📄 보고서 자동제작</button>
+    </div>
     <div class="fipc-kpi-row">
       <div class="fipc-kpi" onclick="fiPcGoKpiFilter('전체')" style="cursor:pointer;"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:var(--text-sub);display:inline-block;"></span>총 조회건수</div><div class="fipc-kpi-val" id="fipcKpiTotal">–</div></div>
       <div class="fipc-kpi" onclick="fiPcGoKpiFilter('미조치')" style="cursor:pointer;"><div class="fipc-kpi-label"><span style="width:7px;height:7px;border-radius:50%;background:#DC2626;display:inline-block;"></span>미조치</div><div class="fipc-kpi-val" id="fipcKpiOpen" style="color:#DC2626;">–</div></div>
