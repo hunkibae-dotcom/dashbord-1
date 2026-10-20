@@ -992,6 +992,8 @@ function fiPcRender() {
     return true;
   });
 
+  fiPcLastFiltered = filtered; // 전체선택이 "지금 화면에 보이는 결과" 기준으로 동작하게
+
   const grid = document.getElementById('fipcGrid');
   if (filtered.length) {
     grid.innerHTML = filtered.map(fiPcCardHtml).join('');
@@ -1000,6 +1002,45 @@ function fiPcRender() {
   } else {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--label);font-size:13px;">조건에 맞는 항목이 없습니다.</div>';
   }
+  fiUpdateSelectBar();
+}
+// ── 품목 선택(다중/전체선택) · 보고서 자동제작 버튼 ──────────────────────
+// 보고서를 실제로 만드는 로직은 아직 없다(요청, 2026-10-20: "우선 버튼만") — 선택
+// 기능과 버튼 틀만 먼저 만들고, 눌렀을 때 동작은 fiOpenReportBuilder()에서 안내만 한다.
+let fiPcLastFiltered = [];
+function fiToggleSelectMode() {
+  fiSelectMode = !fiSelectMode;
+  if (!fiSelectMode) fiSelectedKeys.clear();
+  const btn = document.getElementById('fipcSelectModeBtn');
+  if (btn) { btn.textContent = fiSelectMode ? '선택 취소' : '☑ 선택'; btn.classList.toggle('primary', fiSelectMode); }
+  document.getElementById('fipcSelectBar').style.display = fiSelectMode ? 'flex' : 'none';
+  fiPcRender();
+}
+function fiToggleSelectItem(key) {
+  if (fiSelectedKeys.has(key)) fiSelectedKeys.delete(key); else fiSelectedKeys.add(key);
+  fiUpdateSelectBar();
+}
+function fiSelectAllVisible() {
+  fiPcLastFiltered.forEach(function (d) { fiSelectedKeys.add(d.sheet + '|' + d.row); });
+  fiPcRender();
+}
+function fiClearSelection() {
+  fiSelectedKeys.clear();
+  fiPcRender();
+}
+function fiUpdateSelectBar() {
+  const countEl = document.getElementById('fipcSelectCount');
+  if (countEl) countEl.textContent = fiSelectedKeys.size + '건 선택됨';
+  const btn = document.getElementById('fipcReportBtn');
+  if (btn) {
+    btn.disabled = fiSelectedKeys.size === 0;
+    btn.style.opacity = fiSelectedKeys.size === 0 ? '.5' : '1';
+    btn.style.cursor = fiSelectedKeys.size === 0 ? 'not-allowed' : 'pointer';
+  }
+}
+function fiOpenReportBuilder() {
+  if (!fiSelectedKeys.size) return;
+  alert('선택한 ' + fiSelectedKeys.size + '건으로 보고서를 생성합니다.\n(보고서 자동제작 기능은 준비 중입니다 — 버튼과 선택 기능만 먼저 반영되었습니다)');
 }
 // 카드 자체의 삭제 버튼 — 상세창을 열지 않고 바로 지운다(fiDeleteEntry와 같은 동작,
 // 여긴 fiDetKey에 의존하지 않고 그 자리에서 바로 sheet/row를 받는다).
