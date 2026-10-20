@@ -1,0 +1,264 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>신규품목 수기등록 시안</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          f1: { 50:'#EFF6FF', 100:'#DBEAFE', 400:'#60A5FA', 500:'#3B82F6', 600:'#2563EB', 700:'#1D4ED8' },
+          f2: { 50:'#F5F3FF', 100:'#EDE9FE', 400:'#A78BFA', 500:'#8B5CF6', 600:'#7C3AED', 700:'#6D28D9' },
+          accent: { 50:'#F0EEFE', 400:'#8B7CF0', 500:'#6D5CE8', 600:'#5A47D6', 700:'#4B39B8' },
+        },
+        fontFamily: { sans: ['Inter','Noto Sans KR','sans-serif'] }
+      }
+    }
+  }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+<style>
+  :root { --bg:#F1F5F9; color-scheme: light; }
+  body { font-family:'Inter','Noto Sans KR',sans-serif; background:var(--bg); color:#1E293B; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); padding-block:22px 60px; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; }
+  .chip-fac { background:#fff; border-color:#e2e8f0; color:#94a3b8; cursor:pointer; }
+  .chip-fac.on { background:#F0EEFE; border-color:#6D5CE8; color:#6D5CE8; }
+  .wrap { max-width:620px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+  .note-banner { background:#FFFBEB; border:1px solid #FDE68A; border-radius:12px; padding:11px 14px; font-size:12px; color:#92400E; font-weight:600; line-height:1.55; display:flex; gap:9px; }
+  .ghost-label { font-size:10px; font-weight:800; letter-spacing:.04em; color:#94A3B8; text-transform:uppercase; margin-bottom:5px; }
+  input.field { width:100%; border:1.5px solid #E2E8F0; border-radius:10px; padding:9px 11px; font-size:13px; color:#1E293B; outline:none; transition:border-color .15s; box-sizing:border-box; }
+  input.field:focus { border-color:#6D5CE8; }
+  input.field.auto-filled { background:#F0FDF4; border-color:#86EFAC; }
+</style>
+
+<div class="wrap">
+
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0" style="background:linear-gradient(135deg,#6D5CE8,#8B7CF0);">
+      <i class="fa-solid fa-pen-to-square"></i>
+    </div>
+    <div>
+      <div class="text-[16px] font-extrabold text-slate-800">신규품목 수기등록 · 시안</div>
+      <div class="text-[12px] text-slate-400">신규품목 확인창 → "+ 신규등록" → 등록 흐름 목업입니다</div>
+    </div>
+  </div>
+
+  <div class="note-banner">
+    <i class="fa-solid fa-circle-info mt-0.5 shrink-0"></i>
+    <div>이 페이지는 <b>디자인 시안</b>입니다. 지금은 아무 기능도 실제로 연동되어 있지 않고(등록을 눌러도 이 화면 안에서만 표시), 흐름이 괜찮으면 말씀 주시는 대로 실제 코드에 반영하겠습니다. 단품코드를 <span class="mono font-bold">FDDX2012001</span> 또는 <span class="mono font-bold">ABCD1234</span>로 입력해보시면 자동입력 동작을 직접 확인하실 수 있습니다.</div>
+  </div>
+
+  <div class="flex gap-1 bg-white border border-slate-200 rounded-xl p-1">
+    <button id="stepBtn1" onclick="showStep(1)" class="flex-1 text-center py-2 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5"><span class="w-[18px] h-[18px] rounded-full bg-accent-500 text-white text-[10px] flex items-center justify-center">1</span>버튼 위치</button>
+    <button id="stepBtn2" onclick="showStep(2)" class="flex-1 text-center py-2 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5"><span class="w-[18px] h-[18px] rounded-full bg-slate-200 text-slate-500 text-[10px] flex items-center justify-center">2</span>등록 입력창</button>
+    <button id="stepBtn3" onclick="showStep(3)" class="flex-1 text-center py-2 rounded-lg text-[12px] font-bold flex items-center justify-center gap-1.5"><span class="w-[18px] h-[18px] rounded-full bg-slate-200 text-slate-500 text-[10px] flex items-center justify-center">3</span>등록 결과</button>
+  </div>
+
+  <!-- ① 버튼 위치 — 실제 "신규품목 확인" 모달 그대로 + 왼쪽 끝에 새 버튼만 추가 -->
+  <div id="step1">
+    <div class="bg-white rounded-2xl shadow-xl w-full p-6 flex flex-col" style="max-height:72vh;">
+      <div class="flex items-center justify-between mb-1">
+        <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-star text-amber-500 mr-1.5"></i>신규품목 확인</div>
+        <button class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="text-[12px] text-slate-400 my-2">각 공장 검사항목 리스트에서 비고에 "신규"/"신규 차수 추가됨"이 남아있는 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
+      <div class="flex gap-1.5 mb-2">
+        <button class="chip-fac on px-3 py-1 rounded-full text-[11.5px] font-bold border">전체</button>
+        <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border">충주1공장</button>
+        <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border">충주2공장</button>
+      </div>
+      <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
+        <label class="flex items-center gap-1.5 font-bold text-slate-600"><input type="checkbox"> 전체선택</label>
+        <span class="text-slate-400 font-semibold">2건 선택</span>
+      </div>
+      <div class="overflow-y-auto py-1" style="min-height:140px;">
+        <div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
+          <input type="checkbox" checked class="mt-1 w-[15px] h-[15px] shrink-0">
+          <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-sky-50 text-sky-600">충주1</span>
+              <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">신규</span>
+              <span class="text-[13.5px] font-bold text-slate-800 border-b border-dashed border-slate-300">두산에너빌리티(주) 창원</span>
+            </div>
+            <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
+              <span class="mono border-b border-dashed border-slate-300">FDDX2012001</span>
+              <span>WW · 96EA</span>
+              <span>납기 2026. 11. 5 · 포장 —</span>
+            </div>
+          </div>
+          <button class="shrink-0 w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-regular fa-copy text-[12px]"></i></button>
+        </div>
+      </div>
+      <div class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
+      <!-- 여기가 바뀌는 부분 — 기존엔 justify-end로 3개 버튼만 오른쪽에 몰려있었는데,
+           새 버튼은 반대쪽 끝(맨 왼쪽)에 붙여서 "다른 성격의 동작"이라는 걸 구분했다. -->
+      <div class="flex items-center justify-between border-t border-slate-100 pt-3 mt-1">
+        <button onclick="showStep(2)" class="py-2 px-4 rounded-lg border-2 border-accent-500 text-accent-600 font-bold text-[13px] flex items-center gap-1.5 bg-accent-50 hover:bg-accent-100">
+          <i class="fa-solid fa-plus"></i>신규등록
+        </button>
+        <div class="flex gap-2">
+          <button class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] flex items-center gap-1.5"><i class="fa-solid fa-arrow-down-wide-short"></i>검사리스트 정렬</button>
+          <button class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] opacity-40 flex items-center gap-1.5"><i class="fa-regular fa-copy"></i>선택 복사</button>
+          <button class="py-2 px-5 rounded-lg bg-accent-500 text-white font-bold text-[13px] flex items-center gap-1.5"><i class="fa-solid fa-check"></i>확인</button>
+        </div>
+      </div>
+    </div>
+    <div class="text-[11.5px] text-slate-500 leading-relaxed px-1 mt-3">기존 3개 버튼("검사리스트 정렬"/"선택 복사"/"확인")은 신규 품목 "선택"에 관련된 동작이라 그대로 오른쪽에 묶어두고, "신규등록"은 성격이 다른 동작(수동 입력)이라 반대쪽 끝에 떨어뜨려 눌러도 헷갈리지 않게 했습니다.</div>
+  </div>
+
+  <!-- ② 등록 입력창 -->
+  <div id="step2" class="hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full p-6 flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-plus text-accent-500 mr-1.5"></i>신규품목 수기등록</div>
+        <button onclick="showStep(1)" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="text-[12px] text-slate-400 -mt-2">수주공정 파일 업데이트가 아니라 직접 입력하는 품목입니다. 저장하면 해당 공장 시트의 "신규" 품목 자리에 새 행으로 들어갑니다.</div>
+
+      <div>
+        <div class="ghost-label">공장</div>
+        <div class="flex gap-1.5">
+          <button id="facBtnCj1" onclick="pickFac('cj1')" class="chip-fac on px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주1공장</button>
+          <button id="facBtnCj2" onclick="pickFac('cj2')" class="chip-fac px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주2공장</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ghost-label">건명</div>
+        <input type="text" id="fBuild" class="field" placeholder="예: 두산에너빌리티(주) 창원">
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="ghost-label">단품코드</div>
+          <input type="text" id="fCode" oninput="onCodeInput()" class="field mono" placeholder="예: FDDX2012001" style="text-transform:uppercase;">
+        </div>
+        <div>
+          <div class="ghost-label">색상</div>
+          <input type="text" id="fColor" class="field" placeholder="예: WW">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="ghost-label">수량</div>
+          <input type="number" id="fQty" class="field" placeholder="EA">
+        </div>
+        <div>
+          <div class="ghost-label">납기일 <span class="normal-case text-slate-400 font-normal">· 비워두면 빈칸으로 저장</span></div>
+          <input type="date" id="fDue" class="field">
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="ghost-label mb-0">단품명칭</div>
+          <span id="autoFillHint" class="hidden text-[10.5px] font-bold text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i>기존 이력에서 자동 입력됨</span>
+        </div>
+        <input type="text" id="fName" oninput="onNameTouched()" class="field" placeholder="단품코드 입력 시 기존 이력이 있으면 자동으로 채워집니다">
+      </div>
+
+      <div id="fFeedback" class="text-[12px] font-semibold text-center min-h-[16px]"></div>
+      <button onclick="submitRegister()" class="w-full py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white font-bold text-[14px] flex items-center justify-center gap-2">
+        <i class="fa-solid fa-check"></i>신규 등록
+      </button>
+    </div>
+    <div class="text-[11.5px] text-slate-500 leading-relaxed px-1 mt-3">단품코드를 입력하면(포커스를 벗어나지 않아도 입력 중 바로) 지금까지의 전체 이력에서 같은 코드를 찾아 단품명칭을 자동으로 채웁니다. 자동으로 채워진 뒤에도 직접 고쳐 쓸 수 있고, 고쳐 쓰면 "자동 입력됨" 표시는 사라집니다.</div>
+  </div>
+
+  <!-- ③ 등록 결과 -->
+  <div id="step3" class="hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full p-6 flex flex-col gap-4 items-center text-center">
+      <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-[24px]"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="text-[15px] font-extrabold text-slate-800">신규 행으로 등록되었습니다</div>
+      <div class="text-[12px] text-slate-400 -mt-2">실제 구현되면 이 내용 그대로 해당 공장 시트의 "신규↓" 구분선 바로 위에 한 줄 추가됩니다.</div>
+      <div class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 text-left">
+        <div id="resultRow" class="text-[12.5px] text-slate-700 flex flex-col gap-1.5"></div>
+      </div>
+      <button onclick="showStep(2)" class="w-full py-2.5 rounded-xl border border-slate-200 text-slate-600 font-bold text-[13px]">계속해서 등록하기</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 데모용 가짜 "기존 이력" — 실제로는 전체 품목 이력(allData)에서 단품코드로 찾는다.
+  const SAMPLE_HISTORY = {
+    'FDDX2012001': 'FDD0002NN-형태-후면상판한판/따내기/데스커덕트부착[PJ]D+8',
+    'FDDX2012002': 'FDD0016-형태-후면상판과 연결/가방걸이/전면상판[PJ]D+8',
+    'ABCD1234': '테스트용 샘플 단품명칭 (이력에서 자동으로 불러온 값)',
+  };
+  let fac = 'cj1';
+  let nameAutoFilled = false;
+
+  function showStep(n) {
+    [1,2,3].forEach(i => document.getElementById('step'+i).classList.toggle('hidden', i !== n));
+    [1,2,3].forEach(i => {
+      const btn = document.getElementById('stepBtn'+i);
+      const badge = btn.querySelector('span');
+      badge.className = 'w-[18px] h-[18px] rounded-full text-[10px] flex items-center justify-center ' + (i === n ? 'bg-accent-500 text-white' : 'bg-slate-200 text-slate-500');
+    });
+  }
+  function pickFac(f) {
+    fac = f;
+    document.getElementById('facBtnCj1').classList.toggle('on', f === 'cj1');
+    document.getElementById('facBtnCj2').classList.toggle('on', f === 'cj2');
+  }
+  function onCodeInput() {
+    const code = document.getElementById('fCode').value.trim().toUpperCase();
+    const hint = document.getElementById('autoFillHint');
+    const nameInput = document.getElementById('fName');
+    if (SAMPLE_HISTORY[code]) {
+      nameInput.value = SAMPLE_HISTORY[code];
+      nameInput.classList.add('auto-filled');
+      hint.classList.remove('hidden');
+      nameAutoFilled = true;
+    } else if (nameAutoFilled) {
+      nameInput.value = '';
+      nameInput.classList.remove('auto-filled');
+      hint.classList.add('hidden');
+      nameAutoFilled = false;
+    }
+  }
+  function onNameTouched() {
+    if (nameAutoFilled) {
+      nameAutoFilled = false;
+      document.getElementById('fName').classList.remove('auto-filled');
+      document.getElementById('autoFillHint').classList.add('hidden');
+    }
+  }
+  function submitRegister() {
+    const build = document.getElementById('fBuild').value.trim();
+    const code = document.getElementById('fCode').value.trim().toUpperCase();
+    const fb = document.getElementById('fFeedback');
+    if (!build || !code) {
+      fb.textContent = '건명과 단품코드는 반드시 입력해주세요.';
+      fb.style.color = '#DC2626';
+      return;
+    }
+    const color = document.getElementById('fColor').value.trim();
+    const qty = document.getElementById('fQty').value.trim();
+    const due = document.getElementById('fDue').value;
+    const name = document.getElementById('fName').value.trim();
+
+    document.getElementById('resultRow').innerHTML =
+      row('공장', fac === 'cj1' ? '충주1공장' : '충주2공장') +
+      row('건명', build) +
+      row('단품코드', code, true) +
+      row('색상', color || '—') +
+      row('수량', qty ? qty + 'EA' : '—') +
+      row('단품명칭', name || '—') +
+      row('납기일', due || '(빈칸으로 저장)');
+
+    showStep(3);
+    ['fBuild','fCode','fColor','fQty','fDue','fName'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fName').classList.remove('auto-filled');
+    document.getElementById('autoFillHint').classList.add('hidden');
+    nameAutoFilled = false;
+    fb.textContent = '';
+  }
+  function row(label, value, mono) {
+    return '<div class="flex justify-between gap-3"><span class="text-slate-400 font-semibold shrink-0">' + label + '</span><span class="font-bold text-slate-800 text-right' + (mono ? ' mono' : '') + '">' + value + '</span></div>';
+  }
+</script>
