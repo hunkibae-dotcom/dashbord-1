@@ -1609,9 +1609,10 @@ function fiCardHtml(d) {
         '<div style="margin-bottom:6px;">' + typesHtml + '</div>' +
         '<div style="font-size:11.5px;color:var(--text-sub);line-height:1.4;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">' + (d.content || '') + '</div>' +
       '</div>' +
-      '<div ' + (photo ? ('onclick="event.stopPropagation();fiOpenPhotoViewerFor(\'' + key + '\')" ') : '') + 'style="width:52px;height:52px;border-radius:10px;background:var(--input-bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:' + (photo ? 'zoom-in' : 'default') + ';">' +
+      '<div ' + (photo ? ('onclick="event.stopPropagation();fiOpenPhotoViewerFor(\'' + key + '\')" ') : '') + 'style="position:relative;width:52px;height:52px;border-radius:10px;background:var(--input-bg);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:' + (photo ? 'zoom-in' : 'default') + ';">' +
         (photo ? fiPhotoImgTag(photo, 'width:100%;height:100%;object-fit:cover;') :
           '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="8.5" cy="10.5" r="1.5"></circle><path d="M21 15l-5-5L5 19"></path></svg>') +
+        _fiPhotoCountBadge(d.photos) +
       '</div>' +
     '</div>' +
   '</div>';
