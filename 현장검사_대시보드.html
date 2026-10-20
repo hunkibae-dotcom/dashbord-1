@@ -1389,8 +1389,11 @@ async function _fiRenderReportXlsx(items, opts) {
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('부적합목록');
-  const COL_A_CHARS = 13;
-  ws.columns = [{ width: COL_A_CHARS }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }];
+  // A열은 사진이 시트 맨 왼쪽 벽에 바로 붙어 답답해 보이지 않게 두는 좁은 여백열(요청,
+  // 2026-10-20) — 실제 사진/내용은 B열부터 시작한다. 사진 열(B)도 더 크게 보이도록 넓혔다.
+  const SPACER_CHARS = 3;
+  const PHOTO_CHARS = 18;
+  ws.columns = [{ width: SPACER_CHARS }, { width: PHOTO_CHARS }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }];
   const GREEN = 'FFE8F8EE';
   const borderLight = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
 
