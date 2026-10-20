@@ -79,6 +79,33 @@ try {
   .fipc-icon-btn.del { background:rgba(220,38,38,.1); color:#DC2626; }
   .fipc-status-pill { font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:20px; flex-shrink:0; }
 
+  /* ══ 보고서 자동제작 모달(fiRpt*) — 시안(claude.ai/artifact/NZ1NDgZ2tyHdrfQM5VaNiq)과
+     같은 구성: 제목/다운로드형식(PDF·엑셀)/형식별 옵션/생성 버튼. PC 전용 기능이라
+     #fiPcApp 쪽 색상 토큰(var(--panel) 등)을 그대로 쓴다. ══ */
+  #fiRptModal { display:none; position:fixed; inset:0; z-index:92; align-items:center; justify-content:center; background:rgba(15,23,42,.55); }
+  #fiRptModal .fiRpt-box { width:480px; max-width:92vw; max-height:88vh; overflow-y:auto; background:var(--panel); border-radius:18px; padding:22px; display:flex; flex-direction:column; gap:14px; }
+  .fiRpt-label { font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--label); text-transform:uppercase; margin-bottom:7px; }
+  .fiRpt-pool { display:flex; flex-wrap:wrap; gap:6px; }
+  .fiRpt-pool span { font-size:11px; font-weight:700; padding:4px 9px; border-radius:7px; background:var(--input-bg); color:var(--text-sub); font-family:ui-monospace,monospace; }
+  .fiRpt-input { width:100%; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:13px; color:var(--text); outline:none; font-family:inherit; box-sizing:border-box; }
+  .fiRpt-fmt-row { display:flex; gap:10px; }
+  .fiRpt-fmt-opt { flex:1; border:1.5px solid var(--border); border-radius:12px; padding:13px 10px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center; }
+  .fiRpt-fmt-opt .ic { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; color:#fff; flex-shrink:0; font-size:14px; }
+  .fiRpt-fmt-opt .lbl { font-size:12px; font-weight:800; color:var(--text); }
+  .fiRpt-fmt-opt .hint { font-size:9.5px; color:var(--label); line-height:1.35; }
+  .fiRpt-fmt-opt.on { border-color:#DC2626; background:rgba(220,38,38,.08); }
+  .fiRpt-fmt-opt.xlsx.on { border-color:#16A34A; background:rgba(22,163,74,.08); }
+  .fiRpt-orient-row { display:flex; gap:10px; }
+  .fiRpt-orient-opt { flex:1; border:1.5px solid var(--border); border-radius:12px; padding:12px 10px; text-align:center; cursor:pointer; }
+  .fiRpt-orient-opt.on { border-color:#DC2626; background:rgba(220,38,38,.08); }
+  .fiRpt-orient-shape { margin:0 auto 7px; background:var(--input-bg); border:1.5px solid var(--border); border-radius:3px; }
+  .fiRpt-orient-opt.on .fiRpt-orient-shape { border-color:#DC2626; }
+  .fiRpt-orient-opt .lbl { font-size:11px; font-weight:700; color:var(--text-sub); }
+  .fiRpt-orient-opt.on .lbl { color:#DC2626; }
+  .fiRpt-gen-btn { background:#DC2626; color:#fff; border:none; border-radius:12px; padding:13px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
+  .fiRpt-gen-btn.xlsx-mode { background:#16A34A; }
+  .fiRpt-gen-btn[disabled] { opacity:.6; cursor:not-allowed; }
+
   /* 모바일에선 기존 그대로 전체화면, PC에서만 가운데 820px 다이얼로그 + 백드롭으로 보이게 */
   .fi-dialog-box { display:contents; }
   @media (min-width:900px) {
