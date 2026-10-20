@@ -2843,7 +2843,7 @@
                 specialChip.style.display = 'none';
             }
         }
-        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey) {
+        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey && !_sfSourceFilter && !_sfStatusFilters.size) {
             window._srLastDeduped = [];
             document.getElementById('srCount').textContent = '0';
             const codeCountEl0 = document.getElementById('srCodeCount');
