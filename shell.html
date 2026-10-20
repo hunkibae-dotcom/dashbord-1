@@ -3142,6 +3142,64 @@
         ov[field] = value;
         try { localStorage.setItem('pkgSpecOverride_' + code, JSON.stringify(ov)); } catch (e) {}
     }
+
+    // ── PE폼 유형/규격 (제품 수정창 전용, PC 대시보드와 같은 localStorage 키를 써서
+    // 구글시트와는 무관하게 코드 기준으로 기억한다) ──────────────────────────
+    const PKG_PE_TYPE_STORE_KEY = 'pkg_pe_type_map';
+    const PKG_PE_SPEC_HISTORY_KEY = 'pkg_pe_spec_history';
+    function _pkgPeKey(code) { return (code || '').toString().trim().toUpperCase(); }
+    function _pkgPeTypeMap() {
+        try { return JSON.parse(localStorage.getItem(PKG_PE_TYPE_STORE_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function _pkgGetPeType(itemOrCode) {
+        const code = (itemOrCode && typeof itemOrCode === 'object') ? itemOrCode.code : itemOrCode;
+        const v = _pkgPeTypeMap()[_pkgPeKey(code)];
+        return v || { type: '', spec: '' };
+    }
+    function _pkgSetPeType(code, type, spec) {
+        const map = _pkgPeTypeMap();
+        const key = _pkgPeKey(code);
+        if (!type && !spec) { delete map[key]; } else { map[key] = { type: type || '', spec: spec || '' }; }
+        try { localStorage.setItem(PKG_PE_TYPE_STORE_KEY, JSON.stringify(map)); } catch (e) {}
+    }
+    function _pkgPeSpecHistory() {
+        try { return JSON.parse(localStorage.getItem(PKG_PE_SPEC_HISTORY_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function _pkgAddPeSpecHistory(type, spec) {
+        if (!type || !spec) return;
+        const hist = _pkgPeSpecHistory();
+        const arr = hist[type] || [];
+        if (!arr.includes(spec)) {
+            arr.unshift(spec);
+            hist[type] = arr.slice(0, 100);
+            try { localStorage.setItem(PKG_PE_SPEC_HISTORY_KEY, JSON.stringify(hist)); } catch (e) {}
+        }
+    }
+    // 아직 규격을 한 번도 안 골라뒀으면 이 품목의 높이(specH)를 10 단위로 올림해서 기본값으로 쓴다.
+    function _pkgEffectivePeType(item) {
+        const stored = _pkgGetPeType(item);
+        let type = stored.type;
+        let spec = stored.spec;
+        if ((item.round || '').toString().includes('FVN1')) type = '일자형';
+        if (!spec) {
+            const h = Math.floor(Number((item.specH || '').toString().replace(/[^0-9.]/g, '')));
+            if (h > 0) spec = (Math.ceil(h / 10) * 10).toString();
+        }
+        return { type: type, spec: spec };
+    }
+    function _ieRenderPeSpecOptions(type, selectedSpec) {
+        const specInput = document.getElementById('iePeSpec');
+        const specList = document.getElementById('iePeSpecOptions');
+        if (!specInput || !specList) return;
+        const specs = _pkgPeSpecHistory()[type] || [];
+        specList.innerHTML = specs.map(s => `<option value="${s.replace(/"/g,'&quot;')}">`).join('');
+        specInput.value = selectedSpec || '';
+    }
+    function _ieOnPeTypeChange() {
+        const type = (document.getElementById('iePeType').value || '').trim();
+        const curSpec = (document.getElementById('iePeSpec').value || '').trim();
+        _ieRenderPeSpecOptions(type, curSpec);
+    }
     // 값 숫자 자체를 지표별로 다른 색으로 — PC 웹 리디자인의 핵심(칙칙함 해결)이었는데
     // 범위막대만 색을 넣고 정작 큰 숫자는 그대로 둔 실수를 바로잡음(요청, 2026-10-13).
     function specCell(label, val, unit, tolHtml, color) {
