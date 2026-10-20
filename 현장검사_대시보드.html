@@ -1418,18 +1418,26 @@ async function _fiRenderReportXlsx(items, opts) {
     return rowHeightsPx.length;
   }
 
+  const LABEL_FONT = { size: 7.5, bold: true, color: { argb: 'FF94A3B8' } };
+  function labeledRun(label, value, valueSize) {
+    return [
+      Object.assign({}, LABEL_FONT, { text: label + ' ' }),
+      { font: { size: valueSize || 10.5, bold: true, color: { argb: 'FF0F172A' } }, text: value + '   ' },
+    ];
+  }
+
   let r = 1;
   items.forEach(function (d) {
     const key = d.sheet + '|' + d.row;
     const photoInfo = photoMap[key];
     const rowTop = r;
-    const rowPts = [20, 16, 36, 18, 18]; // ①헤더 ②유형 ③내용(줄바꿈) ④조치상태·조치자 ⑤조치사항
+    const rowPts = [22, 16, 40, 20, 20]; // ①헤더 ②유형 ③내용(줄바꿈) ④조치상태·조치자 ⑤조치사항
     rowPts.forEach(function (h, i) { ws.getRow(rowTop + i).height = h; });
     const rowBottom = rowTop + rowPts.length - 1;
 
-    // 사진 — A열, 블록 전체 높이만큼 병합
-    ws.mergeCells(rowTop, 1, rowBottom, 1);
-    const photoCell = ws.getCell(rowTop, 1);
+    // 사진 — B열(여백열 다음 칸), 블록 전체 높이만큼 병합
+    ws.mergeCells(rowTop, 2, rowBottom, 2);
+    const photoCell = ws.getCell(rowTop, 2);
     photoCell.border = borderLight;
     photoCell.alignment = { horizontal: 'center', vertical: 'middle' };
     if (photoInfo) {
@@ -1439,7 +1447,7 @@ async function _fiRenderReportXlsx(items, opts) {
       const pad = 3;
       const rowHeightsPx = rowPts.map(ptToPx);
       const blockHpx = rowHeightsPx.reduce(function (s, h) { return s + h; }, 0);
-      const boxW = COL_A_PX - pad * 2;
+      const boxW = PHOTO_COL_PX - pad * 2;
       const boxH = blockHpx - pad * 2;
       const scale = Math.min(boxW / photoInfo.w, boxH / photoInfo.h);
       const fitW = photoInfo.w * scale;
@@ -1447,64 +1455,62 @@ async function _fiRenderReportXlsx(items, opts) {
       const offsetYpx = (blockHpx - fitH) / 2; // 세로만 가운데 정렬(가로는 열 경계에 고정)
 
       ws.addImage(imgId, {
-        tl: { col: 0, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx) },
+        tl: { col: 1, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx) },
         ext: { width: fitW, height: fitH },
         editAs: 'oneCell'
       });
     }
 
-    // ① 코드/색상/수량/날짜
-    ws.mergeCells(rowTop, 2, rowTop, 6);
-    const headCell = ws.getCell(rowTop, 2);
-    headCell.value = (d.code || '—') + '   ' + (d.color || '') + ' · ' + (d.qty || '') + ' · ' + fiPcDate(d.date);
-    headCell.font = { bold: true, size: 11, color: { argb: 'FF0F172A' } };
+    // ① 코드/색상/수량/날짜 — 뭐가 뭔지 바로 보이게 각 값 앞에 작은 회색 라벨을 붙인다
+    // (요청, 2026-10-20: "뭐가 제품코드인지 색상인지 수량인지 날짜인지 명확하게").
+    ws.mergeCells(rowTop, 3, rowTop, 7);
+    const headCell = ws.getCell(rowTop, 3);
+    headCell.value = { richText: [].concat(
+      labeledRun('코드', d.code || '—', 11.5),
+      labeledRun('색상', d.color || '—'),
+      labeledRun('수량', (d.qty || '—') + (d.qty ? 'EA' : '')),
+      labeledRun('날짜', fiPcDate(d.date))
+    ) };
     headCell.alignment = { vertical: 'middle' };
     headCell.border = borderLight;
 
     // ② 하자유형
-    ws.mergeCells(rowTop + 1, 2, rowTop + 1, 6);
-    const typeCell = ws.getCell(rowTop + 1, 2);
-    typeCell.value = '유형: ' + ((d.types || []).join(', ') || '—');
-    typeCell.font = { size: 9.5, color: { argb: 'FF64748B' }, bold: true };
+    ws.mergeCells(rowTop + 1, 3, rowTop + 1, 7);
+    const typeCell = ws.getCell(rowTop + 1, 3);
+    typeCell.value = { richText: labeledRun('유형', (d.types || []).join(', ') || '—', 9.5) };
     typeCell.alignment = { vertical: 'middle' };
     typeCell.border = borderLight;
 
     // ③ 부적합내용
-    ws.mergeCells(rowTop + 2, 2, rowTop + 2, 6);
-    const contentCell = ws.getCell(rowTop + 2, 2);
-    contentCell.value = d.content || '';
-    contentCell.font = { size: 10.5, color: { argb: 'FF334155' } };
+    ws.mergeCells(rowTop + 2, 3, rowTop + 2, 7);
+    const contentCell = ws.getCell(rowTop + 2, 3);
+    contentCell.value = { richText: labeledRun('내용', d.content || '—', 10.5) };
     contentCell.alignment = { vertical: 'middle', wrapText: true };
     contentCell.border = borderLight;
 
     // ④ 조치상태(편집 칸) / 조치자(편집 칸)
-    const statusCell = ws.getCell(rowTop + 3, 2);
-    statusCell.value = d.status || '미조치';
-    statusCell.font = { size: 10.5, bold: true, color: { argb: 'FF0F172A' } };
-    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    const statusCell = ws.getCell(rowTop + 3, 3);
+    statusCell.value = { richText: [{ font: LABEL_FONT, text: '조치상태\n' }, { font: { size: 10.5, bold: true, color: { argb: 'FF0F172A' } }, text: d.status || '미조치' }] };
+    statusCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
     statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
     statusCell.border = borderLight;
-    ws.mergeCells(rowTop + 3, 3, rowTop + 3, 6);
-    const actorCell = ws.getCell(rowTop + 3, 3);
-    actorCell.value = '';
+    ws.mergeCells(rowTop + 3, 4, rowTop + 3, 7);
+    const actorCell = ws.getCell(rowTop + 3, 4);
+    actorCell.value = { richText: [{ font: LABEL_FONT, text: '조치자  ' }] };
     actorCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
     actorCell.alignment = { vertical: 'middle' };
     actorCell.border = borderLight;
 
     // ⑤ 조치사항(편집 칸)
-    ws.mergeCells(rowTop + 4, 2, rowTop + 4, 6);
-    const actionCell = ws.getCell(rowTop + 4, 2);
-    actionCell.value = d.action || '';
+    ws.mergeCells(rowTop + 4, 3, rowTop + 4, 7);
+    const actionCell = ws.getCell(rowTop + 4, 3);
+    actionCell.value = { richText: labeledRun('조치사항', d.action || '', 10.5) };
     actionCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
     actionCell.alignment = { vertical: 'middle', wrapText: true };
     actionCell.border = borderLight;
 
     r = rowBottom + 2; // 블록 사이 빈 줄 하나
   });
-
-  // 머리말 라벨(조치상태/조치자/조치사항) — 첫 블록 왼쪽 위에 작은 안내를 남겨서
-  // 초록 칸이 뭘 적는 칸인지 알 수 있게 한다.
-  ws.getCell(1, 1).note = '사진';
 
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
