@@ -1115,9 +1115,315 @@ function fiUpdateSelectBar() {
     btn.style.cursor = fiSelectedKeys.size === 0 ? 'not-allowed' : 'pointer';
   }
 }
+let fiRptFormat = 'pdf';
+let fiRptOrient = 'portrait';
+function fiRptSelectedItems() {
+  return Array.from(fiSelectedKeys).map(function (key) {
+    const parts = key.split('|');
+    return fiFindEntry(parts[0], Number(parts[1]));
+  }).filter(Boolean);
+}
 function fiOpenReportBuilder() {
   if (!fiSelectedKeys.size) return;
-  alert('선택한 ' + fiSelectedKeys.size + '건으로 보고서를 생성합니다.\n(보고서 자동제작 기능은 준비 중입니다 — 버튼과 선택 기능만 먼저 반영되었습니다)');
+  const items = fiRptSelectedItems();
+  document.getElementById('fiRptPool').innerHTML = items.map(function (d) { return '<span>' + (d.code || '—') + '</span>'; }).join('');
+  const today = new Date();
+  const ymd = today.getFullYear() + '. ' + (today.getMonth() + 1) + '. ' + today.getDate();
+  document.getElementById('fiRptTitle').value = ymd + ' 현장검사 부적합 보고서';
+  fiRptFormat = 'pdf'; fiRptOrient = 'portrait';
+  fiRptPickFormat('pdf');
+  document.querySelectorAll('.fiRpt-orient-opt').forEach(function (el, i) { el.classList.toggle('on', i === 0); });
+  document.getElementById('fiRptFeedback').textContent = '';
+  document.getElementById('fiRptModal').style.display = 'flex';
+}
+function fiCloseReportModal() {
+  document.getElementById('fiRptModal').style.display = 'none';
+}
+function fiRptPickFormat(fmt) {
+  fiRptFormat = fmt;
+  document.getElementById('fiRptFmtPdf').classList.toggle('on', fmt === 'pdf');
+  document.getElementById('fiRptFmtXlsx').classList.toggle('on', fmt === 'xlsx');
+  document.getElementById('fiRptOrientRow').style.display = fmt === 'pdf' ? '' : 'none';
+  document.getElementById('fiRptGenLabel').textContent = fmt === 'pdf' ? 'PDF 보고서 생성하기' : '엑셀 보고서 생성하기';
+  document.getElementById('fiRptGenBtn').classList.toggle('xlsx-mode', fmt === 'xlsx');
+}
+function fiRptPickOrient(o) {
+  fiRptOrient = o;
+  document.querySelectorAll('.fiRpt-orient-opt').forEach(function (el, i) {
+    el.classList.toggle('on', (o === 'portrait') === (i === 0));
+  });
+}
+async function fiRptGenerate() {
+  const items = fiRptSelectedItems();
+  if (!items.length) return;
+  const title = (document.getElementById('fiRptTitle').value || '현장검사 부적합 보고서').trim();
+  const btn = document.getElementById('fiRptGenBtn');
+  const fb = document.getElementById('fiRptFeedback');
+  btn.disabled = true;
+  fb.style.color = 'var(--text-sub)';
+  fb.textContent = '사진을 불러오는 중...';
+  try {
+    if (fiRptFormat === 'pdf') {
+      await _fiRenderReportPdf(items, { title: title, orientation: fiRptOrient });
+    } else {
+      await _fiRenderReportXlsx(items, { title: title });
+    }
+    fb.style.color = '#16A34A';
+    fb.textContent = '생성되었습니다.';
+    setTimeout(fiCloseReportModal, 700);
+  } catch (e) {
+    fb.style.color = '#DC2626';
+    fb.textContent = '생성 실패: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── 보고서 사진 — 저장 전 임시사진(dataUrl)은 그대로, 이미 저장된 사진(fileId)은
+// html2canvas/엑셀 둘 다 CORS로 캔버스를 오염시키지 않도록 항상 GAS 프록시
+// (getPhotoBase64)로 base64를 받아온다 — fiImgFallback과 같은 캐시(fiResolvedImageCache)를
+// 공유해서 화면에서 이미 한 번 받아온 사진은 다시 요청하지 않는다.
+async function _fiResolvePhotoBase64(photo) {
+  if (!photo) return null;
+  if (photo.dataUrl) return photo.dataUrl;
+  if (!photo.fileId) return null;
+  if (fiResolvedImageCache[photo.fileId]) return fiResolvedImageCache[photo.fileId];
+  const url = fiGasUrl();
+  if (!url) return null;
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams({ action: 'getPhotoBase64', fileId: photo.fileId }), { signal: AbortSignal.timeout(20000) });
+    const json = await res.json();
+    if (json.status === 'success' && json.dataUrl) { fiResolvedImageCache[photo.fileId] = json.dataUrl; return json.dataUrl; }
+  } catch (e) { /* 이 사진만 빈 칸으로 두고 나머지는 계속 진행 */ }
+  return null;
+}
+function _fiLoadPdfLibs(cb) {
+  if (window.jspdf && window.html2canvas) { cb(); return; }
+  const s1 = document.createElement('script');
+  s1.src = 'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+  s1.onload = function () {
+    if (window.jspdf) { cb(); return; }
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';
+    s2.onload = cb;
+    s2.onerror = function () { alert('PDF 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+    document.head.appendChild(s2);
+  };
+  s1.onerror = function () { alert('PDF 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+  document.head.appendChild(s1);
+}
+function _fiLoadExcelJsLib(cb) {
+  if (window.ExcelJS) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js';
+  s.onload = cb;
+  s.onerror = function () { alert('엑셀 생성 기능을 불러오지 못했습니다 — 인터넷 연결을 확인해주세요.'); };
+  document.head.appendChild(s);
+}
+function _fiPrintEsc(v) { return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// ── PDF: 보고서 시안(claude.ai/artifact/NZ1NDgZ2tyHdrfQM5VaNiq)의 ②번 화면과 같은
+// 카드 레이아웃을 품목별로 그려서, 실제 높이를 잰 뒤(_pkgRenderGenericPrintPdf와 같은
+// 방식) 페이지를 나누고 html2canvas로 캡처해 jsPDF에 붙인다.
+async function _fiRenderReportPdf(items, opts) {
+  await new Promise(function (resolve) { _fiLoadPdfLibs(resolve); });
+  if (!window.jspdf || !window.html2canvas) throw new Error('PDF 라이브러리 로드 실패');
+
+  const photoMap = {};
+  await Promise.all(items.map(async function (d) {
+    const photo = d.photos && d.photos[0];
+    photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoBase64(photo) : null;
+  }));
+
+  const orientation = opts.orientation === 'landscape' ? 'landscape' : 'portrait';
+  const PAGE_W_MM = orientation === 'landscape' ? 297 : 210;
+  const PAGE_H_MM = orientation === 'landscape' ? 210 : 297;
+  const CONTENT_W_MM = PAGE_W_MM - 20;
+  const CONTENT_H_MM = PAGE_H_MM - 20;
+  const MM_TO_PX = 718 / 190;
+  const CONTENT_WIDTH_PX = Math.round(CONTENT_W_MM * MM_TO_PX);
+  const TITLE_PX = 34;
+  const SUMMARY_PX = 70;
+  const PAGE_BUDGET_PX = Math.round(CONTENT_H_MM * MM_TO_PX) - 20;
+
+  function cardHtml(d) {
+    const key = d.sheet + '|' + d.row;
+    const b64 = photoMap[key];
+    const typesHtml = (d.types || []).map(function (t) { return '<span style="' + fiTypeChipStyle(t) + '">' + _fiPrintEsc(t) + '</span>'; }).join(' ');
+    return '<div class="fi-pdf-card" style="display:flex;gap:10px;border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:8px;">' +
+      (b64 ? '<img src="' + b64 + '" style="width:64px;height:64px;border-radius:7px;object-fit:cover;flex-shrink:0;">' : '<div style="width:64px;height:64px;border-radius:7px;background:#F1F5F9;flex-shrink:0;"></div>') +
+      '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">' +
+        '<div style="display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;">' +
+          '<span style="font-size:13px;font-weight:800;font-family:ui-monospace,monospace;">' + _fiPrintEsc(d.code || '—') + '</span>' +
+          '<span style="font-size:10.5px;color:#64748B;font-weight:700;">' + _fiPrintEsc(d.color || '') + ' · ' + _fiPrintEsc(d.qty || '') + ' · ' + _fiPrintEsc(fiPcDate(d.date)) + '</span>' +
+        '</div>' +
+        '<div>' + typesHtml + '</div>' +
+        '<div style="font-size:11px;color:#334155;line-height:1.4;">' + _fiPrintEsc(d.content || '') + '</div>' +
+        (d.action ? '<div style="font-size:10.5px;color:#64748B;">조치: ' + _fiPrintEsc(d.action) + '</div>' : '') +
+      '</div>' +
+      '<div style="flex-shrink:0;"><span style="' + fiStatusStyle(d.status) + '">' + _fiPrintEsc(d.status) + '</span></div>' +
+    '</div>';
+  }
+
+  const measureHost = document.createElement('div');
+  measureHost.style.cssText = 'position:fixed;left:-99999px;top:0;width:' + CONTENT_WIDTH_PX + 'px;font-family:"맑은 고딕",sans-serif;';
+  measureHost.innerHTML = items.map(cardHtml).join('');
+  document.body.appendChild(measureHost);
+  const heights = Array.from(measureHost.querySelectorAll('.fi-pdf-card')).map(function (el) { return el.offsetHeight; });
+  document.body.removeChild(measureHost);
+
+  const pages = [];
+  let cur = [], curH = TITLE_PX + SUMMARY_PX;
+  items.forEach(function (d, idx) {
+    const h = heights[idx] || 80;
+    if (cur.length && curH + h > PAGE_BUDGET_PX) { pages.push(cur); cur = []; curH = TITLE_PX; }
+    cur.push(d);
+    curH += h;
+  });
+  pages.push(cur);
+
+  const now = new Date();
+  const dateStr = String(now.getFullYear()) + '. ' + (now.getMonth() + 1) + '. ' + now.getDate();
+  const total = items.length;
+  const open = items.filter(function (d) { return d.status === '미조치'; }).length;
+  const progress = items.filter(function (d) { return d.status === '조치중'; }).length;
+  const done = items.filter(function (d) { return d.status === '조치완료'; }).length;
+  const summaryHtml =
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;">' +
+      '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 6px;text-align:center;"><div style="font-size:15px;font-weight:800;">' + total + '</div><div style="font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px;">총 건수</div></div>' +
+      '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 6px;text-align:center;"><div style="font-size:15px;font-weight:800;color:#DC2626;">' + open + '</div><div style="font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px;">미조치</div></div>' +
+      '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 6px;text-align:center;"><div style="font-size:15px;font-weight:800;color:#D97706;">' + progress + '</div><div style="font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px;">조치중</div></div>' +
+      '<div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:8px 6px;text-align:center;"><div style="font-size:15px;font-weight:800;color:#16A34A;">' + done + '</div><div style="font-size:9px;color:#94A3B8;font-weight:700;margin-top:2px;">조치완료</div></div>' +
+    '</div>';
+
+  const jsPDFCtor = window.jspdf.jsPDF;
+  const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: orientation });
+  for (let p = 0; p < pages.length; p++) {
+    const host = document.createElement('div');
+    host.style.cssText = 'position:fixed;left:-99999px;top:0;width:' + CONTENT_WIDTH_PX + 'px;background:#fff;font-family:"맑은 고딕",sans-serif;';
+    host.innerHTML =
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:2.5px solid #1E293B;padding-bottom:8px;margin-bottom:10px;">' +
+        '<div style="font-size:17px;font-weight:800;color:#0F172A;">' + _fiPrintEsc(opts.title) + (pages.length > 1 ? ' (' + (p + 1) + '/' + pages.length + ')' : '') + '</div>' +
+        '<div style="text-align:right;font-size:9.5px;color:#64748B;line-height:1.6;">발행일 <b style="color:#1E293B;">' + dateStr + '</b><br>대상 품목 <b style="color:#1E293B;">' + total + '건</b></div>' +
+      '</div>' +
+      (p === 0 ? summaryHtml : '') +
+      items2Html(pages[p]);
+    document.body.appendChild(host);
+    const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
+    document.body.removeChild(host);
+    const imgData = canvas.toDataURL('image/png');
+    if (p > 0) pdf.addPage();
+    const imgWmm = CONTENT_W_MM;
+    const imgHmm = canvas.height / canvas.width * imgWmm;
+    pdf.addImage(imgData, 'PNG', 10, 10, imgWmm, Math.min(imgHmm, CONTENT_H_MM));
+  }
+  function items2Html(arr) { return '<div>' + arr.map(cardHtml).join('') + '</div>'; }
+  pdf.save((opts.title || '현장검사_보고서').replace(/[\\/:*?"<>|]/g, '_') + '.pdf');
+}
+
+// ── 엑셀: 시안의 "카드형 레이아웃"을 실제 병합 셀+셀에 박힌 이미지로 그대로 구현 —
+// 품목 1건당 4행짜리 블록(①코드/색상/수량/날짜 ②하자유형 ③부적합내용 ④조치상태·조치자)을
+// 만들고, 사진은 그 블록의 A열에 셀 병합 범위로 이미지를 앉힌다. 조치상태/조치자 칸은
+// 초록색으로 표시해서 "그대로 고쳐 써도 되는 칸"이라는 걸 남겨두지만, xlsx는 원래 어느
+// 칸이든 다 수정 가능한 진짜 엑셀 파일이다.
+async function _fiRenderReportXlsx(items, opts) {
+  await new Promise(function (resolve) { _fiLoadExcelJsLib(resolve); });
+  if (!window.ExcelJS) throw new Error('엑셀 라이브러리 로드 실패');
+
+  const photoMap = {};
+  await Promise.all(items.map(async function (d) {
+    const photo = d.photos && d.photos[0];
+    photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoBase64(photo) : null;
+  }));
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('부적합목록');
+  ws.columns = [{ width: 13 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }];
+  const GREEN = 'FFE8F8EE';
+  const borderLight = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+
+  let r = 1;
+  items.forEach(function (d) {
+    const key = d.sheet + '|' + d.row;
+    const b64 = photoMap[key];
+    const rowTop = r;
+    const rows = [20, 16, 36, 18, 18]; // ①헤더 ②유형 ③내용(줄바꿈) ④조치상태·조치자 ⑤조치사항
+    rows.forEach(function (h, i) { ws.getRow(rowTop + i).height = h; });
+    const rowBottom = rowTop + rows.length - 1;
+
+    // 사진 — A열, 블록 전체 높이만큼 병합
+    ws.mergeCells(rowTop, 1, rowBottom, 1);
+    const photoCell = ws.getCell(rowTop, 1);
+    photoCell.border = borderLight;
+    photoCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    if (b64) {
+      const m = /^data:image\/(\w+);base64,/.exec(b64);
+      const ext = (m && m[1] === 'jpg') ? 'jpeg' : (m ? m[1] : 'png');
+      const imgId = wb.addImage({ base64: b64, extension: ext === 'jpeg' ? 'jpeg' : 'png' });
+      ws.addImage(imgId, { tl: { col: 0.08, row: rowTop - 1 + 0.08 }, br: { col: 0.92, row: rowBottom - 0.08 }, editAs: 'oneCell' });
+    }
+
+    // ① 코드/색상/수량/날짜
+    ws.mergeCells(rowTop, 2, rowTop, 6);
+    const headCell = ws.getCell(rowTop, 2);
+    headCell.value = (d.code || '—') + '   ' + (d.color || '') + ' · ' + (d.qty || '') + ' · ' + fiPcDate(d.date);
+    headCell.font = { bold: true, size: 11, color: { argb: 'FF0F172A' } };
+    headCell.alignment = { vertical: 'middle' };
+    headCell.border = borderLight;
+
+    // ② 하자유형
+    ws.mergeCells(rowTop + 1, 2, rowTop + 1, 6);
+    const typeCell = ws.getCell(rowTop + 1, 2);
+    typeCell.value = '유형: ' + ((d.types || []).join(', ') || '—');
+    typeCell.font = { size: 9.5, color: { argb: 'FF64748B' }, bold: true };
+    typeCell.alignment = { vertical: 'middle' };
+    typeCell.border = borderLight;
+
+    // ③ 부적합내용
+    ws.mergeCells(rowTop + 2, 2, rowTop + 2, 6);
+    const contentCell = ws.getCell(rowTop + 2, 2);
+    contentCell.value = d.content || '';
+    contentCell.font = { size: 10.5, color: { argb: 'FF334155' } };
+    contentCell.alignment = { vertical: 'middle', wrapText: true };
+    contentCell.border = borderLight;
+
+    // ④ 조치상태(편집 칸) / 조치자(편집 칸)
+    const statusCell = ws.getCell(rowTop + 3, 2);
+    statusCell.value = d.status || '미조치';
+    statusCell.font = { size: 10.5, bold: true, color: { argb: 'FF0F172A' } };
+    statusCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+    statusCell.border = borderLight;
+    ws.mergeCells(rowTop + 3, 3, rowTop + 3, 6);
+    const actorCell = ws.getCell(rowTop + 3, 3);
+    actorCell.value = '';
+    actorCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+    actorCell.alignment = { vertical: 'middle' };
+    actorCell.border = borderLight;
+
+    // ⑤ 조치사항(편집 칸)
+    ws.mergeCells(rowTop + 4, 2, rowTop + 4, 6);
+    const actionCell = ws.getCell(rowTop + 4, 2);
+    actionCell.value = d.action || '';
+    actionCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+    actionCell.alignment = { vertical: 'middle', wrapText: true };
+    actionCell.border = borderLight;
+
+    r = rowBottom + 2; // 블록 사이 빈 줄 하나
+  });
+
+  // 머리말 라벨(조치상태/조치자/조치사항) — 첫 블록 왼쪽 위에 작은 안내를 남겨서
+  // 초록 칸이 뭘 적는 칸인지 알 수 있게 한다.
+  ws.getCell(1, 1).note = '사진';
+
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (opts.title || '현장검사_보고서').replace(/[\\/:*?"<>|]/g, '_') + '.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 // 카드 자체의 삭제 버튼 — 상세창을 열지 않고 바로 지운다(fiDeleteEntry와 같은 동작,
 // 여긴 fiDetKey에 의존하지 않고 그 자리에서 바로 sheet/row를 받는다).
