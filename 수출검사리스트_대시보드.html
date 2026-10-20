@@ -2149,7 +2149,7 @@ function parseArchiveRows(rows, factory) {
     if (!row) continue;
     const g = (i) => (row[i] !== null && row[i] !== undefined ? String(row[i]) : '');
     const 건명 = g(0).trim();
-    if (!건명 || 건명.includes('검사') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2' || 건명.includes('신규')) continue;
+    if (!건명 || 건명.includes('검사') || 건명 === '건명' || 건명 === '충주1' || 건명 === '충주2' || /^신규\s*↓?\s*$/.test(건명)) continue;
 
     const 단품코드val = g(1).trim();
     if (!단품코드val || 단품코드val === '-') continue; // 시트 내 구분선/안내 행(실제 데이터 아님) 건너뛰기
