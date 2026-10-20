@@ -8508,11 +8508,11 @@ function _qcMrRowHtml(id) {
     <div class="grid grid-cols-4 gap-2 flex-1 min-w-0">
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">단품코드</div>
-        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] font-mono text-slate-700 outline-none focus:border-accent-500 mr-code" style="text-transform:uppercase;" oninput="qcMrOnCodeInput(${id})" placeholder="코드">
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] font-mono text-slate-700 outline-none focus:border-accent-500 mr-code" style="text-transform:uppercase;" oninput="qcMrOnCodeInput(${id})" onpaste="qcMrHandlePaste(event, ${id})" placeholder="코드 (엑셀에서 여러 줄 붙여넣기 가능)">
       </div>
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">색상</div>
-        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-color" placeholder="색상">
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-color" onpaste="qcMrHandlePaste(event, ${id})" placeholder="색상">
       </div>
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">수량</div>
