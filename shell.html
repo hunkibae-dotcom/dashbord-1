@@ -4974,6 +4974,9 @@
         const newH = (document.getElementById('ieH')?.value || '').trim();
         const newG = (document.getElementById('ieG')?.value || '').trim();
         const newMemo = (document.getElementById('ieMemo')?.value || '').trim();
+        const newPeType = (document.getElementById('iePeType')?.value || '').trim();
+        const newPeSpec = (document.getElementById('iePeSpec')?.value || '').trim();
+        const peChanged = newPeType !== _ieOrigPeType || newPeSpec !== _ieOrigPeSpec;
         const tasks = [];
         const changed = {};
         // 기준(수출현황/충주공장 재고/출고완료)마다 진행상태를 실제로 쓰는 시트·칸이
