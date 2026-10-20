@@ -1244,10 +1244,10 @@ async function _fiRenderReportPdf(items, opts) {
   if (!window.jspdf || !window.html2canvas) throw new Error('PDF 라이브러리 로드 실패');
 
   const photoMap = {};
-  await Promise.all(items.map(async function (d) {
+  await _fiMapWithLimit(items, 4, async function (d) {
     const photo = d.photos && d.photos[0];
     photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoBase64(photo) : null;
-  }));
+  });
 
   const orientation = opts.orientation === 'landscape' ? 'landscape' : 'portrait';
   const PAGE_W_MM = orientation === 'landscape' ? 297 : 210;
