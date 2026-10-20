@@ -8609,8 +8609,11 @@ function qcMrHandlePaste(e, id) {
     if (cols[0] !== undefined) row.querySelector('.mr-code').value = cols[0].toUpperCase();
     if (cols[1] !== undefined) row.querySelector('.mr-color').value = cols[1];
     if (cols[2] !== undefined) row.querySelector('.mr-qty').value = cols[2];
-    if (cols[3] !== undefined) row.querySelector('.mr-name').value = cols[3];
-    qcMrOnCodeInput(row.dataset.id); // 단품명칭을 안 붙여넣었으면 이력에서 자동완성 시도
+    if (cols[3]) {
+      row.querySelector('.mr-name').value = cols[3]; // 단품명칭까지 붙여넣었으면 그대로 두고 자동완성으로 덮지 않음
+    } else {
+      qcMrOnCodeInput(row.dataset.id); // 안 붙여넣었으면 이력에서 자동완성 시도
+    }
   });
 }
 async function qcMrSubmit() {
