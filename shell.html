@@ -4869,6 +4869,12 @@
             if (ieDueDateInp) ieDueDateInp.value = '';
             _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
             _ieOrigMemo = '';
+            _ieOrigPeType = ''; _ieOrigPeSpec = '';
+            const iePeTypeInp0 = document.getElementById('iePeType');
+            if (iePeTypeInp0) iePeTypeInp0.value = '';
+            _ieRenderPeSpecOptions('', '');
+            const iePeBoxHeightInp0 = document.getElementById('iePeBoxHeight');
+            if (iePeBoxHeightInp0) iePeBoxHeightInp0.value = '';
             _ieBasis = 'standard';
         }
         _ieCurStatus = _ieOrigStatus;
