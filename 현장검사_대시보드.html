@@ -572,6 +572,8 @@ const FI_STATUS_COLOR = { '미조치': '#DC2626', '조치중': '#D97706', '조�
 
 let fiAllData = [];      // GAS list 결과 그대로
 let fiActiveTab = 'home';
+let fiSelectMode = false;      // PC 그리드 품목 선택 모드(다중/전체선택, 보고서 자동제작용)
+let fiSelectedKeys = new Set(); // 'sheet|row' 키 집합
 let fiStatusFilter = '전체';
 let fiTypeFilter = '전체';
 let fiTypeDropdownOpen = false;
