@@ -352,9 +352,11 @@ try {
     const f = document.getElementById('fieldInspectFrame');
     if (!_fieldInspectFrameLoaded) { f.src = '현장검사_대시보드.html'; _fieldInspectFrameLoaded = true; }
     document.getElementById('fieldInspectOverlay').style.display = 'flex';
+    document.getElementById('mNavInspect')?.classList.add('active');
   }
   function closeFieldInspectOverlay() {
     document.getElementById('fieldInspectOverlay').style.display = 'none';
+    document.getElementById('mNavInspect')?.classList.remove('active');
   }
   // F.WORK 홈 > 품질검사 > 현장검사로 들어온 경우(?openFieldInspect=1) — 품질검사
   // 대시보드 안에서 현장검사를 눌렀을 때와 똑같은 화면(이 오버레이)이 바로 뜨게 한다
@@ -577,8 +579,8 @@ try {
     <!-- 사이드바를 접었을 때만 보이는 중앙 상단 로고 — 접힌 상태에서도 다시 펼 수 있는
          버튼을 여기에 둔다(사이드바 자체가 접히면 그 안의 펼치기 버튼도 같이 사라지므로). -->
     <div id="qcCenterHeader" style="display:none;align-items:center;justify-content:center;gap:10px;padding:14px 0;border-bottom:1px solid #e2e8f0;background:#fff;position:relative;">
-      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
-        <i class="fa-solid fa-magnifying-glass text-[16.5px]"></i>
+      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#00A878,#00E676);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
       </span>
       <div class="text-[18.5px] font-extrabold text-slate-900 font-sans" style="letter-spacing:-0.3px;">품질검사 대시보드</div>
     </div>
@@ -3859,6 +3861,32 @@ function closeMSearchSub() {
   document.getElementById('mNav2')?.classList.remove('active');
 }
 
+// ── 검사 서브메뉴(보고서/현장검사 — 제품검색 서브메뉴와 완전히 같은 방식) ──
+function toggleMInspectSub() {
+  const menu = document.getElementById('mInspectSubMenu');
+  const bd   = document.getElementById('mInspectSubBd');
+  if (menu.style.display !== 'none') {
+    closeMInspectSub();
+  } else {
+    menu.style.display = 'flex';
+    bd.style.display   = 'block';
+    requestAnimationFrame(() => {
+      menu.style.opacity   = '1';
+      menu.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    document.getElementById('mNavInspect')?.classList.add('active');
+    _armBackTrap();
+  }
+}
+function closeMInspectSub() {
+  const menu = document.getElementById('mInspectSubMenu');
+  const bd   = document.getElementById('mInspectSubBd');
+  menu.style.opacity   = '0';
+  menu.style.transform = 'translateX(-50%) translateY(12px)';
+  setTimeout(() => { menu.style.display = 'none'; bd.style.display = 'none'; }, 200);
+  document.getElementById('mNavInspect')?.classList.remove('active');
+}
+
 function openProductSearch() {
   const modal = document.getElementById('productSearchModal');
   modal.style.transform = 'translateX(0)';
@@ -4301,7 +4329,7 @@ function openReportModal() {
   document.body.classList.add('m-lock');
   _updateRpDateFieldUI();
   _rpUpdateFilterBtnLabels();
-  document.getElementById('mNavReport')?.classList.add('active');
+  document.getElementById('mNavInspect')?.classList.add('active');
   _updateRpSortBtn();
   _rpPage = 1;
   const overlay = document.getElementById('rpLoadingOverlay');
@@ -4321,7 +4349,7 @@ function closeReportModal() {
   if (!modal) return;
   modal.style.transform = 'translateX(100%)';
   document.body.classList.remove('m-lock');
-  document.getElementById('mNavReport')?.classList.remove('active');
+  document.getElementById('mNavInspect')?.classList.remove('active');
 }
 
 function _rpFactoryLabel(key) { return key === 'cj1' ? '충주1' : '충주2'; }
@@ -7479,7 +7507,7 @@ function setMTab(tab) {
   document.getElementById('mNav1')?.classList.toggle('active', tab === 'chart');
   document.getElementById('mNav2')?.classList.remove('active');
   document.getElementById('mNav3')?.classList.remove('active');
-  document.getElementById('mNavReport')?.classList.remove('active');
+  document.getElementById('mNavInspect')?.classList.remove('active');
   // hide top button on tab switch
   document.getElementById('mToTopBtn')?.classList.remove('show');
   if (tab === 'chart') setTimeout(renderMobileCharts, 60);
@@ -10403,8 +10431,8 @@ function onNativeScanResult(raw) {
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:10px;">
-      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#34D399,#22D3EE);">
-        <i class="fa-solid fa-magnifying-glass text-[14px]"></i>
+      <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0" style="background:linear-gradient(135deg,#00A878,#00E676);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
       </span>
       <span style="font-size:16px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;color:var(--text);">품질검사 대시보드</span>
     </div>
@@ -10725,6 +10753,22 @@ function onNativeScanResult(raw) {
     <i class="fa-solid fa-chevron-up text-[13px]"></i>
   </button>
 
+  <!-- 검사 서브메뉴(보고서/현장검사 통합 — 요청, 2026-10-21: "제품검색처럼 선택할 수 있게") -->
+  <div id="mInspectSubMenu" style="position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
+    <button onclick="closeMInspectSub();openReportModal()"
+        style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+        <i class="fa-solid fa-file-powerpoint" style="color:#6D5CE8;font-size:16px;width:20px;"></i>
+        보고서
+    </button>
+    <button onclick="closeMInspectSub();openFieldInspectOverlay()"
+        style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+        <i class="fa-solid fa-clipboard-check" style="color:#DC2626;font-size:16px;width:20px;"></i>
+        현장검사
+    </button>
+  </div>
+  <!-- 서브메뉴 백드롭 -->
+  <div id="mInspectSubBd" onclick="closeMInspectSub()" style="position:fixed;inset:0;z-index:44;display:none;"></div>
+
   <!-- 제품검색 서브메뉴 (포장강화 shell.html과 동일 UI: 네비 위 팝업) -->
   <div id="mSearchSubMenu" style="position:fixed;bottom:92px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
     <button onclick="closeMSearchSub();_openScanSmart()"
@@ -10757,13 +10801,9 @@ function onNativeScanResult(raw) {
         <span class="m-nav-icon"><i class="fa-solid fa-chart-simple"></i></span>
         <span>차트</span>
       </button>
-      <button onclick="openReportModal()" id="mNavReport" class="mobile-nav-btn">
-        <span class="m-nav-icon"><i class="fa-solid fa-file-powerpoint"></i></span>
-        <span>보고서</span>
-      </button>
-      <button onclick="openFieldInspectOverlay()" id="mNavFieldInspect" class="mobile-nav-btn">
+      <button onclick="toggleMInspectSub()" id="mNavInspect" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-clipboard-check"></i></span>
-        <span>현장검사</span>
+        <span>검사</span>
       </button>
       <button onclick="toggleMSearchSub()" id="mNav2" class="mobile-nav-btn">
         <span class="m-nav-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
