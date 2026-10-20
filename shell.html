@@ -4833,6 +4833,13 @@
             const ieTypeEl = document.getElementById('ieType');
             if (ieCodeTypeEl) ieCodeTypeEl.textContent = _ieOv.productType || '—';
             if (ieTypeEl) ieTypeEl.textContent = _ieOv.productType || '—';
+            const _iePe = _pkgEffectivePeType(item);
+            _ieOrigPeType = _iePe.type; _ieOrigPeSpec = _iePe.spec;
+            const iePeTypeInp = document.getElementById('iePeType');
+            if (iePeTypeInp) iePeTypeInp.value = _ieOrigPeType;
+            _ieRenderPeSpecOptions(_ieOrigPeType, _ieOrigPeSpec);
+            const iePeBoxHeightInp = document.getElementById('iePeBoxHeight');
+            if (iePeBoxHeightInp) iePeBoxHeightInp.value = _ieOv.boxHeight || '';
             _ieOrigRegDate = item.regDate && item.regDate !== '-' ? _nd(item.regDate) : '';
             _ieOrigShipDate = item.date && item.date !== '-' ? _nd(item.date) : '';
             _ieOrigDueDate = item.dueDate && item.dueDate !== '-' ? _nd(item.dueDate) : '';
