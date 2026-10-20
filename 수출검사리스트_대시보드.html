@@ -8508,22 +8508,22 @@ function _qcMrRowHtml(id) {
     <div class="grid grid-cols-4 gap-2 flex-1 min-w-0">
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">단품코드</div>
-        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] font-mono text-slate-700 outline-none focus:border-accent-500 mr-code" style="text-transform:uppercase;" oninput="qcMrOnCodeInput(${id})" onpaste="qcMrHandlePaste(event, ${id})" placeholder="코드 (엑셀에서 여러 줄 붙여넣기 가능)">
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] font-mono text-slate-700 outline-none focus:border-accent-500 mr-code" style="text-transform:uppercase;" oninput="qcMrOnCodeInput(${id})" onpaste="qcMrHandlePaste(event, ${id}, 'code')" placeholder="코드 (여러 줄 붙여넣기 가능)">
       </div>
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">색상</div>
-        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-color" placeholder="색상">
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-color" onpaste="qcMrHandlePaste(event, ${id}, 'color')" placeholder="색상">
       </div>
       <div>
         <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">수량</div>
-        <input type="number" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-qty" placeholder="EA">
+        <input type="number" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-qty" onpaste="qcMrHandlePaste(event, ${id}, 'qty')" placeholder="EA (여러 줄 붙여넣기 가능)">
       </div>
       <div>
         <div class="flex items-center justify-between mb-1">
           <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">단품명칭</div>
           <i class="fa-solid fa-circle-check text-emerald-500 text-[9px] mr-auto-hint hidden" title="기존 이력에서 자동 입력됨"></i>
         </div>
-        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-name" oninput="qcMrOnNameTouched(${id})" placeholder="자동입력">
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-name" oninput="qcMrOnNameTouched(${id})" onpaste="qcMrHandlePaste(event, ${id}, 'name')" placeholder="자동입력">
       </div>
     </div>
     <button onclick="qcMrRemoveRow(${id})" class="mr-row-del shrink-0 w-7 h-7 mt-4 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-300 hover:text-red-500"><i class="fa-solid fa-trash-can text-[12px]"></i></button>
