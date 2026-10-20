@@ -8472,6 +8472,153 @@ async function qcSortInspectList() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// 신규품목 확인 창 → "+ 신규등록" — 수주공정 파일 업데이트가 아니라 직접 입력하는
+// 신규 품목(요청, 2026-10-20, 시안: claude.ai/artifact/5LumXUUVTVUUux5TeqayFc).
+// 건명/납기일/공장은 한 건에 공통이고, 품목(단품코드/색상/수량/단품명칭)은 줄을
+// 늘려 여러 개를 한 번에 등록한다. 단품코드를 입력하면 전체 이력(allData+archiveRows)
+// 에서 같은 코드를 찾아 단품명칭을 자동으로 채운다.
+// ═══════════════════════════════════════════════════════════════
+let _qcMrFac = 'cj1';
+let _qcMrRowSeq = 0;
+
+function qcOpenManualRegister() {
+  _qcMrFac = 'cj1';
+  document.getElementById('mrFacBtnCj1').classList.add('on');
+  document.getElementById('mrFacBtnCj2').classList.remove('on');
+  document.getElementById('mrBuild').value = '';
+  document.getElementById('mrDue').value = '';
+  document.getElementById('mrFeedback').textContent = '';
+  document.getElementById('mrItemRows').innerHTML = '';
+  _qcMrRowSeq = 0;
+  qcMrAddRow();
+  document.getElementById('qcManualRegisterModal').classList.remove('hidden');
+}
+function qcCloseManualRegister() {
+  document.getElementById('qcManualRegisterModal').classList.add('hidden');
+}
+function qcMrPickFac(fac) {
+  _qcMrFac = fac;
+  document.getElementById('mrFacBtnCj1').classList.toggle('on', fac === 'cj1');
+  document.getElementById('mrFacBtnCj2').classList.toggle('on', fac === 'cj2');
+}
+
+function _qcMrRowHtml(id) {
+  return `<div class="mr-item-row flex items-start gap-2 bg-white border border-slate-200 rounded-xl p-3" data-id="${id}">
+    <span class="mr-row-num shrink-0 w-6 h-6 mt-4 rounded-full bg-slate-100 text-slate-500 text-[11px] font-extrabold flex items-center justify-center">1</span>
+    <div class="grid grid-cols-4 gap-2 flex-1 min-w-0">
+      <div>
+        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">단품코드</div>
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] font-mono text-slate-700 outline-none focus:border-accent-500 mr-code" style="text-transform:uppercase;" oninput="qcMrOnCodeInput(${id})" placeholder="코드">
+      </div>
+      <div>
+        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">색상</div>
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-color" placeholder="색상">
+      </div>
+      <div>
+        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1">수량</div>
+        <input type="number" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-qty" placeholder="EA">
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">단품명칭</div>
+          <i class="fa-solid fa-circle-check text-emerald-500 text-[9px] mr-auto-hint hidden" title="기존 이력에서 자동 입력됨"></i>
+        </div>
+        <input type="text" class="w-full border border-slate-200 rounded-lg px-2.5 py-2 text-[12.5px] text-slate-700 outline-none focus:border-accent-500 mr-name" oninput="qcMrOnNameTouched(${id})" placeholder="자동입력">
+      </div>
+    </div>
+    <button onclick="qcMrRemoveRow(${id})" class="mr-row-del shrink-0 w-7 h-7 mt-4 rounded-lg hover:bg-red-50 flex items-center justify-center text-slate-300 hover:text-red-500"><i class="fa-solid fa-trash-can text-[12px]"></i></button>
+  </div>`;
+}
+function qcMrAddRow() {
+  const id = _qcMrRowSeq++;
+  document.getElementById('mrItemRows').insertAdjacentHTML('beforeend', _qcMrRowHtml(id));
+  _qcMrRenumber();
+}
+function qcMrRemoveRow(id) {
+  const el = document.querySelector('.mr-item-row[data-id="' + id + '"]');
+  if (el) el.remove();
+  _qcMrRenumber();
+}
+function _qcMrRenumber() {
+  const rows = document.querySelectorAll('.mr-item-row');
+  rows.forEach((r, i) => {
+    r.querySelector('.mr-row-num').textContent = Math.min(i + 1, 99);
+    r.querySelector('.mr-row-del').style.visibility = rows.length > 1 ? 'visible' : 'hidden';
+  });
+  document.getElementById('mrItemCountLabel').textContent = rows.length + '개 품목';
+  document.getElementById('mrSubmitLabel').textContent = '신규 등록 (' + rows.length + '건)';
+}
+// 전체 이력(진행중+검사완료)에서 같은 단품코드를 찾아 단품명칭을 돌려준다 — 가장
+// 최근(배열 뒤쪽일수록 최신이라는 보장은 없어 납기일 기준으로 한 번 더 정렬) 값을 쓴다.
+function _qcMrLookupName(code) {
+  if (!code) return '';
+  const pool = [].concat(allData || [], archiveRows || []).filter(d => (d.단품코드 || '').toUpperCase() === code);
+  if (!pool.length) return '';
+  pool.sort((a, b) => (b.납기일 || '').localeCompare(a.납기일 || ''));
+  return pool[0].단품명칭 || '';
+}
+function qcMrOnCodeInput(id) {
+  const row = document.querySelector('.mr-item-row[data-id="' + id + '"]');
+  const code = row.querySelector('.mr-code').value.trim().toUpperCase();
+  const nameInput = row.querySelector('.mr-name');
+  const hint = row.querySelector('.mr-auto-hint');
+  const found = _qcMrLookupName(code);
+  if (found) {
+    nameInput.value = found;
+    hint.classList.remove('hidden');
+    row.dataset.autoFilled = '1';
+  } else if (row.dataset.autoFilled === '1') {
+    nameInput.value = '';
+    hint.classList.add('hidden');
+    row.dataset.autoFilled = '0';
+  }
+}
+function qcMrOnNameTouched(id) {
+  const row = document.querySelector('.mr-item-row[data-id="' + id + '"]');
+  if (row.dataset.autoFilled === '1') {
+    row.dataset.autoFilled = '0';
+    row.querySelector('.mr-auto-hint').classList.add('hidden');
+  }
+}
+async function qcMrSubmit() {
+  const build = document.getElementById('mrBuild').value.trim();
+  const due = document.getElementById('mrDue').value;
+  const fb = document.getElementById('mrFeedback');
+  const rows = Array.from(document.querySelectorAll('.mr-item-row'));
+  const items = rows.map(r => ({
+    code: r.querySelector('.mr-code').value.trim().toUpperCase(),
+    color: r.querySelector('.mr-color').value.trim(),
+    qty: r.querySelector('.mr-qty').value.trim(),
+    name: r.querySelector('.mr-name').value.trim(),
+  }));
+  if (!build) { fb.style.color = '#dc2626'; fb.textContent = '건명은 반드시 입력해주세요.'; return; }
+  if (items.some(it => !it.code)) { fb.style.color = '#dc2626'; fb.textContent = '모든 줄의 단품코드를 입력해주세요.'; return; }
+
+  const btn = document.getElementById('mrSubmitBtn');
+  btn.disabled = true;
+  fb.style.color = '#64748b';
+  fb.textContent = '등록 중...';
+  try {
+    const url = _gasUrlForFactory(_qcMrFac);
+    const res = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'manualRegisterItems', buildName: build, dueDate: due, items: items }),
+      signal: AbortSignal.timeout(60000)
+    }).then(r => r.json());
+    if (res.status !== 'success') throw new Error(res.message || '등록 실패');
+    fb.style.color = '#16a34a';
+    fb.textContent = '✓ ' + items.length + '건 등록되었습니다. 목록을 새로고침합니다...';
+    await loadData();
+    setTimeout(qcCloseManualRegister, 700);
+  } catch (e) {
+    fb.style.color = '#dc2626';
+    fb.textContent = '오류: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // 수주/공정 업데이트 — 예전엔 구글시트에 원본 엑셀을 손으로 붙여넣고 메뉴를
 // 눌러 "수주내역 분류"/"공정진행정보 분류"를 실행했는데, 그 절차를 대시보드에서
 // 엑셀 파일을 올리는 것만으로 대신하게 한다. 분류 규칙(신규 등록/납기 변경 반영/
