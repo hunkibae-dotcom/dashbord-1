@@ -706,6 +706,13 @@ function fiPhotoImgTag(photo, styleAttr) {
   const onerr = photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '';
   return '<img src="' + src + '"' + onerr + ' style="' + styleAttr + '">';
 }
+// 사진이 여러 장이면 카드 썸네일만 봐선 몇 장인지 몰라서, 썸네일 우상단에 "+N장"
+// 배지를 얹어준다(요청, 2026-10-20) — 1장 이하면 아무것도 안 그린다.
+function _fiPhotoCountBadge(photos) {
+  const n = (photos && photos.length) || 0;
+  if (n <= 1) return '';
+  return '<span style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;font-weight:800;padding:1.5px 5px;border-radius:7px;line-height:1.4;pointer-events:none;">+' + (n - 1) + '장</span>';
+}
 
 // ── 사진 크게보기(라이트박스) — 부적합조회 카드 썸네일(읽기전용), 등록/상세 수정 중
 // 사진 썸네일(editable: 'reg'|'det')에서 공용으로 쓴다. editable일 땐 맨 끝에 "사진 추가"
