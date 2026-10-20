@@ -1424,10 +1424,8 @@ async function _fiRenderReportXlsx(items, opts) {
     photoCell.border = borderLight;
     photoCell.alignment = { horizontal: 'center', vertical: 'middle' };
     if (photoInfo) {
-      const m = /^data:image\/(\w+);base64,/.exec(photoInfo.dataUrl);
-      const mime = m ? m[1] : 'png';
-      const extension = (mime === 'jpg' || mime === 'jpeg') ? 'jpeg' : (mime === 'gif' ? 'gif' : 'png');
-      const imgId = wb.addImage({ base64: photoInfo.dataUrl, extension: extension });
+      // _fiNormalizePhotoForExcel이 캔버스로 다시 그려서 항상 jpeg로 내보낸다.
+      const imgId = wb.addImage({ base64: photoInfo.dataUrl, extension: 'jpeg' });
 
       const pad = 3;
       const rowHeightsPx = rowPts.map(ptToPx);
