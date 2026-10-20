@@ -929,7 +929,11 @@ function fiPcCardHtml(d) {
   const key = d.sheet + '|' + d.row;
   const photo = d.photos && d.photos[0];
   const typesHtml = d.types.map(function (t) { return '<span class="fipc-type-chip" style="' + fiTypeChipStyle(t) + 'display:inline-flex;width:fit-content;">' + t + '</span>'; }).join(' ');
+  const checked = fiSelectedKeys.has(key);
   return '<div class="fipc-card">' +
+    (fiSelectMode
+      ? '<div style="display:flex;align-items:flex-start;padding-top:2px;flex-shrink:0;"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="fiToggleSelectItem(\'' + key + '\')" style="width:18px;height:18px;cursor:pointer;accent-color:#D97706;"></div>'
+      : '') +
     '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">' +
       (photo
         ? '<img class="fipc-photo" src="' + (photo.dataUrl || photo.viewUrl) + '"' + (photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '') + ' onclick="fiOpenPhotoViewerFor(\'' + key + '\')">'
