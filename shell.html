@@ -5028,8 +5028,19 @@
             );
             changed.spec = true;
         }
-        if (!tasks.length) {
+        // PE폼 유형/규격은 구글시트와 무관하게 이 기기에만 저장하는 값이라 네트워크 요청이
+        // 필요 없다 — 다른 변경사항과 별개로 바로 기억해둔다.
+        if (peChanged) {
+            _pkgSetPeType(_ieCode, newPeType, newPeSpec);
+            _pkgAddPeSpecHistory(newPeType, newPeSpec);
+        }
+        if (!tasks.length && !peChanged) {
             if (fb) { fb.textContent = '변경사항이 없습니다.'; fb.style.color = 'var(--text-sub)'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
+            return;
+        }
+        if (!tasks.length) {
+            if (fb) { fb.textContent = '저장되었습니다.'; fb.style.color = '#00E676'; }
             if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
             return;
         }
