@@ -7963,6 +7963,52 @@
             if (allCb) allCb.checked = list.length > 0 && list.every(it => _pkgNewSelected.has(_pkgNewKey(it)));
             const btn = document.getElementById('pkgNewConfirmBtn');
             if (btn) { btn.disabled = _pkgNewSelected.size === 0; btn.style.opacity = _pkgNewSelected.size === 0 ? '.4' : '1'; }
+            const delBtn = document.getElementById('pkgNewDeleteBtn');
+            if (delBtn) { delBtn.disabled = _pkgNewSelected.size === 0; delBtn.style.opacity = _pkgNewSelected.size === 0 ? '.4' : '1'; }
+        }
+        // "삭제" — "확인"과 달리 수출 현황 시트에서 행 자체를 완전히 지우는 되돌릴 수
+        // 없는 작업이라 먼저 확인창을 띄운다(요청, 2026-10-20: "실제로 시트에서 삭제가
+        // 되어야한다"). 하나씩 확인하면서 지울 거라고 해서, 처리 후에도 창은 닫지 않고
+        // 지운 품목만 목록에서 빼고 계속 띄워둔다.
+        async function pkgNewDeleteSelected() {
+            const list = (window._pkgNewList || []).filter(it => _pkgNewSelected.has(_pkgNewKey(it)));
+            if (!list.length) return;
+            if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?')) return;
+            const btn = document.getElementById('pkgNewDeleteBtn');
+            const statusEl = document.getElementById('pkgNewStatus');
+            btn.disabled = true;
+            statusEl.style.color = '#64748b';
+            statusEl.textContent = '삭제 중...';
+            const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
+            try {
+                const gasUrl = _pkgGasUrl();
+                const res = await fetch(gasUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgDeleteNewItems', items: items }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '삭제 실패');
+
+                // 즉시 반영: 지운 품목들을 목록·로컬 데이터에서도 바로 뺀다(다음 전체
+                // 새로고침 전까지도 화면에 남아있지 않도록). 모달은 닫지 않는다.
+                const deletedTuples = new Set(items.map(it => (it.code || '').toUpperCase() + '|' + it.round + '|' + _pkgNormColor(it.color)));
+                window._pkgNewList = (window._pkgNewList || []).filter(it => !deletedTuples.has((it.code || '').toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color)));
+                Object.keys(datasetMap).forEach(k => {
+                    if (!k.includes('수출 현황')) return;
+                    datasetMap[k] = (datasetMap[k] || []).filter(it => !deletedTuples.has((it.code || '').toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color)));
+                });
+                _pkgNewSelected = new Set();
+                const countEl = document.getElementById('pkgNewCount');
+                if (countEl) countEl.textContent = window._pkgNewList.length;
+                statusEl.style.color = '#16a34a';
+                statusEl.textContent = '✓ ' + (res.deletedCount || items.length) + '건 삭제했습니다.';
+                renderPkgNewList();
+            } catch (e) {
+                statusEl.style.color = '#dc2626';
+                statusEl.textContent = '오류: ' + e.message;
+            } finally {
+                btn.disabled = _pkgNewSelected.size === 0;
+            }
         }
 
         async function pkgNewConfirmSelected() {
