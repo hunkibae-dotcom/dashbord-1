@@ -1,0 +1,314 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>대시보드 사용 설명서 (4종)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+<style>
+  /* 레이아웃: 실제로는 4개의 완전히 분리된 화면(품질검사 웹/앱, 포장강화 웹/앱)이라,
+     이 미리보기 페이지에서만 위쪽에 "검토용" 전환 바를 두고, 그 아래 실제 화면은
+     웹=브라우저 창 틀, 앱=휴대폰 틀로 감싸서 "이게 실제로 어디 들어가는지" 구분한다.
+     전환 바 자체는 산출물이 아니라 검토 편의용이라는 걸 톤을 달리해서 표시. */
+  :root {
+    --rev-bg: #E9EBEF;
+    --rev-ink: #4B5162;
+    --rev-panel: #FFFFFF;
+    --rev-border: #D7DAE1;
+    --qc: #6D5CE8;
+    --qc-soft: #F0EEFE;
+    --pkg: #0062FF;
+    --pkg-soft: #EAF1FF;
+    --bg: #F4F5F7;
+    --panel: #FFFFFF;
+    --ink: #16181D;
+    --ink-sub: #6B7280;
+    --label: #9CA3AF;
+    --border: #E5E7EB;
+    --divider: #EEF0F3;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--rev-bg); color: var(--ink);
+    font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 18px 40px;
+  }
+  h1, h2, h3, .disp { font-family: 'Manrope', sans-serif; text-wrap: balance; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  /* ── 검토용 전환 바 (산출물 아님) ── */
+  .review-bar { max-width: 760px; margin: 0 auto 16px; display: flex; flex-direction: column; gap: 8px; }
+  .review-label { font-size: 11px; font-weight: 700; color: var(--rev-ink); text-align: center; opacity: .75; }
+  .review-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .review-btn { background: var(--rev-panel); border: 1.5px solid var(--rev-border); border-radius: 12px; padding: 10px 8px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; font-family: inherit; }
+  .review-btn .ic { width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 11px; }
+  .review-btn .lbl { font-size: 11.5px; font-weight: 700; color: var(--rev-ink); }
+  .review-btn .plat { font-size: 9.5px; color: #9AA1AE; font-weight: 600; }
+  .review-btn.on { border-color: var(--pick-color, #999); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pick-color, #999) 14%, transparent); }
+
+  /* ── 실제 산출물 프레임 ── */
+  .stage { max-width: 760px; margin: 0 auto; display: flex; justify-content: center; }
+  .frame-web { width: 100%; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 16px 40px rgba(20,22,30,.18); border: 1px solid #D7DAE1; }
+  .frame-web .chrome { background: #ECEEF2; padding: 9px 12px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #D7DAE1; }
+  .frame-web .chrome .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .frame-web .chrome .url { flex: 1; margin-left: 8px; background: #fff; border-radius: 6px; padding: 4px 10px; font-size: 10.5px; color: #8B93A1; border: 1px solid #DDE0E6; }
+  .frame-phone { width: 380px; max-width: 100%; border-radius: 42px; border: 10px solid #15171C; background: #15171C; box-shadow: 0 20px 50px rgba(20,22,30,.3); overflow: hidden; }
+  .frame-phone .notch { height: 22px; background: #15171C; display: flex; align-items: center; justify-content: center; }
+  .frame-phone .notch .pill { width: 70px; height: 6px; border-radius: 4px; background: #000; }
+  .screen { height: 640px; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); }
+
+  /* ── 가이드 화면 자체(app) ── */
+  .guide-app { height: 100%; display: flex; flex-direction: column; background: var(--bg); }
+  .context-bar { display: flex; align-items: center; gap: 8px; padding: 9px 16px; background: var(--panel); border-bottom: 1px solid var(--border); font-size: 11.5px; color: var(--label); font-weight: 600; flex-shrink: 0; }
+  .context-bar i { font-size: 9px; }
+  .context-bar b { color: var(--ink-sub); }
+  .guide-head { background: var(--panel); border-bottom: 1px solid var(--border); padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 11px; flex-shrink: 0; }
+  .title-row { display: flex; align-items: center; gap: 11px; }
+  .title-row .ic { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; background: var(--app-accent); }
+  .title-row h1 { font-size: 15.5px; font-weight: 800; margin: 0; }
+  .title-row .sub { font-size: 10.5px; color: var(--label); margin-top: 1px; font-weight: 600; }
+  .search-wrap { position: relative; }
+  .search-wrap i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--label); font-size: 11.5px; }
+  .search-wrap input { width: 100%; box-sizing: border-box; background: var(--bg); border: 1px solid var(--border); border-radius: 9px; padding: 8px 10px 8px 30px; font-size: 12px; color: var(--ink); outline: none; font-family: inherit; }
+  .search-wrap input:focus { border-color: var(--app-accent); }
+  .cat-row { display: flex; gap: 7px; overflow-x: auto; padding: 10px 16px 2px; flex-shrink: 0; }
+  .cat-row::-webkit-scrollbar { display: none; }
+  .cat-chip { flex-shrink: 0; padding: 6px 12px; border-radius: 18px; border: 1.5px solid var(--border); background: var(--panel); color: var(--ink-sub); font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .cat-chip.on { border-color: var(--app-accent); background: var(--app-accent-soft); color: var(--app-accent); }
+  main.guide-main { flex: 1; overflow-y: auto; padding: 8px 16px 24px; display: flex; flex-direction: column; gap: 9px; }
+  .cat-label { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--label); margin: 12px 2px 1px; }
+  .cat-label:first-child { margin-top: 2px; }
+  .feat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 13px; overflow: hidden; }
+  .feat-head { display: flex; align-items: center; gap: 10px; padding: 12px 13px; cursor: pointer; }
+  .feat-head .ic { width: 30px; height: 30px; border-radius: 9px; background: var(--app-accent-soft); color: var(--app-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12.5px; }
+  .feat-head .txt { flex: 1; min-width: 0; }
+  .feat-head .name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .feat-head .hint { font-size: 10.5px; color: var(--label); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chev { color: var(--label); font-size: 10.5px; transition: transform .15s; flex-shrink: 0; }
+  .feat-card.open .chev { transform: rotate(180deg); }
+  .feat-body { display: none; padding: 0 13px 14px 53px; }
+  .feat-card.open .feat-body { display: block; }
+  .feat-sec { margin-bottom: 10px; }
+  .feat-sec:last-child { margin-bottom: 0; }
+  .feat-sec-label { font-size: 9.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--app-accent); margin-bottom: 5px; }
+  .feat-sec p { margin: 0; font-size: 12px; line-height: 1.55; color: var(--ink-sub); }
+  .steps { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .steps li { display: flex; gap: 8px; font-size: 12px; line-height: 1.5; color: var(--ink); }
+  .steps li .num { flex-shrink: 0; width: 16px; height: 16px; border-radius: 50%; background: var(--divider); color: var(--ink-sub); font-size: 9px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+</style>
+
+<div class="review-bar">
+  <div class="review-label"><i class="fa-solid fa-eye" style="margin-right:5px;"></i>검토용 — 실제로는 이 전환 버튼 없이 4개 화면이 각자의 설정창 안에 따로 들어갑니다</div>
+  <div class="review-grid" id="reviewGrid"></div>
+</div>
+
+<div class="stage" id="stage"></div>
+
+<script>
+  const VARIANTS = {
+    qcWeb: {
+      app: '품질검사', platform: '웹', accent: '#6D5CE8', accentSoft: '#F0EEFE', icon: 'fa-solid fa-clipboard-check', frame: 'web',
+      categories: ['현황·진행', '검색·조회', '신규 품목', '보고서', '데이터 출력'],
+      features: [
+        { cat: '현황·진행', icon: 'fa-solid fa-gauge-high', name: '진행상태 변경',
+          when: '검사를 마쳤거나 포장대기·재투입 등 상태가 바뀌었을 때 사용합니다.',
+          steps: ['표에서 품목 행의 상태 배지를 누릅니다.', '바뀐 상태를 고르면 바로 시트에 반영됩니다.', '검사 완료로 바꾸면 검사일이 오늘 날짜로 자동 기록됩니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-magnifying-glass', name: '제품검색',
+          when: '단품코드나 건명으로 특정 품목을 바로 찾고 싶을 때 사용합니다.',
+          steps: ['사이드바의 "검사" › "제품검색"을 엽니다.', '단품코드, 건명, 날짜, 공장 중 아는 조건을 입력합니다.', '결과 표에서 품목을 눌러 바로 수정할 수 있습니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-ruler-combined', name: '상세스펙 조회',
+          when: '같은 단품코드의 과거 규격(가로·세로·높이·CBM) 평균을 확인하고 싶을 때 사용합니다.',
+          steps: ['상세스펙 메뉴를 엽니다.', '단품코드를 입력하면 지금까지의 평균 규격과 이력이 뜹니다.'] },
+        { cat: '신규 품목', icon: 'fa-solid fa-star', name: '신규품목 확인',
+          when: '수주 파일에 새로 추가된 품목을 확인하고, 반영 완료 표시를 해야 할 때 사용합니다.',
+          steps: ['홈 화면의 "신규품목" 카드를 누릅니다.', '목록에서 확인한 품목을 체크합니다.', '"확인"을 누르면 신규 표시가 지워집니다.'] },
+        { cat: '신규 품목', icon: 'fa-solid fa-plus', name: '신규품목 수기등록',
+          when: '수주 파일 업데이트 없이, 급하게 품목을 직접 입력해 등록해야 할 때 사용합니다.',
+          steps: ['신규품목 확인창 왼쪽의 "+ 신규등록"을 누릅니다.', '건명·공장·납기일을 입력합니다.', '품목 줄마다 단품코드를 입력하면 이력이 있으면 단품명칭이 자동으로 채워집니다.', '"신규 등록"을 누르면 실제 시트에 바로 들어갑니다.'] },
+        { cat: '보고서', icon: 'fa-solid fa-file-powerpoint', name: '수출건 검사 세부내역 보고서',
+          when: '고객사에 전달할 검사 결과 보고서(PPTX)를 만들어야 할 때 사용합니다.',
+          steps: ['보고서 메뉴에서 대상 건을 선택합니다.', 'CBM·특이사항·사진을 입력합니다.', '"보고서 생성"을 누르면 PPTX 파일로 내려받습니다.'] },
+        { cat: '데이터 출력', icon: 'fa-solid fa-file-export', name: '데이터 출력(PDF)',
+          when: '현재 조회된 목록을 인쇄물로 뽑아 현장에 붙이거나 공유해야 할 때 사용합니다.',
+          steps: ['조회 결과 화면에서 "데이터 출력"을 누릅니다.', '세로·가로 중 용지 방향을 고릅니다.', 'PDF가 자동으로 페이지를 나눠 생성됩니다.'] },
+      ]
+    },
+    qcApp: {
+      app: '품질검사', platform: '앱', accent: '#6D5CE8', accentSoft: '#F0EEFE', icon: 'fa-solid fa-clipboard-check', frame: 'phone',
+      categories: ['현황·진행', '검색·조회', '검사'],
+      features: [
+        { cat: '현황·진행', icon: 'fa-solid fa-gauge-high', name: '진행상태 변경',
+          when: '검사를 마쳤거나 포장대기·재투입 등 상태가 바뀌었을 때 사용합니다.',
+          steps: ['품목 카드를 눌러 상세창을 엽니다.', '진행상태에서 바뀐 상태를 고릅니다.', '저장하면 바로 반영됩니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-barcode', name: '바코드 스캔 검색',
+          when: '단품코드를 직접 치기 번거로울 때, 라벨을 카메라로 찍어 바로 찾고 싶을 때 사용합니다.',
+          steps: ['하단 "제품검색" 탭을 누릅니다.', '"바코드 스캔 검색"을 고릅니다.', '카메라로 라벨을 비추면 자동으로 인식해 결과를 보여줍니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-magnifying-glass', name: '수출/제품 상세검색',
+          when: '단품코드·건명·날짜·공장 조건으로 품목을 좁혀서 찾고 싶을 때 사용합니다.',
+          steps: ['"제품검색" › "수출/제품 상세검색"을 엽니다.', '아는 조건을 입력합니다.', '결과를 눌러 바로 수정창으로 들어갑니다.'] },
+        { cat: '검사', icon: 'fa-solid fa-file-powerpoint', name: '보고서',
+          when: '고객사에 전달할 검사 결과 보고서를 확인하거나 사진·CBM을 입력해야 할 때 사용합니다.',
+          steps: ['하단 "검사" 탭을 누릅니다.', '뜨는 팝업에서 "보고서"를 고릅니다.', '대상 건을 선택해 CBM·특이사항·사진을 입력합니다.'] },
+        { cat: '검사', icon: 'fa-solid fa-clipboard-check', name: '현장검사',
+          when: '포장 현장에서 발견한 하자를 사진과 함께 등록·관리해야 할 때 사용합니다.',
+          steps: ['하단 "검사" 탭을 누릅니다.', '뜨는 팝업에서 "현장검사"를 고릅니다.', '"+ 새 하자 등록"으로 사진과 내용을 입력합니다.'] },
+      ]
+    },
+    pkgWeb: {
+      app: '포장강화', platform: '웹', accent: '#0062FF', accentSoft: '#EAF1FF', icon: 'fa-solid fa-box', frame: 'web',
+      categories: ['현황·진행', '검색·조회', '신규 품목', '불량조치', '데이터 출력'],
+      features: [
+        { cat: '현황·진행', icon: 'fa-solid fa-truck-ramp-box', name: '입고·포장완료 처리',
+          when: '물건이 실제로 들어왔거나 포장이 끝났을 때 상태를 갱신합니다.',
+          steps: ['품목을 눌러 수정창을 엽니다.', '진행상태에서 입고 / 포장완료 등을 고릅니다.', '일부입고라면 실제 입고 수량도 같이 입력합니다.'] },
+        { cat: '현황·진행', icon: 'fa-solid fa-boxes-stacked', name: '적재번호 정렬',
+          when: '적재번호가 중간중간 비어서 순서를 깔끔하게 다시 매겨야 할 때 사용합니다.',
+          steps: ['파렛트 현황 카드의 "적재정렬" 버튼을 누릅니다.', '빈 번호를 당겨서 순서를 자동으로 재배열합니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-magnifying-glass', name: '수출/제품 상세검색',
+          when: '건명·단품코드·색상·적재번호 등으로 품목을 좁혀서 찾고 싶을 때 사용합니다.',
+          steps: ['사이드바의 "제품검색"을 엽니다.', '소스(수출현황/재고/출고완료)를 고르고 조건을 입력합니다.', '여러 건을 체크해서 한 번에 일괄수정할 수도 있습니다.'] },
+        { cat: '신규 품목', icon: 'fa-solid fa-star', name: '신규 추가 품목 확인·삭제',
+          when: '분류(수주)로 새로 들어온 품목을 확인하거나, 잘못 들어온 품목을 지워야 할 때 사용합니다.',
+          steps: ['"신규 추가 품목" 카드를 엽니다.', '확인할 품목은 체크 후 "확인"을, 지울 품목은 체크 후 "삭제"를 누릅니다.', '삭제는 실제 시트에서 바로 지워지므로 신중하게 선택합니다.'] },
+        { cat: '불량조치', icon: 'fa-solid fa-clipboard-check', name: '포장불량조치',
+          when: '포장 중 불량/하자를 발견해 사진과 함께 기록하고 조치 이력을 남길 때 사용합니다.',
+          steps: ['사이드바의 "불량조치" 메뉴를 엽니다.', '품목을 선택하고 불량유형·사진·조치내용을 입력합니다.', '저장하면 품목 수정창에서도 같은 내용을 바로 볼 수 있습니다.'] },
+        { cat: '데이터 출력', icon: 'fa-solid fa-file-export', name: '데이터 출력(PDF/엑셀)',
+          when: '조회된 목록을 인쇄하거나, 엑셀로 받아서 고쳐 써야 할 때 사용합니다.',
+          steps: ['조회 결과에서 "데이터 출력"을 누릅니다.', 'PDF(보기·인쇄용) 또는 엑셀(수정 가능) 중 고릅니다.', 'PDF는 용지 방향도 선택할 수 있습니다.'] },
+      ]
+    },
+    pkgApp: {
+      app: '포장강화', platform: '앱', accent: '#0062FF', accentSoft: '#EAF1FF', icon: 'fa-solid fa-box', frame: 'phone',
+      categories: ['현황·진행', '검색·조회', '불량조치'],
+      features: [
+        { cat: '현황·진행', icon: 'fa-solid fa-truck-ramp-box', name: '입고·포장완료 처리',
+          when: '물건이 실제로 들어왔거나 포장이 끝났을 때 상태를 갱신합니다.',
+          steps: ['품목 카드를 눌러 수정창을 엽니다.', '진행상태에서 입고 / 포장완료 등을 고릅니다.', '저장하면 바로 반영됩니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-barcode', name: '바코드 스캔 검색',
+          when: '단품코드를 직접 치기 번거로울 때, 라벨을 카메라로 찍어 바로 찾고 싶을 때 사용합니다.',
+          steps: ['하단 "제품검색" 탭을 누릅니다.', '"바코드 스캔 검색"을 고릅니다.', '카메라로 라벨을 비추면 자동으로 인식해 결과를 보여줍니다.'] },
+        { cat: '검색·조회', icon: 'fa-solid fa-magnifying-glass', name: '수출/제품 상세검색',
+          when: '건명·단품코드·색상·적재번호 등으로 품목을 좁혀서 찾고 싶을 때 사용합니다.',
+          steps: ['하단 "제품검색" › "수출/제품 상세검색"을 엽니다.', '조건을 입력합니다.', '여러 건을 체크해서 한 번에 일괄수정할 수도 있습니다.'] },
+        { cat: '불량조치', icon: 'fa-solid fa-clipboard-check', name: '포장불량조치',
+          when: '포장 중 불량/하자를 발견해 사진과 함께 기록하고 조치 이력을 남길 때 사용합니다.',
+          steps: ['하단 "불량조치" 탭을 누릅니다.', '품목을 선택하고 불량유형·사진·조치내용을 입력합니다.', '저장하면 바로 반영됩니다.'] },
+        { cat: '현황·진행', icon: 'fa-solid fa-ruler-combined', name: '상세스펙 조회',
+          when: '같은 단품코드의 과거 규격 평균을 현장에서 바로 확인하고 싶을 때 사용합니다.',
+          steps: ['"제품검색" › "제품 상세 스펙 조회"를 엽니다.', '단품코드를 입력하면 평균 규격과 이력이 뜹니다.'] },
+      ]
+    }
+  };
+
+  const REVIEW_ORDER = ['qcWeb', 'qcApp', 'pkgWeb', 'pkgApp'];
+  let current = 'qcWeb';
+  let state = { cat: null, openKey: null };
+
+  function renderReviewBar() {
+    document.getElementById('reviewGrid').innerHTML = REVIEW_ORDER.map(key => {
+      const v = VARIANTS[key];
+      const on = key === current;
+      return `<button class="review-btn${on ? ' on' : ''}" style="--pick-color:${v.accent}" onclick="pick('${key}')">
+        <span class="ic" style="background:${v.accent};"><i class="${v.icon}"></i></span>
+        <span class="lbl">${v.app}</span>
+        <span class="plat">${v.platform} 설정창</span>
+      </button>`;
+    }).join('');
+  }
+  function pick(key) {
+    current = key;
+    state = { cat: null, openKey: null };
+    renderReviewBar();
+    renderStage();
+  }
+  function toggleCard(key) {
+    state.openKey = state.openKey === key ? null : key;
+    renderGuide();
+  }
+  function pickCat(c) {
+    state.cat = state.cat === c ? null : c;
+    renderGuide();
+  }
+
+  function renderStage() {
+    const v = VARIANTS[current];
+    const stage = document.getElementById('stage');
+    if (v.frame === 'web') {
+      stage.innerHTML = `<div class="frame-web">
+        <div class="chrome">
+          <span class="dot" style="background:#FF5F57;"></span>
+          <span class="dot" style="background:#FEBC2E;"></span>
+          <span class="dot" style="background:#28C840;"></span>
+          <div class="url">${v.app === '품질검사' ? '수출검사리스트_대시보드.html' : '수출포장강화_대시보드.html'} — 설정</div>
+        </div>
+        <div class="screen" style="height:600px;"><div class="guide-app" id="guideApp"></div></div>
+      </div>`;
+    } else {
+      stage.innerHTML = `<div class="frame-phone">
+        <div class="notch"><div class="pill"></div></div>
+        <div class="screen"><div class="guide-app" id="guideApp"></div></div>
+      </div>`;
+    }
+    document.documentElement.style.setProperty('--dummy', '0'); // no-op, keeps linter calm
+    renderGuide();
+  }
+
+  function platBadges() { return ''; }
+
+  function renderGuide() {
+    const v = VARIANTS[current];
+    const root = document.getElementById('guideApp');
+    root.style.setProperty('--app-accent', v.accent);
+    root.style.setProperty('--app-accent-soft', v.accentSoft);
+
+    const q = '';
+    let features = v.features;
+    if (state.cat) features = features.filter(f => f.cat === state.cat);
+
+    const catChips = v.categories.map(c => {
+      const n = v.features.filter(f => f.cat === c).length;
+      const on = state.cat === c;
+      return `<button class="cat-chip${on ? ' on' : ''}" onclick="pickCat('${c}')">${c} <span style="opacity:.7;font-size:10px;">${n}</span></button>`;
+    }).join('');
+
+    let body = '';
+    let lastCat = null;
+    features.forEach(f => {
+      if (!state.cat && f.cat !== lastCat) { body += `<div class="cat-label">${f.cat}</div>`; lastCat = f.cat; }
+      const key = f.cat + '|' + f.name;
+      const open = state.openKey === key;
+      body += `<div class="feat-card${open ? ' open' : ''}">
+        <div class="feat-head" onclick="toggleCard('${key.replace(/'/g, "\\'")}')">
+          <div class="ic"><i class="${f.icon}"></i></div>
+          <div class="txt"><div class="name">${f.name}</div><div class="hint">${f.when}</div></div>
+          <i class="fa-solid fa-chevron-down chev"></i>
+        </div>
+        <div class="feat-body">
+          <div class="feat-sec"><div class="feat-sec-label">언제 사용하나요</div><p>${f.when}</p></div>
+          <div class="feat-sec"><div class="feat-sec-label">사용 방법</div>
+            <ol class="steps">${f.steps.map((s, i) => `<li><span class="num">${i + 1}</span><span>${s}</span></li>`).join('')}</ol>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    root.innerHTML = `
+      <div class="context-bar"><i class="fa-solid fa-gear"></i> 설정 &nbsp;›&nbsp; <b>사용 설명서</b></div>
+      <div class="guide-head">
+        <div class="title-row">
+          <div class="ic" style="background:${v.accent};"><i class="${v.icon}"></i></div>
+          <div><h1>${v.app} 사용 설명서</h1><div class="sub">${v.features.length}개 기능 · ${v.app} ${v.platform} 전용</div></div>
+        </div>
+        <div class="search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input placeholder="기능 이름으로 찾기" disabled></div>
+      </div>
+      <div class="cat-row">${catChips}</div>
+      <main class="guide-main">${body}</main>
+    `;
+  }
+
+  renderReviewBar();
+  renderStage();
+</script>
