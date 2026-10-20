@@ -8052,7 +8052,9 @@
             } catch (e) {
                 alert('확인 처리 중 오류: ' + e.message);
             } finally {
-                btn.disabled = false;
+                btn.innerHTML = btnOrigHtml;
+                btn.disabled = _pkgNewSelected.size === 0;
+                btn.style.opacity = _pkgNewSelected.size === 0 ? '.4' : '1';
             }
         }
 
