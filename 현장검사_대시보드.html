@@ -1371,34 +1371,67 @@ async function _fiRenderReportXlsx(items, opts) {
   const photoMap = {};
   await _fiMapWithLimit(items, 4, async function (d) {
     const photo = d.photos && d.photos[0];
-    photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoBase64(photo) : null;
+    photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoInfo(photo) : null;
   });
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('부적합목록');
-  ws.columns = [{ width: 13 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }];
+  const COL_A_CHARS = 13;
+  ws.columns = [{ width: COL_A_CHARS }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }];
   const GREEN = 'FFE8F8EE';
   const borderLight = { top: { style: 'thin', color: { argb: 'FFE2E8F0' } }, bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } }, left: { style: 'thin', color: { argb: 'FFE2E8F0' } }, right: { style: 'thin', color: { argb: 'FFE2E8F0' } } };
+
+  // 엑셀 열 너비(문자 단위)/행 높이(포인트)를 대략의 픽셀로 바꿔서, 사진을 "셀 범위에
+  // 억지로 늘리기"가 아니라 "그 칸 안에 비율 그대로 들어가는 크기"로 계산한다.
+  const COL_A_PX = Math.round(COL_A_CHARS * 7);
+  function ptToPx(pt) { return Math.round(pt * 96 / 72); }
+  // offsetPx만큼 내려간 지점이 몇 번째 행(0-based, 블록 안에서)의 몇 % 지점인지 —
+  // 행마다 높이가 달라서 등분할 수 없어, 누적합으로 정확한 행 인덱스 소수점을 구한다.
+  function pxToRowFrac(rowHeightsPx, offsetPx) {
+    let acc = 0;
+    for (let i = 0; i < rowHeightsPx.length; i++) {
+      if (offsetPx <= acc + rowHeightsPx[i]) return i + (offsetPx - acc) / rowHeightsPx[i];
+      acc += rowHeightsPx[i];
+    }
+    return rowHeightsPx.length;
+  }
 
   let r = 1;
   items.forEach(function (d) {
     const key = d.sheet + '|' + d.row;
-    const b64 = photoMap[key];
+    const photoInfo = photoMap[key];
     const rowTop = r;
-    const rows = [20, 16, 36, 18, 18]; // ①헤더 ②유형 ③내용(줄바꿈) ④조치상태·조치자 ⑤조치사항
-    rows.forEach(function (h, i) { ws.getRow(rowTop + i).height = h; });
-    const rowBottom = rowTop + rows.length - 1;
+    const rowPts = [20, 16, 36, 18, 18]; // ①헤더 ②유형 ③내용(줄바꿈) ④조치상태·조치자 ⑤조치사항
+    rowPts.forEach(function (h, i) { ws.getRow(rowTop + i).height = h; });
+    const rowBottom = rowTop + rowPts.length - 1;
 
     // 사진 — A열, 블록 전체 높이만큼 병합
     ws.mergeCells(rowTop, 1, rowBottom, 1);
     const photoCell = ws.getCell(rowTop, 1);
     photoCell.border = borderLight;
     photoCell.alignment = { horizontal: 'center', vertical: 'middle' };
-    if (b64) {
-      const m = /^data:image\/(\w+);base64,/.exec(b64);
-      const ext = (m && m[1] === 'jpg') ? 'jpeg' : (m ? m[1] : 'png');
-      const imgId = wb.addImage({ base64: b64, extension: ext === 'jpeg' ? 'jpeg' : 'png' });
-      ws.addImage(imgId, { tl: { col: 0.08, row: rowTop - 1 + 0.08 }, br: { col: 0.92, row: rowBottom - 0.08 }, editAs: 'oneCell' });
+    if (photoInfo) {
+      const m = /^data:image\/(\w+);base64,/.exec(photoInfo.dataUrl);
+      const mime = m ? m[1] : 'png';
+      const extension = (mime === 'jpg' || mime === 'jpeg') ? 'jpeg' : (mime === 'gif' ? 'gif' : 'png');
+      const imgId = wb.addImage({ base64: photoInfo.dataUrl, extension: extension });
+
+      const pad = 3;
+      const rowHeightsPx = rowPts.map(ptToPx);
+      const blockHpx = rowHeightsPx.reduce(function (s, h) { return s + h; }, 0);
+      const boxW = COL_A_PX - pad * 2;
+      const boxH = blockHpx - pad * 2;
+      const scale = Math.min(boxW / photoInfo.w, boxH / photoInfo.h);
+      const fitW = photoInfo.w * scale;
+      const fitH = photoInfo.h * scale;
+      const offsetXpx = (COL_A_PX - fitW) / 2;
+      const offsetYpx = (blockHpx - fitH) / 2;
+
+      ws.addImage(imgId, {
+        tl: { col: offsetXpx / COL_A_PX, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx) },
+        br: { col: (offsetXpx + fitW) / COL_A_PX, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx + fitH) },
+        editAs: 'oneCell'
+      });
     }
 
     // ① 코드/색상/수량/날짜
