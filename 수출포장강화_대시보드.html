@@ -8020,7 +8020,10 @@
             const list = (window._pkgNewList || []).filter(it => _pkgNewSelected.has(_pkgNewKey(it)));
             if (!list.length) return;
             const btn = document.getElementById('pkgNewConfirmBtn');
+            const btnOrigHtml = btn.innerHTML;
             btn.disabled = true;
+            btn.style.opacity = '1';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 확인 처리 중...';
             const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
             const today = new Date();
             const dateStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
