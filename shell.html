@@ -5367,6 +5367,26 @@
         <div id="ieCbm" style="margin-top:9px;font-size:10.5px;color:var(--label);">CBM —</div>
       </div>
 
+      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">PE폼 유형</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <input id="iePeType" type="text" list="iePeTypeOptions" placeholder="예: 일자형" onchange="_ieOnPeTypeChange()"
+            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          <datalist id="iePeTypeOptions">
+            <option value="일자형"><option value="코너형"><option value="패드형"><option value="롤형">
+          </datalist>
+          <input id="iePeSpec" type="text" list="iePeSpecOptions" placeholder="규격 (목록 또는 직접입력)"
+            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          <datalist id="iePeSpecOptions"></datalist>
+        </div>
+        <div style="margin-top:10px;">
+          <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">PE폼 높이</div>
+          <input id="iePeBoxHeight" type="text" placeholder="PE폼 높이를 입력하세요" oninput="saveSpecOverride(_ieCode, 'boxHeight', this.value)"
+            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div style="font-size:10px;color:var(--label);margin-top:8px;">이 선택은 구글시트에는 반영되지 않고 이 앱(이 기기)에만 기억됩니다.</div>
+      </div>
+
       <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
         <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:6px;">특이사항</div>
         <div style="font-size:10px;color:var(--label);margin-bottom:8px;">실제 시트의 비고란과 연동됩니다 — 기존에 적힌 내용이 있으면 그대로 불러와 보여줍니다.</div>
