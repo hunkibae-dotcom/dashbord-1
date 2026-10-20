@@ -11619,7 +11619,12 @@
             <span id="pkgNewSelCount" style="color:#94a3b8;font-weight:600;">0건 선택</span>
         </div>
         <div id="pkgNewBody" style="overflow-y:auto;flex:1;padding:6px 2px;min-height:120px;"></div>
+        <div id="pkgNewStatus" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-top:4px;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;">
+            <button onclick="pkgNewDeleteSelected()" id="pkgNewDeleteBtn" disabled
+                style="padding:9px 22px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                <i class="fa-solid fa-trash-can"></i> 삭제
+            </button>
             <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
                 style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
                 <i class="fa-solid fa-check"></i> 확인
