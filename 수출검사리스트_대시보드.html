@@ -8305,13 +8305,14 @@ function qcNewRenderList() {
   if (!items.length) {
     body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">신규 품목이 없습니다.</div>';
   } else {
-    body.innerHTML = items.map(d => {
+    body.innerHTML = items.map((d, idx) => {
       const key = _qcNewKey(d);
       const checked = _qcNewSelected.has(key) ? 'checked' : '';
       const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
       const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
       const newTag = (d.비고 || '').includes('차수') ? '신규 차수 추가됨' : '신규';
       return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
+        <span class="mt-1 w-[18px] h-[18px] rounded-full bg-slate-100 text-slate-400 text-[10px] font-extrabold flex items-center justify-center shrink-0">${idx + 1}</span>
         <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcNewToggleOne('${_jsAttr(key)}', this.checked)">
         <div class="flex-1 min-w-0 flex flex-col gap-0.5">
           <div class="flex items-center gap-1.5 flex-wrap">
