@@ -1345,10 +1345,10 @@ async function _fiRenderReportXlsx(items, opts) {
   if (!window.ExcelJS) throw new Error('엑셀 라이브러리 로드 실패');
 
   const photoMap = {};
-  await Promise.all(items.map(async function (d) {
+  await _fiMapWithLimit(items, 4, async function (d) {
     const photo = d.photos && d.photos[0];
     photoMap[d.sheet + '|' + d.row] = photo ? await _fiResolvePhotoBase64(photo) : null;
-  }));
+  });
 
   const wb = new ExcelJS.Workbook();
   const ws = wb.addWorksheet('부적합목록');
