@@ -7976,7 +7976,10 @@
             if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?')) return;
             const btn = document.getElementById('pkgNewDeleteBtn');
             const statusEl = document.getElementById('pkgNewStatus');
+            const btnOrigHtml = btn.innerHTML;
             btn.disabled = true;
+            btn.style.opacity = '1'; // 비활성(미선택) 상태의 흐린 표시와 구분되게 진행 중엔 또렷하게 보여준다
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
             statusEl.style.color = '#64748b';
             statusEl.textContent = '삭제 중...';
             const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
