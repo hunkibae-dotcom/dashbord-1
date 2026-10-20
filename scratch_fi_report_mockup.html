@@ -156,6 +156,29 @@
   table.xlsx tr:nth-child(odd) td.editable { background: var(--good-soft); }
   table.xlsx tr:nth-child(odd) td.photo-cell { background: var(--divider); }
 
+  /* 엑셀 "카드형" — 실제로는 셀 병합으로 만든 블록이라는 걸 보여주려고, 셀 하나하나처럼
+     가는 테두리로 안을 나누고 칸 번지수(F14 등)를 모서리에 흐릿하게 남겨둔다. */
+  .xlsx-col-ruler { display: flex; padding: 8px 10px 0; gap: 0; font-size: 8px; font-weight: 700; color: var(--label); font-family: 'JetBrains Mono', monospace; }
+  .xlsx-col-ruler span { width: 44px; text-align: center; flex-shrink: 0; }
+  .xlsx-col-ruler span:nth-child(1) { width: 60px; }
+  .xlsx-col-ruler span:nth-child(2) { width: 90px; }
+  .xlsx-cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px; padding: 10px; }
+  .xlsx-card { position: relative; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); overflow: hidden; }
+  .xlsx-card .cellref { position: absolute; top: 3px; right: 7px; font-size: 7px; font-weight: 700; color: var(--label); font-family: 'JetBrains Mono', monospace; opacity: .55; letter-spacing: .02em; }
+  .xlsx-card-top { display: flex; border-bottom: 1px solid var(--border); }
+  .xlsx-card .xc-photo { width: 64px; height: 64px; flex-shrink: 0; background: #CBD5E1; border-right: 1px solid var(--border); object-fit: cover; }
+  .xlsx-card .xc-head { flex: 1; min-width: 0; padding: 7px 9px; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+  .xlsx-card .xc-code { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 11.5px; color: var(--ink); }
+  .xlsx-card .xc-sub { font-size: 8.5px; color: var(--label); font-weight: 700; margin-top: 1px; }
+  .xlsx-card .xc-tags { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+  .xlsx-card .xc-content { padding: 7px 9px; border-bottom: 1px solid var(--border); font-size: 10px; line-height: 1.4; background: var(--good-soft); color: var(--ink); }
+  .xlsx-card .xc-bottom { display: flex; }
+  .xlsx-card .xc-cell { flex: 1; min-width: 0; padding: 6px 9px; border-right: 1px solid var(--border); background: var(--good-soft); }
+  .xlsx-card .xc-cell:last-child { border-right: none; }
+  .xlsx-card .xc-cell .xc-lbl { font-size: 7px; font-weight: 700; color: var(--label); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 2px; }
+  .xlsx-card .xc-cell .xc-val { font-size: 10px; font-weight: 700; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .xlsx-status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 5px; }
+
   .caption { font-size: 11.5px; color: var(--ink-sub); line-height: 1.6; padding: 0 2px; }
   .caption b { color: var(--ink); }
 
