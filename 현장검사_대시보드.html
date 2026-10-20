@@ -1441,12 +1441,11 @@ async function _fiRenderReportXlsx(items, opts) {
       const scale = Math.min(boxW / photoInfo.w, boxH / photoInfo.h);
       const fitW = photoInfo.w * scale;
       const fitH = photoInfo.h * scale;
-      const offsetXpx = (COL_A_PX - fitW) / 2;
-      const offsetYpx = (blockHpx - fitH) / 2;
+      const offsetYpx = (blockHpx - fitH) / 2; // 세로만 가운데 정렬(가로는 열 경계에 고정)
 
       ws.addImage(imgId, {
-        tl: { col: offsetXpx / COL_A_PX, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx) },
-        br: { col: (offsetXpx + fitW) / COL_A_PX, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx + fitH) },
+        tl: { col: 0, row: (rowTop - 1) + pxToRowFrac(rowHeightsPx, offsetYpx) },
+        ext: { width: fitW, height: fitH },
         editAs: 'oneCell'
       });
     }
