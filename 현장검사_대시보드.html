@@ -1199,27 +1199,40 @@ async function _fiResolvePhotoBase64(photo) {
 }
 // 엑셀 카드는 셀 범위(tl~br)에 이미지를 "늘려서" 채우는 방식이라, 원본 사진의 가로세로
 // 비율(세로로 찍은 사진이 많음)을 무시하면 가늘게 찌그러져 보인다(요청, 2026-10-20 —
-// 사진이 "짤리거나 줄어든" 것처럼 보인다는 제보). 실제 픽셀 크기를 알아내서 칸 안에
-// 비율 그대로 들어가는 크기로 계산해 쓴다.
+// 사진이 "짤리거나 줄어든" 것처럼 보인다는 제보). 1차로 비율 계산만 했는데도 여전히
+// 가늘게 나왔는데, 원인은 따로 있었다 — 휴대폰 세로 사진은 실제 픽셀은 가로로 찍혀
+// 있고 EXIF 방향 태그로만 "세로로 보여라"라고 적혀있는 경우가 많다. 브라우저(Image
+// 태그)는 이 태그를 읽어서 자동으로 돌려 보여주지만, 엑셀에 원본 파일 바이트를 그대로
+// 박아넣으면 엑셀은 그 태그를 무시하고 가로 원본 그대로 쓴다 — 그래서 내가 계산한
+// "세로로 긴 칸"에 실제로는 가로 사진이 욱여넣어져 가늘게 찌그러져 보였던 것.
+// 해결: 캔버스에 한 번 다시 그려서(Image가 이미 방향을 맞춰 보여주는 상태 그대로
+// 캡처됨) EXIF 태그 없는 "방향이 이미 반영된" 새 이미지로 바꿔 쓴다.
 const _fiPhotoDimCache = {};
-function _fiLoadImageDims(dataUrl) {
-  if (_fiPhotoDimCache[dataUrl]) return Promise.resolve(_fiPhotoDimCache[dataUrl]);
+function _fiNormalizePhotoForExcel(dataUrl) {
   return new Promise(function (resolve) {
     const img = new Image();
     img.onload = function () {
-      const dim = { w: img.naturalWidth || 1, h: img.naturalHeight || 1 };
-      _fiPhotoDimCache[dataUrl] = dim;
-      resolve(dim);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth || 1;
+        canvas.height = img.naturalHeight || 1;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve({ dataUrl: canvas.toDataURL('image/jpeg', 0.85), w: canvas.width, h: canvas.height });
+      } catch (e) {
+        resolve({ dataUrl: dataUrl, w: img.naturalWidth || 1, h: img.naturalHeight || 1 });
+      }
     };
-    img.onerror = function () { resolve({ w: 1, h: 1 }); };
+    img.onerror = function () { resolve({ dataUrl: dataUrl, w: 1, h: 1 }); };
     img.src = dataUrl;
   });
 }
 async function _fiResolvePhotoInfo(photo) {
-  const dataUrl = await _fiResolvePhotoBase64(photo);
-  if (!dataUrl) return null;
-  const dim = await _fiLoadImageDims(dataUrl);
-  return { dataUrl: dataUrl, w: dim.w, h: dim.h };
+  const rawDataUrl = await _fiResolvePhotoBase64(photo);
+  if (!rawDataUrl) return null;
+  if (_fiPhotoDimCache[rawDataUrl]) return _fiPhotoDimCache[rawDataUrl];
+  const info = await _fiNormalizePhotoForExcel(rawDataUrl);
+  _fiPhotoDimCache[rawDataUrl] = info;
+  return info;
 }
 function _fiLoadPdfLibs(cb) {
   if (window.jspdf && window.html2canvas) { cb(); return; }
