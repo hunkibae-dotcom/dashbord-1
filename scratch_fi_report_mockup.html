@@ -1,0 +1,418 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>현장검사 보고서 시안</title>
+<style>
+  /* 레이아웃: 상단에 "①생성 옵션 / ②출력 미리보기" 세그먼트 탭, 그 아래 A4 비율
+     문서 미리보기 캔버스 하나 — 옵션 화면도 실제 종이 크기 감(여백/비율)을 바로
+     보여주려고 같은 문서 캔버스 틀 안에 옵션 폼을 올린다. */
+  :root {
+    --bg: #F1F5F9;
+    --panel: #FFFFFF;
+    --ink: #0F172A;
+    --ink-sub: #64748B;
+    --label: #94A3B8;
+    --border: #E2E8F0;
+    --divider: #F1F5F9;
+    --accent: #DC2626;
+    --accent-soft: #FEF2F2;
+    --amber: #D97706;
+    --amber-soft: #FFFBEB;
+    --good: #16A34A;
+    --good-soft: #F0FDF4;
+    --warn: #D97706;
+    --bad: #DC2626;
+    --paper: #FFFFFF;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0B1220; --panel: #121B2E; --ink: #F1F5F9; --ink-sub: #A0B4CC; --label: #64748B;
+      --border: #24324A; --divider: #1B2742; --accent-soft: rgba(220,38,38,.12); --amber-soft: rgba(217,119,6,.14);
+      --good-soft: rgba(22,163,74,.14); --paper: #161F33; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0B1220; --panel: #121B2E; --ink: #F1F5F9; --ink-sub: #A0B4CC; --label: #64748B;
+    --border: #24324A; --divider: #1B2742; --accent-soft: rgba(220,38,38,.12); --amber-soft: rgba(217,119,6,.14);
+    --good-soft: rgba(22,163,74,.14); --paper: #161F33; color-scheme: dark;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 60px;
+  }
+  h1, h2, h3, .disp { font-family: 'Manrope', sans-serif; text-wrap: balance; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 840px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  /* 상단 헤더 */
+  .page-head { display: flex; align-items: center; gap: 12px; }
+  .badge { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg,#DC2626,#FB7185); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+  .page-title { font-size: 18px; font-weight: 800; color: var(--ink); }
+  .page-sub { font-size: 12px; color: var(--ink-sub); margin-top: 1px; }
+
+  /* 세그먼트 탭 */
+  .segtabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+  .segtab { flex: 1; text-align: center; padding: 10px 8px; border-radius: 9px; font-size: 12.5px; font-weight: 700; color: var(--ink-sub); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; }
+  .segtab .num { width: 18px; height: 18px; border-radius: 50%; background: var(--divider); color: var(--ink-sub); font-size: 10px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .segtab.active { background: var(--accent-soft); color: var(--accent); }
+  .segtab.active .num { background: var(--accent); color: #fff; }
+
+  .note-banner { background: var(--amber-soft); border: 1px solid rgba(217,119,6,.3); border-radius: 12px; padding: 11px 14px; font-size: 12px; color: var(--amber); font-weight: 600; line-height: 1.5; display: flex; gap: 9px; }
+  .note-banner svg { flex-shrink: 0; margin-top: 1px; }
+
+  /* 옵션 카드 */
+  .opt-card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .opt-label { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; color: var(--label); text-transform: uppercase; margin-bottom: 7px; }
+  .opt-row { display: flex; flex-direction: column; }
+  .opt-input { width: 100%; background: var(--divider); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 13px; color: var(--ink); outline: none; font-family: inherit; }
+  .chiprow { display: flex; gap: 7px; flex-wrap: wrap; }
+  .chip { padding: 9px 14px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--panel); font-size: 12.5px; font-weight: 700; color: var(--ink-sub); cursor: pointer; display: flex; align-items: center; gap: 7px; }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+  .chip.xlsx-chip.on { border-color: var(--good); background: var(--good-soft); color: var(--good); }
+  .chip .ic { width: 15px; height: 15px; border-radius: 4px; border: 2px solid currentColor; flex-shrink: 0; position: relative; }
+  .chip.on .ic::after { content: ''; position: absolute; inset: 2px; border-radius: 2px; background: currentColor; }
+  .orient-row { display: flex; gap: 10px; }
+  .orient-opt { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px 10px; text-align: center; cursor: pointer; }
+  .orient-opt.on { border-color: var(--accent); background: var(--accent-soft); }
+  .orient-shape { margin: 0 auto 8px; background: var(--divider); border: 1.5px solid var(--border); border-radius: 3px; }
+  .orient-opt.on .orient-shape { border-color: var(--accent); background: #fff; }
+  .orient-opt .lbl { font-size: 11.5px; font-weight: 700; color: var(--ink-sub); }
+  .orient-opt.on .lbl { color: var(--accent); }
+  .selected-pool { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pool-item { font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 8px; background: var(--divider); color: var(--ink-sub); font-family: 'JetBrains Mono', monospace; }
+
+  /* 다운로드 형식 선택 (PDF / 엑셀) */
+  .fmt-row { display: flex; gap: 10px; }
+  .fmt-opt { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 13px 10px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; }
+  .fmt-opt .ic { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+  .fmt-opt .lbl { font-size: 12px; font-weight: 800; color: var(--ink); }
+  .fmt-opt .hint { font-size: 9.5px; color: var(--label); line-height: 1.4; }
+  .fmt-opt.on { border-color: var(--accent); background: var(--accent-soft); }
+  .fmt-opt#fmtXlsxOpt.on { border-color: var(--good); background: var(--good-soft); }
+
+  .gen-btn { background: var(--accent); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .gen-btn.xlsx-mode { background: var(--good); }
+
+  /* 문서 미리보기 (A4 비율) */
+  .doc-toolbar { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; flex-wrap: wrap; }
+  .doc-toolbar .fname { font-size: 11.5px; font-weight: 700; color: var(--ink-sub); flex: 1 1 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tbtn { display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--divider); color: var(--ink-sub); cursor: pointer; white-space: nowrap; }
+  .tbtn.pdf { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .tbtn.xlsx { background: var(--good); border-color: var(--good); color: #fff; }
+
+  .doc-shell { background: #CBD5E1; border-radius: 16px; padding: 28px 14px; display: flex; justify-content: center; }
+  html.dark .doc-shell, :root[data-theme="dark"] .doc-shell { background: #060A12; }
+  .doc-page { width: 100%; max-width: 600px; aspect-ratio: 210 / 297; background: var(--paper); box-shadow: 0 10px 30px rgba(0,0,0,.25); border-radius: 2px; padding: 5.6% 6.2%; display: flex; flex-direction: column; gap: 14px; overflow: hidden; color: #1E293B; }
+  .doc-page.landscape { aspect-ratio: 297 / 210; max-width: 820px; }
+  .doc-head { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2.5px solid #1E293B; padding-bottom: 10px; }
+  .doc-brand { display: flex; align-items: center; gap: 8px; }
+  .doc-brand .mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg,#DC2626,#FB7185); flex-shrink: 0; }
+  .doc-brand .name { font-size: 10px; font-weight: 800; letter-spacing: .06em; color: #475569; }
+  .doc-title { font-size: 19px; font-weight: 800; margin-top: 4px; color: #0F172A; }
+  .doc-meta { text-align: right; font-size: 9.5px; color: #64748B; line-height: 1.6; }
+  .doc-meta b { color: #1E293B; }
+
+  .doc-kpis { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .doc-kpi { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 8px 6px; text-align: center; }
+  .doc-kpi .v { font-size: 15px; font-weight: 800; }
+  .doc-kpi .l { font-size: 7.5px; font-weight: 700; color: #94A3B8; margin-top: 2px; }
+
+  .doc-section-title { font-size: 9.5px; font-weight: 800; letter-spacing: .08em; color: #94A3B8; text-transform: uppercase; border-bottom: 1px solid #E2E8F0; padding-bottom: 5px; }
+
+  .doc-items { display: flex; flex-direction: column; gap: 7px; flex: 1; overflow: hidden; }
+  .doc-item { display: flex; gap: 8px; border: 1px solid #E2E8F0; border-radius: 7px; padding: 7px 8px; }
+  .doc-item .ph { width: 38px; height: 38px; border-radius: 5px; background: #E2E8F0; flex-shrink: 0; object-fit: cover; }
+  .doc-item .body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .doc-item .top { display: flex; align-items: baseline; gap: 6px; }
+  .doc-item .code { font-size: 9.5px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+  .doc-item .sub { font-size: 7.5px; color: #94A3B8; font-weight: 700; }
+  .doc-item .content { font-size: 8px; color: #475569; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .doc-item .tags { display: flex; gap: 3px; flex-wrap: wrap; }
+  .doc-tag { font-size: 6.5px; font-weight: 700; padding: 1.5px 5px; border-radius: 4px; }
+  .doc-status { flex-shrink: 0; align-self: center; font-size: 7.5px; font-weight: 800; padding: 3px 8px; border-radius: 20px; white-space: nowrap; }
+
+  .doc-foot { margin-top: auto; display: flex; justify-content: space-between; font-size: 7.5px; color: #94A3B8; border-top: 1px solid #E2E8F0; padding-top: 7px; }
+
+  /* 엑셀 미리보기(시트/셀 그리드) */
+  .xlsx-shell { display: none; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .xlsx-tabs { display: flex; gap: 2px; background: var(--divider); padding: 6px 8px 0; }
+  .xlsx-tab { font-size: 10.5px; font-weight: 700; padding: 7px 14px; border-radius: 6px 6px 0 0; background: var(--panel); color: var(--ink-sub); }
+  .xlsx-tab.on { color: var(--good); }
+  .xlsx-grid { overflow-x: auto; }
+  table.xlsx { width: 100%; border-collapse: collapse; font-size: 10.5px; }
+  table.xlsx th { background: #F8FAFC; color: var(--ink-sub); font-weight: 700; text-align: left; padding: 7px 9px; border: 1px solid var(--border); white-space: nowrap; position: sticky; top: 0; }
+  html.dark table.xlsx th, :root[data-theme="dark"] table.xlsx th { background: #1B2742; }
+  table.xlsx td { padding: 7px 9px; border: 1px solid var(--border); white-space: nowrap; color: var(--ink); }
+  table.xlsx td.editable { background: var(--good-soft); }
+  table.xlsx td.photo-cell { padding: 4px; }
+  table.xlsx .xl-photo { width: 44px; height: 44px; border-radius: 4px; object-fit: cover; display: block; background: #CBD5E1; }
+  table.xlsx tr:nth-child(odd) td { background: var(--divider); }
+  table.xlsx tr:nth-child(odd) td.editable { background: var(--good-soft); }
+  table.xlsx tr:nth-child(odd) td.photo-cell { background: var(--divider); }
+
+  .caption { font-size: 11.5px; color: var(--ink-sub); line-height: 1.6; padding: 0 2px; }
+  .caption b { color: var(--ink); }
+
+  @media (min-width: 640px) {
+    .orient-row { max-width: 360px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="badge">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/><path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/><circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/></svg>
+    </div>
+    <div>
+      <div class="page-title">보고서 자동제작 · 시안</div>
+      <div class="page-sub">현장검사 웹 — 품목 선택 → 보고서 생성 → 출력까지의 흐름 목업입니다</div>
+    </div>
+  </div>
+
+  <div class="note-banner">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div>이 페이지는 <b>디자인 시안</b>입니다. 실제 대시보드에는 "선택" 버튼과 품목 체크박스만 먼저 반영되어 있고, 보고서를 실제로 만드는 기능은 아직 없습니다. 아래 두 화면이 이 기능을 켰을 때 보일 모습입니다.</div>
+  </div>
+
+  <div class="segtabs">
+    <div class="segtab active" id="tabBtn1" onclick="fiShowTab(1)"><span class="num">1</span> 보고서 생성 옵션</div>
+    <div class="segtab" id="tabBtn2" onclick="fiShowTab(2)"><span class="num">2</span> 출력 미리보기</div>
+  </div>
+
+  <!-- ① 옵션 화면 -->
+  <div id="tab1">
+    <div class="opt-card">
+      <div class="opt-row">
+        <div class="opt-label">선택된 품목</div>
+        <div class="selected-pool">
+          <span class="pool-item">FDDX2012001</span><span class="pool-item">FDDX2012002</span>
+          <span class="pool-item">XHXX2501007</span><span class="pool-item">MCICAX260298</span>
+          <span class="pool-item">+ 4건 더</span>
+        </div>
+      </div>
+      <div class="opt-row">
+        <div class="opt-label">보고서 제목</div>
+        <input class="opt-input" value="2026년 10월 3주차 현장검사 부적합 보고서">
+      </div>
+      <div class="opt-row">
+        <div class="opt-label">다운로드 형식</div>
+        <div class="fmt-row">
+          <div class="fmt-opt on" id="fmtPdfOpt" onclick="fiPickFormat('pdf')">
+            <div class="ic" style="background:linear-gradient(135deg,#DC2626,#F87171);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="lbl">PDF</div>
+            <div class="hint">보기·인쇄 전용<br>내용 수정 불가</div>
+          </div>
+          <div class="fmt-opt" id="fmtXlsxOpt" onclick="fiPickFormat('xlsx')">
+            <div class="ic" style="background:linear-gradient(135deg,#16A34A,#4ADE80);">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9.5 12.5l5 5M14.5 12.5l-5 5"/></svg>
+            </div>
+            <div class="lbl">엑셀 (.xlsx)</div>
+            <div class="hint">사진 포함 · 다운로드 후<br>내용을 직접 고쳐 쓸 수 있음</div>
+          </div>
+        </div>
+      </div>
+      <div class="opt-row" id="pdfOnlyOpts">
+        <div class="opt-label">포함 항목 (PDF)</div>
+        <div class="chiprow">
+          <div class="chip on"><span class="ic"></span>현장 사진</div>
+          <div class="chip on"><span class="ic"></span>조치사항</div>
+        </div>
+      </div>
+      <div class="opt-row" id="pdfOrientRow">
+        <div class="opt-label">용지 방향 (PDF)</div>
+        <div class="orient-row">
+          <div class="orient-opt on">
+            <div class="orient-shape" style="width:34px;height:46px;"></div>
+            <div class="lbl">세로</div>
+          </div>
+          <div class="orient-opt">
+            <div class="orient-shape" style="width:46px;height:34px;"></div>
+            <div class="lbl">가로</div>
+          </div>
+        </div>
+      </div>
+      <div class="opt-row" id="xlsxOnlyOpts" style="display:none;">
+        <div class="opt-label">포함 항목 (엑셀)</div>
+        <div class="chiprow">
+          <div class="chip xlsx-chip on"><span class="ic"></span>셀에 사진 삽입</div>
+          <div class="chip xlsx-chip on"><span class="ic"></span>조치사항 · 조치자 칸 비워서 생성</div>
+        </div>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="fiShowTab(2)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span id="genBtnLabel">PDF 보고서 8건 생성하기</span>
+      </button>
+    </div>
+    <div style="height:14px;"></div>
+    <div class="caption"><b>흐름:</b> 목록에서 "☑ 선택"을 눌러 품목을 다중/전체선택 → 상단에 뜨는 "보고서 자동제작" 버튼 클릭 → 위 옵션 화면에서 제목/다운로드 형식을 고르고 생성하면 ②번 화면 같은 결과물이 만들어집니다. <b>엑셀을 고르면</b> 용지 방향 대신, 사진이 셀에 그대로 들어간 표를 받아서 조치상태·내용을 고쳐 쓸 수 있습니다.</div>
+  </div>
+
+  <!-- ② 출력 미리보기 -->
+  <div id="tab2" style="display:none;">
+    <div class="doc-toolbar">
+      <span class="fname mono" id="docFname">현장검사_부적합보고서_20261020.pdf</span>
+      <button class="tbtn" id="orientToggleBtn" onclick="fiToggleOrient()">⤢ 방향전환</button>
+      <button class="tbtn pdf" id="pdfDownBtn" onclick="fiPreviewFormat('pdf')">⬇ PDF 다운로드</button>
+      <button class="tbtn xlsx" id="xlsxDownBtn" onclick="fiPreviewFormat('xlsx')">⬇ 엑셀 다운로드</button>
+    </div>
+    <div style="height:12px;"></div>
+
+    <div class="doc-shell" id="pdfPreviewShell">
+      <div class="doc-page" id="docPage">
+        <div class="doc-head">
+          <div>
+            <div class="doc-brand"><div class="mark"></div><span class="name">F.WORK · 품질보증팀</span></div>
+            <div class="doc-title">2026년 10월 3주차<br>현장검사 부적합 보고서</div>
+          </div>
+          <div class="doc-meta">
+            발행일 <b>2026. 10. 20</b><br>
+            작성자 <b>정일성</b><br>
+            대상 품목 <b>8건</b>
+          </div>
+        </div>
+
+        <div class="doc-kpis">
+          <div class="doc-kpi"><div class="v">8</div><div class="l">총 건수</div></div>
+          <div class="doc-kpi"><div class="v" style="color:#DC2626;">3</div><div class="l">미조치</div></div>
+          <div class="doc-kpi"><div class="v" style="color:#D97706;">2</div><div class="l">조치중</div></div>
+          <div class="doc-kpi"><div class="v" style="color:#16A34A;">3</div><div class="l">조치완료</div></div>
+        </div>
+
+        <div class="doc-section-title">부적합 품목 상세</div>
+        <div class="doc-items">
+          <div class="doc-item">
+            <div class="ph"></div>
+            <div class="body">
+              <div class="top"><span class="code">FDDX2012001</span><span class="sub">WW · 96EA · 10.19</span></div>
+              <div class="tags"><span class="doc-tag" style="background:#DBEAFE;color:#1D4ED8;">외관</span><span class="doc-tag" style="background:#ECFDF5;color:#047857;">포장</span></div>
+              <div class="content">후면상판 모서리 마감 들뜸 발견, 3개소</div>
+            </div>
+            <span class="doc-status" style="background:#FEE2E2;color:#DC2626;">미조치</span>
+          </div>
+          <div class="doc-item">
+            <div class="ph"></div>
+            <div class="body">
+              <div class="top"><span class="code">XHXX2501007</span><span class="sub">WW · 44EA · 10.18</span></div>
+              <div class="tags"><span class="doc-tag" style="background:#EDE9FE;color:#6D28D9;">제품·코드일치</span></div>
+              <div class="content">단품코드 라벨과 실제 규격 불일치 확인</div>
+            </div>
+            <span class="doc-status" style="background:#FEF3C7;color:#D97706;">조치중</span>
+          </div>
+          <div class="doc-item">
+            <div class="ph"></div>
+            <div class="body">
+              <div class="top"><span class="code">MCICAX260298</span><span class="sub">XX · 3EA · 10.17</span></div>
+              <div class="tags"><span class="doc-tag" style="background:#FEF3C7;color:#B45309;">별도·조립철물</span></div>
+              <div class="content">캐비닛 몸통 철물 2개 누락, 재고 요청함</div>
+            </div>
+            <span class="doc-status" style="background:#DCFCE7;color:#16A34A;">조치완료</span>
+          </div>
+          <div class="doc-item">
+            <div class="ph"></div>
+            <div class="body">
+              <div class="top"><span class="code">FDDX2012002</span><span class="sub">WW · 96EA · 10.19</span></div>
+              <div class="tags"><span class="doc-tag" style="background:#DBEAFE;color:#1D4ED8;">외관</span></div>
+              <div class="content">전면상판 가방걸이 위치 도면 대비 5mm 상이</div>
+            </div>
+            <span class="doc-status" style="background:#FEE2E2;color:#DC2626;">미조치</span>
+          </div>
+        </div>
+
+        <div class="doc-foot">
+          <span>F.WORK 현장검사 — 자동 생성 문서</span>
+          <span>1 / 2 페이지</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 엑셀 다운로드를 고르면 이 표 미리보기로 바뀐다 — 사진 칸은 실제로 다운로드한
+         파일을 열었을 때 셀 안에 박혀있는 이미지(셀 크기에 맞춰 들어간 진짜 그림)이고,
+         초록색 칸은 그 옆에서 자유롭게 고쳐 쓸 수 있는 실제 셀이라는 뜻이다. -->
+    <div class="xlsx-shell" id="xlsxPreviewShell">
+      <div class="xlsx-tabs">
+        <div class="xlsx-tab on">부적합목록</div>
+        <div class="xlsx-tab">요약</div>
+      </div>
+      <div class="xlsx-grid">
+        <table class="xlsx">
+          <tr><th>사진</th><th>단품코드</th><th>색상</th><th>수량</th><th>발견일자</th><th>하자유형</th><th>부적합내용</th><th>조치상태</th><th>조치사항</th><th>조치자</th></tr>
+          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>FDDX2012001</td><td>WW</td><td>96</td><td>2026-10-19</td><td>외관, 포장</td><td class="editable">후면상판 모서리 마감 들뜸 발견, 3개소</td><td class="editable">미조치</td><td class="editable"></td><td class="editable"></td></tr>
+          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>XHXX2501007</td><td>WW</td><td>44</td><td>2026-10-18</td><td>제품·코드일치</td><td class="editable">단품코드 라벨과 실제 규격 불일치 확인</td><td class="editable">조치중</td><td class="editable">치수 재확인 요청함</td><td class="editable">김현우</td></tr>
+          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>MCICAX260298</td><td>XX</td><td>3</td><td>2026-10-17</td><td>별도·조립철물</td><td class="editable">캐비닛 몸통 철물 2개 누락, 재고 요청함</td><td class="editable">조치완료</td><td class="editable">철물 재고에서 긴급 출고</td><td class="editable">박서연</td></tr>
+          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>FDDX2012002</td><td>WW</td><td>96</td><td>2026-10-19</td><td>외관</td><td class="editable">전면상판 가방걸이 위치 도면 대비 5mm 상이</td><td class="editable">미조치</td><td class="editable"></td><td class="editable"></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div style="height:14px;"></div>
+    <div class="caption" id="previewCaption"><b>스크롤 분량:</b> 선택한 품목이 한 페이지에 다 안 들어가면 품질검사/포장강화 출력과 같은 방식으로 자동으로 다음 페이지로 넘어갑니다. 사진을 포함하면 품목당 칸이 커져 페이지당 들어가는 건수가 줄어듭니다.</div>
+  </div>
+
+</div>
+
+<script>
+  function fiShowTab(n) {
+    document.getElementById('tab1').style.display = n === 1 ? 'block' : 'none';
+    document.getElementById('tab2').style.display = n === 2 ? 'block' : 'none';
+    document.getElementById('tabBtn1').classList.toggle('active', n === 1);
+    document.getElementById('tabBtn2').classList.toggle('active', n === 2);
+    if (n === 2) fiPreviewFormat(fiFormat);
+  }
+  // 옵션 화면의 "세로/가로" 칩과 미리보기 화면의 "방향전환" 버튼이 같은 상태를 공유 —
+  // 어느 쪽에서 바꾸든 실제 생성 결과(②번 문서 비율)에 바로 반영되는 느낌을 보여준다.
+  let fiOrient = 'portrait';
+  let fiFormat = 'pdf';
+  document.querySelectorAll('.orient-opt').forEach(function (el, i) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('.orient-opt').forEach(function (o) { o.classList.remove('on'); });
+      el.classList.add('on');
+      fiOrient = i === 0 ? 'portrait' : 'landscape';
+      fiApplyOrient();
+    });
+  });
+  function fiToggleOrient() {
+    fiOrient = fiOrient === 'portrait' ? 'landscape' : 'portrait';
+    document.querySelectorAll('.orient-opt').forEach(function (o, i) {
+      o.classList.toggle('on', (fiOrient === 'portrait') === (i === 0));
+    });
+    fiApplyOrient();
+  }
+  function fiApplyOrient() {
+    document.getElementById('docPage').classList.toggle('landscape', fiOrient === 'landscape');
+  }
+  document.querySelectorAll('.chip').forEach(function (el) {
+    el.addEventListener('click', function () { el.classList.toggle('on'); });
+  });
+  // ① 옵션 화면 — PDF/엑셀 선택에 따라 그 형식에만 뜻이 있는 옵션을 접었다 펴고,
+  // 생성 버튼 문구도 맞춰 바꾼다.
+  function fiPickFormat(fmt) {
+    fiFormat = fmt;
+    document.getElementById('fmtPdfOpt').classList.toggle('on', fmt === 'pdf');
+    document.getElementById('fmtXlsxOpt').classList.toggle('on', fmt === 'xlsx');
+    document.getElementById('pdfOnlyOpts').style.display = fmt === 'pdf' ? '' : 'none';
+    document.getElementById('pdfOrientRow').style.display = fmt === 'pdf' ? '' : 'none';
+    document.getElementById('xlsxOnlyOpts').style.display = fmt === 'xlsx' ? '' : 'none';
+    document.getElementById('genBtnLabel').textContent = fmt === 'pdf' ? 'PDF 보고서 8건 생성하기' : '엑셀 보고서 8건 생성하기';
+    document.getElementById('genBtn').classList.toggle('xlsx-mode', fmt === 'xlsx');
+  }
+  // ② 미리보기 화면 — PDF 다운로드/엑셀 다운로드 버튼을 눌러서 결과물 미리보기를 바꿔 볼 수 있다.
+  function fiPreviewFormat(fmt) {
+    fiFormat = fmt;
+    document.getElementById('pdfPreviewShell').style.display = fmt === 'pdf' ? 'flex' : 'none';
+    document.getElementById('xlsxPreviewShell').style.display = fmt === 'xlsx' ? 'block' : 'none';
+    document.getElementById('orientToggleBtn').style.display = fmt === 'pdf' ? 'flex' : 'none';
+    document.getElementById('docFname').textContent = fmt === 'pdf' ? '현장검사_부적합보고서_20261020.pdf' : '현장검사_부적합보고서_20261020.xlsx';
+    document.getElementById('previewCaption').innerHTML = fmt === 'pdf'
+      ? '<b>스크롤 분량:</b> 선택한 품목이 한 페이지에 다 안 들어가면 품질검사/포장강화 출력과 같은 방식으로 자동으로 다음 페이지로 넘어갑니다. 사진을 포함하면 품목당 칸이 커져 페이지당 들어가는 건수가 줄어듭니다.'
+      : '<b>엑셀 다운로드:</b> 맨 왼쪽 "사진" 칸은 다운로드한 파일을 열었을 때 셀 안에 실제로 박혀있는 이미지입니다(셀 크기에 맞춰 들어간 진짜 그림 — 링크나 첨부가 아님). 초록색 칸(조치상태·조치사항·조치자 등)은 그대로 열어서 고쳐 쓸 수 있는 실제 셀입니다.';
+  }
+</script>
