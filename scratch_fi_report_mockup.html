@@ -357,22 +357,81 @@
       </div>
     </div>
 
-    <!-- 엑셀 다운로드를 고르면 이 표 미리보기로 바뀐다 — 사진 칸은 실제로 다운로드한
-         파일을 열었을 때 셀 안에 박혀있는 이미지(셀 크기에 맞춰 들어간 진짜 그림)이고,
-         초록색 칸은 그 옆에서 자유롭게 고쳐 쓸 수 있는 실제 셀이라는 뜻이다. -->
+    <!-- 엑셀 다운로드를 고르면 이 카드 그리드로 바뀐다 — 실제로는 "표"가 아니라 셀을
+         병합해서 품목 하나당 카드처럼 묶은 것이다(요청, 2026-10-20: "약간 카드형식으로").
+         모서리의 흐린 번지수(F18 등)와 칸 사이 가는 테두리로 "그래도 진짜 셀"이라는 걸
+         남겨뒀다 — 사진 칸도 셀 안에 박힌 이미지, 초록 칸은 그대로 고쳐 쓸 수 있는 칸. -->
     <div class="xlsx-shell" id="xlsxPreviewShell">
       <div class="xlsx-tabs">
         <div class="xlsx-tab on">부적합목록</div>
         <div class="xlsx-tab">요약</div>
       </div>
-      <div class="xlsx-grid">
-        <table class="xlsx">
-          <tr><th>사진</th><th>단품코드</th><th>색상</th><th>수량</th><th>발견일자</th><th>하자유형</th><th>부적합내용</th><th>조치상태</th><th>조치사항</th><th>조치자</th></tr>
-          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>FDDX2012001</td><td>WW</td><td>96</td><td>2026-10-19</td><td>외관, 포장</td><td class="editable">후면상판 모서리 마감 들뜸 발견, 3개소</td><td class="editable">미조치</td><td class="editable"></td><td class="editable"></td></tr>
-          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>XHXX2501007</td><td>WW</td><td>44</td><td>2026-10-18</td><td>제품·코드일치</td><td class="editable">단품코드 라벨과 실제 규격 불일치 확인</td><td class="editable">조치중</td><td class="editable">치수 재확인 요청함</td><td class="editable">김현우</td></tr>
-          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>MCICAX260298</td><td>XX</td><td>3</td><td>2026-10-17</td><td>별도·조립철물</td><td class="editable">캐비닛 몸통 철물 2개 누락, 재고 요청함</td><td class="editable">조치완료</td><td class="editable">철물 재고에서 긴급 출고</td><td class="editable">박서연</td></tr>
-          <tr><td class="photo-cell"><div class="xl-photo"></div></td><td>FDDX2012002</td><td>WW</td><td>96</td><td>2026-10-19</td><td>외관</td><td class="editable">전면상판 가방걸이 위치 도면 대비 5mm 상이</td><td class="editable">미조치</td><td class="editable"></td><td class="editable"></td></tr>
-        </table>
+      <div class="xlsx-col-ruler"><span>A</span><span>B ~ E</span><span>F</span><span>G</span><span>H</span></div>
+      <div class="xlsx-cardgrid">
+        <div class="xlsx-card">
+          <span class="cellref">B6:H9</span>
+          <div class="xlsx-card-top">
+            <img class="xc-photo" src="" alt="">
+            <div class="xc-head">
+              <div class="xc-code">FDDX2012001</div>
+              <div class="xc-sub">WW · 96EA · 2026-10-19</div>
+              <div class="xc-tags"><span class="doc-tag" style="background:#DBEAFE;color:#1D4ED8;">외관</span><span class="doc-tag" style="background:#ECFDF5;color:#047857;">포장</span></div>
+            </div>
+          </div>
+          <div class="xc-content">후면상판 모서리 마감 들뜸 발견, 3개소</div>
+          <div class="xc-bottom">
+            <div class="xc-cell"><div class="xc-lbl">조치상태</div><div class="xc-val" style="color:#DC2626;"><span class="xlsx-status-dot" style="background:#DC2626;"></span>미조치</div></div>
+            <div class="xc-cell"><div class="xc-lbl">조치자</div><div class="xc-val" style="color:var(--label);font-weight:600;">—</div></div>
+          </div>
+        </div>
+        <div class="xlsx-card">
+          <span class="cellref">B10:H13</span>
+          <div class="xlsx-card-top">
+            <img class="xc-photo" src="" alt="">
+            <div class="xc-head">
+              <div class="xc-code">XHXX2501007</div>
+              <div class="xc-sub">WW · 44EA · 2026-10-18</div>
+              <div class="xc-tags"><span class="doc-tag" style="background:#EDE9FE;color:#6D28D9;">제품·코드일치</span></div>
+            </div>
+          </div>
+          <div class="xc-content">단품코드 라벨과 실제 규격 불일치 확인</div>
+          <div class="xc-bottom">
+            <div class="xc-cell"><div class="xc-lbl">조치상태</div><div class="xc-val" style="color:#D97706;"><span class="xlsx-status-dot" style="background:#D97706;"></span>조치중</div></div>
+            <div class="xc-cell"><div class="xc-lbl">조치자</div><div class="xc-val">김현우</div></div>
+          </div>
+        </div>
+        <div class="xlsx-card">
+          <span class="cellref">B14:H17</span>
+          <div class="xlsx-card-top">
+            <img class="xc-photo" src="" alt="">
+            <div class="xc-head">
+              <div class="xc-code">MCICAX260298</div>
+              <div class="xc-sub">XX · 3EA · 2026-10-17</div>
+              <div class="xc-tags"><span class="doc-tag" style="background:#FEF3C7;color:#B45309;">별도·조립철물</span></div>
+            </div>
+          </div>
+          <div class="xc-content">캐비닛 몸통 철물 2개 누락, 재고 요청함</div>
+          <div class="xc-bottom">
+            <div class="xc-cell"><div class="xc-lbl">조치상태</div><div class="xc-val" style="color:#16A34A;"><span class="xlsx-status-dot" style="background:#16A34A;"></span>조치완료</div></div>
+            <div class="xc-cell"><div class="xc-lbl">조치자</div><div class="xc-val">박서연</div></div>
+          </div>
+        </div>
+        <div class="xlsx-card">
+          <span class="cellref">B18:H21</span>
+          <div class="xlsx-card-top">
+            <img class="xc-photo" src="" alt="">
+            <div class="xc-head">
+              <div class="xc-code">FDDX2012002</div>
+              <div class="xc-sub">WW · 96EA · 2026-10-19</div>
+              <div class="xc-tags"><span class="doc-tag" style="background:#DBEAFE;color:#1D4ED8;">외관</span></div>
+            </div>
+          </div>
+          <div class="xc-content">전면상판 가방걸이 위치 도면 대비 5mm 상이</div>
+          <div class="xc-bottom">
+            <div class="xc-cell"><div class="xc-lbl">조치상태</div><div class="xc-val" style="color:#DC2626;"><span class="xlsx-status-dot" style="background:#DC2626;"></span>미조치</div></div>
+            <div class="xc-cell"><div class="xc-lbl">조치자</div><div class="xc-val" style="color:var(--label);font-weight:600;">—</div></div>
+          </div>
+        </div>
       </div>
     </div>
 
