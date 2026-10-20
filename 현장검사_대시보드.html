@@ -1258,6 +1258,14 @@ function _fiLoadExcelJsLib(cb) {
   document.head.appendChild(s);
 }
 function _fiPrintEsc(v) { return (v == null ? '' : String(v)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+// PDF 카드 머리줄 — 뭐가 코드/색상/수량/날짜인지 안 보이던 문제(요청, 2026-10-20)를
+// 엑셀 카드와 같은 방식(작은 회색 라벨 + 값)으로 고친다.
+function _fiPdfLabeledField(label, value, valueFontSize, mono) {
+  return '<span>' +
+    '<span style="font-size:8.5px;color:#94A3B8;font-weight:700;">' + label + ' </span>' +
+    '<span style="font-size:' + (valueFontSize || '10.5px') + ';color:#1E293B;font-weight:800;' + (mono ? 'font-family:ui-monospace,monospace;' : '') + '">' + value + '</span>' +
+  '</span>';
+}
 // 선택 품목이 많을 때(수십 건) 사진 요청을 한꺼번에 다 쏘면 GAS 동시실행 한도에 걸릴 수
 // 있어서, 한 번에 4건씩만 묶어서 순서대로 처리한다.
 async function _fiMapWithLimit(arr, limit, fn) {
