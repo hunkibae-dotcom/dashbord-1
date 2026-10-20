@@ -1012,9 +1012,12 @@ function fiPcCardHtml(d) {
       ? '<div style="display:flex;align-items:flex-start;padding-top:2px;flex-shrink:0;"><input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="fiToggleSelectItem(\'' + key + '\')" style="width:18px;height:18px;cursor:pointer;accent-color:#D97706;"></div>'
       : '') +
     '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">' +
-      (photo
-        ? '<img class="fipc-photo" src="' + (photo.dataUrl || photo.viewUrl) + '"' + (photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '') + ' onclick="fiOpenPhotoViewerFor(\'' + key + '\')">'
-        : '<div class="fipc-photo empty">📷</div>') +
+      '<div style="position:relative;">' +
+        (photo
+          ? '<img class="fipc-photo" src="' + (photo.dataUrl || photo.viewUrl) + '"' + (photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '') + ' onclick="fiOpenPhotoViewerFor(\'' + key + '\')">'
+          : '<div class="fipc-photo empty">📷</div>') +
+        _fiPhotoCountBadge(d.photos) +
+      '</div>' +
       '<span style="font-size:10.5px;color:var(--label);font-family:ui-monospace,monospace;font-weight:700;">' + fiPcDate(d.date) + '</span>' +
     '</div>' +
     '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;">' +
