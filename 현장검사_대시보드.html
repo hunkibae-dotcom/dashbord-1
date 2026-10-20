@@ -180,6 +180,56 @@ try {
   </div>
 </div>
 
+<!-- ══ 보고서 자동제작 모달 ══ -->
+<div id="fiRptModal" onclick="if(event.target===this)fiCloseReportModal()">
+  <div class="fiRpt-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:15px;font-weight:800;color:var(--text);">보고서 자동제작</span>
+      <button onclick="fiCloseReportModal()" style="width:30px;height:30px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;">✕</button>
+    </div>
+    <div>
+      <div class="fiRpt-label">선택된 품목</div>
+      <div class="fiRpt-pool" id="fiRptPool"></div>
+    </div>
+    <div>
+      <div class="fiRpt-label">보고서 제목</div>
+      <input type="text" id="fiRptTitle" class="fiRpt-input">
+    </div>
+    <div>
+      <div class="fiRpt-label">다운로드 형식</div>
+      <div class="fiRpt-fmt-row">
+        <div class="fiRpt-fmt-opt on" id="fiRptFmtPdf" onclick="fiRptPickFormat('pdf')">
+          <div class="ic" style="background:linear-gradient(135deg,#DC2626,#F87171);">📄</div>
+          <div class="lbl">PDF</div>
+          <div class="hint">보기·인쇄 전용<br>내용 수정 불가</div>
+        </div>
+        <div class="fiRpt-fmt-opt xlsx" id="fiRptFmtXlsx" onclick="fiRptPickFormat('xlsx')">
+          <div class="ic" style="background:linear-gradient(135deg,#16A34A,#4ADE80);">📊</div>
+          <div class="lbl">엑셀 (.xlsx)</div>
+          <div class="hint">사진 포함 · 다운로드 후<br>내용을 직접 고쳐 쓸 수 있음</div>
+        </div>
+      </div>
+    </div>
+    <div id="fiRptOrientRow">
+      <div class="fiRpt-label">용지 방향 (PDF)</div>
+      <div class="fiRpt-orient-row">
+        <div class="fiRpt-orient-opt on" onclick="fiRptPickOrient('portrait')">
+          <div class="fiRpt-orient-shape" style="width:30px;height:40px;"></div>
+          <div class="lbl">세로</div>
+        </div>
+        <div class="fiRpt-orient-opt" onclick="fiRptPickOrient('landscape')">
+          <div class="fiRpt-orient-shape" style="width:40px;height:30px;"></div>
+          <div class="lbl">가로</div>
+        </div>
+      </div>
+    </div>
+    <div id="fiRptFeedback" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;"></div>
+    <button class="fiRpt-gen-btn" id="fiRptGenBtn" onclick="fiRptGenerate()">
+      <span id="fiRptGenLabel">PDF 보고서 생성하기</span>
+    </button>
+  </div>
+</div>
+
 <div id="fiApp">
 
   <!-- ══════════════ 홈 탭 ══════════════ -->
