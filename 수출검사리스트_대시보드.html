@@ -8446,10 +8446,27 @@ async function qcNewConfirmSelected() {
   }
 }
 
-async function qcSortInspectList() {
+// "검사리스트 정렬" 버튼 — 예전엔 신규품목 확인창의 공장 필터 칩(_qcNewFac)을 그대로
+// 따라갔는데, 클릭 시점에 1공장/2공장/전체 중 따로 고르고 싶다는 요청(2026-10-20)으로
+// 작은 드롭다운을 추가했다.
+function qcToggleSortMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('qcSortMenu');
+  const opening = menu.classList.contains('hidden');
+  menu.classList.toggle('hidden');
+  if (opening) setTimeout(() => document.addEventListener('click', _qcCloseSortMenu, { once: true }), 0);
+}
+function _qcCloseSortMenu() {
+  document.getElementById('qcSortMenu').classList.add('hidden');
+}
+function qcRunSort(fac) {
+  document.getElementById('qcSortMenu').classList.add('hidden');
+  qcSortInspectList(fac === 'all' ? ['cj1', 'cj2'] : [fac]);
+}
+async function qcSortInspectList(targetFacs) {
   const btn = document.getElementById('qcSortBtn');
   const statusEl = document.getElementById('qcNewStatus');
-  const targetFacs = _qcNewFac === 'all' ? ['cj1', 'cj2'] : [_qcNewFac];
+  if (!targetFacs) targetFacs = _qcNewFac === 'all' ? ['cj1', 'cj2'] : [_qcNewFac]; // 인자 없이 불려도 기존 방식으로 동작
   btn.disabled = true;
   statusEl.style.color = '#64748b';
   statusEl.textContent = '검사리스트 정렬 중... (시간이 걸릴 수 있습니다)';
