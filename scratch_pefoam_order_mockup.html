@@ -1,0 +1,325 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>PE폼 발주서 시안</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+<style>
+  /* 레이아웃: 실제 "PE폼 발주서" 시트와 같은 정보 구조(발주정보 헤더 + 품목 표 +
+     합계 + 기준 안내)를, 웹 전용 신규 화면으로 재구성. 앱에는 없던 기능이라
+     PE폼 앱과 같은 앰버 색을 그대로 써서 "같은 제품의 웹 전용 추가 화면"임을 표시. */
+  :root {
+    --bg: #F8FAFC; --panel: #FFFFFF; --ink: #1E293B; --ink-sub: #64748B; --label: #94A3B8;
+    --border: #E2E8F0; --divider: #F1F5F9;
+    --accent: #E8590C; --accent2: #FF9F1C; --accent-soft: #FFF3E8;
+    --auto-bg: #F8FAFC; --auto-ink: #64748B;
+    --good: #16A34A; --good-soft: #EAFBF1;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1420; --panel: #171E2E; --ink: #F1F5F9; --ink-sub: #94A3B8; --label: #64748B;
+      --border: #273347; --divider: #1C2434; --accent-soft: rgba(232,89,12,.16);
+      --auto-bg: #1C2434; --auto-ink: #8089A0; --good-soft: rgba(22,163,74,.16); color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1420; --panel: #171E2E; --ink: #F1F5F9; --ink-sub: #94A3B8; --label: #64748B;
+    --border: #273347; --divider: #1C2434; --accent-soft: rgba(232,89,12,.16);
+    --auto-bg: #1C2434; --auto-ink: #8089A0; --good-soft: rgba(22,163,74,.16); color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 50px;
+  }
+  h1, h2, .disp { font-family: 'Manrope', sans-serif; text-wrap: balance; }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+  .page-head { display: flex; align-items: center; gap: 12px; }
+  .badge { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; font-size: 17px; }
+  .page-title { font-size: 17px; font-weight: 800; }
+  .page-sub { font-size: 12px; color: var(--ink-sub); margin-top: 1px; }
+
+  .note-banner { background: var(--accent-soft); border: 1px solid rgba(232,89,12,.28); border-radius: 12px; padding: 11px 14px; font-size: 12px; color: var(--accent); font-weight: 600; line-height: 1.55; display: flex; gap: 9px; }
+  .note-banner svg, .note-banner i { flex-shrink: 0; margin-top: 2px; }
+
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 18px; }
+  .panel-label { font-size: 10.5px; font-weight: 800; letter-spacing: .05em; color: var(--label); text-transform: uppercase; margin-bottom: 12px; }
+
+  .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .field label { display: block; font-size: 10.5px; font-weight: 700; color: var(--ink-sub); margin-bottom: 5px; }
+  .field input, .field select { width: 100%; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 9px; padding: 9px 11px; font-size: 13px; color: var(--ink); outline: none; background: var(--panel); font-family: inherit; }
+  .field input:focus { border-color: var(--accent); }
+  .field.readonly input { background: var(--auto-bg); color: var(--auto-ink); font-weight: 600; }
+  .field .hint { font-size: 9.5px; color: var(--label); margin-top: 4px; }
+
+  .items-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .items-head .count { font-size: 11px; font-weight: 700; color: var(--label); }
+
+  .item-row { border: 1px solid var(--border); border-radius: 13px; padding: 12px; display: flex; gap: 10px; margin-bottom: 9px; background: var(--panel); }
+  .item-row .num { width: 22px; height: 22px; border-radius: 50%; background: var(--divider); color: var(--ink-sub); font-size: 10.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .item-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .name-row { position: relative; }
+  .name-row input { width: 100%; box-sizing: border-box; border: 1.5px solid var(--border); border-radius: 9px; padding: 9px 11px; font-size: 13px; font-weight: 600; outline: none; background: var(--panel); color: var(--ink); font-family: inherit; }
+  .name-row input:focus { border-color: var(--accent); }
+  .name-row .sugg { position: absolute; left: 0; right: 0; top: calc(100% + 4px); background: var(--panel); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 24px rgba(0,0,0,.12); overflow: hidden; z-index: 5; display: none; }
+  .name-row .sugg.show { display: block; }
+  .name-row .sugg div { padding: 9px 12px; font-size: 12.5px; cursor: pointer; border-bottom: 1px solid var(--divider); }
+  .name-row .sugg div:last-child { border-bottom: none; }
+  .name-row .sugg div:hover, .name-row .sugg div.hi { background: var(--accent-soft); color: var(--accent); }
+
+  .auto-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .auto-chip { font-size: 10.5px; font-weight: 700; padding: 4px 9px; border-radius: 7px; background: var(--auto-bg); color: var(--auto-ink); display: flex; align-items: center; gap: 4px; }
+  .auto-chip .k { opacity: .65; font-weight: 600; }
+  .auto-chip.empty { color: var(--label); font-style: italic; font-weight: 500; }
+
+  .sub-row { display: grid; grid-template-columns: 110px 1fr; gap: 8px; }
+  .sub-row input { border: 1.5px solid var(--border); border-radius: 9px; padding: 8px 10px; font-size: 12.5px; outline: none; background: var(--panel); color: var(--ink); font-family: inherit; }
+  .sub-row input:focus { border-color: var(--accent); }
+  .sub-row .lbl { font-size: 9px; font-weight: 700; color: var(--label); margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em; }
+
+  .item-del { width: 26px; height: 26px; border-radius: 8px; border: none; background: transparent; color: var(--label); cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .item-del:hover { background: rgba(220,38,38,.08); color: #DC2626; }
+
+  .add-btn { width: 100%; padding: 11px; border-radius: 11px; border: 2px dashed var(--border); background: transparent; color: var(--ink-sub); font-weight: 700; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .guide-card { background: var(--accent-soft); border: 1px solid rgba(232,89,12,.25); border-radius: 14px; padding: 14px 16px; }
+  .guide-card .t { font-size: 11px; font-weight: 800; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .guide-card ul { margin: 0; padding-left: 17px; display: flex; flex-direction: column; gap: 4px; }
+  .guide-card li { font-size: 11.5px; color: var(--ink-sub); line-height: 1.5; }
+
+  .sum-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; border-top: 1px dashed var(--border); margin-top: 4px; }
+  .sum-row .l { font-size: 12.5px; font-weight: 700; color: var(--ink-sub); }
+  .sum-row .v { font-size: 15px; font-weight: 800; color: var(--ink); }
+  .sum-row .v .unit { font-size: 11px; font-weight: 600; color: var(--label); margin-left: 3px; }
+
+  .submit-btn { width: 100%; padding: 14px; border-radius: 13px; border: none; background: linear-gradient(135deg, var(--accent2), var(--accent)); color: #fff; font-weight: 800; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+  .result-card { display: none; }
+  .result-card.show { display: block; }
+  .result-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .result-head .ic { width: 36px; height: 36px; border-radius: 50%; background: var(--good-soft); color: var(--good); display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .result-head .t { font-size: 14.5px; font-weight: 800; }
+  .result-head .s { font-size: 11.5px; color: var(--ink-sub); margin-top: 1px; }
+  table.result-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  table.result-tbl th { text-align: left; padding: 7px 8px; color: var(--label); font-weight: 700; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.result-tbl td { padding: 7px 8px; border-bottom: 1px solid var(--divider); white-space: nowrap; color: var(--ink); }
+  .tbl-wrap { overflow-x: auto; }
+
+  @media (max-width: 480px) {
+    .info-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="badge"><i class="fa-solid fa-file-pen"></i></div>
+    <div>
+      <div class="page-title">PE폼 발주서 · 시안</div>
+      <div class="page-sub">PE폼 발주 웹 대시보드 — 앱에는 없는 웹 전용 신규 기능</div>
+    </div>
+  </div>
+
+  <div class="note-banner">
+    <i class="fa-solid fa-circle-info"></i>
+    <div><b>디자인 시안</b>입니다. 실제 "PE폼 발주서" 시트 구조(발주정보 + 품목 표 + 합계 + 기준 안내)를 그대로 따라 만들었고, 자재명을 입력하면 코드·유형·규격·단위·사업장이 자동으로 채워집니다. 자재명 칸에 <span class="mono" style="font-weight:700;">일자형</span> 또는 <span class="mono" style="font-weight:700;">코너형</span>을 쳐보시면 실제 동작을 확인할 수 있습니다.</div>
+  </div>
+
+  <!-- 발주 정보 -->
+  <div class="panel">
+    <div class="panel-label">발주 정보</div>
+    <div class="info-grid">
+      <div class="field">
+        <label>발주일자</label>
+        <input type="date" id="ordDate">
+      </div>
+      <div class="field readonly">
+        <label>발주번호</label>
+        <input type="text" value="(저장 시 자동 생성)" disabled>
+      </div>
+      <div class="field">
+        <label>발주자</label>
+        <input type="text" id="ordUser" placeholder="이름 입력">
+      </div>
+      <div class="field">
+        <label>납품희망일</label>
+        <input type="date" id="ordDue">
+      </div>
+      <div class="field" style="grid-column:span 2;">
+        <label>반입창고</label>
+        <input type="text" id="ordWh" placeholder="예: 1공장 자재창고">
+      </div>
+    </div>
+  </div>
+
+  <!-- 품목 -->
+  <div class="panel">
+    <div class="items-head">
+      <div class="panel-label" style="margin-bottom:0;">품목</div>
+      <span class="count" id="itemCount">1개 품목</span>
+    </div>
+    <div id="itemRows"></div>
+    <button class="add-btn" onclick="addItem()"><i class="fa-solid fa-plus"></i>품목 추가</button>
+    <div class="sum-row">
+      <span class="l" id="sumLabel">합계 (품목 1종)</span>
+      <span class="v" id="sumQty">0<span class="unit">EA</span></span>
+    </div>
+  </div>
+
+  <!-- 기준 안내 -->
+  <div class="guide-card">
+    <div class="t"><i class="fa-solid fa-circle-check"></i>PE폼 발주 기준</div>
+    <ul>
+      <li>일자형 — 기준 2000mm / 15T</li>
+      <li>코너형 — 서랍 100×100, 넉다운 150×150 / 15T</li>
+      <li>자재명 고르면 코드·규격·단위·사업장 자동</li>
+      <li>저장하면 "PE폼 발주이력"에 한 줄씩 누적</li>
+      <li>입고되면 이력의 상태가 "입고완료"로 바뀝니다</li>
+    </ul>
+  </div>
+
+  <button class="submit-btn" onclick="submitOrder()"><i class="fa-solid fa-paper-plane"></i>발주서 저장</button>
+
+  <!-- 결과 미리보기 -->
+  <div class="panel result-card" id="resultCard">
+    <div class="result-head">
+      <div class="ic"><i class="fa-solid fa-check"></i></div>
+      <div><div class="t">발주서가 저장되었습니다</div><div class="s" id="resultSub"></div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table class="result-tbl">
+        <tr><th>발주번호</th><th>코드</th><th>자재명</th><th>색상</th><th>유형</th><th>규격상세</th><th>수량</th><th>단위</th><th>사업장</th></tr>
+        <tbody id="resultBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 데모용 "PE폼 품목마스터" 샘플 — 실제로는 품목마스터 시트에서 가져온다.
+  const MASTER = [
+    { name: '일자형 PE폼 2000×15T', code: 'PEJ-2000-15', type: '일자형', spec: '2000mm / 15T', unit: 'EA', site: '1공장', color: 'WH' },
+    { name: '일자형 PE폼 2400×15T', code: 'PEJ-2400-15', type: '일자형', spec: '2400mm / 15T', unit: 'EA', site: '1공장', color: 'WH' },
+    { name: '코너형 PE폼 서랍 100×100 15T', code: 'PEC-100-15', type: '코너형', spec: '100×100 / 15T', unit: 'EA', site: '1공장', color: 'GY' },
+    { name: '코너형 PE폼 넉다운 150×150 15T', code: 'PEC-150-15', type: '코너형', spec: '150×150 / 15T', unit: 'EA', site: '2공장', color: 'GY' },
+    { name: '패드형 PE폼 10T', code: 'PEP-10', type: '패드형', spec: '— / 10T', unit: 'EA', site: '1공장', color: 'WH' },
+    { name: '롤형 PE폼 5T', code: 'PER-5', type: '롤형', spec: '1000mm 폭 / 5T', unit: 'ROLL', site: '2공장', color: 'WH' },
+  ];
+
+  let seq = 0;
+  function rowHtml(id) {
+    return `<div class="item-row" data-id="${id}">
+      <span class="num">${id + 1}</span>
+      <div class="item-main">
+        <div class="name-row">
+          <input type="text" class="f-name" placeholder="자재명 검색 (예: 일자형, 코너형...)" oninput="onNameInput(${id})" onfocus="onNameInput(${id})" onblur="setTimeout(()=>hideSugg(${id}),150)">
+          <div class="sugg" id="sugg-${id}"></div>
+        </div>
+        <div class="auto-chips" id="chips-${id}"></div>
+        <div class="sub-row">
+          <div><div class="lbl">수량</div><input type="number" class="f-qty" placeholder="0" oninput="updateSum()"></div>
+          <div><div class="lbl">비고</div><input type="text" class="f-note" placeholder="비고 (선택)"></div>
+        </div>
+      </div>
+      <button class="item-del" onclick="removeItem(${id})" title="삭제"><i class="fa-solid fa-trash-can" style="font-size:11px;"></i></button>
+    </div>`;
+  }
+  function addItem() {
+    const id = seq++;
+    document.getElementById('itemRows').insertAdjacentHTML('beforeend', rowHtml(id));
+    renderChips(id, null);
+    renumber();
+  }
+  function removeItem(id) {
+    const el = document.querySelector('.item-row[data-id="' + id + '"]');
+    if (el) el.remove();
+    renumber();
+    updateSum();
+  }
+  function renumber() {
+    const rows = document.querySelectorAll('.item-row');
+    rows.forEach((r, i) => { r.querySelector('.num').textContent = i + 1; });
+    document.getElementById('itemCount').textContent = rows.length + '개 품목';
+    document.getElementById('sumLabel').textContent = '합계 (품목 ' + rows.length + '종)';
+  }
+  function renderChips(id, match) {
+    const el = document.getElementById('chips-' + id);
+    if (!match) {
+      el.innerHTML = '<span class="auto-chip empty">자재명을 고르면 코드·유형·규격·단위·사업장이 자동으로 채워집니다</span>';
+      return;
+    }
+    el.innerHTML =
+      chip('코드', match.code) + chip('색상', match.color) + chip('유형', match.type) +
+      chip('규격상세', match.spec) + chip('단위', match.unit) + chip('사업장', match.site);
+  }
+  function chip(k, v) { return '<span class="auto-chip"><span class="k">' + k + '</span>' + v + '</span>'; }
+
+  function onNameInput(id) {
+    const row = document.querySelector('.item-row[data-id="' + id + '"]');
+    const q = row.querySelector('.f-name').value.trim().toLowerCase();
+    const sugg = document.getElementById('sugg-' + id);
+    if (!q) { sugg.classList.remove('show'); renderChips(id, null); row.dataset.matched = ''; return; }
+    const matches = MASTER.filter(m => m.name.toLowerCase().includes(q) || m.type.toLowerCase().includes(q));
+    if (!matches.length) { sugg.classList.remove('show'); renderChips(id, null); row.dataset.matched = ''; return; }
+    sugg.innerHTML = matches.map(m => `<div onclick="pickMaster(${id}, '${m.code}')">${m.name} <span style="color:var(--label);font-size:10.5px;">(${m.spec})</span></div>`).join('');
+    sugg.classList.add('show');
+    // 정확히 하나만 일치하면 바로 자동완성(실제 시트의 "자재명만 고르면" 흐름 재현)
+    const exact = MASTER.find(m => m.name.toLowerCase() === q);
+    if (exact) pickMaster(id, exact.code);
+  }
+  function pickMaster(id, code) {
+    const m = MASTER.find(x => x.code === code);
+    if (!m) return;
+    const row = document.querySelector('.item-row[data-id="' + id + '"]');
+    row.querySelector('.f-name').value = m.name;
+    row.dataset.matched = code;
+    renderChips(id, m);
+    hideSugg(id);
+  }
+  function hideSugg(id) {
+    const sugg = document.getElementById('sugg-' + id);
+    if (sugg) sugg.classList.remove('show');
+  }
+  function updateSum() {
+    const rows = document.querySelectorAll('.item-row');
+    let total = 0;
+    rows.forEach(r => { total += parseFloat(r.querySelector('.f-qty').value) || 0; });
+    document.getElementById('sumQty').innerHTML = total.toLocaleString() + '<span class="unit">EA</span>';
+  }
+
+  function submitOrder() {
+    const rows = Array.from(document.querySelectorAll('.item-row'));
+    const items = rows.map(r => {
+      const code = r.dataset.matched;
+      const m = MASTER.find(x => x.code === code);
+      return {
+        name: r.querySelector('.f-name').value.trim(),
+        qty: r.querySelector('.f-qty').value.trim(),
+        match: m || null
+      };
+    });
+    if (!items.length || items.some(it => !it.name || !it.match)) {
+      alert('모든 줄에서 목록에 있는 자재명을 골라주세요.');
+      return;
+    }
+    const ordNo = 'PE-' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '-01';
+    document.getElementById('resultSub').textContent = '발주번호 ' + ordNo + ' · "PE폼 발주이력"에 ' + items.length + '줄 추가됨';
+    document.getElementById('resultBody').innerHTML = items.map(it => {
+      const m = it.match;
+      return `<tr><td class="mono">${ordNo}</td><td class="mono">${m.code}</td><td>${it.name}</td><td>${m.color}</td><td>${m.type}</td><td>${m.spec}</td><td>${it.qty || 0}</td><td>${m.unit}</td><td>${m.site}</td></tr>`;
+    }).join('');
+    document.getElementById('resultCard').classList.add('show');
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // 초기 상태 — 오늘 날짜 + 품목 1줄
+  document.getElementById('ordDate').value = new Date().toISOString().slice(0,10);
+  addItem();
+</script>
