@@ -2397,12 +2397,10 @@ function applyFilters() {
   const _tblSig = JSON.stringify([roundSearch, codeSearch, colorSearch, packerSearch, _qcDateField, qStartDate, qEndDate, pieFilter, ddayUrgencyFilter, colInspectFilter, qualityFilter, _dateFilterSig, factoryTab, sourceTab, tableSortKey, tableSortDir]);
   if (_tblSig !== _tblLastFilterSig) { _tblPage = 1; _tblLastFilterSig = _tblSig; }
 
-  function matchRow(d) {
-    if (roundSearch && !(d.건명||'').toLowerCase().includes(roundSearch)) return false;
-    if (codeSearch && !(d.단품코드||'').toLowerCase().includes(codeSearch) &&
-        !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
-    if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
-    if (packerSearch && !(d.포장처||'').toLowerCase().includes(packerSearch)) return false;
+  // 상단 KPI 카드는 검색창/카드클릭 필터와 무관하게 고정된 숫자를 보여줘야 하므로
+  // (요청 — 카드를 눌러 조회하거나 제품검색을 하면 그 카드 자신의 숫자까지 바뀌던
+  // 문제), 날짜 범위만 따로 뽑아 쓸 수 있게 matchRow에서 분리해뒀다.
+  function matchDateOnly(d) {
     if (_qcDateField && (qStartDate || qEndDate)) {
       const dVal = parseKDate(d[_qcDateField]);
       if (!dVal) return false;
@@ -2410,6 +2408,15 @@ function applyFilters() {
       if (qStartDate && iso < qStartDate) return false;
       if (qEndDate && iso > qEndDate) return false;
     }
+    return true;
+  }
+  function matchRow(d) {
+    if (roundSearch && !(d.건명||'').toLowerCase().includes(roundSearch)) return false;
+    if (codeSearch && !(d.단품코드||'').toLowerCase().includes(codeSearch) &&
+        !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
+    if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
+    if (packerSearch && !(d.포장처||'').toLowerCase().includes(packerSearch)) return false;
+    if (!matchDateOnly(d)) return false;
     if (pieFilter) {
       if (d.source !== 'archive') return false;
       if (d.공장 !== pieFilter.factory) return false;
