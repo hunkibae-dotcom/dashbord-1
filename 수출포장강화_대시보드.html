@@ -3623,7 +3623,9 @@
             panel.classList.add('translate-x-full');
             panel.classList.remove('translate-x-0');
             backdrop.classList.add('hidden');
-            document.getElementById('productCodeFilter').value = '';
+            // productCodeFilter는 상세스펙 진입과 무관한 일반 표 검색칸이라 건드리지 않는다
+            // (예전엔 여기서 강제로 비웠는데, 상세스펙 들어가기 전에 검색해둔 내용까지
+            // 같이 지워져서 "나오면 대시보드가 초기화된다"는 버그로 보였다).
             _currentDetailProductCode = ''; // 명시적으로 닫은 것 — applyFilters()가 이 뒤로 다시 안 열게
             applyFilters();
         }
