@@ -4147,10 +4147,17 @@
 
     // ── 풀스크린 뷰 (슬라이드 전환) ──────────────────────
     let _currentView = null;
+    // 제품검색(viewSearch)에서 보던 중 상세스펙(viewSpec)으로 들어갔다가 뒤로가기를
+    // 누르면, 기존엔 _currentView 하나만 기억해서 무조건 홈으로 나가버렸다(요청 버그,
+    // 2026-10-21: "상세스펙 들어갔다가 나오면 대시보드가 초기화된다"). 뷰를 "갈아타듯"
+    // 열 때(같은 전체화면 뷰 위에 다른 전체화면 뷰를 띄울 때) 어디서 왔는지 하나 기억해뒀다가,
+    // 닫을 때 홈이 아니라 그 이전 화면으로 돌아가게 한다.
+    let _viewReturnTo = null;
     function openView(id) {
         if (_currentView === 'viewScan') _stopScan();
         const wasOpen = !!_currentView;
         if (_currentView && _currentView !== id) {
+            _viewReturnTo = _currentView;
             const prev = document.getElementById(_currentView);
             if (prev) prev.style.transform = 'translateX(100%)';
         }
@@ -4168,10 +4175,10 @@
     function closeView() {
         if (_currentView === 'viewScan') _stopScan();
         if (!_currentView) return;
-        // 검색 화면을 (초기화 버튼이 아니라) 뒤로가기로 그냥 나가면 포장대기/일정 카드에서
-        // 걸어둔 임시 필터가 안 풀린 채로 남아있어서, 다음에 다른 경로로 다시 들어왔을 때
-        // 검색이 안 먹히는 것처럼 보이는 원인이 됐다 — 나갈 때 항상 정리한다.
-        if (_currentView === 'viewSearch') {
+        // 검색 화면을 (초기화 버튼이 아니라) 뒤로가기로 그냥 나가서 완전히 홈으로 돌아갈 때만
+        // 포장대기/일정 카드에서 걸어둔 임시 필터를 정리한다 — 상세스펙을 거쳐 다시 이
+        // 화면으로 돌아올 땐(_viewReturnTo로 복귀) 필터를 지우면 안 된다.
+        if (_currentView === 'viewSearch' && !_viewReturnTo) {
             _schRoundFilterSet = null;
             _kpiPendingFilterActive = false;
             _mgmtCatKey = null;
@@ -4181,6 +4188,11 @@
         const el = document.getElementById(_currentView);
         if (el) el.style.transform = 'translateX(100%)';
         _currentView = null;
+        if (_viewReturnTo) {
+            const back = _viewReturnTo;
+            _viewReturnTo = null;
+            openView(back);
+        }
     }
 
     // ── 바코드 스캔 ───────────────────────────────────────
