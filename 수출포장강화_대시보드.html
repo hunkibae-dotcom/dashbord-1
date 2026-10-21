@@ -12819,6 +12819,43 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- 품목마스터 새 품목 추가 -->
+<div id="peAddMasterModal" class="pe-scope" onclick="if(event.target===this)peCloseAddMasterModal()" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid var(--pe-border);border-radius:18px;padding:22px 24px;width:460px;max-width:94vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="font-size:15px;font-weight:800;color:var(--pe-ink);">새 품목 추가</div>
+            <button onclick="peCloseAddMasterModal()" style="border:none;background:transparent;color:var(--pe-label);cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div class="pe-field" style="grid-column:span 2;"><label>자재명 *</label><input type="text" id="peAmName" placeholder="예: 보호대, PE폼 (15T) 2000×50"></div>
+            <div class="pe-field"><label>자재 코드 *</label><input type="text" id="peAmCode" placeholder="예: PEJ-50"></div>
+            <div class="pe-field"><label>색상</label><input type="text" id="peAmColor" placeholder="예: XX"></div>
+            <div class="pe-field">
+                <label>유형 *</label>
+                <select id="peAmType">
+                    <option value="일자형">일자형</option>
+                    <option value="코너형">코너형</option>
+                    <option value="패드형">패드형</option>
+                    <option value="롤형">롤형</option>
+                </select>
+            </div>
+            <div class="pe-field"><label>두께(T)</label><input type="text" id="peAmThick" placeholder="예: 15T"></div>
+            <div class="pe-field" style="grid-column:span 2;"><label>규격상세</label><input type="text" id="peAmSpec" placeholder="예: 2000*50*15"></div>
+            <div class="pe-field"><label>단위</label><input type="text" id="peAmUnit" value="EA"></div>
+            <div class="pe-field"><label>입수량</label><input type="number" id="peAmPack" placeholder="선택"></div>
+            <div class="pe-field">
+                <label>사업장 *</label>
+                <select id="peAmSite">
+                    <option value="1공장">1공장</option>
+                    <option value="2공장">2공장</option>
+                </select>
+            </div>
+            <div class="pe-field"><label>비고</label><input type="text" id="peAmNote" placeholder="선택"></div>
+        </div>
+        <button onclick="peSubmitAddMaster()" id="peAmSubmitBtn" class="pe-submit-btn" style="margin-top:18px;"><i class="fa-solid fa-check"></i> 등록</button>
+    </div>
+</div>
+
 <div id="peToast"><i class="fa-solid fa-circle-check"></i> <span id="peToastTxt"></span></div>
 
 <!-- 포장불량조치 등록 시 품목 먼저 검색/선택 -->
