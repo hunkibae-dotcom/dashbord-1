@@ -11847,6 +11847,48 @@ function peRenderMaster() {
         <td style="padding:8px;">${r.site}</td>
       </tr>`).join('') : '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--pe-label);">품목마스터 데이터가 없습니다</td></tr>';
 }
+function peOpenAddMasterModal() {
+    ['peAmName', 'peAmCode', 'peAmColor', 'peAmThick', 'peAmSpec', 'peAmPack', 'peAmNote'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('peAmUnit').value = 'EA';
+    document.getElementById('peAmType').value = '일자형';
+    document.getElementById('peAmSite').value = '1공장';
+    document.getElementById('peAddMasterModal').style.display = 'flex';
+}
+function peCloseAddMasterModal() { document.getElementById('peAddMasterModal').style.display = 'none'; }
+async function peSubmitAddMaster() {
+    const item = {
+        name: document.getElementById('peAmName').value.trim(),
+        code: document.getElementById('peAmCode').value.trim(),
+        color: document.getElementById('peAmColor').value.trim(),
+        type: document.getElementById('peAmType').value,
+        thick: document.getElementById('peAmThick').value.trim(),
+        spec: document.getElementById('peAmSpec').value.trim(),
+        unit: document.getElementById('peAmUnit').value.trim() || 'EA',
+        pack: document.getElementById('peAmPack').value.trim(),
+        site: document.getElementById('peAmSite').value,
+        note: document.getElementById('peAmNote').value.trim()
+    };
+    if (!item.name || !item.code) { peShowToast('자재명과 자재 코드는 필수입니다'); return; }
+    const btn = document.getElementById('peAmSubmitBtn');
+    if (btn.disabled) return;
+    const orig = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
+    try {
+        const res = await fetch(peGasUrl(), { method: 'POST', body: JSON.stringify({ action: 'addMasterItem', item }), signal: AbortSignal.timeout(15000) });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'success') {
+            peShowToast('품목마스터에 등록되었습니다');
+            peCloseAddMasterModal();
+            await peLoadAll();
+        } else {
+            peShowToast('등록 실패: ' + (json && json.message || '알 수 없는 오류'));
+        }
+    } catch (e) {
+        peShowToast('네트워크 오류로 등록 실패');
+    } finally {
+        btn.disabled = false; btn.innerHTML = orig;
+    }
+}
 
 // ── 발주서 (신규 기능) — 구글시트 발주서 폼과 같은 "표 형태": 자재명 칸에서
 //    고르면 코드·색상·유형·규격·단위·사업장이 자동으로 채워진다. 작성 중 내용은
