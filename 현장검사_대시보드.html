@@ -683,6 +683,16 @@ try {
 const FI_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1YRMrQHqcVERgC4LM0uBKbkPpJNIU8TJCG8Coahou-Jk/edit';
 const FI_WEB_DASHBOARD_URL = 'https://hunkibae-dotcom.github.io/dashbord-1/%ED%98%84%EC%9E%A5%EA%B2%80%EC%82%AC_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1';
 
+// 품질검사 대시보드(수출검사리스트_대시보드.html)의 "현장검사" 오버레이가 이 페이지를
+// iframe으로 띄울 때는 그 바깥쪽에 이미 자체 뒤로가기/닫기 버튼이 있어서, 이 안쪽 홈
+// 탭 헤더의 "F.WORK 홈으로" 버튼까지 같이 뜨면 뒤로가기가 두 개로 보인다(요청 버그,
+// 2026-10-21). iframe 안에서 열린 경우에만 이 안쪽 버튼을 숨긴다(visibility:hidden —
+// display:none을 쓰면 자리가 사라져서 옆 로고·제목이 쏠려 보일 수 있어 자리는 남겨둔다).
+if (window.self !== window.top) {
+  const _fiHomeBackBtn = document.getElementById('fiHomeBackBtn');
+  if (_fiHomeBackBtn) _fiHomeBackBtn.style.visibility = 'hidden';
+}
+
 function fiGasUrl() {
   return localStorage.getItem('fi_gas_url') || '';
 }
