@@ -11342,6 +11342,652 @@
         });
     });
 })();
+
+// ═══════════════════════════════════════════════════════════════════════
+// PE폼 발주 — 포장강화 웹 대시보드 안의 서브 뷰 (사이드바 "PE폼")
+// 별도 스프레드시트(PE폼 발주 Main/doGet 스크립트)를 쓴다. GAS_URL은 PE폼
+// 앱(PE폼발주_대시보드.html)과 같은 localStorage 키(sheet_pub_url_pe)를 써서
+// 설정을 공유한다 — 앱에서 한 번 설정해두면 여기서도 바로 연결된다.
+// 발주서(품목 선택→저장)만 이 웹 전용 신규 기능이고, 나머지(대시보드·발주이력·
+// 재고현황·품목마스터)는 PE폼 앱의 로직을 그대로 옮겨왔다(같은 기준이어야
+// 양쪽이 어긋나지 않는다 — 특히 PE_LOWSTOCK_BASELINE/peSpecNums/peNumsContain은
+// 앱(PE폼발주_대시보드.html)의 PE_LOWSTOCK_BASELINE/_peSpecNums/_peNumsContain과
+// 완전히 같은 기준이어야 하므로, 둘 중 하나를 고치면 다른 쪽도 같이 고칠 것).
+// ═══════════════════════════════════════════════════════════════════════
+function peGasUrl() {
+    return safeLocalStorage.getItem('sheet_pub_url_pe') ||
+        'https://script.google.com/macros/s/AKfycbyg-Vo-ArIJ7qc7OhvQynmI0XmhXqjXjsgPrDEcE1fwVK4XyDzhGIhcNrdiudo7qYQ/exec';
+}
+const PE_SHEET_LOG = 'PE폼 발주이력';
+const PE_SHEET_STK = 'PE폼 재고';
+const PE_SHEET_MST = 'PE폼 품목마스터';
+const PE_SHEET_USE = 'PE폼 소요';
+
+let peOrderRows = [], peStockRows = [], peMasterRows = [], peUsageRows = [];
+let pePnInited = false;
+
+function peFi(headers, ...aliases) {
+    for (const a of aliases) {
+        const i = headers.findIndex(h => (h || '').toString().trim() === a);
+        if (i !== -1) return i;
+    }
+    return -1;
+}
+
+async function peLoadAll() {
+    document.getElementById('peSub').textContent = '불러오는 중...';
+    try {
+        const res = await fetch(peGasUrl(), { signal: AbortSignal.timeout(15000) });
+        const json = await res.json();
+
+        const logTable = json[PE_SHEET_LOG] || [];
+        if (logTable.length > 1) {
+            const h = logTable[0];
+            const iOrd = peFi(h, '발주번호'), iDate = peFi(h, '발주일자'), iCode = peFi(h, '코드'),
+                  iName = peFi(h, '명칭'), iSpec = peFi(h, '규격상세'), iQty = peFi(h, '수량'),
+                  iUnit = peFi(h, '단위'), iType = peFi(h, '유형'), iStat = peFi(h, '상태'),
+                  iIn = peFi(h, '입고일'), iUser = peFi(h, '발주자'), iSite = peFi(h, '사업장'),
+                  iWh = peFi(h, '반입창고'), iNote = peFi(h, '비고'), iLead = peFi(h, '리드타임(일)');
+            peOrderRows = logTable.slice(1).filter(r => r[iOrd]).map(r => ({
+                ordNo: r[iOrd] || '', date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
+                spec: r[iSpec] || '', qty: r[iQty] || 0, unit: r[iUnit] || '', type: r[iType] || '',
+                stat: r[iStat] || '', in: r[iIn] || '', user: r[iUser] || '', site: r[iSite] || '',
+                wh: r[iWh] || '', note: r[iNote] || '', lead: r[iLead] || ''
+            }));
+        } else peOrderRows = [];
+
+        const stkTable = json[PE_SHEET_STK] || [];
+        if (stkTable.length > 1) {
+            const h = stkTable[0];
+            const iDate = peFi(h, '발주일자'), iCode = peFi(h, '자재 코드'), iName = peFi(h, '자재명'),
+                  iSpec = peFi(h, '규격상세'), iQty = peFi(h, '수량'), iUnit = peFi(h, '단위'),
+                  iType = peFi(h, '유형'), iSite = peFi(h, '사업장'), iNote = peFi(h, '비고');
+            peStockRows = stkTable.slice(1).filter(r => r[iCode] || r[iName]).map(r => ({
+                row: r[0], date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
+                spec: r[iSpec] || '', qty: r[iQty], unit: r[iUnit] || '', type: r[iType] || '',
+                site: r[iSite] || '', note: (r[iNote] || '').toString().trim()
+            }));
+        } else peStockRows = [];
+
+        const mstTable = json[PE_SHEET_MST] || [];
+        if (mstTable.length > 1) {
+            const h = mstTable[0];
+            const iCode = peFi(h, '자재 코드'), iName = peFi(h, '자재명'), iSpec = peFi(h, '규격상세'),
+                  iThick = peFi(h, '두께(T)'), iUnit = peFi(h, '단위'), iType = peFi(h, '유형'),
+                  iSite = peFi(h, '사업장'), iColor = peFi(h, '색상'), iNote = peFi(h, '비고');
+            peMasterRows = mstTable.slice(1).filter(r => r[iCode]).map(r => ({
+                code: r[iCode] || '', color: r[iColor] || '', name: r[iName] || '', spec: r[iSpec] || '',
+                thick: r[iThick] || '', unit: r[iUnit] || '', type: r[iType] || '', site: r[iSite] || '', note: r[iNote] || ''
+            }));
+        } else peMasterRows = [];
+
+        const useTable = json[PE_SHEET_USE] || [];
+        if (useTable.length > 1) {
+            const h = useTable[0];
+            const iDate = peFi(h, '일자'), iName = peFi(h, '자재명'), iSpec = peFi(h, '규격상세'),
+                  iQty = peFi(h, '수량'), iUnit = peFi(h, '단위'), iType = peFi(h, '유형'), iUse = peFi(h, '사용처');
+            peUsageRows = useTable.slice(1).filter(r => r[iName]).map(r => ({
+                date: r[iDate] || '', name: r[iName] || '', spec: r[iSpec] || '',
+                qty: parseFloat(r[iQty]) || 0, unit: r[iUnit] || '', type: r[iType] || '', use: r[iUse] || ''
+            }));
+        } else peUsageRows = [];
+
+        document.getElementById('peSub').textContent = '발주 ' + peOrderRows.length + '건 · 품목마스터 ' + peMasterRows.length + '종';
+        peRenderDashboard();
+        peRenderHistory();
+        peRenderStock();
+        peRenderMaster();
+    } catch (e) {
+        document.getElementById('peSub').textContent = '데이터를 불러오지 못했습니다: ' + e.message;
+    }
+}
+
+function openPkgPeFoamView() {
+    document.getElementById('pkgPeFoamView').classList.remove('hidden');
+    if (!pePnInited) { pePnInited = true; peInitOrderForm(); }
+    peLoadAll();
+}
+function closePkgPeFoamView() {
+    document.getElementById('pkgPeFoamView').classList.add('hidden');
+}
+function peSwitchTab(name) {
+    ['dash', 'order', 'history', 'stock', 'master'].forEach(t => {
+        document.getElementById('peTab-' + t).classList.toggle('hidden', t !== name);
+    });
+    document.querySelectorAll('.pe-tab-btn').forEach(b => b.classList.toggle('on', b.dataset.peTab === name));
+}
+function peShowToast(msg) {
+    const t = document.getElementById('peToast');
+    document.getElementById('peToastTxt').textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ── 공용 판정 로직 (PE폼 앱과 동일 기준) ──
+function peIsUsedUp(qty) {
+    if (typeof qty === 'number') return qty <= 0;
+    return String(qty == null ? '' : qty).trim() === '소진';
+}
+function peStkQtyNum(qty) { const n = parseFloat(qty); return isNaN(n) ? 0 : n; }
+function peGroupStock(rows) {
+    const g = {};
+    rows.forEach(r => {
+        const key = (r.code || r.name) + '|' + r.spec;
+        if (!g[key]) g[key] = { code: r.code, name: r.name, spec: r.spec, type: r.type, unit: r.unit, batches: [] };
+        g[key].batches.push(r);
+    });
+    return g;
+}
+const PE_TYPE_COLOR = { '일자형': '#2563EB', '코너형': '#7C3AED', '패드형': '#D97706', '롤형': '#16A34A' };
+function peTypeColor(t) { return PE_TYPE_COLOR[t] || '#94a3b8'; }
+function pePillClass(stat) {
+    if (stat === '발주') return 'pe-pill-order';
+    if (stat === '부분입고') return 'pe-pill-part';
+    if (stat === '입고완료') return 'pe-pill-done';
+    return 'pe-pill-cancel';
+}
+function peBarRowsHtml(entries, maxN) {
+    const top = entries.slice(0, maxN);
+    if (!top.length) return '<div class="pe-empty">데이터가 없습니다</div>';
+    const max = Math.max(1, ...top.map(e => e.value));
+    return top.map(e => `
+      <div class="bar-row">
+        <div class="bar-row-top"><span class="bl">${e.label}</span><span class="bv">${e.value.toLocaleString()} ${e.unit || ''}</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, e.value / max * 100)}%;background:${peTypeColor(e.label)};"></div></div>
+      </div>`).join('');
+}
+function peInPeriod(dateStr, period) {
+    if (!dateStr) return false;
+    const now = new Date();
+    if (period === 'month') return dateStr.slice(0, 7) === now.toISOString().slice(0, 7);
+    return true;
+}
+
+// ── 재고 부족·발주 대상 (앱의 PE_LOWSTOCK_BASELINE과 완전히 같은 기준) ──
+const PE_LOW_STOCK_MAX = 100;
+const PE_LOWSTOCK_BASELINE = (function () {
+    const heights = [20, 30, 40, 50, 60, 70, 80, 90, 100];
+    const list = [];
+    heights.forEach(h => list.push({ type: '일자형', dims: [2000, h], label: `일자형 2000×${h} (15T)` }));
+    heights.forEach(h => list.push({ type: '코너형', dims: [150, 150, h], label: `코너형 150×150×${h} (15T)` }));
+    list.push({ type: '코너형', dims: [100, 100, 500], label: '코너형 100×100×500 (15T)' });
+    list.push({ type: '패드형', dims: [500, 500], label: '패드형 500×500 (20T)' });
+    return list;
+})();
+function peSpecNums(spec) {
+    return (spec || '').toString().split(/[^0-9.]+/).map(s => parseFloat(s)).filter(n => !isNaN(n));
+}
+function peNumsContain(nums, want) {
+    if (nums.length < want.length) return false;
+    for (let i = 0; i < want.length; i++) if (nums[i] !== want[i]) return false;
+    return true;
+}
+function peLowStockDeficitList() {
+    const entries = Object.entries(peGroupStock(peStockRows));
+    return PE_LOWSTOCK_BASELINE.map(b => {
+        const matched = entries.filter(([, g]) => g.type === b.type && peNumsContain(peSpecNums(g.spec), b.dims));
+        const total = matched.reduce((s, [, g]) => s + g.batches.reduce((ss, bt) => ss + peStkQtyNum(bt.qty), 0), 0);
+        let repKey = '', repCode = '', repName = b.label, repSpec = '', repUnit = 'EA';
+        if (matched.length) {
+            const [key0, g0] = matched[0];
+            repKey = key0; repCode = g0.code; repName = g0.name || b.label; repSpec = g0.spec; repUnit = g0.unit || 'EA';
+        } else {
+            const mst = peMasterRows.find(r => r.type === b.type && peNumsContain(peSpecNums(r.spec), b.dims));
+            if (mst) { repCode = mst.code; repName = mst.name; repSpec = mst.spec; repUnit = mst.unit || 'EA'; }
+        }
+        return { key: repKey, code: repCode, name: repName, spec: repSpec, type: b.type, unit: repUnit, total, clickable: !!repKey };
+    }).filter(g => g.total <= PE_LOW_STOCK_MAX).sort((a, b) => a.total - b.total);
+}
+
+// ── 대시보드 ──
+function peRenderDashboard() {
+    const ongoing = peOrderRows.filter(r => r.stat === '발주' || r.stat === '부분입고');
+    document.getElementById('peKpiOngoing').textContent = ongoing.length + '건';
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    document.getElementById('peKpiMonth').textContent = peOrderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '건';
+    const leadNums = peOrderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n) && n > 0);
+    document.getElementById('peKpiLead').textContent = (leadNums.length ? (leadNums.reduce((a, b) => a + b, 0) / leadNums.length).toFixed(1) : '–') + (leadNums.length ? '일' : '');
+
+    const deficits = peLowStockDeficitList();
+    document.getElementById('peKpiLowStock').textContent = deficits.length + '종';
+    document.getElementById('peLowStockList').innerHTML = deficits.length
+        ? deficits.slice(0, 6).map(peDeficitCardHtml).join('')
+        : '<div class="pe-empty">부족한 자재가 없습니다</div>';
+
+    const byType = {};
+    Object.values(peGroupStock(peStockRows)).forEach(g => {
+        const total = g.batches.reduce((s, b) => s + peStkQtyNum(b.qty), 0);
+        const key = g.type || '기타';
+        if (!byType[key]) byType[key] = { label: key, value: 0, unit: g.unit };
+        byType[key].value += total;
+    });
+    document.getElementById('peStockTypeBars').innerHTML = peBarRowsHtml(Object.values(byType).sort((a, b) => b.value - a.value), 10);
+
+    const byTypeUse = {};
+    peUsageRows.filter(u => peInPeriod(u.date, 'month')).forEach(u => {
+        const key = u.type || '기타';
+        if (!byTypeUse[key]) byTypeUse[key] = { label: key, value: 0, unit: u.unit };
+        byTypeUse[key].value += u.qty;
+    });
+    document.getElementById('peUsageTypeBars').innerHTML = peBarRowsHtml(Object.values(byTypeUse).sort((a, b) => b.value - a.value), 10);
+}
+function peDeficitCardHtml(g) {
+    const click = g.clickable ? ` onclick="peOpenStockDetailByKey('${g.key.replace(/'/g, "\\'")}')"` : '';
+    return `<div class="pe-stk-card" style="margin-bottom:10px;">
+      <div class="pe-stk-head"${click} style="${g.clickable ? '' : 'cursor:default;'}">
+        <span style="width:34px;height:34px;border-radius:10px;background:${peTypeColor(g.type)}1a;color:${peTypeColor(g.type)};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-cube"></i></span>
+        <div class="pe-stk-mid">
+          <div class="pe-stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+          <div class="pe-stk-sub">${g.total <= 0 ? '재고 없음 · 기준 품목' : '재고부족 · 기준 품목'}</div>
+        </div>
+        <div class="pe-stk-total"><b style="color:#d97706;">${g.total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
+      </div>
+    </div>`;
+}
+function peOpenStockDetailByKey(key) {
+    peSwitchTab('stock');
+    document.getElementById('peStockSearch').value = '';
+    document.getElementById('peStockTypeFilter').value = '';
+    document.getElementById('peStockShowFilter').value = 'remain';
+    peRenderStock();
+    peOpenStockDetail(key);
+}
+
+// ── 발주이력 ──
+function peRenderHistory() {
+    let rows = peOrderRows;
+    const statF = document.getElementById('peHistStatusFilter').value;
+    if (statF) rows = rows.filter(r => r.stat === statF);
+    const dFrom = document.getElementById('peHistFrom').value;
+    const dTo = document.getElementById('peHistTo').value;
+    if (dFrom) rows = rows.filter(r => (r.date || '') >= dFrom);
+    if (dTo) rows = rows.filter(r => (r.date || '') <= dTo);
+    const q = (document.getElementById('peHistSearch').value || '').trim().toLowerCase();
+    if (q) rows = rows.filter(r => (r.ordNo + ' ' + r.code + ' ' + r.name).toLowerCase().includes(q));
+    rows = [...rows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    document.getElementById('peHistList').innerHTML = rows.length ? rows.map(peOrderCardHtml).join('') : '<div class="pe-empty">해당하는 발주 내역이 없습니다</div>';
+}
+function peOrderCardHtml(r) {
+    const canReceive = r.stat === '발주' || r.stat === '부분입고';
+    const today = new Date().toISOString().slice(0, 10);
+    const safeOrd = r.ordNo.replace(/'/g, "\\'");
+    return `<div class="pe-card">
+      <div style="display:flex;justify-content:space-between;gap:10px;">
+        <div>
+          <div style="font-size:13.5px;font-weight:800;color:#1e293b;">${r.name} <span style="color:#94a3b8;font-weight:600;">${r.spec}</span></div>
+          <div style="font-size:11px;color:#94a3b8;font-family:monospace;margin-top:2px;">${r.code}</div>
+        </div>
+        <span class="pe-pill ${pePillClass(r.stat)}">${r.stat || '—'}</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        <span class="pe-tag">${r.site || '—'}</span><span class="pe-tag">${r.type || '—'}</span>${r.wh ? `<span class="pe-tag">${r.wh}</span>` : ''}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12px;color:#64748b;cursor:pointer;" onclick="peOpenOrderDetail('${safeOrd}')">
+        <span>${r.date || '—'} 발주${r.lead ? ' · 리드타임 ' + r.lead + '일' : ''}</span>
+        <span style="font-weight:800;color:#1e293b;">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</span>
+      </div>
+      ${canReceive ? `
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        ${r.stat === '발주' ? `<button class="pe-qa-btn" onclick="peToggleDatePanel('${safeOrd}','부분입고')">부분입고</button>` : ''}
+        <button class="pe-qa-btn confirm" onclick="peToggleDatePanel('${safeOrd}','입고완료')"><i class="fa-solid fa-box-open"></i> 입고완료</button>
+      </div>
+      <div id="pedp_${r.ordNo}" style="display:none;margin-top:8px;gap:8px;align-items:center;">
+        <input type="date" id="pedpdate_${r.ordNo}" value="${today}" class="pe-select" style="flex:1;">
+        <button onclick="peConfirmReceive('${safeOrd}', document.getElementById('pedp_${r.ordNo}').dataset.status, document.getElementById('pedpdate_${r.ordNo}').value, 'pedp_${r.ordNo}')" class="pe-qa-btn confirm" style="flex:0 0 auto;padding:8px 14px;">확정</button>
+      </div>` : ''}
+    </div>`;
+}
+function peToggleDatePanel(ordNo, status) {
+    const panel = document.getElementById('pedp_' + ordNo);
+    panel.dataset.status = status;
+    panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
+}
+async function peConfirmReceive(ordNo, status, date, panelId) {
+    try {
+        const qs = new URLSearchParams({ action: 'updateOrderStatus', ordNo, status, date });
+        const res = await fetch(peGasUrl() + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'success') {
+            peShowToast(json.stockRegistered ? '입고완료 처리 및 재고 등록 완료' : '상태가 "' + status + '"(으)로 변경됐습니다');
+            await peLoadAll();
+        } else {
+            peShowToast('저장 실패: ' + (json && json.message || '알 수 없는 오류'));
+        }
+    } catch (e) { peShowToast('네트워크 오류로 저장 실패'); }
+    const panel = document.getElementById(panelId);
+    if (panel) panel.style.display = 'none';
+}
+function peOpenOrderDetail(ordNo) {
+    const r = peOrderRows.find(x => x.ordNo === ordNo);
+    if (!r) return;
+    const rows = [
+        ['발주번호', r.ordNo], ['발주일자', r.date], ['자재코드', r.code], ['명칭', r.name],
+        ['규격상세', r.spec], ['수량', (r.qty || 0).toLocaleString() + ' ' + r.unit], ['유형', r.type],
+        ['상태', r.stat], ['입고일', r.in || '—'], ['발주자', r.user || '—'], ['사업장', r.site],
+        ['반입창고', r.wh || '—'], ['비고', r.note || '—'], ['리드타임', r.lead ? r.lead + '일' : '—']
+    ];
+    document.getElementById('peOrderDetailBody').innerHTML = rows.map(([k, v]) => `<div class="kv-row"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+    document.getElementById('peOrderDetailModal').style.display = 'flex';
+}
+function peCloseOrderDetail() { document.getElementById('peOrderDetailModal').style.display = 'none'; }
+
+// ── 재고현황 + 소요 등록 ──
+let _peStockGroups = {};
+function peRenderStock() {
+    const typeF = document.getElementById('peStockTypeFilter').value;
+    const showF = document.getElementById('peStockShowFilter').value;
+    const q = (document.getElementById('peStockSearch').value || '').trim().toLowerCase();
+    let rows = peStockRows;
+    if (typeF) rows = rows.filter(r => r.type === typeF);
+    if (showF === 'remain') rows = rows.filter(r => !peIsUsedUp(r.qty));
+    else if (showF === 'used') rows = rows.filter(r => peIsUsedUp(r.qty));
+    if (q) rows = rows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q));
+
+    _peStockGroups = peGroupStock(rows);
+    const groupArr = Object.entries(_peStockGroups).map(([key, g]) => {
+        const total = g.batches.filter(b => !peIsUsedUp(b.qty)).reduce((s, b) => s + peStkQtyNum(b.qty), 0);
+        return [key, g, total];
+    }).sort((a, b) => b[2] - a[2]);
+
+    document.getElementById('peStockList').innerHTML = groupArr.length ? groupArr.map(([key, g, total]) => `
+      <div class="pe-stk-card">
+        <div class="pe-stk-head" onclick="peOpenStockDetail('${key.replace(/'/g, "\\'")}')">
+          <span style="width:38px;height:38px;border-radius:10px;background:${peTypeColor(g.type)}1a;color:${peTypeColor(g.type)};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-cube"></i></span>
+          <div class="pe-stk-mid">
+            <div class="pe-stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
+            <div class="pe-stk-sub">${g.code || '코드 없음'} · 배치 ${g.batches.length}건</div>
+          </div>
+          <div class="pe-stk-total"><b>${total.toLocaleString()}</b><span>${g.unit} 남음</span></div>
+        </div>
+      </div>`).join('') : '<div class="pe-empty">해당하는 재고가 없습니다</div>';
+}
+function peOpenStockDetail(key) {
+    const g = _peStockGroups[key];
+    if (!g) return;
+    document.getElementById('peStockDetailTitle').textContent = g.name + ' ' + g.spec;
+    document.getElementById('peStockDetailCode').textContent = g.code;
+    const modal = document.getElementById('peStockDetailModal');
+    modal.dataset.key = key; modal.dataset.name = g.name; modal.dataset.unit = g.unit;
+    document.getElementById('peUsageForm').style.display = 'none';
+    document.getElementById('peUsageQty').value = ''; document.getElementById('peUsageUse').value = '';
+    document.getElementById('peStockDetailBody').innerHTML = g.batches.map(b => `
+      <div class="pe-batch ${peIsUsedUp(b.qty) ? 'used' : ''}">
+        <span>${b.site || '—'} · 입고 ${b.date || '—'}${b.note ? '<br>' + b.note : ''}</span>
+        <span>${peIsUsedUp(b.qty) ? '소진' : peStkQtyNum(b.qty).toLocaleString() + ' ' + b.unit}</span>
+      </div>`).join('');
+    modal.style.display = 'flex';
+}
+function peCloseStockDetail() { document.getElementById('peStockDetailModal').style.display = 'none'; }
+function peToggleUsageForm() {
+    const f = document.getElementById('peUsageForm');
+    f.style.display = f.style.display === 'flex' ? 'none' : 'flex';
+    if (f.style.display === 'flex') document.getElementById('peUsageQty').focus();
+}
+async function peSubmitUsage() {
+    const modal = document.getElementById('peStockDetailModal');
+    const key = modal.dataset.key, name = modal.dataset.name, unit = modal.dataset.unit;
+    const qty = parseFloat(document.getElementById('peUsageQty').value);
+    const use = document.getElementById('peUsageUse').value.trim();
+    if (!qty || qty <= 0) { peShowToast('소요 수량을 입력하세요'); return; }
+    const btn = document.getElementById('peUsageSubmitBtn');
+    if (btn.disabled) return;
+    const orig = btn.textContent; btn.disabled = true; btn.textContent = '반영 중...';
+    try {
+        const qs = new URLSearchParams({ action: 'addUsage', name, qty, use });
+        const res = await fetch(peGasUrl() + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'success') {
+            if (json.stockApplied && json.stockShortfall > 0) peShowToast('소요 등록 · 재고 ' + (json.stockTaken || 0).toLocaleString() + unit + ' 차감 (부족 ' + json.stockShortfall.toLocaleString() + unit + ')');
+            else if (json.stockApplied) peShowToast('소요 등록 및 재고 ' + (json.stockTaken || 0).toLocaleString() + unit + ' 차감 완료');
+            else peShowToast('소요는 기록됐지만 재고 차감에는 실패했습니다');
+            document.getElementById('peUsageForm').style.display = 'none';
+            document.getElementById('peUsageQty').value = ''; document.getElementById('peUsageUse').value = '';
+            await peLoadAll();
+            if (key && document.getElementById('peStockDetailModal').style.display === 'flex') peOpenStockDetail(key);
+        } else {
+            peShowToast('저장 실패: ' + (json && json.message || '알 수 없는 오류'));
+        }
+    } catch (e) { peShowToast('네트워크 오류로 저장 실패'); }
+    finally { btn.disabled = false; btn.textContent = orig; }
+}
+
+// ── 품목마스터 (조회 전용) ──
+function peRenderMaster() {
+    const typeF = document.getElementById('peMstTypeFilter').value;
+    const q = (document.getElementById('peMstSearch').value || '').trim().toLowerCase();
+    let rows = peMasterRows;
+    if (typeF) rows = rows.filter(r => r.type === typeF);
+    if (q) rows = rows.filter(r => (r.code + ' ' + r.name).toLowerCase().includes(q));
+    document.getElementById('peMstBody').innerHTML = rows.length ? rows.map(r => `
+      <tr>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;font-family:monospace;">${r.code}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;">${r.color || '-'}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;">${r.name}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;">${r.spec}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;font-family:monospace;">${r.thick}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;">${r.unit}</td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;"><span class="pe-tag" style="background:${peTypeColor(r.type)}1a;color:${peTypeColor(r.type)};">${r.type}</span></td>
+        <td style="padding:8px;border-bottom:1px solid #f1f5f9;">${r.site}</td>
+      </tr>`).join('') : '<tr><td colspan="8" style="padding:20px;text-align:center;color:#94a3b8;">품목마스터 데이터가 없습니다</td></tr>';
+}
+
+// ── 발주서 (신규 기능) — 유형 선택 → 실제 품목마스터에서 검색해서 고르기 ──
+let peSeq = 0;
+let peItemSelections = {};
+function peInitOrderForm() {
+    document.getElementById('peOrdDate').value = new Date().toISOString().slice(0, 10);
+    peAddItem();
+}
+function peOnWhChange() {
+    const sel = document.getElementById('peOrdWhSel');
+    const inp = document.getElementById('peOrdWh');
+    if (sel.value === '__custom__') { inp.hidden = false; inp.value = ''; inp.focus(); }
+    else { inp.hidden = true; inp.value = ''; }
+}
+function peGetWhValue() {
+    const sel = document.getElementById('peOrdWhSel');
+    return sel.value === '__custom__' ? document.getElementById('peOrdWh').value.trim() : sel.value;
+}
+function peOrderRowHtml(id) {
+    return `<div class="pe-item-row" data-id="${id}" data-type="" data-corner="">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <span class="pe-num">${id + 1}</span>
+        <span style="flex:1;font-size:10.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;">품목</span>
+        <button onclick="peRemoveItem(${id})" style="border:none;background:transparent;color:#94a3b8;cursor:pointer;"><i class="fa-solid fa-trash-can" style="font-size:11px;"></i></button>
+      </div>
+      <div class="pe-type-chips" id="peChips-${id}"></div>
+      <div id="peDims-${id}"></div>
+      <div class="pe-preview empty" id="pePreview-${id}">유형을 먼저 선택해주세요</div>
+      <div style="display:grid;grid-template-columns:100px 1fr;gap:9px;">
+        <div><label class="pe-sublabel">수량</label><input type="number" class="pe-f-qty" placeholder="0"></div>
+        <div><label class="pe-sublabel">비고</label><input type="text" class="pe-f-note" placeholder="비고(선택)"></div>
+      </div>
+    </div>`;
+}
+function peAddItem() {
+    const id = peSeq++;
+    document.getElementById('peItemRows').insertAdjacentHTML('beforeend', peOrderRowHtml(id));
+    peRenderTypeChips(id);
+    peRenumber();
+}
+function peRemoveItem(id) {
+    const el = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    if (el) el.remove();
+    delete peItemSelections[id];
+    peRenumber();
+}
+function peRenumber() {
+    const rows = document.querySelectorAll('.pe-item-row');
+    rows.forEach((r, i) => { r.querySelector('.pe-num').textContent = i + 1; });
+    document.getElementById('peItemCount').textContent = rows.length + '개 품목';
+}
+function peOrderTypes() {
+    const uniq = [...new Set(peMasterRows.map(r => r.type).filter(Boolean))];
+    const order = ['일자형', '코너형', '패드형', '롤형'];
+    return order.filter(t => uniq.includes(t)).concat(uniq.filter(t => !order.includes(t)));
+}
+function peRenderTypeChips(id) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    const cur = row.dataset.type;
+    const types = peOrderTypes();
+    document.getElementById('peChips-' + id).innerHTML = (types.length ? types : ['일자형', '코너형', '패드형', '롤형']).map(t => {
+        const on = t === cur;
+        return `<div class="pe-type-chip${on ? ' on' : ''}" style="--pe-chip-color:${peTypeColor(t)};--pe-chip-soft:${peTypeColor(t)}1a;" onclick="pePickType(${id},'${t}')">
+          <div class="dot"></div><div class="lbl">${t}</div>
+        </div>`;
+    }).join('');
+}
+function pePickType(id, t) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    if (row.dataset.type === t) return;
+    row.dataset.type = t; row.dataset.corner = '';
+    delete peItemSelections[id];
+    row.style.setProperty('--pe-row-color', peTypeColor(t));
+    peRenderTypeChips(id);
+    peRenderDims(id);
+    peUpdatePreview(id);
+}
+function peCornerDims() {
+    const dims = new Set();
+    peMasterRows.filter(r => r.type === '코너형').forEach(r => {
+        const nums = peSpecNums(r.spec);
+        if (nums.length >= 2) dims.add(nums[0] + '×' + nums[1]);
+    });
+    return [...dims].sort();
+}
+function peRenderDims(id) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    const t = row.dataset.type;
+    const wrap = document.getElementById('peDims-' + id);
+    if (!t) { wrap.innerHTML = ''; return; }
+    let cornerHtml = '';
+    if (t === '코너형') {
+        const dims = peCornerDims();
+        cornerHtml = dims.length ? `<div class="pe-corner-sub" id="peCornerSub-${id}">` + dims.map(d =>
+            `<button class="${row.dataset.corner === d ? 'on' : ''}" onclick="pePickCorner(${id},'${d}')">${d}</button>`
+        ).join('') + `</div>` : '';
+    }
+    wrap.innerHTML = cornerHtml + `<div id="peSearchWrap-${id}"></div>`;
+    peRenderSearchField(id);
+}
+function pePickCorner(id, dim) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    row.dataset.corner = row.dataset.corner === dim ? '' : dim;
+    delete peItemSelections[id];
+    peRenderDims(id);
+    peUpdatePreview(id);
+}
+function peGetCandidates(id) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    const t = row.dataset.type;
+    let list = peMasterRows.filter(r => r.type === t);
+    if (t === '코너형' && row.dataset.corner) {
+        list = list.filter(r => {
+            const nums = peSpecNums(r.spec);
+            return nums.length >= 2 && (nums[0] + '×' + nums[1]) === row.dataset.corner;
+        });
+    }
+    return list;
+}
+function peRenderSearchField(id) {
+    const sw = document.getElementById('peSearchWrap-' + id);
+    const sel = peItemSelections[id];
+    if (sel) {
+        sw.innerHTML = `<div class="pe-selected-chip">
+          <div><span class="code">${sel.code}</span><span class="spec">${sel.spec} · ${sel.site || '-'}</span></div>
+          <button onclick="peClearSelected(${id})"><i class="fa-solid fa-rotate-left"></i> 변경</button>
+        </div>`;
+        return;
+    }
+    sw.innerHTML = `<div class="pe-search-field">
+      <input type="text" id="peSearchInput-${id}" placeholder="규격·자재명으로 검색"
+        oninput="peOnSearchInput(${id})" onfocus="peOnSearchInput(${id})" onblur="setTimeout(()=>peCloseDropdown(${id}),150)">
+      <div class="pe-search-dropdown" id="peSearchDropdown-${id}" hidden></div>
+    </div>`;
+}
+function peOnSearchInput(id) {
+    const q = (document.getElementById('peSearchInput-' + id).value || '').trim().toLowerCase();
+    const all = peGetCandidates(id);
+    const filtered = q ? all.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q)) : all;
+    const dd = document.getElementById('peSearchDropdown-' + id);
+    if (!filtered.length) {
+        dd.innerHTML = `<div class="pe-search-empty">일치하는 품목이 없습니다.<br>품목마스터에 먼저 등록하면 목록에 나옵니다.</div>`;
+    } else {
+        dd.innerHTML = filtered.slice(0, 50).map(r =>
+            `<div class="pe-search-opt" onmousedown="peSelectCandidate(${id},'${r.code.replace(/'/g, "\\'")}')"><span>${r.name} <span style="color:#94a3b8;">${r.spec}</span></span><span style="font-family:monospace;color:#64748b;">${r.code} · ${r.site || '-'}</span></div>`
+        ).join('');
+    }
+    dd.hidden = false;
+}
+function peCloseDropdown(id) { const dd = document.getElementById('peSearchDropdown-' + id); if (dd) dd.hidden = true; }
+function peSelectCandidate(id, code) {
+    const r = peMasterRows.find(x => x.code === code);
+    if (!r) return;
+    peItemSelections[id] = r;
+    peRenderSearchField(id);
+    peUpdatePreview(id);
+}
+function peClearSelected(id) {
+    delete peItemSelections[id];
+    peRenderSearchField(id);
+    peUpdatePreview(id);
+}
+function peUpdatePreview(id) {
+    const row = document.querySelector('.pe-item-row[data-id="' + id + '"]');
+    const preview = document.getElementById('pePreview-' + id);
+    if (!row.dataset.type) { preview.className = 'pe-preview empty'; preview.textContent = '유형을 먼저 선택해주세요'; return; }
+    const sel = peItemSelections[id];
+    if (!sel) { preview.className = 'pe-preview empty'; preview.textContent = '품목을 검색해서 선택하면 코드가 확정됩니다'; return; }
+    preview.className = 'pe-preview';
+    preview.innerHTML = `<b>${sel.code}</b> · ${sel.spec} · ${sel.site || '-'}`;
+}
+async function peSubmitOrder() {
+    const rows = Array.from(document.querySelectorAll('.pe-item-row'));
+    const items = rows.map(r => {
+        const id = parseInt(r.dataset.id, 10);
+        const sel = peItemSelections[id];
+        return { code: sel ? sel.code : '', qty: r.querySelector('.pe-f-qty').value.trim(), note: r.querySelector('.pe-f-note').value.trim() };
+    });
+    if (!items.length || items.some(it => !it.code || !it.qty || parseFloat(it.qty) <= 0)) {
+        peShowToast('모든 줄에서 품목을 검색해서 선택하고 수량을 입력해주세요');
+        return;
+    }
+    const btn = document.getElementById('peSubmitBtn');
+    if (btn.disabled) return;
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+    try {
+        const body = {
+            action: 'addOrder',
+            date: document.getElementById('peOrdDate').value,
+            user: document.getElementById('peOrdUser').value.trim(),
+            due: document.getElementById('peOrdDue').value,
+            wh: peGetWhValue(),
+            items
+        };
+        const res = await fetch(peGasUrl(), { method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
+        const json = await res.json().catch(() => null);
+        if (json && json.status === 'success') {
+            peShowToast('발주번호 ' + json.ordNo + ' 저장 완료 (' + json.rows + '줄)' + (json.skipped ? ' · ' + json.skipped + '줄은 품목을 못 찾아 제외됨' : ''));
+            document.getElementById('peItemRows').innerHTML = '';
+            peItemSelections = {};
+            peSeq = 0;
+            peAddItem();
+            document.getElementById('peOrdUser').value = '';
+            document.getElementById('peOrdDue').value = '';
+            await peLoadAll();
+        } else {
+            peShowToast('저장 실패: ' + (json && json.message || '알 수 없는 오류'));
+        }
+    } catch (e) {
+        peShowToast('네트워크 오류로 저장 실패');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = orig;
+    }
+}
 </script>
 
 <!-- ── 진행상태 수정 모달 ────────────────────────────────── -->
