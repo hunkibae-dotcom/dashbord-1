@@ -1969,6 +1969,16 @@
         // 사이드바 버튼으로 직접 여는 용도만 남긴다.
 
         window.addEventListener('DOMContentLoaded', () => {
+            // 포장강화 앱(shell.html)의 "포장" 탭이 이 대시보드를 iframe으로 띄울 때는
+            // 그 바깥쪽에 이미 자체 뒤로가기/닫기 버튼이 있어서, 이 안쪽 뷰(포장불량조치
+            // 전체화면)의 뒤로가기 버튼까지 같이 뜨면 뒤로가기가 두 개로 보인다(요청 버그,
+            // 2026-10-21: "뒤로가기 버튼이 두 개씩이다"). iframe 안에서 열린 경우에만 이
+            // 안쪽 버튼을 숨긴다 — PC 웹에서 이 대시보드에 직접 들어왔을 땐(iframe 아님)
+            // 이 버튼이 유일한 뒤로가기라 그대로 둔다.
+            if (window.self !== window.top) {
+                const _innerBackBtn = document.getElementById('pkgDefectActionBackBtn');
+                if (_innerBackBtn) _innerBackBtn.style.display = 'none';
+            }
             initCard1();
             _presenceInit();
 
