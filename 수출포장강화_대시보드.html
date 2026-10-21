@@ -11761,6 +11761,7 @@ function peRenderStock() {
     if (hideUsed) rows = rows.filter(r => !peIsUsedUp(r.qty));
     if (q) rows = rows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q));
     _peStockFiltered = rows;
+    document.getElementById('peStockCount').textContent = rows.length + '건';
     document.getElementById('peStockBody').innerHTML = rows.length ? rows.map((r, i) => {
         const used = peIsUsedUp(r.qty);
         return `<tr class="stock-row" onclick="peOpenStockDetail(${i})"${used ? ' style="color:#DC2626;font-weight:800;"' : ''}>
