@@ -11942,28 +11942,25 @@ function peClearDraft() {
     try { safeLocalStorage.setItem(PE_DRAFT_KEY, ''); } catch (e) {}
 }
 
-// ── 품목 표(그리드) — 자재명 칸은 커스텀 검색 드롭다운(공용 1개, position:fixed로
-//    표 가로 스크롤에 안 잘리게) 방식. 네이티브 datalist 대신 써서 결과를 보기 좋게
-//    자재명+규격/코드+사업장 두 줄로 보여준다. ──
+// ── 품목 목록(그리드) — 표의 좁은 칸에 억지로 다 밀어넣지 않고, 자재명 검색을
+//    넓게 쓰고 코드·색상·유형·규격 등은 그 아래 작은 메타 줄로 보여준다. 수량·비고만
+//    별도 칸으로 두어 입력하기 편하게 했다. 자재명 칸은 커스텀 검색 드롭다운
+//    (공용 1개, position:fixed로 스크롤에 안 잘리게) 방식. ──
 function peGridRowHtml(id) {
-    return `<tr class="pe-grid-row" data-id="${id}">
-      <td class="pe-gc pe-gc-num" id="peGridNum-${id}"></td>
-      <td class="pe-gc pe-gc-code pe-mono" id="peGridCode-${id}"></td>
-      <td class="pe-gc" id="peGridColor-${id}"></td>
-      <td class="pe-gc" id="peGridType-${id}"></td>
-      <td class="pe-gc pe-gc-name">
+    return `<div class="pe-grid-row" data-id="${id}">
+      <div class="pe-grid-num" id="peGridNum-${id}"></div>
+      <div class="pe-grid-main">
         <div class="pe-grid-search">
           <input type="text" class="pe-grid-name" autocomplete="off" placeholder="자재명 검색"
             oninput="peGridSearchInput('${id}')" onfocus="peGridSearchInput('${id}')" onblur="setTimeout(()=>peGridCloseDropdown('${id}'),150)">
           <i class="fa-solid fa-magnifying-glass pe-grid-search-ic"></i>
         </div>
-      </td>
-      <td class="pe-gc" id="peGridSpec-${id}"></td>
-      <td class="pe-gc"><input type="number" class="pe-grid-qty" placeholder="0" oninput="peUpdateSum();peSaveDraft();"></td>
-      <td class="pe-gc" id="peGridUnit-${id}"></td>
-      <td class="pe-gc" id="peGridSite-${id}"></td>
-      <td class="pe-gc"><input type="text" class="pe-grid-note" placeholder="비고" oninput="peSaveDraft()"></td>
-    </tr>`;
+        <div class="pe-grid-meta" id="peGridMeta-${id}"></div>
+      </div>
+      <input type="number" class="pe-grid-qty" placeholder="수량" oninput="peUpdateSum();peSaveDraft();">
+      <input type="text" class="pe-grid-note" placeholder="비고" oninput="peSaveDraft()">
+      <button class="pe-grid-clear" onclick="peClearGridRow('${id}')" title="지우기"><i class="fa-solid fa-xmark"></i></button>
+    </div>`;
 }
 function peAddGridRow() {
     const id = 'r' + (peGridSeq++);
@@ -11979,12 +11976,28 @@ function peRenumberGrid() {
     });
 }
 function peGridFillRow(id, r) {
-    document.getElementById('peGridCode-' + id).textContent = r ? r.code : '';
-    document.getElementById('peGridColor-' + id).textContent = r ? (r.color || '') : '';
-    document.getElementById('peGridType-' + id).innerHTML = r ? `<span class="pe-pill" style="background:${peTypeColor(r.type)}1a;color:${peTypeColor(r.type)};">${r.type}</span>` : '';
-    document.getElementById('peGridSpec-' + id).textContent = r ? r.spec : '';
-    document.getElementById('peGridUnit-' + id).textContent = r ? (r.unit || 'EA') : '';
-    document.getElementById('peGridSite-' + id).textContent = r ? (r.site || '') : '';
+    const meta = document.getElementById('peGridMeta-' + id);
+    if (!r) { meta.innerHTML = ''; return; }
+    const sep = '<span class="pe-grid-meta-sep">·</span>';
+    const parts = [
+        `<span class="pe-mono">${r.code}</span>`,
+        `<span class="pe-pill" style="background:${peTypeColor(r.type)}1a;color:${peTypeColor(r.type)};">${r.type}</span>`,
+        r.spec,
+        r.color ? ('색상 ' + r.color) : '',
+        r.unit || 'EA',
+        r.site || ''
+    ].filter(Boolean);
+    meta.innerHTML = parts.join(' ' + sep + ' ');
+}
+function peClearGridRow(id) {
+    const row = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
+    row.querySelector('.pe-grid-name').value = '';
+    row.querySelector('.pe-grid-qty').value = '';
+    row.querySelector('.pe-grid-note').value = '';
+    peGridSelections[id] = null;
+    peGridFillRow(id, null);
+    peUpdateSum();
+    peSaveDraft();
 }
 function peGridSearchInput(id) {
     peGridActiveId = id;
