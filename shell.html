@@ -186,8 +186,11 @@
     <script>
     let _pkgPeFoamFrameLoaded = false;
     function openPkgPeFoamOverlay() {
+        // (정정, 2026-10-21) 포장강화 대시보드 안의 새 PE폼 탭이 아니라, 기존부터 쓰던
+        // PE폼 전용 앱(PE폼발주_대시보드.html) 그대로를 띄운다 — 그게 "기존 것"이다.
+        // 그 앱은 자체 모바일 레이아웃을 쓰므로 forceDesktop 안 붙인다.
         const f = document.getElementById('pkgPeFoamFrame');
-        if (!_pkgPeFoamFrameLoaded) { f.src = '수출포장강화_대시보드.html?forceDesktop=1&openPeFoam=1'; _pkgPeFoamFrameLoaded = true; }
+        if (!_pkgPeFoamFrameLoaded) { f.src = 'PE폼발주_대시보드.html'; _pkgPeFoamFrameLoaded = true; }
         document.getElementById('pkgPeFoamOverlay').style.display = 'flex';
     }
     function closePkgPeFoamOverlay() {
