@@ -12734,22 +12734,15 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
                     <span class="count" id="peItemCount">0개 품목</span>
                 </div>
-                <div style="overflow-x:auto;border:1px solid var(--pe-border);border-radius:12px;">
-                    <table class="pe-grid-table">
-                        <thead><tr>
-                            <th style="width:30px;">번호</th>
-                            <th style="width:100px;">코드</th>
-                            <th style="width:50px;">색상</th>
-                            <th style="width:62px;">유형</th>
-                            <th style="min-width:230px;">자재명</th>
-                            <th style="min-width:110px;">규격상세</th>
-                            <th style="width:80px;">수량</th>
-                            <th style="width:46px;">단위</th>
-                            <th style="width:72px;">사업장</th>
-                            <th style="min-width:120px;">비고</th>
-                        </tr></thead>
-                        <tbody id="peGridBody"></tbody>
-                    </table>
+                <div style="border:1px solid var(--pe-border);border-radius:14px;overflow:hidden;">
+                    <div class="pe-grid-head">
+                        <div class="pe-grid-head-num">번호</div>
+                        <div class="pe-grid-head-main">자재명</div>
+                        <div class="pe-grid-head-qty">수량</div>
+                        <div class="pe-grid-head-note">비고</div>
+                        <div class="pe-grid-head-del"></div>
+                    </div>
+                    <div id="peGridBody"></div>
                 </div>
                 <div class="pe-search-dropdown" id="peGridSharedDropdown" hidden style="position:fixed;"></div>
                 <button onclick="peAddGridRows(10)" class="pe-add-btn" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> 10행 추가</button>
