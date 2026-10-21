@@ -2490,9 +2490,34 @@
         setTimeout(() => { menu.style.display = 'none'; bd.style.display = 'none'; }, 200);
     }
 
+    // ── 포장 서브메뉴(불량조치/PE폼) ──────────────────────────
+    function togglePkgSub() {
+        const menu = document.getElementById('pkgSubMenu');
+        const bd   = document.getElementById('pkgSubBd');
+        if (menu.style.display !== 'none') {
+            closePkgSub();
+        } else {
+            menu.style.display = 'flex';
+            bd.style.display   = 'block';
+            requestAnimationFrame(() => {
+                menu.style.opacity   = '1';
+                menu.style.transform = 'translateX(-50%) translateY(0)';
+            });
+            navSelect('navPkg');
+            _armBackTrap();
+        }
+    }
+    function closePkgSub() {
+        const menu = document.getElementById('pkgSubMenu');
+        const bd   = document.getElementById('pkgSubBd');
+        menu.style.opacity   = '0';
+        menu.style.transform = 'translateX(-50%) translateY(12px)';
+        setTimeout(() => { menu.style.display = 'none'; bd.style.display = 'none'; }, 200);
+    }
+
     // ── 하단 탭 선택 ──────────────────────────────────────
     function navSelect(activeId) {
-        ['navHome','navChart','navSearch','navSettings'].forEach(id => {
+        ['navHome','navChart','navPkg','navSearch','navSettings'].forEach(id => {
             const btn = document.getElementById(id);
             if (!btn) return;
             btn.style.color = id === activeId ? '#00B0FF' : 'var(--text-sub)';
