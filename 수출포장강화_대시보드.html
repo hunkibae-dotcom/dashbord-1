@@ -12033,7 +12033,7 @@ function peUpdateSum() {
     });
     document.getElementById('peItemCount').textContent = filled + '개 품목';
     document.getElementById('peSumLabel').textContent = '합계 (품목 ' + filled + '종)';
-    document.getElementById('peSumQty').innerHTML = totalQty.toLocaleString() + '<span style="font-size:11px;font-weight:600;color:var(--pe-label);margin-left:4px;font-family:\'Inter\',sans-serif;">EA</span>';
+    document.getElementById('peSumQty').textContent = totalQty.toLocaleString();
 }
 function peInitOrderForm() {
     const draft = peLoadDraft();
