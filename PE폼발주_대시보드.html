@@ -490,6 +490,16 @@ try {
 const GAS_URL_PE = localStorage.getItem('sheet_pub_url_pe') ||
     'https://script.google.com/macros/s/AKfycbyg-Vo-ArIJ7qc7OhvQynmI0XmhXqjXjsgPrDEcE1fwVK4XyDzhGIhcNrdiudo7qYQ/exec';
 
+// 포장강화 앱(shell.html)의 "포장" 탭이 이 페이지를 iframe으로 띄울 때는 그 바깥쪽에
+// 이미 자체 뒤로가기/닫기 버튼이 있어서, 이 안쪽 헤더의 뒤로가기 버튼까지 같이 뜨면
+// 뒤로가기가 두 개로 보인다(요청 버그, 2026-10-21). iframe 안에서 열린 경우에만 이
+// 안쪽 버튼을 숨긴다 — F.WORK 허브에서 이 페이지로 직접(전체 화면) 들어왔을 땐
+// (iframe 아님) 이 버튼이 유일한 뒤로가기라 그대로 둔다.
+if (window.self !== window.top) {
+    const _peBackBtn = document.getElementById('backBtn');
+    if (_peBackBtn) _peBackBtn.style.display = 'none';
+}
+
 const SHEET_LOG = 'PE폼 발주이력';
 const SHEET_STK = 'PE폼 재고';
 const SHEET_MST = 'PE폼 품목마스터';
