@@ -11446,10 +11446,10 @@ async function peLoadAll() {
     }
 }
 
-function openPkgPeFoamView() {
+async function openPkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.remove('hidden');
+    await peLoadAll();
     if (!pePnInited) { pePnInited = true; peInitOrderForm(); }
-    peLoadAll();
 }
 function closePkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.add('hidden');
