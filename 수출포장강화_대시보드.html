@@ -11457,7 +11457,7 @@ function peSwitchTab(name) {
     ['dash', 'order', 'history', 'stock', 'master'].forEach(t => {
         document.getElementById('peTab-' + t).classList.toggle('hidden', t !== name);
     });
-    document.querySelectorAll('.pe-tab-btn').forEach(b => b.classList.toggle('on', b.dataset.peTab === name));
+    document.querySelectorAll('.pe-side-nav-btn').forEach(b => b.classList.toggle('on', b.dataset.peTab === name));
 }
 function peShowToast(msg) {
     const t = document.getElementById('peToast');
