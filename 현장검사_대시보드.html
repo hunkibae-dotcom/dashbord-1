@@ -1987,7 +1987,7 @@ function fiHandleRegPhotoFile(input) {
   });
 }
 function fiOpenRegister() {
-  fiRegTypes = []; fiRegStatus = '미조치'; fiRegPhotos = [];
+  fiRegTypes = []; fiRegStatus = '미조치'; fiRegPhotos = []; fiRegCauseConfidence = '추측';
   document.getElementById('fiRegCode').value = '';
   document.getElementById('fiRegColor').value = '';
   document.getElementById('fiRegQty').value = '';
@@ -1995,6 +1995,14 @@ function fiOpenRegister() {
   document.getElementById('fiRegContent').value = '';
   document.getElementById('fiRegAction').value = '';
   document.getElementById('fiRegFeedback').textContent = '';
+  document.getElementById('fiRegOccSite').value = '충주1공장';
+  document.getElementById('fiRegCauseSite').value = '충주1공장';
+  document.getElementById('fiRegOccLocCustom').value = '';
+  document.getElementById('fiRegCauseLocCustom').value = '';
+  fiRenderLocSelect('Reg', 'Occ', false);
+  fiRenderLocSelect('Reg', 'Cause', true);
+  fiOnLocChange('Reg', 'Occ'); fiOnLocChange('Reg', 'Cause');
+  fiRenderConfidenceBtns('Reg');
   fiRenderRegTypeBtns(); fiRenderRegStatusBtns(); fiRenderRegPhotos();
   document.getElementById('fiRegisterModal').style.display = 'flex';
   _fiArmBackTrap();
