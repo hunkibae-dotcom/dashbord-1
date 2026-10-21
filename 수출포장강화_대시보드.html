@@ -11484,6 +11484,21 @@ function peGroupStock(rows) {
 }
 const PE_TYPE_COLOR = { '일자형': '#2563EB', '코너형': '#7C3AED', '패드형': '#D97706', '롤형': '#16A34A' };
 function peTypeColor(t) { return PE_TYPE_COLOR[t] || '#94a3b8'; }
+// 실제 PE폼 앱의 유형 픽토그램(typeShapeSvg)과 똑같은 모양 — 일자형=막대, 코너형=ㄱ자,
+// 패드형=사각판, 롤형=롤. 일반 큐브 아이콘 대신 이 모양으로 유형을 구분한다.
+function peTypeShapeSvg(t, s) {
+    if (t === '일자형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}"><rect x="3" y="9" width="18" height="6" rx="3" fill="currentColor"/></svg>`;
+    if (t === '코너형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none"><path d="M6 4v11a3 3 0 0 0 3 3h11" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></svg>`;
+    if (t === '패드형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}"><rect x="4" y="4" width="16" height="16" rx="4" fill="currentColor"/></svg>`;
+    if (t === '롤형') return `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="12" r="4.3" stroke="currentColor" stroke-width="2.4"/></svg>`;
+    return `<i class="fa-solid fa-cube" style="font-size:${Math.round(s * 0.75)}px;"></i>`;
+}
+function peTypeIconHtml(t, size) {
+    size = size || 34;
+    const color = peTypeColor(t);
+    const radius = size >= 34 ? 10 : 9;
+    return `<span style="width:${size}px;height:${size}px;border-radius:${radius}px;background:${color}1a;color:${color};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${peTypeShapeSvg(t, Math.round(size * 0.53))}</span>`;
+}
 function pePillClass(stat) {
     if (stat === '발주') return 'pe-pill-order';
     if (stat === '부분입고') return 'pe-pill-part';
