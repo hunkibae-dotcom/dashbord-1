@@ -675,6 +675,24 @@
             <div class="mi-arr">›</div>
         </div>
 
+        <!-- PE폼 — 포장강화 카테고리에서만 보임(요청: F.WORK > PE폼 단독 메뉴였던 걸
+             F.WORK > 포장강화 > 대시보드 아래로 편입). 포장강화 대시보드 안에 새로 생긴
+             PE폼 탭(#pkgPeFoamView)을 자동으로 연다 — 현장검사와 같은 방식. -->
+        <div class="mitem" id="peFoamMenuItem" onclick="goPeFoam()">
+            <div class="mi-ico" style="background:rgba(232,89,12,.12);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="8.5" y="3" width="7" height="4" rx="1"/>
+                    <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+                </svg>
+            </div>
+            <div class="mi-txt">
+                <div class="mi-title">PE폼</div>
+                <div class="mi-desc">PE폼 발주서·발주이력·재고 관리</div>
+            </div>
+            <div class="mi-arr">›</div>
+        </div>
+
         <!-- 현장검사 — 품질검사 카테고리에서만 보임(요청, 2026-10-19: F.WORK > 현장검사
              단독 메뉴였던 걸 F.WORK > 품질검사 > 현장검사로 편입) -->
         <div class="mitem" id="fieldInspectMenuItem" onclick="goFieldInspect()">
