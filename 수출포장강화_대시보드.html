@@ -12727,21 +12727,28 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div style="display:flex;flex-direction:column;gap:18px;min-width:0;">
             <div class="pe-panel">
                 <div class="pe-panel-label">발주 정보</div>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
-                    <div class="pe-field"><label>발주일자</label><input type="date" id="peOrdDate" onchange="peSaveDraft()"></div>
-                    <div class="pe-field"><label>발주자</label><input type="text" id="peOrdUser" placeholder="이름 입력" oninput="peSaveDraft()"></div>
-                    <div class="pe-field"><label>납품희망일</label><input type="date" id="peOrdDue" onchange="peSaveDraft()"></div>
-                    <div class="pe-field">
-                        <label>반입창고</label>
-                        <select id="peOrdWhSel" onchange="peOnWhChange();peSaveDraft();">
-                            <option value="충주 1공장">충주 1공장</option>
-                            <option value="충주 2공장">충주 2공장</option>
-                            <option value="__custom__">직접입력</option>
-                        </select>
-                        <input type="text" id="peOrdWh" placeholder="직접 입력" style="margin-top:6px;" hidden oninput="peSaveDraft()">
+                <div class="pe-sheet-wrap">
+                    <div class="pe-sheet-info">
+                        <div class="pe-sheet-info-label">발주일자</div>
+                        <div class="pe-sheet-info-label">발주번호</div>
+                        <div class="pe-sheet-info-label">발주자</div>
+                        <div class="pe-sheet-info-label">납품희망일</div>
+                        <div class="pe-sheet-info-label">반입창고</div>
+                        <div class="pe-sheet-info-value"><input type="date" id="peOrdDate" onchange="peSaveDraft()"></div>
+                        <div class="pe-sheet-info-value" style="background:#EEF1F5;"><input type="text" value="(저장 시 자동)" disabled style="color:var(--pe-label);"></div>
+                        <div class="pe-sheet-info-value"><input type="text" id="peOrdUser" placeholder="이름" oninput="peSaveDraft()"></div>
+                        <div class="pe-sheet-info-value"><input type="date" id="peOrdDue" onchange="peSaveDraft()"></div>
+                        <div class="pe-sheet-info-value">
+                            <select id="peOrdWhSel" onchange="peOnWhChange();peSaveDraft();">
+                                <option value="충주 1공장">충주 1공장</option>
+                                <option value="충주 2공장">충주 2공장</option>
+                                <option value="__custom__">직접입력</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
-                <div style="font-size:10.5px;color:var(--pe-label);margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다</div>
+                <input type="text" id="peOrdWh" placeholder="반입창고 직접 입력" class="pe-field" style="margin-top:10px;box-sizing:border-box;border:1.5px solid var(--pe-border);border-radius:10px;padding:9px 12px;font-size:12.5px;width:100%;outline:none;" hidden oninput="peSaveDraft()">
+                <div style="font-size:10.5px;color:var(--pe-label);margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다 · 자재명만 고르면 코드·색상·유형·규격·단위·사업장이 자동 입력됩니다</div>
             </div>
 
             <div class="pe-panel" style="overflow:visible;">
@@ -12749,22 +12756,31 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
                     <span class="count" id="peItemCount">0개 품목</span>
                 </div>
-                <div style="border:1px solid var(--pe-border);border-radius:14px;overflow:hidden;">
-                    <div class="pe-grid-head">
-                        <div class="pe-grid-head-num">번호</div>
-                        <div class="pe-grid-head-main">자재명</div>
-                        <div class="pe-grid-head-qty">수량</div>
-                        <div class="pe-grid-head-note">비고</div>
-                        <div class="pe-grid-head-del"></div>
-                    </div>
-                    <div id="peGridBody"></div>
+                <div class="pe-sheet-wrap" style="overflow-x:auto;">
+                    <table class="pe-sheet-table">
+                        <thead><tr>
+                            <th style="width:34px;">번호</th>
+                            <th style="width:100px;">코드</th>
+                            <th style="width:48px;">색상</th>
+                            <th style="width:58px;">유형</th>
+                            <th style="min-width:220px;">자재명</th>
+                            <th style="min-width:100px;">규격상세</th>
+                            <th style="width:68px;">수량</th>
+                            <th style="width:42px;">단위</th>
+                            <th style="width:68px;">사업장</th>
+                            <th style="min-width:110px;">비고</th>
+                        </tr></thead>
+                        <tbody id="peGridBody"></tbody>
+                        <tfoot><tr>
+                            <td colspan="6" class="pe-sheet-total-cell" style="text-align:right;" id="peSumLabel">합계 (품목 0종)</td>
+                            <td class="pe-sheet-total-cell" style="text-align:center;" id="peSumQty">0</td>
+                            <td class="pe-sheet-total-cell">EA</td>
+                            <td colspan="2" class="pe-sheet-total-cell"></td>
+                        </tr></tfoot>
+                    </table>
                 </div>
                 <div class="pe-search-dropdown" id="peGridSharedDropdown" hidden style="position:fixed;"></div>
                 <button onclick="peAddGridRows(10)" class="pe-add-btn" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> 10행 추가</button>
-                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:15px;margin-top:3px;border-top:1px dashed var(--pe-border);">
-                    <span style="font-size:12.5px;font-weight:700;color:var(--pe-ink-sub);" id="peSumLabel">합계 (품목 0종)</span>
-                    <span style="font-size:19px;font-weight:800;color:var(--pe-ink);font-family:'Manrope',sans-serif;" id="peSumQty">0<span style="font-size:11px;font-weight:600;color:var(--pe-label);margin-left:4px;font-family:'Inter',sans-serif;">EA</span></span>
-                </div>
             </div>
 
             <div>
