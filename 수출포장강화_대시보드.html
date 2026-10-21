@@ -1964,7 +1964,9 @@
             }, 150);
         }
         _pkgAutoOpenView('openDefectAction', 'openPkgDefectActionView');
-        _pkgAutoOpenView('openPeFoam', 'openPkgPeFoamView');
+        // (정정, 2026-10-21) PE폼은 더 이상 앱에서 이 ?openPeFoam=1 경유로 들어오지 않는다
+        // (앱은 기존 PE폼 전용 앱을 그대로 쓴다) — 이 대시보드 안의 PE폼 탭은 PC 웹에서
+        // 사이드바 버튼으로 직접 여는 용도만 남긴다.
 
         window.addEventListener('DOMContentLoaded', () => {
             initCard1();
