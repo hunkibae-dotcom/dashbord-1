@@ -11619,10 +11619,94 @@ function peDeficitCardHtml(g) {
 function peOpenStockDetailByKey(key) {
     peSwitchTab('stock');
     document.getElementById('peStockSearch').value = '';
-    document.getElementById('peStockTypeFilter').value = '';
-    document.getElementById('peStockShowFilter').value = 'remain';
+    peStockTypeFilter = '';
+    document.querySelectorAll('#peTab-stock .stock-type-chip').forEach(b => b.classList.toggle('on', b.textContent === '전체 유형'));
+    document.getElementById('peStockHideUsed').checked = true;
     peRenderStock();
-    peOpenStockDetail(key);
+    const i = _peStockFiltered.findIndex(r => !peIsUsedUp(r.qty) && (r.code || r.name) + '|' + r.spec === key);
+    if (i !== -1) peOpenStockDetail(i);
+}
+
+// ── 대시보드: 유형·규격별 재고 현황 검색 (실제 재고 데이터에서 검색) ──
+let peDashType = '', peDashCorner = '';
+function peRenderDashSearchChips() {
+    const wrap = document.getElementById('peDashSearchChips');
+    if (!wrap) return;
+    wrap.innerHTML = ['일자형', '코너형', '패드형', '롤형'].map(t => {
+        const on = t === peDashType;
+        return `<div class="pe-type-chip${on ? ' on' : ''}" style="--pe-chip-color:${peTypeColor(t)};--pe-chip-soft:${peTypeColor(t)}1a;" onclick="peDashPickType('${t}')">
+          <div class="dot"></div><div class="lbl">${t}</div>
+        </div>`;
+    }).join('');
+}
+function peDashPickType(t) {
+    peDashType = peDashType === t ? '' : t;
+    peDashCorner = '';
+    peRenderDashSearchChips();
+    document.getElementById('peDashSearchResult').innerHTML = '';
+    peRenderDashSearchField();
+}
+function peDashCornerDims() {
+    const dims = new Set();
+    peStockRows.filter(r => r.type === '코너형').forEach(r => {
+        const nums = peSpecNums(r.spec);
+        if (nums.length >= 2) dims.add(nums[0] + '×' + nums[1]);
+    });
+    return [...dims].sort();
+}
+function peRenderDashSearchField() {
+    const wrap = document.getElementById('peDashSearchWrap');
+    if (!peDashType) { wrap.innerHTML = '<div style="font-size:11.5px;color:var(--pe-label);">유형을 먼저 선택해주세요</div>'; return; }
+    let cornerHtml = '';
+    if (peDashType === '코너형') {
+        const dims = peDashCornerDims();
+        cornerHtml = `<div class="pe-corner-sub" style="margin-bottom:12px;">` + dims.map(d =>
+            `<button class="${peDashCorner === d ? 'on' : ''}" onclick="peDashPickCorner('${d}')">${d}</button>`
+        ).join('') + `</div>`;
+    }
+    wrap.innerHTML = cornerHtml + `<div class="pe-search-field">
+      <input type="text" id="peDashSearchInput" placeholder="예: 50" oninput="peDashOnSearchInput()" onfocus="peDashOnSearchInput()" onblur="setTimeout(peDashCloseDropdown,150)">
+      <div class="pe-search-dropdown" id="peDashSearchDropdown" hidden></div>
+    </div>`;
+}
+function peDashPickCorner(dim) {
+    peDashCorner = peDashCorner === dim ? '' : dim;
+    document.getElementById('peDashSearchResult').innerHTML = '';
+    peRenderDashSearchField();
+}
+function peDashCandidates() {
+    let rows = peStockRows.filter(r => r.type === peDashType && !peIsUsedUp(r.qty));
+    if (peDashType === '코너형' && peDashCorner) {
+        rows = rows.filter(r => { const n = peSpecNums(r.spec); return n.length >= 2 && (n[0] + '×' + n[1]) === peDashCorner; });
+    }
+    return Object.values(peGroupStock(rows)).map(g => ({
+        code: g.code, name: g.name, spec: g.spec, unit: g.unit,
+        total: g.batches.reduce((s, b) => s + peStkQtyNum(b.qty), 0)
+    }));
+}
+function peDashOnSearchInput() {
+    const q = (document.getElementById('peDashSearchInput').value || '').trim();
+    const all = peDashCandidates();
+    const filtered = q ? all.filter(c => c.spec.includes(q) || c.name.includes(q)) : all;
+    const dd = document.getElementById('peDashSearchDropdown');
+    dd.innerHTML = filtered.length ? filtered.slice(0, 30).map(c =>
+        `<div class="pe-search-opt" onmousedown="peDashSelect('${c.code.replace(/'/g, "\\'")}')"><span class="h">${c.spec}</span><span class="c pe-mono">${c.code} · ${c.total.toLocaleString()}${c.unit}</span></div>`
+    ).join('') : `<div class="pe-search-empty">일치하는 재고가 없습니다.</div>`;
+    dd.hidden = false;
+}
+function peDashCloseDropdown() { const dd = document.getElementById('peDashSearchDropdown'); if (dd) dd.hidden = true; }
+function peDashSelect(code) {
+    const c = peDashCandidates().find(x => x.code === code);
+    if (!c) return;
+    document.getElementById('peDashSearchInput').value = c.spec;
+    peDashCloseDropdown();
+    const badge = c.total <= 0 ? { bg: '#FEE2E2', fg: '#DC2626', label: c.total + ' EA (품절)' }
+        : c.total <= 100 ? { bg: '#FDF3E3', fg: '#D97706', label: c.total.toLocaleString() + ' EA (부족)' }
+        : { bg: '#E8F8EE', fg: '#16A34A', label: c.total.toLocaleString() + ' EA' };
+    document.getElementById('peDashSearchResult').innerHTML = `<div class="pe-selected-chip" style="border-color:${badge.fg};">
+      <div><span class="code">${c.code}</span><span class="spec">${c.spec}</span></div>
+      <span class="pe-pill" style="background:${badge.bg};color:${badge.fg};">${badge.label}</span>
+    </div>`;
 }
 
 // ── 발주이력 ──
