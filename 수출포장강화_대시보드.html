@@ -11721,6 +11721,7 @@ function peRenderHistory() {
     const q = (document.getElementById('peHistSearch').value || '').trim().toLowerCase();
     if (q) rows = rows.filter(r => (r.ordNo + ' ' + r.code + ' ' + r.name).toLowerCase().includes(q));
     rows = [...rows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    document.getElementById('peHistCount').textContent = rows.length + '건';
     document.getElementById('peHistBody').innerHTML = rows.length ? rows.map(r => `
       <tr>
         <td style="padding:8px;" class="pe-mono">${r.ordNo}</td>
