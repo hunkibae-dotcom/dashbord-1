@@ -533,6 +533,22 @@
     <!-- 서브메뉴 백드롭 -->
     <div id="searchSubBd" onclick="closeSearchSub()" style="position:fixed;inset:0;z-index:44;display:none;"></div>
 
+    <!-- ── 포장 서브메뉴 (네비 위에 팝업) — 불량조치/PE폼 선택 ─────── -->
+    <div id="pkgSubMenu" style="position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(12px);z-index:45;display:none;flex-direction:column;gap:8px;width:calc(100% - 32px);max-width:320px;opacity:0;transition:opacity .2s,transform .2s;">
+        <button onclick="closePkgSub();openPkgDefectActionOverlay()"
+            style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+            <i class="fa-solid fa-clipboard-check" style="color:#D97706;font-size:16px;width:20px;"></i>
+            불량조치
+        </button>
+        <button onclick="closePkgSub();openPkgPeFoamOverlay()"
+            style="background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:12px;font-size:14px;font-weight:700;color:var(--text);cursor:pointer;box-shadow:var(--shadow);width:100%;">
+            <i class="fa-solid fa-cube" style="color:#E8590C;font-size:16px;width:20px;"></i>
+            PE폼
+        </button>
+    </div>
+    <!-- 서브메뉴 백드롭 -->
+    <div id="pkgSubBd" onclick="closePkgSub()" style="position:fixed;inset:0;z-index:44;display:none;"></div>
+
     <!-- ── 하단 네비게이션 ────────────────────────────────── -->
     <nav style="position:fixed;bottom:0;left:0;right:0;padding:8px 0 14px;display:flex;justify-content:space-around;align-items:center;z-index:46;backdrop-filter:blur(12px);">
         <button id="navHome" onclick="goHome()"
@@ -545,10 +561,10 @@
             <i class="fa-solid fa-chart-simple" style="font-size:18px;"></i>
             <span style="font-size:10px;">차트</span>
         </button>
-        <button id="navDefectAction" onclick="openPkgDefectActionOverlay()"
+        <button id="navPkg" onclick="togglePkgSub()"
             style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
-            <i class="fa-solid fa-clipboard-check" style="font-size:18px;"></i>
-            <span style="font-size:10px;">불량조치</span>
+            <i class="fa-solid fa-box-open" style="font-size:18px;"></i>
+            <span style="font-size:10px;">포장</span>
         </button>
         <button id="navSearch" onclick="toggleSearchSub()"
             style="display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--text-sub);background:none;border:none;cursor:pointer;">
