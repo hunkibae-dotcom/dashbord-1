@@ -12560,9 +12560,8 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 <div id="peItemList"><div class="pe-empty">품목을 위에서 추가해주세요</div></div>
             </div>
 
-            <div class="save-choice" style="display:flex;gap:10px;">
-                <button onclick="peSubmitOrder('pdf')" id="peSubmitBtnPdf" class="pe-submit-btn" style="flex:1;"><i class="fa-solid fa-file-pdf"></i> PDF로 저장</button>
-                <button onclick="peSubmitOrder('xlsx')" id="peSubmitBtnXlsx" class="pe-submit-btn" style="flex:1;background:linear-gradient(135deg,#21A464,#1D6F42);box-shadow:0 8px 20px rgba(29,111,66,.3);"><i class="fa-solid fa-file-excel"></i> Excel로 저장</button>
+            <div>
+                <button onclick="peRegisterOrder()" id="peRegisterBtn" class="pe-submit-btn"><i class="fa-solid fa-check"></i> 등록</button>
             </div>
             </div>
 
