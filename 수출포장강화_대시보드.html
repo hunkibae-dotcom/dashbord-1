@@ -12038,7 +12038,6 @@ function peUpdateSum() {
     document.getElementById('peSumQty').innerHTML = totalQty.toLocaleString() + '<span style="font-size:11px;font-weight:600;color:var(--pe-label);margin-left:4px;font-family:\'Inter\',sans-serif;">EA</span>';
 }
 function peInitOrderForm() {
-    peRenderMasterDatalist();
     const draft = peLoadDraft();
     document.getElementById('peOrdDate').value = (draft && draft.date) || new Date().toISOString().slice(0, 10);
     document.getElementById('peOrdUser').value = (draft && draft.user) || '';
@@ -12051,12 +12050,15 @@ function peInitOrderForm() {
     peGridSeq = 0; peGridSelections = {};
     const draftRows = (draft && draft.rows) || [];
     draftRows.forEach(dr => {
+        const r = peMasterRows.find(x => x.code === dr.code);
+        if (!r) return; // 품목마스터에서 코드가 사라졌으면 건너뜀
         const id = peAddGridRow();
         const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
-        tr.querySelector('.pe-grid-name').value = dr.name;
+        tr.querySelector('.pe-grid-name').value = r.name;
         tr.querySelector('.pe-grid-qty').value = dr.qty || '';
         tr.querySelector('.pe-grid-note').value = dr.note || '';
-        peGridNameChange(id, true);
+        peGridSelections[id] = r;
+        peGridFillRow(id, r);
     });
     while (document.querySelectorAll('#peGridBody tr').length < 15) peAddGridRow();
     peUpdateSum();
