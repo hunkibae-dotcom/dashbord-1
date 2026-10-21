@@ -5796,6 +5796,13 @@
 
         let _pendingDetailItems = [];
         let _pendingDetailTimeout = null;
+        // 포장대기 박스를 클릭해서 보고 있는 중인지 — filterByPendingStatus()가 state.filteredData를
+        // 직접 채워넣는(=applyFilters()를 거치지 않는) 특수 보기라서, 이 보기 중에 상세스펙에
+        // 들어갔다 나올 때 exitProductDetailView()가 무심코 applyFilters()를 부르면 포장대기
+        // 목록이 날아가고 전체 목록으로 되돌아가버린다(요청 버그, 2026-10-21: "포장대기
+        // 클릭→제품검색 보다가 상세스펙 들어갔다 나오면 리셋된다"). applyFilters()가 정상
+        // 경로로 한 번이라도 다시 불리면(검색창 입력 등) 이 특수 보기는 끝난 것으로 본다.
+        let _pendingFilterActive = false;
 
         function _yesterdayStr() {
             const d = new Date();
