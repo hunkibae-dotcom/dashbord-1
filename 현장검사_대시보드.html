@@ -691,6 +691,11 @@ const FI_TYPE_LIST = ['외관', '제품·코드일치', '별도·조립철물', 
 const FI_TYPE_COLOR = { '외관': '#0284C7', '제품·코드일치': '#7C3AED', '별도·조립철물': '#D97706', '포장': '#059669' };
 const FI_STATUS_LIST = ['미조치', '조치중', '조치완료'];
 const FI_STATUS_COLOR = { '미조치': '#DC2626', '조치중': '#D97706', '조치완료': '#16A34A' };
+const FI_STATUS_ICON_PATH = {
+  '미조치': '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>',
+  '조치중': '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>',
+  '조치완료': '<path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>'
+};
 
 let fiAllData = [];      // GAS list 결과 그대로
 let fiActiveTab = 'home';
