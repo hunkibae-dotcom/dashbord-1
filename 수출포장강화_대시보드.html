@@ -11984,6 +11984,55 @@ function peGridFillRow(id, r) {
     document.getElementById('peGridUnit-' + id).textContent = r ? (r.unit || 'EA') : '';
     document.getElementById('peGridSite-' + id).textContent = r ? (r.site || '') : '';
 }
+// ── 품목 표 상단 "유형·길이·두께" 필터 — 미리 골라두면 자재명 칸에 남은 숫자만
+//    입력해도 그 안에서 찾을 수 있다. 일자형/롤형은 숫자 하나(길이), 코너형/패드형은
+//    숫자 둘(가로×세로)을 "길이"로 보고, 나머지(대개 높이)를 자재명 칸에 입력해 찾는다. ──
+let peGridFilterType = '', peGridFilterLen = '', peGridFilterThick = '';
+function peGridLenKey(type, r) {
+    const n = peSpecNums(r.spec);
+    if (type === '일자형' || type === '롤형') return n.length >= 1 ? String(n[0]) : '';
+    if (type === '코너형' || type === '패드형') return n.length >= 2 ? (n[0] + '×' + n[1]) : '';
+    return '';
+}
+function peRenderGridFilterOptions() {
+    const type = peGridFilterType;
+    const lenSel = document.getElementById('peGridFilterLen');
+    const thickSel = document.getElementById('peGridFilterThick');
+    if (!type) {
+        lenSel.innerHTML = '<option value="">길이 전체</option>'; lenSel.disabled = true; lenSel.value = '';
+        thickSel.innerHTML = '<option value="">두께 전체</option>'; thickSel.disabled = true; thickSel.value = '';
+        peGridFilterLen = ''; peGridFilterThick = '';
+        return;
+    }
+    lenSel.disabled = false; thickSel.disabled = false;
+    const lens = new Set(), thicks = new Set();
+    peMasterRows.filter(r => r.type === type).forEach(r => {
+        const lk = peGridLenKey(type, r);
+        if (lk) lens.add(lk);
+        if (r.thick) thicks.add(r.thick);
+    });
+    const lensArr = [...lens].sort((a, b) => parseFloat(a) - parseFloat(b));
+    const thicksArr = [...thicks].sort();
+    if (!lensArr.includes(peGridFilterLen)) peGridFilterLen = '';
+    if (!thicksArr.includes(peGridFilterThick)) peGridFilterThick = '';
+    lenSel.innerHTML = '<option value="">길이 전체</option>' + lensArr.map(l => `<option value="${l}">${l}</option>`).join('');
+    thickSel.innerHTML = '<option value="">두께 전체</option>' + thicksArr.map(t => `<option value="${t}">${t}</option>`).join('');
+    lenSel.value = peGridFilterLen;
+    thickSel.value = peGridFilterThick;
+}
+function peGridFilterTypeChange() {
+    peGridFilterType = document.getElementById('peGridFilterType').value;
+    peRenderGridFilterOptions();
+}
+function peGridFilterLenChange() { peGridFilterLen = document.getElementById('peGridFilterLen').value; }
+function peGridFilterThickChange() { peGridFilterThick = document.getElementById('peGridFilterThick').value; }
+function peGridFilteredMasterRows() {
+    let base = peMasterRows;
+    if (peGridFilterType) base = base.filter(r => r.type === peGridFilterType);
+    if (peGridFilterLen) base = base.filter(r => peGridLenKey(peGridFilterType, r) === peGridFilterLen);
+    if (peGridFilterThick) base = base.filter(r => r.thick === peGridFilterThick);
+    return base;
+}
 function peGridSearchInput(id) {
     peGridActiveId = id;
     const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
@@ -12001,7 +12050,8 @@ function peGridSearchInput(id) {
     dd.style.top = Math.round(rect.bottom + 5) + 'px';
     dd.style.width = Math.round(Math.max(rect.width, 280)) + 'px';
     const q = val.toLowerCase();
-    const filtered = q ? peMasterRows.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q)) : peMasterRows;
+    const base = peGridFilteredMasterRows();
+    const filtered = q ? base.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q)) : base;
     dd.innerHTML = filtered.length ? filtered.slice(0, 60).map(r =>
         `<div class="pe-search-opt" onmousedown="peGridSelectName('${id}','${r.code.replace(/'/g, "\\'")}')"><span>${r.name} <span style="color:var(--pe-ink-sub);">${r.spec}</span></span><span style="font-family:'JetBrains Mono',monospace;color:var(--pe-ink-sub);">${r.code} · ${r.site || '-'}</span></div>`
     ).join('') : `<div class="pe-search-empty">일치하는 품목이 없습니다.<br>품목마스터에 먼저 등록하면 목록에 나옵니다.</div>`;
