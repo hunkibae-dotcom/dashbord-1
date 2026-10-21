@@ -11897,13 +11897,8 @@ async function peSubmitAddMaster() {
 let peGridSeq = 0;
 let peGridSelections = {}; // id -> 품목마스터 행
 let peLastSavedOrder = null;
+let peGridActiveId = null;
 const PE_DRAFT_KEY = 'peOrderDraftV1';
-function peComposeMasterLabel(r) { return r.name + ' · ' + r.spec + ' · ' + (r.site || '-'); }
-function peRenderMasterDatalist() {
-    document.getElementById('peMasterDatalist').innerHTML = peMasterRows.map(r =>
-        `<option value="${peComposeMasterLabel(r).replace(/"/g, '&quot;')}">`
-    ).join('');
-}
 function peOnWhChange() {
     const sel = document.getElementById('peOrdWhSel');
     const inp = document.getElementById('peOrdWh');
