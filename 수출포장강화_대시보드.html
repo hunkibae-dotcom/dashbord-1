@@ -11636,7 +11636,7 @@ function peRenderDashSearchChips() {
     wrap.innerHTML = ['일자형', '코너형', '패드형', '롤형'].map(t => {
         const on = t === peDashType;
         return `<div class="pe-type-chip${on ? ' on' : ''}" style="--pe-chip-color:${peTypeColor(t)};--pe-chip-soft:${peTypeColor(t)}1a;" onclick="peDashPickType('${t}')">
-          <div class="dot"></div><div class="lbl">${t}</div>
+          <div class="ic">${peTypeShapeSvg(t, 16)}</div><div class="lbl">${t}</div>
         </div>`;
     }).join('');
 }
