@@ -12054,42 +12054,48 @@ async function peDownloadSaved(format) {
 
 // ── 발주서 저장 파일(PDF/Excel) — 실제 구글시트 발주서 양식 느낌으로 ──
 function _peDueDisplay(meta) { return meta.due || '최단 시일내'; }
+const PE_DOC_NAVY = '#1F3864', PE_DOC_LIGHT = '#DCE6F5';
 async function peExportOrderPdf(ordNo, meta, items) {
     await new Promise(resolve => _pkgLoadPdfLibs(resolve));
     if (!window.jspdf || !window.html2canvas) { peShowToast('PDF 라이브러리를 불러오지 못했습니다'); return; }
     const host = document.createElement('div');
-    host.style.cssText = 'position:fixed;left:-99999px;top:0;width:760px;background:#fff;padding:28px;font-family:"맑은 고딕",sans-serif;color:#1A2233;';
+    host.style.cssText = 'position:fixed;left:-99999px;top:0;width:900px;background:#fff;padding:26px;font-family:"맑은 고딕",sans-serif;color:#1A2233;';
     const rows = items.map((it, i) => `<tr>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;">${i + 1}</td>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;font-family:monospace;">${it.code}</td>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;">${it.name}</td>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;">${it.spec}</td>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;">${it.qty} ${it.unit}</td>
-      <td style="padding:7px 6px;border:1px solid #E4E8EF;">${it.note || ''}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${i + 1}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;font-family:monospace;text-align:center;">${it.code}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${it.color || '-'}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${it.type || '-'}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;">${it.name}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;">${it.spec}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${it.qty}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${it.unit}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;text-align:center;">${it.site || '-'}</td>
+      <td style="padding:6px;border:1px solid #B7C4D9;">${it.note || ''}</td>
     </tr>`).join('');
     const totalQty = items.reduce((s, it) => s + (parseFloat(it.qty) || 0), 0);
+    const infoCell = (label, value) => `<td style="padding:7px 4px;border:1px solid #B7C4D9;background:${PE_DOC_NAVY};color:#fff;font-weight:700;font-size:10.5px;text-align:center;">${label}</td><td style="padding:7px 4px;border:1px solid #B7C4D9;background:${PE_DOC_LIGHT};font-weight:700;font-size:11.5px;text-align:center;">${value}</td>`;
     host.innerHTML = `
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:10.5px;font-weight:800;color:#E8590C;letter-spacing:.08em;margin-bottom:6px;">F.WORK</div>
-        <div style="font-size:18px;font-weight:800;">PE폼 발주서</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px;margin-bottom:15px;padding-bottom:13px;border-bottom:1px solid #E4E8EF;font-size:11px;">
-        <div><span style="color:#9AA5B8;font-weight:700;display:block;">발주번호</span><b>${ordNo}</b></div>
-        <div><span style="color:#9AA5B8;font-weight:700;display:block;">발주일자</span><b>${meta.ordDate}</b></div>
-        <div><span style="color:#9AA5B8;font-weight:700;display:block;">발주자</span><b>${meta.user || '-'}</b></div>
-        <div><span style="color:#9AA5B8;font-weight:700;display:block;">납품희망일</span><b>${_peDueDisplay(meta)}</b></div>
-      </div>
+      <div style="font-size:21px;font-weight:800;margin-bottom:14px;">PE폼 발주서</div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;table-layout:fixed;">
+        <tr>${infoCell('발주일자', meta.ordDate)}${infoCell('발주번호', ordNo)}${infoCell('발주자', meta.user || '-')}${infoCell('납품희망일', _peDueDisplay(meta))}${infoCell('반입창고', meta.wh || '-')}</tr>
+      </table>
       <table style="width:100%;border-collapse:collapse;font-size:11px;">
-        <thead><tr style="background:#F6F7F9;"><th style="padding:7px 6px;border:1px solid #E4E8EF;">번호</th><th style="padding:7px 6px;border:1px solid #E4E8EF;">코드</th><th style="padding:7px 6px;border:1px solid #E4E8EF;">자재명</th><th style="padding:7px 6px;border:1px solid #E4E8EF;">규격상세</th><th style="padding:7px 6px;border:1px solid #E4E8EF;">수량</th><th style="padding:7px 6px;border:1px solid #E4E8EF;">비고</th></tr></thead>
+        <thead><tr style="background:${PE_DOC_NAVY};color:#fff;">
+          <th style="padding:7px 5px;border:1px solid #B7C4D9;">번호</th><th style="padding:7px 5px;border:1px solid #B7C4D9;">코드</th>
+          <th style="padding:7px 5px;border:1px solid #B7C4D9;">색상</th><th style="padding:7px 5px;border:1px solid #B7C4D9;">유형</th>
+          <th style="padding:7px 5px;border:1px solid #B7C4D9;">자재명</th><th style="padding:7px 5px;border:1px solid #B7C4D9;">규격상세</th>
+          <th style="padding:7px 5px;border:1px solid #B7C4D9;">수량</th><th style="padding:7px 5px;border:1px solid #B7C4D9;">단위</th>
+          <th style="padding:7px 5px;border:1px solid #B7C4D9;">사업장</th><th style="padding:7px 5px;border:1px solid #B7C4D9;">비고</th>
+        </tr></thead>
         <tbody>${rows}</tbody>
-        <tfoot><tr style="background:#FFF3E8;font-weight:800;"><td colspan="4" style="padding:7px 6px;border:1px solid #E4E8EF;">합계</td><td style="padding:7px 6px;border:1px solid #E4E8EF;">${totalQty.toLocaleString()}</td><td style="padding:7px 6px;border:1px solid #E4E8EF;"></td></tr></tfoot>
+        <tfoot><tr style="background:${PE_DOC_LIGHT};font-weight:800;"><td colspan="6" style="padding:7px 5px;border:1px solid #B7C4D9;text-align:right;">합계 (품목 ${items.length}종)</td><td style="padding:7px 5px;border:1px solid #B7C4D9;text-align:center;">${totalQty.toLocaleString()}</td><td colspan="3" style="padding:7px 5px;border:1px solid #B7C4D9;"></td></tr></tfoot>
       </table>`;
     document.body.appendChild(host);
     const canvas = await window.html2canvas(host, { scale: 2, backgroundColor: '#ffffff' });
     document.body.removeChild(host);
     const jsPDFCtor = window.jspdf.jsPDF;
-    const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4' });
-    const pageWmm = 190, pageHmm = 277;
+    const pdf = new jsPDFCtor({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+    const pageWmm = 277, pageHmm = 190;
     const pxPerMm = canvas.width / pageWmm;
     const pageHpx = pageHmm * pxPerMm;
     let y = 0, first = true;
@@ -12108,21 +12114,84 @@ async function peExportOrderPdf(ordNo, meta, items) {
 async function peExportOrderXlsx(ordNo, meta, items) {
     await new Promise(resolve => _pkgLoadExcelJsLib(resolve));
     if (!window.ExcelJS) { peShowToast('Excel 라이브러리를 불러오지 못했습니다'); return; }
+    const NAVY = 'FF1F3864', LIGHT = 'FFDCE6F5', STRIPE = 'FFF6F9FD', WHITE = 'FFFFFFFF', INK = 'FF1A2233', BORDERC = 'FFB7C4D9';
+    const thin = { style: 'thin', color: { argb: BORDERC } };
+    const boxBorder = { top: thin, bottom: thin, left: thin, right: thin };
     const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet('발주서');
-    ws.columns = [{ width: 6 }, { width: 16 }, { width: 24 }, { width: 18 }, { width: 10 }, { width: 8 }, { width: 20 }];
-    ws.addRow(['PE폼 발주서']);
-    ws.getCell('A1').font = { bold: true, size: 14 };
-    ws.addRow(['발주번호', ordNo, '발주일자', meta.ordDate, '발주자', meta.user || '-']);
-    ws.addRow(['납품희망일', _peDueDisplay(meta), '반입창고', meta.wh || '-']);
-    ws.addRow([]);
-    const headRow = ws.addRow(['번호', '코드', '자재명', '규격상세', '수량', '단위', '비고']);
-    headRow.font = { bold: true };
-    headRow.eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF3E8' } }; c.border = { bottom: { style: 'thin' } }; });
-    items.forEach((it, i) => ws.addRow([i + 1, it.code, it.name, it.spec, parseFloat(it.qty) || 0, it.unit, it.note || '']));
+    const ws = wb.addWorksheet('발주서', { views: [{ showGridLines: false }] });
+    ws.columns = [{ width: 6 }, { width: 14 }, { width: 7 }, { width: 8 }, { width: 26 }, { width: 16 }, { width: 9 }, { width: 7 }, { width: 10 }, { width: 18 }];
+
+    ws.mergeCells('A1:J1');
+    const title = ws.getCell('A1');
+    title.value = 'PE폼 발주서';
+    title.font = { bold: true, size: 18, color: { argb: INK } };
+    ws.getRow(1).height = 26;
+    ws.getRow(2).height = 6;
+
+    const infoLabels = ['발주일자', '발주번호', '발주자', '납품희망일', '반입창고'];
+    const infoValues = [meta.ordDate, ordNo, meta.user || '-', _peDueDisplay(meta), meta.wh || '-'];
+    const spans = [[1, 2], [3, 3], [4, 5], [6, 7], [8, 10]];
+    infoLabels.forEach((lbl, i) => {
+        const [c1, c2] = spans[i];
+        ws.mergeCells(3, c1, 3, c2);
+        ws.mergeCells(4, c1, 4, c2);
+        const lc = ws.getCell(3, c1);
+        lc.value = lbl; lc.font = { bold: true, size: 10, color: { argb: WHITE } };
+        lc.alignment = { horizontal: 'center', vertical: 'middle' };
+        lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } };
+        const vc = ws.getCell(4, c1);
+        vc.value = infoValues[i]; vc.font = { bold: true, size: 11, color: { argb: INK } };
+        vc.alignment = { horizontal: 'center', vertical: 'middle' };
+        vc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT } };
+        for (let c = c1; c <= c2; c++) { ws.getCell(3, c).border = boxBorder; ws.getCell(4, c).border = boxBorder; }
+    });
+    ws.getRow(3).height = 18; ws.getRow(4).height = 20; ws.getRow(5).height = 8;
+
+    const headRowNum = 6;
+    const headers = ['번호', '코드', '색상', '유형', '자재명', '규격상세', '수량', '단위', '사업장', '비고'];
+    const headRow = ws.getRow(headRowNum);
+    headers.forEach((h, i) => {
+        const c = headRow.getCell(i + 1);
+        c.value = h;
+        c.font = { bold: true, size: 10.5, color: { argb: WHITE } };
+        c.alignment = { horizontal: 'center', vertical: 'middle' };
+        c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } };
+        c.border = boxBorder;
+    });
+    headRow.height = 20;
+
+    items.forEach((it, i) => {
+        const r = ws.getRow(headRowNum + 1 + i);
+        const vals = [i + 1, it.code, it.color || '-', it.type || '-', it.name, it.spec, parseFloat(it.qty) || 0, it.unit || 'EA', it.site || '-', it.note || ''];
+        vals.forEach((v, ci) => {
+            const c = r.getCell(ci + 1);
+            c.value = v;
+            c.font = { size: 10.5, color: { argb: INK } };
+            c.alignment = { horizontal: (ci === 4 || ci === 9) ? 'left' : 'center', vertical: 'middle' };
+            c.border = boxBorder;
+            if (i % 2 === 1) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: STRIPE } };
+        });
+        r.height = 18;
+    });
+
+    const totalRowNum = headRowNum + 1 + items.length;
     const totalQty = items.reduce((s, it) => s + (parseFloat(it.qty) || 0), 0);
-    const totalRow = ws.addRow(['', '', '', '합계', totalQty]);
-    totalRow.font = { bold: true };
+    ws.mergeCells(totalRowNum, 1, totalRowNum, 6);
+    const tlabel = ws.getCell(totalRowNum, 1);
+    tlabel.value = '합계 (품목 ' + items.length + '종)';
+    tlabel.font = { bold: true, size: 11, color: { argb: INK } };
+    tlabel.alignment = { horizontal: 'right', vertical: 'middle' };
+    const tval = ws.getCell(totalRowNum, 7);
+    tval.value = totalQty;
+    tval.font = { bold: true, size: 11, color: { argb: INK } };
+    tval.alignment = { horizontal: 'center', vertical: 'middle' };
+    for (let c = 1; c <= 10; c++) {
+        const cell = ws.getCell(totalRowNum, c);
+        cell.border = boxBorder;
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT } };
+    }
+    ws.getRow(totalRowNum).height = 20;
+
     const buf = await wb.xlsx.writeBuffer();
     const blob = new Blob([buf], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
