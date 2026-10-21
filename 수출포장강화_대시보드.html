@@ -12737,6 +12737,22 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
                     <span class="count" id="peItemCount">0개 품목</span>
                 </div>
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+                    <select id="peGridFilterType" onchange="peGridFilterTypeChange()" class="pe-select" style="width:auto;">
+                        <option value="">전체 유형</option>
+                        <option value="일자형">일자형</option>
+                        <option value="코너형">코너형</option>
+                        <option value="패드형">패드형</option>
+                        <option value="롤형">롤형</option>
+                    </select>
+                    <select id="peGridFilterLen" onchange="peGridFilterLenChange()" class="pe-select" style="width:auto;" disabled>
+                        <option value="">길이 전체</option>
+                    </select>
+                    <select id="peGridFilterThick" onchange="peGridFilterThickChange()" class="pe-select" style="width:auto;" disabled>
+                        <option value="">두께 전체</option>
+                    </select>
+                    <div style="font-size:10.5px;color:var(--pe-label);">유형·길이·두께를 먼저 고르면, 자재명 칸엔 남은 숫자만 입력해도 바로 찾습니다</div>
+                </div>
                 <div class="pe-sheet-wrap" style="overflow-x:auto;">
                     <table class="pe-sheet-table">
                         <thead><tr>
