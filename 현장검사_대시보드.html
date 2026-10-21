@@ -787,6 +787,69 @@ function fiGasUrl() {
 
 const FI_TYPE_LIST = ['외관', '제품·코드일치', '별도·조립철물', '포장'];
 const FI_TYPE_COLOR = { '외관': '#0284C7', '제품·코드일치': '#7C3AED', '별도·조립철물': '#D97706', '포장': '#059669' };
+// 발생처/원인처(요청, 2026-10-21) — 사업장별로 선택 가능한 발견/원인 위치 목록.
+// 원인처는 "직접입력" 바로 아래에 "파악중"이 하나 더 들어간다(fiLocOptionsFor의
+// withInvestigating 인자로 구분) — 아직 어디가 원인인지 확실치 않을 때 쓰는 용도.
+const FI_SITE_LOCATIONS = {
+  '충주1공장': ['직접입력', '상판포장-1', '포장자동화-1', '포장자동화-2', '캐비닛포장-1', '서랍포장-1', 'A동 곡면포장', '반제품 포장-1', '우레탄포장-1', '우레탄포장-2', '우레탄포장-3', '우레탄포장-메뉴얼', '파티션포장', '파티션포장-2', '포장철물라인', '외주협력사'],
+  '충주2공장': ['직접입력', '성형 포장-1', '반제품 포장-1', '퍼시스 포장-1', '퍼시스 포장-2', '일룸 포장-1', '일룸 포장-2', '외주협력업체'],
+  '기타': ['직접입력']
+};
+const FI_CONFIDENCE_LIST = ['확정', '추측'];
+const FI_CONFIDENCE_COLOR = { '확정': '#16A34A', '추측': '#D97706' };
+function fiLocOptionsFor(site, withInvestigating) {
+  const base = FI_SITE_LOCATIONS[site] || FI_SITE_LOCATIONS['기타'];
+  if (!withInvestigating) return base;
+  return [base[0], '파악중'].concat(base.slice(1));
+}
+// 등록/상세 두 모달이 구조가 완전히 같아서(prefix: 'Reg'|'Det', group: 'Occ'|'Cause')
+// 하나의 함수로 공용 처리한다.
+function fiRenderLocSelect(prefix, group, withInvestigating, selectedValue) {
+  const siteEl = document.getElementById('fi' + prefix + group + 'Site');
+  const locEl = document.getElementById('fi' + prefix + group + 'Loc');
+  if (!siteEl || !locEl) return;
+  const opts = fiLocOptionsFor(siteEl.value, withInvestigating);
+  locEl.innerHTML = opts.map(function (o) { return '<option value="' + o + '">' + o + '</option>'; }).join('');
+  if (selectedValue && opts.indexOf(selectedValue) >= 0) locEl.value = selectedValue;
+}
+function fiOnSiteChange(prefix, group, withInvestigating) {
+  fiRenderLocSelect(prefix, group, withInvestigating);
+  fiOnLocChange(prefix, group);
+}
+function fiOnLocChange(prefix, group) {
+  const locEl = document.getElementById('fi' + prefix + group + 'Loc');
+  const loc = locEl ? locEl.value : '';
+  const customWrap = document.getElementById('fi' + prefix + group + 'LocCustomWrap');
+  if (customWrap) customWrap.style.display = (loc === '직접입력') ? '' : 'none';
+  if (group === 'Cause') {
+    const confWrap = document.getElementById('fi' + prefix + 'CauseConfidenceWrap');
+    if (confWrap) confWrap.style.display = (loc && loc !== '파악중') ? '' : 'none';
+  }
+}
+let fiRegCauseConfidence = '추측';
+let fiDetCauseConfidence = '추측';
+function fiRenderConfidenceBtns(prefix) {
+  const wrap = document.getElementById('fi' + prefix + 'CauseConfidenceBtns');
+  if (!wrap) return;
+  const val = (prefix === 'Reg') ? fiRegCauseConfidence : fiDetCauseConfidence;
+  wrap.innerHTML = FI_CONFIDENCE_LIST.map(function (v) {
+    const active = v === val;
+    const c = FI_CONFIDENCE_COLOR[v];
+    return '<button type="button" onclick="fiPickConfidence(\'' + prefix + '\',\'' + v + '\')" style="flex:1;padding:8px 0;border-radius:9px;border:' + (active ? '2px solid ' + c : '1px solid var(--border)') + ';background:' + (active ? c + '1A' : 'var(--input-bg)') + ';color:' + (active ? c : 'var(--label)') + ';font-size:11.5px;font-weight:' + (active ? 800 : 600) + ';cursor:pointer;">' + v + '</button>';
+  }).join('');
+}
+function fiPickConfidence(prefix, v) {
+  if (prefix === 'Reg') fiRegCauseConfidence = v; else fiDetCauseConfidence = v;
+  fiRenderConfidenceBtns(prefix);
+}
+// 발생처/원인처 한 그룹(사업장+위치, 직접입력이면 그 글자)을 {site, loc} 형태로 모은다.
+function fiCollectSiteLoc(prefix, group) {
+  const site = document.getElementById('fi' + prefix + group + 'Site').value;
+  const locSel = document.getElementById('fi' + prefix + group + 'Loc').value;
+  const loc = (locSel === '직접입력') ? document.getElementById('fi' + prefix + group + 'LocCustom').value.trim() : locSel;
+  return { site: site, loc: loc };
+}
+
 const FI_STATUS_LIST = ['미조치', '조치중', '조치완료'];
 const FI_STATUS_COLOR = { '미조치': '#DC2626', '조치중': '#D97706', '조치완료': '#16A34A' };
 const FI_STATUS_ICON_PATH = {
