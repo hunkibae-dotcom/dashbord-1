@@ -11437,7 +11437,6 @@ async function peLoadAll() {
         peRenderHistory();
         peRenderStock();
         peRenderMaster();
-        peRenderMasterDatalist();
     } catch (e) {
         document.getElementById('peSub').textContent = '데이터를 불러오지 못했습니다: ' + e.message;
     } finally {
