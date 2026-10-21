@@ -2217,6 +2217,8 @@ async function fiSaveDetail() {
       if (json.status !== 'success') throw new Error(json.message || '사진 업로드 실패');
     }
 
+    const detOcc = fiCollectSiteLoc('Det', 'Occ');
+    const detCause = fiCollectSiteLoc('Det', 'Cause');
     const qs = new URLSearchParams({
       action: 'updateEntry',
       sheet: fiDetKey.sheet,
@@ -2224,7 +2226,10 @@ async function fiSaveDetail() {
       types: fiDetTypes.join(','),
       content: document.getElementById('fiDetContent').value.trim(),
       actionText: document.getElementById('fiDetAction').value.trim(),
-      status: fiDetStatus
+      status: fiDetStatus,
+      occSite: detOcc.site, occLoc: detOcc.loc,
+      causeSite: detCause.site, causeLoc: detCause.loc,
+      causeConfidence: (detCause.loc && detCause.loc !== '파악중') ? fiDetCauseConfidence : ''
     });
     const res2 = await fetch(url + '?' + qs.toString(), { signal: AbortSignal.timeout(20000) });
     const json2 = await res2.json();
