@@ -11447,6 +11447,8 @@ async function peLoadAll() {
 
 async function openPkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.remove('hidden');
+    const ov = document.getElementById('peInitLoadingOverlay');
+    if (ov) ov.style.display = 'flex';
     await peLoadAll();
     if (!pePnInited) { pePnInited = true; peInitOrderForm(); }
 }
