@@ -581,6 +581,13 @@
             <span class="flex-1">포장불량조치</span>
         </button>
 
+        <!-- PE폼 발주 — 별도 스프레드시트(PE폼 발주 Main/doGet 스크립트)를 쓰는 서브
+             대시보드. 포장불량조치와 같은 전체화면 뷰 패턴을 그대로 따른다. -->
+        <button type="button" class="pkg-nav-item" onclick="openPkgPeFoamView()">
+            <i class="fa-solid fa-cube w-4 text-center"></i>
+            <span class="flex-1">PE폼</span>
+        </button>
+
         <button type="button" class="pkg-nav-item" onclick="pkgOpenClassifyUploadModal()" title="통합품목·grd_Group(분류-수주) / grd_outResult(분류-입고) 엑셀 업로드">
             <i class="fa-solid fa-file-excel w-4 text-center"></i>
             <span class="flex-1">수주입고 업데이트</span>
