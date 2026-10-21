@@ -2084,6 +2084,10 @@ function fiOpenDetail(sheet, row) {
   document.getElementById('fiDetContent').value = d.content || '';
   document.getElementById('fiDetAction').value = d.action || '';
   document.getElementById('fiDetFeedback').textContent = '';
+  fiPopulateSiteLoc('Det', 'Occ', d.occSite || '', d.occLoc || '', false);
+  fiPopulateSiteLoc('Det', 'Cause', d.causeSite || '', d.causeLoc || '', true);
+  fiDetCauseConfidence = d.causeConfidence || '추측';
+  fiRenderConfidenceBtns('Det');
   fiRenderDetTypeBtns(); fiRenderDetStatusBtns(); fiRenderDetStatusPill(); fiRenderDetPhotos();
   document.getElementById('fiDetailModal').style.display = 'flex';
   _fiArmBackTrap();
