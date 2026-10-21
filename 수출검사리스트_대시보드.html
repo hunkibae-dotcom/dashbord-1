@@ -6283,6 +6283,13 @@ function renderProductSearchResults(results) {
   </div>
   <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding-bottom:6px;">${sortBtnsHtml}</div>`;
 
+  // 결과가 0건이어도 위 버튼줄(선택/일괄수정/상세필터/날짜필터/초기화/바코드 재스캔)은
+  // 이미 그려 넣었으니 그대로 남는다 — 오히려 결과가 0건일 때 조건을 바꾸거나 초기화할
+  // 버튼이 가장 필요한데, 예전엔 여기서 summary를 통째로 비워서 그 버튼들까지 같이
+  // 사라졌었다(요청 버그, 2026-10-21: "검사완료(진행중)으로 바꾸면 필터/초기화/바코드
+  // 스캔/날짜선택 버튼이 사라진다"). 표/카드만 비우고 여기서 멈춘다.
+  if (!results.length) { tbody.innerHTML = ''; if (cardContainer0) cardContainer0.innerHTML = ''; return; }
+
   const sortField = _PS_SORT_FIELD[_psSortKey] || '납기일';
   const sorted = [...results].sort((a, b) => {
     if (_psSortKey === 'code' || _psSortKey === 'round') {
