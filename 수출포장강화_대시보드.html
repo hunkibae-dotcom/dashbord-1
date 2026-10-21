@@ -11916,7 +11916,7 @@ function peSaveDraft() {
     clearTimeout(_peDraftTimer);
     _peDraftTimer = setTimeout(() => {
         const rows = [];
-        document.querySelectorAll('#peGridBody tr').forEach(tr => {
+        document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
             const sel = peGridSelections[tr.dataset.id];
             if (!sel) return;
             rows.push({ code: sel.code, qty: tr.querySelector('.pe-grid-qty').value, note: tr.querySelector('.pe-grid-note').value });
@@ -11973,7 +11973,7 @@ function peAddGridRow() {
 }
 function peAddGridRows(n) { for (let i = 0; i < n; i++) peAddGridRow(); }
 function peRenumberGrid() {
-    document.querySelectorAll('#peGridBody tr').forEach((tr, i) => {
+    document.querySelectorAll('#peGridBody .pe-grid-row').forEach((tr, i) => {
         const span = tr.querySelector('[id^="peGridNum-"]');
         if (span) span.textContent = i + 1;
     });
@@ -11988,7 +11988,7 @@ function peGridFillRow(id, r) {
 }
 function peGridSearchInput(id) {
     peGridActiveId = id;
-    const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+    const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
     const input = tr.querySelector('.pe-grid-name');
     const val = input.value.trim();
     if (!val && peGridSelections[id]) {
@@ -12017,7 +12017,7 @@ function peGridCloseDropdown(id) {
 function peGridSelectName(id, code) {
     const r = peMasterRows.find(x => x.code === code);
     if (!r) return;
-    const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+    const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
     tr.querySelector('.pe-grid-name').value = r.name;
     peGridSelections[id] = r;
     peGridFillRow(id, r);
@@ -12027,7 +12027,7 @@ function peGridSelectName(id, code) {
 }
 function peUpdateSum() {
     let totalQty = 0, filled = 0;
-    document.querySelectorAll('#peGridBody tr').forEach(tr => {
+    document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
         const id = tr.dataset.id;
         if (!peGridSelections[id]) return;
         filled++;
@@ -12053,19 +12053,19 @@ function peInitOrderForm() {
         const r = peMasterRows.find(x => x.code === dr.code);
         if (!r) return; // 품목마스터에서 코드가 사라졌으면 건너뜀
         const id = peAddGridRow();
-        const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+        const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
         tr.querySelector('.pe-grid-name').value = r.name;
         tr.querySelector('.pe-grid-qty').value = dr.qty || '';
         tr.querySelector('.pe-grid-note').value = dr.note || '';
         peGridSelections[id] = r;
         peGridFillRow(id, r);
     });
-    while (document.querySelectorAll('#peGridBody tr').length < 15) peAddGridRow();
+    while (document.querySelectorAll('#peGridBody .pe-grid-row').length < 15) peAddGridRow();
     peUpdateSum();
 }
 async function peRegisterOrder() {
     const items = [];
-    document.querySelectorAll('#peGridBody tr').forEach(tr => {
+    document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
         const id = tr.dataset.id;
         const sel = peGridSelections[id];
         if (!sel) return;
