@@ -5207,6 +5207,9 @@
         if (isOpen('workCardActionSheet'))  { closeWorkCardActions();       return true; }
         if (isOpen('settingsModal'))        { closeModal('settingsModal');  return true; }
         if (isOpen('searchSubMenu'))        { closeSearchSub();             return true; }
+        if (isOpen('pkgSubMenu'))           { closePkgSub();                return true; }
+        if (isOpen('pkgPeFoamOverlay'))     { closePkgPeFoamOverlay();      return true; }
+        if (isOpen('pkgDefectActionOverlay')) { closePkgDefectActionOverlay(); return true; }
         if (_currentView)                   { closeView();                  return true; }
         return false;
     }
