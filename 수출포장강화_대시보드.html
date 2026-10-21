@@ -12310,36 +12310,32 @@ async function peSubmitOrder() {
   #peToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
   @media (max-width:900px) { .pe-scope .pe-type-chips { grid-template-columns:repeat(2,1fr); } }
 </style>
-<div id="pkgPeFoamView" class="pe-scope hidden" style="position:fixed;inset:0;z-index:150;background:#f1f5f9;overflow-y:auto;">
-    <div style="padding:26px 28px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e2e8f0;background:#fff;">
-        <button onclick="closePkgPeFoamView()" style="width:36px;height:36px;border-radius:10px;border:none;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;">
-            <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#FF9F1C,#E8590C);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;box-shadow:0 6px 16px rgba(232,89,12,.3);"><i class="fa-solid fa-cube"></i></span>
-        <div>
-            <div class="pe-disp" style="font-size:17px;font-weight:800;color:#1A2233;">PE폼 발주</div>
-            <div style="font-size:11.5px;color:#647088;margin-top:1px;" id="peSub">불러오는 중...</div>
+<div id="pkgPeFoamView" class="pe-scope hidden" style="position:fixed;inset:0;z-index:150;background:#F6F7F9;overflow-y:auto;">
+  <div class="pe-app-shell">
+    <aside class="pe-sidebar" style="background:#fff;border-right:1px solid #E4E8EF;padding:18px;display:flex;flex-direction:column;gap:20px;">
+        <button onclick="closePkgPeFoamView()" style="display:flex;align-items:center;gap:7px;border:none;background:transparent;color:#647088;font-size:12px;font-weight:700;cursor:pointer;padding:7px 8px;border-radius:9px;align-self:flex-start;"><i class="fa-solid fa-arrow-left"></i>뒤로가기</button>
+        <div style="display:flex;align-items:center;gap:11px;">
+            <span style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#FF9F1C,#E8590C);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 6px 16px rgba(232,89,12,.25);"><i class="fa-solid fa-cube"></i></span>
+            <div><div class="pe-disp" style="font-size:13.5px;font-weight:800;color:#1A2233;">PE폼 발주</div><div style="font-size:10px;color:#647088;margin-top:2px;" id="peSub">불러오는 중...</div></div>
         </div>
-        <div style="display:flex;gap:8px;margin-left:auto;">
-            <button onclick="peLoadAll()" style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:9px;border:1px solid #E4E8EF;background:#fff;color:#647088;cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> 새로고침</button>
-        </div>
-    </div>
+        <nav style="display:flex;flex-direction:column;gap:4px;">
+            <button class="pe-side-nav-btn on" data-pe-tab="dash" onclick="peSwitchTab('dash')"><i class="fa-solid fa-chart-pie"></i>대시보드</button>
+            <button class="pe-side-nav-btn" data-pe-tab="order" onclick="peSwitchTab('order')"><i class="fa-solid fa-file-invoice"></i>발주서</button>
+            <button class="pe-side-nav-btn" data-pe-tab="history" onclick="peSwitchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>발주이력</button>
+            <button class="pe-side-nav-btn" data-pe-tab="stock" onclick="peSwitchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i>재고현황</button>
+            <button class="pe-side-nav-btn" data-pe-tab="master" onclick="peSwitchTab('master')"><i class="fa-solid fa-tag"></i>품목마스터</button>
+        </nav>
+        <button onclick="peLoadAll()" style="margin-top:auto;display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;font-weight:700;padding:9px 12px;border-radius:9px;border:1px solid #E4E8EF;background:#fff;color:#647088;cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> 새로고침</button>
+        <div style="font-size:10px;color:#9AA5B8;line-height:1.6;border-top:1px solid #EEF1F5;padding-top:14px;">앱에는 없는 웹 전용 신규 기능입니다. 재고·부족 품목 등 기존 기능은 PE폼 앱을 그대로 씁니다.</div>
+    </aside>
+
+    <main style="position:relative;min-width:0;">
     <div id="peInitLoadingOverlay" style="position:absolute;inset:0;z-index:5;background:#F6F7F9;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
         <i class="fa-solid fa-spinner fa-spin" style="font-size:28px;color:#E8590C;"></i>
         <div style="font-size:13px;color:#647088;font-weight:700;">불러오는 중...</div>
     </div>
 
-    <div style="padding:16px 28px 0;max-width:1400px;margin:0 auto;">
-        <div style="display:flex;gap:6px;background:#EEF1F5;padding:4px;border-radius:12px;width:fit-content;">
-            <button class="pe-tab-btn on" data-pe-tab="dash" onclick="peSwitchTab('dash')"><i class="fa-solid fa-chart-pie"></i>대시보드</button>
-            <button class="pe-tab-btn" data-pe-tab="order" onclick="peSwitchTab('order')"><i class="fa-solid fa-file-invoice"></i>발주서</button>
-            <button class="pe-tab-btn" data-pe-tab="history" onclick="peSwitchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>발주이력</button>
-            <button class="pe-tab-btn" data-pe-tab="stock" onclick="peSwitchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i>재고현황</button>
-            <button class="pe-tab-btn" data-pe-tab="master" onclick="peSwitchTab('master')"><i class="fa-solid fa-tag"></i>품목마스터</button>
-        </div>
-    </div>
-
-    <div style="padding:20px 28px 44px;max-width:1400px;margin:0 auto;">
+    <div style="padding:24px 28px 44px;max-width:1200px;">
 
         <!-- 대시보드 -->
         <div id="peTab-dash">
