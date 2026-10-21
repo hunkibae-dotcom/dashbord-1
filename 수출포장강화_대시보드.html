@@ -12746,7 +12746,7 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div class="pe-panel">
                 <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
                     <div class="pe-panel-label" style="margin-bottom:0;">품목마스터</div>
-                    <button onclick="alert('실제 구현 시 품목 등록 폼이 열립니다.')" class="pe-add-btn" style="width:auto;padding:8px 16px;"><i class="fa-solid fa-plus"></i> 새 품목 추가</button>
+                    <button onclick="peOpenAddMasterModal()" class="pe-add-btn" style="width:auto;padding:8px 16px;"><i class="fa-solid fa-plus"></i> 새 품목 추가</button>
                 </div>
                 <div class="master-filter-row">
                     <button class="master-filter-chip on" onclick="peMstTypePick('', this)">전체</button>
