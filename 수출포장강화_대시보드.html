@@ -11399,11 +11399,11 @@ async function peLoadAll() {
         const stkTable = json[PE_SHEET_STK] || [];
         if (stkTable.length > 1) {
             const h = stkTable[0];
-            const iDate = peFi(h, '발주일자'), iCode = peFi(h, '자재 코드'), iName = peFi(h, '자재명'),
-                  iSpec = peFi(h, '규격상세'), iQty = peFi(h, '수량'), iUnit = peFi(h, '단위'),
+            const iOrd = peFi(h, '발주번호'), iDate = peFi(h, '발주일자'), iCode = peFi(h, '자재 코드'), iName = peFi(h, '자재명'),
+                  iSpec = peFi(h, '규격상세'), iQty = peFi(h, '수량'), iUnit = peFi(h, '단위'), iColor = peFi(h, '색상'),
                   iType = peFi(h, '유형'), iSite = peFi(h, '사업장'), iNote = peFi(h, '비고');
             peStockRows = stkTable.slice(1).filter(r => r[iCode] || r[iName]).map(r => ({
-                row: r[0], date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
+                row: r[0], ord: r[iOrd] || '', date: r[iDate] || '', code: r[iCode] || '', color: r[iColor] || '', name: r[iName] || '',
                 spec: r[iSpec] || '', qty: r[iQty], unit: r[iUnit] || '', type: r[iType] || '',
                 site: r[iSite] || '', note: (r[iNote] || '').toString().trim()
             }));
