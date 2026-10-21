@@ -11439,6 +11439,9 @@ async function peLoadAll() {
         peRenderMaster();
     } catch (e) {
         document.getElementById('peSub').textContent = '데이터를 불러오지 못했습니다: ' + e.message;
+    } finally {
+        const ov = document.getElementById('peInitLoadingOverlay');
+        if (ov) ov.style.display = 'none';
     }
 }
 
