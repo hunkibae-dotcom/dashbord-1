@@ -1952,6 +1952,13 @@
             }, 300);
         }
 
+        // F.WORK 앱 허브(index.html) > 포장강화 > PE폼, 또는 포장강화 앱(shell.html)에서
+        // ?openPeFoam=1을 붙여 보내면 PE폼 탭을 자동으로 연다 — 위 불량조치 자동열기와
+        // 같은 방식(데이터 로드 전이면 openPkgPeFoamView가 자체적으로 다시 불러온다).
+        if (new URLSearchParams(location.search).get('openPeFoam') === '1') {
+            if (typeof openPkgPeFoamView === 'function') openPkgPeFoamView();
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             initCard1();
             _presenceInit();
