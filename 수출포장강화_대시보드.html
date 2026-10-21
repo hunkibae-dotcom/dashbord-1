@@ -11666,7 +11666,8 @@ function peRenderDashSearchField() {
         ).join('') + `</div>`;
     }
     wrap.innerHTML = cornerHtml + `<div class="pe-search-field">
-      <input type="text" id="peDashSearchInput" placeholder="예: 50" oninput="peDashOnSearchInput()" onfocus="peDashOnSearchInput()" onblur="setTimeout(peDashCloseDropdown,150)">
+      <input type="text" id="peDashSearchInput" placeholder="${peDashType === '패드형' ? '예: 500×500' : '예: 50'}" oninput="peDashOnSearchInput()" onfocus="peDashOnSearchInput()" onblur="setTimeout(peDashCloseDropdown,150)">
+      <i class="fa-solid fa-magnifying-glass ic-search"></i>
       <div class="pe-search-dropdown" id="peDashSearchDropdown" hidden></div>
     </div>`;
 }
