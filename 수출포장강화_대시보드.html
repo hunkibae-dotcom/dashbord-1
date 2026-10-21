@@ -11607,7 +11607,7 @@ function peDeficitCardHtml(g) {
     const click = g.clickable ? ` onclick="peOpenStockDetailByKey('${g.key.replace(/'/g, "\\'")}')"` : '';
     return `<div class="pe-stk-card" style="margin-bottom:10px;">
       <div class="pe-stk-head"${click} style="${g.clickable ? '' : 'cursor:default;'}">
-        <span style="width:34px;height:34px;border-radius:10px;background:${peTypeColor(g.type)}1a;color:${peTypeColor(g.type)};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-cube"></i></span>
+        ${peTypeIconHtml(g.type, 34)}
         <div class="pe-stk-mid">
           <div class="pe-stk-name">${g.name || '(자재명 없음)'} <span class="spec">${g.spec || ''}</span></div>
           <div class="pe-stk-sub">${g.total <= 0 ? '재고 없음 · 기준 품목' : '재고부족 · 기준 품목'}</div>
