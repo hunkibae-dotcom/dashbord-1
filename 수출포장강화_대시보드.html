@@ -11555,6 +11555,283 @@
     </div>
 </div>
 
+<!-- ══════════════ PE폼 발주 — 전체화면 뷰 ══════════════ -->
+<!-- 별도 스프레드시트(PE폼 발주 Main/doGet 스크립트)를 쓰는 서브 대시보드.
+     GAS_URL_PE는 PE폼 앱(PE폼발주_대시보드.html)과 같은 localStorage 키
+     (sheet_pub_url_pe)를 써서, 앱에서 한 번 설정해두면 여기서도 바로 연결된다.
+     발주서(품목 선택→저장)만 이 웹 전용 신규 기능이고, 나머지(대시보드·발주이력·
+     재고현황·품목마스터)는 PE폼 앱의 로직을 그대로 옮겨왔다(같은 기준이어야
+     양쪽이 어긋나지 않는다). -->
+<style>
+  .pe-scope .pe-tab-btn { border:none; background:transparent; padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; color:#64748b; cursor:pointer; display:flex; align-items:center; gap:7px; font-family:inherit; }
+  .pe-scope .pe-tab-btn.on { background:#fff; color:#E8590C; box-shadow:0 2px 6px rgba(16,20,30,.08); }
+  .pe-scope .pe-panel { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px; }
+  .pe-scope .pe-panel-label { font-size:10.5px; font-weight:800; letter-spacing:.06em; color:#94a3b8; text-transform:uppercase; margin-bottom:14px; }
+  .pe-scope .pe-stat { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; }
+  .pe-scope .pe-stat-v { font-size:22px; font-weight:800; color:#1e293b; font-family:'JetBrains Mono',monospace,monospace; }
+  .pe-scope .pe-stat-l { font-size:11px; font-weight:700; color:#64748b; margin-top:6px; }
+  .pe-scope .pe-stat-warn .pe-stat-v { color:#d97706; }
+  .pe-scope .pe-field label, .pe-scope .pe-sublabel { display:block; font-size:10.5px; font-weight:700; color:#64748b; margin-bottom:6px; }
+  .pe-scope .pe-field input, .pe-scope .pe-field select, .pe-scope .pe-select { width:100%; box-sizing:border-box; border:1.5px solid #e2e8f0; border-radius:9px; padding:8px 11px; font-size:12.5px; color:#1e293b; outline:none; background:#fff; font-family:inherit; }
+  .pe-scope .pe-field input:focus, .pe-scope .pe-select:focus { border-color:#E8590C; }
+  .pe-scope .pe-item-row { position:relative; border:1px solid #e2e8f0; border-radius:14px; padding:14px 14px 14px 17px; background:#fff; overflow:visible; }
+  .pe-scope .pe-item-row::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:14px 0 0 14px; background:var(--pe-row-color,#e2e8f0); }
+  .pe-scope .pe-num { width:22px; height:22px; border-radius:50%; background:#f1f5f9; color:#64748b; font-size:10.5px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .pe-scope .pe-type-chips { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:12px; }
+  .pe-scope .pe-type-chip { border:1.5px solid #e2e8f0; border-radius:10px; padding:8px 5px; text-align:center; cursor:pointer; background:#fff; }
+  .pe-scope .pe-type-chip .dot { width:7px; height:7px; border-radius:50%; margin:0 auto 5px; background:var(--pe-chip-color,#94a3b8); opacity:.5; }
+  .pe-scope .pe-type-chip .lbl { font-size:11px; font-weight:700; color:#64748b; }
+  .pe-scope .pe-type-chip.on { border-color:var(--pe-chip-color,#E8590C); background:var(--pe-chip-soft,#fff3e8); }
+  .pe-scope .pe-type-chip.on .dot { opacity:1; }
+  .pe-scope .pe-type-chip.on .lbl { color:var(--pe-chip-color,#E8590C); }
+  .pe-scope .pe-corner-sub { display:flex; gap:6px; margin-bottom:12px; }
+  .pe-scope .pe-corner-sub button { flex:1; border:1.5px solid #e2e8f0; background:#fff; border-radius:8px; padding:6px; font-size:11px; font-weight:700; color:#64748b; cursor:pointer; }
+  .pe-scope .pe-corner-sub button.on { border-color:#7C3AED; background:rgba(124,58,237,.08); color:#7C3AED; }
+  .pe-scope .pe-ref-line { display:flex; align-items:center; gap:6px; font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:10px; }
+  .pe-scope .pe-ref-line b { color:#64748b; font-weight:700; }
+  .pe-scope .pe-search-field { position:relative; margin-bottom:12px; }
+  .pe-scope .pe-search-field input { width:100%; box-sizing:border-box; border:1.5px solid #e2e8f0; border-radius:9px; padding:9px 32px 9px 11px; font-size:12.5px; font-weight:600; outline:none; background:#fff; font-family:inherit; }
+  .pe-scope .pe-search-dropdown { position:absolute; left:0; right:0; top:calc(100% + 5px); background:#fff; border:1.5px solid #e2e8f0; border-radius:10px; box-shadow:0 10px 24px rgba(16,20,30,.14); max-height:220px; overflow-y:auto; z-index:20; }
+  .pe-scope .pe-search-opt { padding:9px 11px; cursor:pointer; display:flex; justify-content:space-between; gap:8px; border-bottom:1px solid #f1f5f9; font-size:11.5px; }
+  .pe-scope .pe-search-opt:hover { background:#f8fafc; }
+  .pe-scope .pe-search-empty { padding:12px 11px; font-size:11px; color:#94a3b8; }
+  .pe-scope .pe-selected-chip { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:9px 12px; border:1.5px solid var(--pe-row-color,#E8590C); background:#f8fafc; border-radius:9px; margin-bottom:12px; }
+  .pe-scope .pe-selected-chip .code { font-size:12.5px; font-weight:800; color:#1e293b; font-family:'JetBrains Mono',monospace,monospace; }
+  .pe-scope .pe-selected-chip .spec { font-size:10.5px; color:#64748b; display:block; margin-top:2px; }
+  .pe-scope .pe-selected-chip button { border:none; background:transparent; color:#64748b; font-size:10.5px; font-weight:700; cursor:pointer; }
+  .pe-scope .pe-preview { padding:8px 11px; background:#f8fafc; border-radius:9px; margin-bottom:12px; font-size:11px; color:#64748b; }
+  .pe-scope .pe-preview.empty { color:#94a3b8; font-style:italic; }
+  .pe-scope .bar-row { margin-bottom:12px; }
+  .pe-scope .bar-row:last-child { margin-bottom:0; }
+  .pe-scope .bar-row-top { display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px; }
+  .pe-scope .bar-row-top .bl { font-weight:700; color:#475569; }
+  .pe-scope .bar-row-top .bv { font-weight:800; color:#1e293b; font-family:'JetBrains Mono',monospace,monospace; }
+  .pe-scope .bar-track { height:7px; border-radius:4px; background:#f1f5f9; overflow:hidden; }
+  .pe-scope .bar-fill { height:100%; border-radius:4px; background:#E8590C; }
+  .pe-scope .bar-row.clickable { cursor:pointer; }
+  .pe-scope .pe-card, .pe-scope .pe-stk-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:14px; }
+  .pe-scope .pe-pill { font-size:10px; font-weight:800; padding:3px 9px; border-radius:7px; flex-shrink:0; }
+  .pe-scope .pe-pill-order { background:rgba(37,99,235,.1); color:#2563eb; }
+  .pe-scope .pe-pill-part { background:rgba(217,119,6,.1); color:#d97706; }
+  .pe-scope .pe-pill-done { background:rgba(22,163,74,.1); color:#16a34a; }
+  .pe-scope .pe-pill-cancel { background:rgba(100,116,139,.12); color:#64748b; }
+  .pe-scope .pe-tag { font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:7px; background:#f1f5f9; color:#64748b; }
+  .pe-scope .pe-qa-btn { flex:1; border:none; border-radius:8px; padding:8px; font-size:11.5px; font-weight:700; cursor:pointer; background:#f1f5f9; color:#64748b; }
+  .pe-scope .pe-qa-btn.confirm { background:rgba(22,163,74,.1); color:#16a34a; }
+  .pe-scope .pe-stk-head { display:flex; align-items:center; gap:10px; cursor:pointer; }
+  .pe-scope .pe-stk-mid { flex:1; min-width:0; }
+  .pe-scope .pe-stk-name { font-size:13px; font-weight:700; color:#1e293b; }
+  .pe-scope .pe-stk-name .spec { color:#94a3b8; font-weight:600; font-size:11.5px; }
+  .pe-scope .pe-stk-sub { font-size:11px; color:#94a3b8; margin-top:2px; }
+  .pe-scope .pe-stk-total { text-align:right; flex-shrink:0; }
+  .pe-scope .pe-stk-total b { font-size:15px; font-weight:800; color:#1e293b; display:block; }
+  .pe-scope .pe-stk-total span { font-size:10px; color:#94a3b8; }
+  .pe-scope .pe-empty { text-align:center; padding:30px 10px; color:#94a3b8; font-size:12.5px; grid-column:1/-1; }
+  .pe-scope .pe-batch { padding:10px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; font-size:11.5px; }
+  .pe-scope .pe-batch:last-child { border-bottom:none; }
+  .pe-scope .pe-batch.used { color:#DC2626; font-weight:700; }
+  .pe-scope .kv-row { display:flex; justify-content:space-between; gap:10px; font-size:12.5px; padding-bottom:9px; border-bottom:1px solid #f1f5f9; }
+  .pe-scope .kv-row:last-child { border-bottom:none; padding-bottom:0; }
+  .pe-scope .kv-row .k { color:#64748b; font-weight:700; flex-shrink:0; }
+  .pe-scope .kv-row .v { color:#1e293b; font-weight:700; text-align:right; }
+  #peToast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:#1e293b; color:#fff; padding:11px 18px; border-radius:10px; font-size:12.5px; font-weight:700; z-index:300; opacity:0; pointer-events:none; transition:all .25s; }
+  #peToast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  @media (max-width:900px) { .pe-scope .pe-type-chips { grid-template-columns:repeat(2,1fr); } }
+</style>
+<div id="pkgPeFoamView" class="pe-scope hidden" style="position:fixed;inset:0;z-index:150;background:#f1f5f9;overflow-y:auto;">
+    <div style="padding:26px 28px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #e2e8f0;background:#fff;">
+        <button onclick="closePkgPeFoamView()" style="width:36px;height:36px;border-radius:10px;border:none;background:#f1f5f9;color:#64748b;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;flex-shrink:0;">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <span style="width:36px;height:36px;border-radius:10px;background:rgba(232,89,12,.1);color:#E8590C;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"><i class="fa-solid fa-cube"></i></span>
+        <div>
+            <div style="font-size:17px;font-weight:800;color:#1e293b;">PE폼 발주</div>
+            <div style="font-size:11.5px;color:#64748b;margin-top:1px;" id="peSub">불러오는 중...</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-left:auto;">
+            <button onclick="peLoadAll()" style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:9px;border:1px solid #e2e8f0;background:#fff;color:#64748b;cursor:pointer;"><i class="fa-solid fa-arrows-rotate"></i> 새로고침</button>
+        </div>
+    </div>
+
+    <div style="padding:16px 28px 0;max-width:1400px;margin:0 auto;">
+        <div style="display:flex;gap:6px;background:#e2e8f0;padding:4px;border-radius:12px;width:fit-content;">
+            <button class="pe-tab-btn on" data-pe-tab="dash" onclick="peSwitchTab('dash')"><i class="fa-solid fa-chart-pie"></i>대시보드</button>
+            <button class="pe-tab-btn" data-pe-tab="order" onclick="peSwitchTab('order')"><i class="fa-solid fa-file-invoice"></i>발주서</button>
+            <button class="pe-tab-btn" data-pe-tab="history" onclick="peSwitchTab('history')"><i class="fa-solid fa-clock-rotate-left"></i>발주이력</button>
+            <button class="pe-tab-btn" data-pe-tab="stock" onclick="peSwitchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i>재고현황</button>
+            <button class="pe-tab-btn" data-pe-tab="master" onclick="peSwitchTab('master')"><i class="fa-solid fa-tag"></i>품목마스터</button>
+        </div>
+    </div>
+
+    <div style="padding:20px 28px 44px;max-width:1400px;margin:0 auto;">
+
+        <!-- 대시보드 -->
+        <div id="peTab-dash">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+                <div class="pe-stat"><div class="pe-stat-v" id="peKpiOngoing">–</div><div class="pe-stat-l">진행중 발주</div></div>
+                <div class="pe-stat"><div class="pe-stat-v" id="peKpiMonth">–</div><div class="pe-stat-l">이번달 발주</div></div>
+                <div class="pe-stat pe-stat-warn"><div class="pe-stat-v" id="peKpiLowStock">–</div><div class="pe-stat-l">재고 부족 품목</div></div>
+                <div class="pe-stat"><div class="pe-stat-v" id="peKpiLead">–</div><div class="pe-stat-l">평균 리드타임</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+                <div class="pe-panel">
+                    <div class="pe-panel-label">유형별 재고 보유 현황</div>
+                    <div id="peStockTypeBars"></div>
+                </div>
+                <div class="pe-panel">
+                    <div class="pe-panel-label">재고 부족·발주 대상</div>
+                    <div id="peLowStockList"></div>
+                </div>
+            </div>
+            <div class="pe-panel">
+                <div class="pe-panel-label">이번달 유형별 소요량</div>
+                <div id="peUsageTypeBars"></div>
+            </div>
+        </div>
+
+        <!-- 발주서 (신규) -->
+        <div id="peTab-order" class="hidden">
+            <div class="pe-panel">
+                <div class="pe-panel-label">발주 정보</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+                    <div class="pe-field"><label>발주일자</label><input type="date" id="peOrdDate"></div>
+                    <div class="pe-field"><label>발주자</label><input type="text" id="peOrdUser" placeholder="이름 입력"></div>
+                    <div class="pe-field"><label>납품희망일</label><input type="date" id="peOrdDue"></div>
+                    <div class="pe-field">
+                        <label>반입창고</label>
+                        <select id="peOrdWhSel" onchange="peOnWhChange()">
+                            <option value="충주 1공장">충주 1공장</option>
+                            <option value="충주 2공장">충주 2공장</option>
+                            <option value="__custom__">직접입력</option>
+                        </select>
+                        <input type="text" id="peOrdWh" placeholder="직접 입력" style="margin-top:6px;" hidden>
+                    </div>
+                </div>
+                <div style="font-size:10.5px;color:#94a3b8;margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다</div>
+            </div>
+
+            <div class="pe-panel">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+                    <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
+                    <span style="font-size:11.5px;font-weight:700;color:#94a3b8;" id="peItemCount">1개 품목</span>
+                </div>
+                <div id="peItemRows" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-bottom:14px;"></div>
+                <button onclick="peAddItem()" style="width:100%;padding:12px;border-radius:12px;border:2px dashed #e2e8f0;background:transparent;color:#64748b;font-weight:700;font-size:12.5px;cursor:pointer;"><i class="fa-solid fa-plus"></i> 품목 추가</button>
+            </div>
+
+            <button onclick="peSubmitOrder()" id="peSubmitBtn" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF9F1C,#E8590C);color:#fff;font-weight:800;font-size:14px;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> 발주서 저장</button>
+        </div>
+
+        <!-- 발주이력 -->
+        <div id="peTab-history" class="hidden">
+            <div class="pe-panel">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                    <select id="peHistStatusFilter" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
+                        <option value="">상태: 전체</option>
+                        <option value="발주">발주</option>
+                        <option value="부분입고">부분입고</option>
+                        <option value="입고완료">입고완료</option>
+                        <option value="취소">취소</option>
+                    </select>
+                    <input type="date" id="peHistFrom" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
+                    <input type="date" id="peHistTo" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
+                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
+                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
+                        <input id="peHistSearch" oninput="peRenderHistory()" placeholder="발주번호·코드·자재명 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
+                    </div>
+                </div>
+                <div id="peHistList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
+            </div>
+        </div>
+
+        <!-- 재고현황 -->
+        <div id="peTab-stock" class="hidden">
+            <div class="pe-panel">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                    <select id="peStockTypeFilter" onchange="peRenderStock()" class="pe-select" style="width:auto;">
+                        <option value="">전체 유형</option>
+                        <option value="일자형">일자형</option>
+                        <option value="코너형">코너형</option>
+                        <option value="패드형">패드형</option>
+                        <option value="롤형">롤형</option>
+                    </select>
+                    <select id="peStockShowFilter" onchange="peRenderStock()" class="pe-select" style="width:auto;">
+                        <option value="remain">남은 재고</option>
+                        <option value="used">소진된 재고</option>
+                        <option value="all">전체</option>
+                    </select>
+                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
+                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
+                        <input id="peStockSearch" oninput="peRenderStock()" placeholder="코드·자재명·규격 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
+                    </div>
+                </div>
+                <div id="peStockList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
+            </div>
+        </div>
+
+        <!-- 품목마스터 -->
+        <div id="peTab-master" class="hidden">
+            <div class="pe-panel">
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
+                    <select id="peMstTypeFilter" onchange="peRenderMaster()" class="pe-select" style="width:auto;">
+                        <option value="">전체 유형</option>
+                        <option value="일자형">일자형</option>
+                        <option value="코너형">코너형</option>
+                        <option value="패드형">패드형</option>
+                        <option value="롤형">롤형</option>
+                    </select>
+                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
+                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
+                        <input id="peMstSearch" oninput="peRenderMaster()" placeholder="코드·자재명 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
+                    </div>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="text-align:left;color:#94a3b8;">
+                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">코드</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">색상</th>
+                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">자재명</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">규격상세</th>
+                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">두께</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">단위</th>
+                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">유형</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">사업장</th>
+                        </tr></thead>
+                        <tbody id="peMstBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- PE폼 재고 상세 + 소요 등록 -->
+<div id="peStockDetailModal" class="pe-scope" onclick="if(event.target===this)peCloseStockDetail()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:460px;max-width:94vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+            <div><div style="font-size:15px;font-weight:800;color:#1e293b;" id="peStockDetailTitle"></div><div style="font-size:11px;color:#94a3b8;font-family:monospace;margin-top:4px;" id="peStockDetailCode"></div></div>
+            <button onclick="peCloseStockDetail()" style="border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <button onclick="peToggleUsageForm()" style="display:inline-flex;align-items:center;gap:7px;border:1.5px solid #E8590C;color:#E8590C;background:rgba(232,89,12,.08);border-radius:9px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:14px;"><i class="fa-solid fa-arrow-right-from-bracket"></i> 소요</button>
+        <div id="peUsageForm" style="display:none;flex-direction:column;gap:10px;background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;">
+            <div style="display:flex;gap:8px;align-items:center;"><label style="width:52px;flex-shrink:0;font-size:11.5px;font-weight:700;color:#64748b;">수량</label><input type="number" id="peUsageQty" placeholder="개수" class="pe-select" style="flex:1;"></div>
+            <div style="display:flex;gap:8px;align-items:center;"><label style="width:52px;flex-shrink:0;font-size:11.5px;font-weight:700;color:#64748b;">사용처</label><input type="text" id="peUsageUse" placeholder="선택 입력" class="pe-select" style="flex:1;"></div>
+            <button id="peUsageSubmitBtn" onclick="peSubmitUsage()" style="border:none;background:linear-gradient(135deg,#FF9F1C,#E8590C);color:#fff;font-weight:800;font-size:12.5px;padding:9px;border-radius:9px;cursor:pointer;">소요 등록</button>
+        </div>
+        <div id="peStockDetailBody"></div>
+    </div>
+</div>
+
+<!-- 발주 상세 -->
+<div id="peOrderDetailModal" class="pe-scope" onclick="if(event.target===this)peCloseOrderDetail()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:15px;font-weight:800;color:#1e293b;">발주 상세</div>
+            <button onclick="peCloseOrderDetail()" style="border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:16px;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="peOrderDetailBody"></div>
+    </div>
+</div>
+
+<div id="peToast"><i class="fa-solid fa-circle-check"></i> <span id="peToastTxt"></span></div>
+
 <!-- 포장불량조치 등록 시 품목 먼저 검색/선택 -->
 <div id="pkgDaPickerModal" onclick="if(event.target===this)closePkgDefectActionPicker()"
     style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
