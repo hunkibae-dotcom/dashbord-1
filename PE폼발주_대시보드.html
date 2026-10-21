@@ -496,8 +496,13 @@ const GAS_URL_PE = localStorage.getItem('sheet_pub_url_pe') ||
 // 안쪽 버튼을 숨긴다 — F.WORK 허브에서 이 페이지로 직접(전체 화면) 들어왔을 땐
 // (iframe 아님) 이 버튼이 유일한 뒤로가기라 그대로 둔다.
 if (window.self !== window.top) {
+    // header가 "1fr auto 1fr" 3단 그리드라 가운데(로고+제목)가 좌우 균형으로 센터
+    // 정렬되는 구조다 — display:none으로 숨기면 그리드 칸 자체가 통째로 사라져서
+    // 나머지 둘이 왼쪽으로 쏠려 보이는 버그가 생긴다(요청 버그, 2026-10-21: "헤더
+    // 간격이 이상하다"). visibility:hidden으로 자리(그리드 칸)는 그대로 둔 채
+    // 안 보이게만 한다.
     const _peBackBtn = document.getElementById('backBtn');
-    if (_peBackBtn) _peBackBtn.style.display = 'none';
+    if (_peBackBtn) _peBackBtn.style.visibility = 'hidden';
 }
 
 const SHEET_LOG = 'PE폼 발주이력';
