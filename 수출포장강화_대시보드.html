@@ -12525,17 +12525,17 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div class="pe-panel">
                 <div class="pe-panel-label">발주 정보</div>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
-                    <div class="pe-field"><label>발주일자</label><input type="date" id="peOrdDate"></div>
-                    <div class="pe-field"><label>발주자</label><input type="text" id="peOrdUser" placeholder="이름 입력"></div>
-                    <div class="pe-field"><label>납품희망일</label><input type="date" id="peOrdDue"></div>
+                    <div class="pe-field"><label>발주일자</label><input type="date" id="peOrdDate" onchange="peSaveDraft()"></div>
+                    <div class="pe-field"><label>발주자</label><input type="text" id="peOrdUser" placeholder="이름 입력" oninput="peSaveDraft()"></div>
+                    <div class="pe-field"><label>납품희망일</label><input type="date" id="peOrdDue" onchange="peSaveDraft()"></div>
                     <div class="pe-field">
                         <label>반입창고</label>
-                        <select id="peOrdWhSel" onchange="peOnWhChange()">
+                        <select id="peOrdWhSel" onchange="peOnWhChange();peSaveDraft();">
                             <option value="충주 1공장">충주 1공장</option>
                             <option value="충주 2공장">충주 2공장</option>
                             <option value="__custom__">직접입력</option>
                         </select>
-                        <input type="text" id="peOrdWh" placeholder="직접 입력" style="margin-top:6px;" hidden>
+                        <input type="text" id="peOrdWh" placeholder="직접 입력" style="margin-top:6px;" hidden oninput="peSaveDraft()">
                     </div>
                 </div>
                 <div style="font-size:10.5px;color:var(--pe-label);margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다</div>
