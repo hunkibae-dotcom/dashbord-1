@@ -2503,36 +2503,15 @@ function applyFilters() {
       const cat = dd === null ? '미정' : dd < 0 ? '지연' : dd <= 7 ? 'D-7이하' : dd <= 14 ? 'D-14이하' : '여유';
       if (cat !== ddayUrgencyFilter.urgency) return false;
     } else {
-      if (colInspectFilter === '진행_미검사') { if (d.source === 'archive' || !((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d))) return false; }
-      // '검사대기'는 "검사 대기 품목" KPI 카드 전용 — 드롭다운의 "미검사(진행중)"(진행_미검사,
-      // 미검사만)보다 넓게, 진행중인 품목 중 검사완료만 뺀 전부(QC_WAIT_INSPECT_STATUSES)를 본다.
-      else if (colInspectFilter === '검사대기') { if (d.source === 'archive' || !QC_WAIT_INSPECT_STATUSES.includes(d.검사)) return false; }
-      else if (colInspectFilter === '미검사출고') { if (!(d.source === 'archive' && d.검사 !== '검사')) return false; }
-      // "검사완료" 한 묶음이 진행중(아직 출고 안 된)·출고(이미 출고완료 시트로 넘어간) 둘을
-      // 섞어 보여줘서 "진행중인 것만 보고 싶다"는 요청이 애매했다 — 미검사와 똑같이 둘로 나눴다.
-      else if (colInspectFilter === '검사진행중') { if (d.source === 'archive' || d.검사 !== '검사') return false; }
-      else if (colInspectFilter === '검사출고') { if (d.source !== 'archive' || d.검사 !== '검사') return false; }
-      // '생산중'은 실제 검사 상태값이 아니라 미검사+재투입을 묶어 보여주는 화면 전용 카테고리라,
-      // 바로 아래 일반 분기(d.검사 !== colInspectFilter)로 걸러지면 그 문자열과 정확히 같은
-      // 행이 하나도 없어 전부 걸러지고 0건이 된다 — 모바일(setMStatus)엔 이미 있던 분기를
-      // 데스크탑 생산중 카드(viewDetailInTable)에도 똑같이 추가함.
-      else if (colInspectFilter === '생산중') { if (d.source === 'archive' || (d.검사 !== '미검사' && d.검사 !== '재투입')) return false; }
-      // '생산완료' 카드는 화면 전용 이름을 쓰지만 실제로는 검사 칼럼의 "포장대기" 상태값 하나다.
-      else if (colInspectFilter === '생산완료') { if (d.source === 'archive' || d.검사 !== '포장대기') return false; }
-      // '금일 포장' 카드 — renderKPIs()의 packedToday/모바일 setMStatus('금일포장')과 똑같은
-      // 정의(미검사·재투입대기·포장대기 중 하나 + 포장일이 오늘 이하)를 그대로 따른다. 예전엔
-      // 이 카드가 colInspectFilter=''(빈 문자열)을 넘겨서 "필터 없음"과 구분이 안 됐고, 그 결과
-      // 상세보기를 눌러도 표가 그냥 전체(236건)를 보여줬다 — KPI 숫자(예: 85건)와 안 맞던 원인.
-      // '포장대기'(검사 칼럼의 실제 상태값, 공정진행률 95%↑ 자동전환)는 나중에 추가된 상태값인데
-      // 이 카드엔 반영이 안 돼 있어 포장일이 오늘이어도 빠지고 있었다(요청, 2026-10-12).
-      else if (colInspectFilter === '금일포장') {
-        if (d.source === 'archive') return false;
-        if (d.검사 !== '미검사' && d.검사 !== '포장대기' && !isReinspectWaiting(d)) return false;
-        if (!d.포장일) return false;
-        const dd2 = ddayInfo(d.포장일);
-        if (dd2 === null || dd2 > 0) return false;
+      // 검사상태(진행 칼럼) 드롭다운은 여러 개 동시 선택 가능(요청, 2026-10-21) — 고른
+      // 카테고리 중 하나라도 맞으면 통과(OR). 각 카테고리별 실제 판정 로직은
+      // _qcColInspectTest()에 모아뒀다(예전엔 여기 if/else-if 사슬 하나였는데, 단일
+      // 선택 전제라 여러 개를 동시에 못 골랐다).
+      if (colInspectFilters.size) {
+        let _anyColInspectMatch = false;
+        for (const _v of colInspectFilters) { if (_qcColInspectTest(_v, d)) { _anyColInspectMatch = true; break; } }
+        if (!_anyColInspectMatch) return false;
       }
-      else if (colInspectFilter && d.검사 !== colInspectFilter) return false;
     }
     if (qualityFilter) {
       if (qualityFilter.type === 'product') {
