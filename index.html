@@ -887,10 +887,12 @@ function goFieldInspect(){
 }
 
 function goPeFoam(){
-    /* PE폼은 이제 포장강화 대시보드 "안에서" 열리는 탭이므로(요청), 독자적인
-       MENUS.pe.dashboard로 가지 않고 포장강화 대시보드로 가서 그 안의 PE폼
-       뷰가 자동으로 열리게 한다. */
-    _navigate(MENUS.pack.dashboard + '?openPeFoam=1');
+    /* (정정, 2026-10-21) 메뉴 "위치"만 포장강화 하위로 옮긴 것이고, 실제로 열리는 화면은
+       포장강화 대시보드 안의 새 PE폼 탭이 아니라 기존에 쓰던 PE폼 전용 앱
+       (PE폼발주_대시보드.html) 그대로다 — 포장강화 대시보드 안의 PE폼 탭은 PC 웹에서
+       그 대시보드에 직접 들어갔을 때만 쓰는 용도(요청으로 혼동 바로잡음). */
+    var th = document.documentElement.getAttribute('data-theme') || 'dark';
+    _navigate(MENUS.pe.dashboard + '?shell=1&theme=' + th + '&v=' + Date.now());
 }
 
 function closeSub(){
