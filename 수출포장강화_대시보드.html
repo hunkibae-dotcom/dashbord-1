@@ -12542,22 +12542,33 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             </div>
 
             <div class="pe-panel" style="overflow:visible;">
-                <div class="pe-panel-label">품목 추가</div>
-                <div class="pe-type-chips" id="peStageChips"></div>
-                <div id="peStageDims"></div>
-                <div style="display:grid;grid-template-columns:100px 1fr auto;gap:9px;align-items:end;">
-                    <div><label class="pe-sublabel">수량</label><input type="number" id="peStageQty" placeholder="0"></div>
-                    <div><label class="pe-sublabel">비고</label><input type="text" id="peStageNote" placeholder="비고(선택)"></div>
-                    <button onclick="peAddStagedItem()" class="pe-submit-btn" style="width:auto;padding:10px 20px;white-space:nowrap;box-shadow:none;"><i class="fa-solid fa-plus"></i> 추가</button>
-                </div>
-            </div>
-
-            <div class="pe-panel">
                 <div class="items-head">
-                    <div class="pe-panel-label" style="margin-bottom:0;">품목 목록</div>
+                    <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
                     <span class="count" id="peItemCount">0개 품목</span>
                 </div>
-                <div id="peItemList"><div class="pe-empty">품목을 위에서 추가해주세요</div></div>
+                <datalist id="peMasterDatalist"></datalist>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="background:var(--pe-bg);">
+                            <th style="padding:7px 6px;width:30px;color:var(--pe-label);">번호</th>
+                            <th style="padding:7px 6px;width:95px;color:var(--pe-label);">코드</th>
+                            <th style="padding:7px 6px;width:46px;color:var(--pe-label);">색상</th>
+                            <th style="padding:7px 6px;width:58px;color:var(--pe-label);">유형</th>
+                            <th style="padding:7px 6px;min-width:230px;color:var(--pe-label);">자재명</th>
+                            <th style="padding:7px 6px;min-width:110px;color:var(--pe-label);">규격상세</th>
+                            <th style="padding:7px 6px;width:76px;color:var(--pe-label);">수량</th>
+                            <th style="padding:7px 6px;width:42px;color:var(--pe-label);">단위</th>
+                            <th style="padding:7px 6px;width:70px;color:var(--pe-label);">사업장</th>
+                            <th style="padding:7px 6px;min-width:110px;color:var(--pe-label);">비고</th>
+                        </tr></thead>
+                        <tbody id="peGridBody"></tbody>
+                    </table>
+                </div>
+                <button onclick="peAddGridRows(10)" class="pe-add-btn" style="margin-top:12px;"><i class="fa-solid fa-plus"></i> 10행 추가</button>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding-top:15px;margin-top:3px;border-top:1px dashed var(--pe-border);">
+                    <span style="font-size:12.5px;font-weight:700;color:var(--pe-ink-sub);" id="peSumLabel">합계 (품목 0종)</span>
+                    <span style="font-size:17px;font-weight:800;color:var(--pe-ink);font-family:'JetBrains Mono',monospace;" id="peSumQty">0<span style="font-size:11px;font-weight:600;color:var(--pe-label);margin-left:4px;font-family:'Inter',sans-serif;">EA</span></span>
+                </div>
             </div>
 
             <div>
