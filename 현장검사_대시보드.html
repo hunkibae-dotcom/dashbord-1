@@ -1891,7 +1891,7 @@ function fiOpenDetail(sheet, row) {
   document.getElementById('fiDetContent').value = d.content || '';
   document.getElementById('fiDetAction').value = d.action || '';
   document.getElementById('fiDetFeedback').textContent = '';
-  fiRenderDetTypeBtns(); fiRenderDetStatusBtns(); fiRenderDetPhotos();
+  fiRenderDetTypeBtns(); fiRenderDetStatusBtns(); fiRenderDetStatusPill(); fiRenderDetPhotos();
   document.getElementById('fiDetailModal').style.display = 'flex';
   _fiArmBackTrap();
 }
