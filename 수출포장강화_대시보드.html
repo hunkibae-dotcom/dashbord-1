@@ -11549,7 +11549,8 @@ function peRenderDashboard() {
     document.getElementById('peKpiOngoing').textContent = ongoing.length + '건';
     const thisMonth = new Date().toISOString().slice(0, 7);
     document.getElementById('peKpiMonth').textContent = peOrderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '건';
-    const totalStock = peRemainStockList().reduce((s, g) => s + g.total, 0);
+    const totalStock = Object.values(peGroupStock(peStockRows.filter(r => !peIsUsedUp(r.qty))))
+        .reduce((s, g) => s + g.batches.reduce((ss, b) => ss + peStkQtyNum(b.qty), 0), 0);
     document.getElementById('peKpiTotalStock').textContent = totalStock.toLocaleString() + 'EA';
 
     const deficits = peLowStockDeficitList();
