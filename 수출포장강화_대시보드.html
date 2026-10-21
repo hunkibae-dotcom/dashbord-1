@@ -12347,18 +12347,40 @@ async function peSubmitOrder() {
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
                 <div class="pe-panel">
-                    <div class="pe-panel-label">유형별 재고 보유 현황</div>
+                    <div class="pe-panel-label">유형별 재고 분포</div>
                     <div id="peStockTypeBars"></div>
                 </div>
                 <div class="pe-panel">
-                    <div class="pe-panel-label">재고 부족·발주 대상</div>
+                    <div class="pe-panel-label">재고 부족 TOP 5 <span style="font-weight:600;color:var(--pe-label);text-transform:none;letter-spacing:0;">— 기준품목 20종 중 100EA 이하</span></div>
                     <div id="peLowStockList"></div>
                 </div>
             </div>
+
             <div class="pe-panel">
+                <div class="pe-panel-label">최근 발주 이력</div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:11.5px;">
+                        <thead><tr style="text-align:left;">
+                            <th style="padding:8px;">발주번호</th><th style="padding:8px;">코드</th><th style="padding:8px;">유형</th><th style="padding:8px;">수량</th><th style="padding:8px;">상태</th>
+                        </tr></thead>
+                        <tbody id="peRecentOrdersBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="pe-panel" style="overflow:visible;">
+                <div class="pe-panel-label">유형·규격별 재고 현황 검색</div>
+                <div class="pe-type-chips" id="peDashSearchChips"></div>
+                <div id="peDashSearchWrap"></div>
+                <div id="peDashSearchResult" style="margin-top:12px;"></div>
+            </div>
+
+            <div class="pe-panel" style="overflow:visible;">
                 <div class="pe-panel-label">이번달 유형별 소요량</div>
                 <div id="peUsageTypeBars"></div>
             </div>
+
+            <button onclick="peSwitchTab('order')" class="pe-add-btn" style="border-style:solid;color:var(--pe-brand);border-color:var(--pe-brand);background:var(--pe-brand-soft);"><i class="fa-solid fa-plus"></i> 새 발주서 작성</button>
         </div>
 
         <!-- 발주서 (신규) -->
