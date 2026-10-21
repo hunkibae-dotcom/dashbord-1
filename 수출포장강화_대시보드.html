@@ -12551,6 +12551,10 @@ async function peSubmitOrder() {
         <!-- 재고현황 -->
         <div id="peTab-stock" class="hidden">
             <div class="pe-panel">
+                <div class="items-head">
+                    <div class="pe-panel-label" style="margin-bottom:0;">PE폼 재고</div>
+                    <span class="count" id="peStockCount"></span>
+                </div>
                 <div class="master-filter-row">
                     <button class="stock-type-chip on" onclick="peStockTypePick('', this)">전체 유형</button>
                     <button class="stock-type-chip" onclick="peStockTypePick('일자형', this)">일자형</button>
