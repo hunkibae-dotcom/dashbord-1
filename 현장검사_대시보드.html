@@ -849,6 +849,25 @@ function fiCollectSiteLoc(prefix, group) {
   const loc = (locSel === '직접입력') ? document.getElementById('fi' + prefix + group + 'LocCustom').value.trim() : locSel;
   return { site: site, loc: loc };
 }
+// 서버에서 불러온 저장값(site, loc 글자)을 사업장/위치 드롭다운 + 직접입력 칸에 되돌려 넣는다.
+// loc이 그 사업장의 정해진 목록에 없으면(직접 타이핑된 값이었다는 뜻) "직접입력"을 고르고
+// 그 글자를 직접입력 칸에 채운다.
+function fiPopulateSiteLoc(prefix, group, site, loc, withInvestigating) {
+  const siteEl = document.getElementById('fi' + prefix + group + 'Site');
+  siteEl.value = FI_SITE_LOCATIONS[site] ? site : '충주1공장';
+  fiRenderLocSelect(prefix, group, withInvestigating);
+  const locEl = document.getElementById('fi' + prefix + group + 'Loc');
+  const customEl = document.getElementById('fi' + prefix + group + 'LocCustom');
+  const opts = fiLocOptionsFor(siteEl.value, withInvestigating);
+  if (loc && opts.indexOf(loc) >= 0) {
+    locEl.value = loc; customEl.value = '';
+  } else if (loc) {
+    locEl.value = '직접입력'; customEl.value = loc;
+  } else {
+    locEl.value = opts[0]; customEl.value = '';
+  }
+  fiOnLocChange(prefix, group);
+}
 
 const FI_STATUS_LIST = ['미조치', '조치중', '조치완료'];
 const FI_STATUS_COLOR = { '미조치': '#DC2626', '조치중': '#D97706', '조치완료': '#16A34A' };
