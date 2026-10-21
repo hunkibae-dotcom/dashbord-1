@@ -12397,6 +12397,8 @@ async function peSubmitOrder() {
 
         <!-- 발주서 (신규) -->
         <div id="peTab-order" class="hidden">
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+            <div style="display:flex;flex-direction:column;gap:18px;min-width:0;">
             <div class="pe-panel">
                 <div class="pe-panel-label">발주 정보</div>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
@@ -12413,91 +12415,114 @@ async function peSubmitOrder() {
                         <input type="text" id="peOrdWh" placeholder="직접 입력" style="margin-top:6px;" hidden>
                     </div>
                 </div>
-                <div style="font-size:10.5px;color:#94a3b8;margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다</div>
+                <div style="font-size:10.5px;color:var(--pe-label);margin-top:8px;">납품희망일을 비워두면 "최단 시일내"로 저장됩니다</div>
             </div>
 
-            <div class="pe-panel">
+            <div class="pe-panel" style="overflow:visible;">
                 <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
                     <div class="pe-panel-label" style="margin-bottom:0;">품목</div>
-                    <span style="font-size:11.5px;font-weight:700;color:#94a3b8;" id="peItemCount">1개 품목</span>
+                    <span style="font-size:11.5px;font-weight:700;color:var(--pe-label);" id="peItemCount">1개 품목</span>
                 </div>
-                <div id="peItemRows" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px;margin-bottom:14px;"></div>
-                <button onclick="peAddItem()" style="width:100%;padding:12px;border-radius:12px;border:2px dashed #e2e8f0;background:transparent;color:#64748b;font-weight:700;font-size:12.5px;cursor:pointer;"><i class="fa-solid fa-plus"></i> 품목 추가</button>
+                <div id="peItemRows" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px;margin-bottom:14px;"></div>
+                <button onclick="peAddItem()" class="pe-add-btn"><i class="fa-solid fa-plus"></i> 품목 추가</button>
             </div>
 
-            <button onclick="peSubmitOrder()" id="peSubmitBtn" style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#FF9F1C,#E8590C);color:#fff;font-weight:800;font-size:14px;cursor:pointer;"><i class="fa-solid fa-paper-plane"></i> 발주서 저장</button>
+            <button onclick="peSubmitOrder()" id="peSubmitBtn" class="pe-submit-btn"><i class="fa-solid fa-paper-plane"></i> 발주서 저장</button>
+            </div>
+
+            <aside style="position:sticky;top:0;">
+              <div class="pe-panel" style="margin-bottom:0;">
+                <div style="font-size:11px;font-weight:800;color:var(--pe-ink);margin-bottom:12px;display:flex;align-items:center;gap:7px;"><i class="fa-solid fa-circle-check" style="color:var(--pe-brand);"></i>PE폼 발주 기준</div>
+                <div style="display:flex;flex-direction:column;gap:11px;">
+                  <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--pe-ink-sub);line-height:1.5;"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;background:#2563EB;"></span><div><b style="color:var(--pe-ink);">일자형</b> — 길이 2000mm·두께 15T 기본값, 높이만 검색해서 선택</div></div>
+                  <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--pe-ink-sub);line-height:1.5;"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;background:#7C3AED;"></span><div><b style="color:var(--pe-ink);">코너형</b> — 서랍 100×100 / 넉다운 150×150(두께 15T), 높이만 검색</div></div>
+                  <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--pe-ink-sub);line-height:1.5;"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;background:#D97706;"></span><div><b style="color:var(--pe-ink);">패드형</b> — 두께 20T 기본값, 가로×세로 규격을 검색해서 선택</div></div>
+                  <div style="display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--pe-ink-sub);line-height:1.5;"><span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px;background:#16A34A;"></span><div><b style="color:var(--pe-ink);">롤형</b> — 길이 10M·두께 5T 기본값, 높이만 검색해서 선택</div></div>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
 
         <!-- 발주이력 -->
         <div id="peTab-history" class="hidden">
             <div class="pe-panel">
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-                    <select id="peHistStatusFilter" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
-                        <option value="">상태: 전체</option>
-                        <option value="발주">발주</option>
-                        <option value="부분입고">부분입고</option>
-                        <option value="입고완료">입고완료</option>
-                        <option value="취소">취소</option>
-                    </select>
-                    <input type="date" id="peHistFrom" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
-                    <input type="date" id="peHistTo" onchange="peRenderHistory()" class="pe-select" style="width:auto;">
-                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
-                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
-                        <input id="peHistSearch" oninput="peRenderHistory()" placeholder="발주번호·코드·자재명 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
-                    </div>
+                <div class="master-filter-row">
+                    <button class="hist-type-chip on" onclick="peHistTypePick('', this)">전체 유형</button>
+                    <button class="hist-type-chip" onclick="peHistTypePick('일자형', this)">일자형</button>
+                    <button class="hist-type-chip" onclick="peHistTypePick('코너형', this)">코너형</button>
+                    <button class="hist-type-chip" onclick="peHistTypePick('패드형', this)">패드형</button>
+                    <button class="hist-type-chip" onclick="peHistTypePick('롤형', this)">롤형</button>
+                    <input type="text" class="master-search" id="peHistSearch" placeholder="발주번호·코드·자재명 검색" oninput="peRenderHistory()">
                 </div>
-                <div id="peHistList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
+                <div class="master-filter-row">
+                    <button class="hist-status-chip on" onclick="peHistStatusPick('', this)">상태: 전체</button>
+                    <button class="hist-status-chip" onclick="peHistStatusPick('발주', this)">발주</button>
+                    <button class="hist-status-chip" onclick="peHistStatusPick('부분입고', this)">부분입고</button>
+                    <button class="hist-status-chip" onclick="peHistStatusPick('입고완료', this)">입고완료</button>
+                    <button class="hist-status-chip" onclick="peHistStatusPick('취소', this)">취소</button>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="text-align:left;">
+                            <th style="padding:8px;">발주번호</th><th style="padding:8px;">발주일자</th><th style="padding:8px;">코드</th><th style="padding:8px;">유형</th>
+                            <th style="padding:8px;">규격상세</th><th style="padding:8px;">수량</th><th style="padding:8px;">발주자</th><th style="padding:8px;">반입창고</th><th style="padding:8px;">상태</th>
+                        </tr></thead>
+                        <tbody id="peHistBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 재고현황 -->
         <div id="peTab-stock" class="hidden">
             <div class="pe-panel">
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-                    <select id="peStockTypeFilter" onchange="peRenderStock()" class="pe-select" style="width:auto;">
-                        <option value="">전체 유형</option>
-                        <option value="일자형">일자형</option>
-                        <option value="코너형">코너형</option>
-                        <option value="패드형">패드형</option>
-                        <option value="롤형">롤형</option>
-                    </select>
-                    <select id="peStockShowFilter" onchange="peRenderStock()" class="pe-select" style="width:auto;">
-                        <option value="remain">남은 재고</option>
-                        <option value="used">소진된 재고</option>
-                        <option value="all">전체</option>
-                    </select>
-                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
-                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
-                        <input id="peStockSearch" oninput="peRenderStock()" placeholder="코드·자재명·규격 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
-                    </div>
+                <div class="master-filter-row">
+                    <button class="stock-type-chip on" onclick="peStockTypePick('', this)">전체 유형</button>
+                    <button class="stock-type-chip" onclick="peStockTypePick('일자형', this)">일자형</button>
+                    <button class="stock-type-chip" onclick="peStockTypePick('코너형', this)">코너형</button>
+                    <button class="stock-type-chip" onclick="peStockTypePick('패드형', this)">패드형</button>
+                    <button class="stock-type-chip" onclick="peStockTypePick('롤형', this)">롤형</button>
+                    <input type="text" class="master-search" id="peStockSearch" placeholder="코드·자재명 검색" oninput="peRenderStock()">
                 </div>
-                <div id="peStockList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;"></div>
+                <label style="display:flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--pe-ink-sub);margin-bottom:12px;cursor:pointer;">
+                    <input type="checkbox" id="peStockHideUsed" onchange="peRenderStock()">소진된 재고 숨기기
+                </label>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                        <thead><tr style="text-align:left;">
+                            <th style="padding:8px;">발주번호</th><th style="padding:8px;">발주일자</th><th style="padding:8px;">코드</th><th style="padding:8px;">색상</th><th style="padding:8px;">자재명</th>
+                            <th style="padding:8px;">규격상세</th><th style="padding:8px;">수량</th><th style="padding:8px;">단위</th><th style="padding:8px;">유형</th><th style="padding:8px;">사업장</th><th style="padding:8px;">비고</th>
+                        </tr></thead>
+                        <tbody id="peStockBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <!-- 품목마스터 -->
         <div id="peTab-master" class="hidden">
             <div class="pe-panel">
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;">
-                    <select id="peMstTypeFilter" onchange="peRenderMaster()" class="pe-select" style="width:auto;">
-                        <option value="">전체 유형</option>
-                        <option value="일자형">일자형</option>
-                        <option value="코너형">코너형</option>
-                        <option value="패드형">패드형</option>
-                        <option value="롤형">롤형</option>
-                    </select>
-                    <div style="flex:1;min-width:200px;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;">
-                        <i class="fa-solid fa-magnifying-glass" style="color:#94a3b8;font-size:12px;"></i>
-                        <input id="peMstSearch" oninput="peRenderMaster()" placeholder="코드·자재명 검색" style="border:none;outline:none;font-size:12.5px;width:100%;background:transparent;">
-                    </div>
+                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;">
+                    <div class="pe-panel-label" style="margin-bottom:0;">품목마스터</div>
+                    <button onclick="alert('실제 구현 시 품목 등록 폼이 열립니다.')" class="pe-add-btn" style="width:auto;padding:8px 16px;"><i class="fa-solid fa-plus"></i> 새 품목 추가</button>
                 </div>
+                <div class="master-filter-row">
+                    <button class="master-filter-chip on" onclick="peMstTypePick('', this)">전체</button>
+                    <button class="master-filter-chip" onclick="peMstTypePick('일자형', this)">일자형</button>
+                    <button class="master-filter-chip" onclick="peMstTypePick('코너형', this)">코너형</button>
+                    <button class="master-filter-chip" onclick="peMstTypePick('패드형', this)">패드형</button>
+                    <button class="master-filter-chip" onclick="peMstTypePick('롤형', this)">롤형</button>
+                    <input type="text" class="master-search" id="peMstSearch" placeholder="코드·자재명 검색" oninput="peRenderMaster()">
+                </div>
+                <div style="font-size:11px;color:var(--pe-label);font-weight:700;margin-bottom:10px;" id="peMstCount"></div>
                 <div style="overflow-x:auto;">
                     <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                        <thead><tr style="text-align:left;color:#94a3b8;">
-                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">코드</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">색상</th>
-                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">자재명</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">규격상세</th>
-                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">두께</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">단위</th>
-                            <th style="padding:8px;border-bottom:1px solid #e2e8f0;">유형</th><th style="padding:8px;border-bottom:1px solid #e2e8f0;">사업장</th>
+                        <thead><tr style="text-align:left;">
+                            <th style="padding:8px;">코드</th><th style="padding:8px;">색상</th>
+                            <th style="padding:8px;">자재명</th><th style="padding:8px;">규격상세</th>
+                            <th style="padding:8px;">두께</th><th style="padding:8px;">단위</th>
+                            <th style="padding:8px;">유형</th><th style="padding:8px;">사업장</th>
                         </tr></thead>
                         <tbody id="peMstBody"></tbody>
                     </table>
