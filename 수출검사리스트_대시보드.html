@@ -2639,6 +2639,9 @@ function setSourceTab(tab) {
   ['all','active','archive'].forEach(t => {
     document.getElementById('srcTab' + t.charAt(0).toUpperCase() + t.slice(1)).classList.toggle('active', t === tab);
   });
+  // 시트(진행중 리스트/출고완료 리스트)를 바꾸면 "진행" 칼럼 드롭다운도 그 시트에 있을 수
+  // 있는 값만 남긴다(요청, 2026-10-21).
+  _qcSyncInspectDropdownVisibility();
   applyFilters();
 }
 
