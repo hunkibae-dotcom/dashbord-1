@@ -12706,6 +12706,21 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- 발주서 등록 완료 → 파일로 저장 선택 -->
+<div id="peSaveFormatModal" class="pe-scope" onclick="if(event.target===this)peCloseSaveFormatModal()" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid var(--pe-border);border-radius:18px;padding:26px 24px;width:380px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);text-align:center;">
+        <div style="width:46px;height:46px;border-radius:50%;background:var(--pe-brand-soft);color:var(--pe-brand);display:flex;align-items:center;justify-content:center;font-size:18px;margin:0 auto 14px;"><i class="fa-solid fa-check"></i></div>
+        <div style="font-size:15px;font-weight:800;color:var(--pe-ink);margin-bottom:4px;">발주서가 등록되었습니다</div>
+        <div style="font-size:11.5px;color:var(--pe-ink-sub);margin-bottom:20px;" id="peSaveFormatOrdNo"></div>
+        <div style="font-size:11.5px;color:var(--pe-ink-sub);margin-bottom:12px;">파일로 저장하시겠습니까?</div>
+        <div style="display:flex;gap:10px;margin-bottom:10px;">
+            <button onclick="peDownloadSaved('pdf')" id="peDownloadPdfBtn" class="pe-submit-btn" style="flex:1;"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <button onclick="peDownloadSaved('xlsx')" id="peDownloadXlsxBtn" class="pe-submit-btn" style="flex:1;background:linear-gradient(135deg,#21A464,#1D6F42);box-shadow:0 8px 20px rgba(29,111,66,.3);"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        </div>
+        <button onclick="peCloseSaveFormatModal()" style="border:none;background:transparent;color:var(--pe-label);font-size:11.5px;font-weight:700;cursor:pointer;padding:6px;">나중에 하기</button>
+    </div>
+</div>
+
 <div id="peToast"><i class="fa-solid fa-circle-check"></i> <span id="peToastTxt"></span></div>
 
 <!-- 포장불량조치 등록 시 품목 먼저 검색/선택 -->
