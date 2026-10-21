@@ -11848,156 +11848,169 @@ function peRenderMaster() {
       </tr>`).join('') : '<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--pe-label);">품목마스터 데이터가 없습니다</td></tr>';
 }
 
-// ── 발주서 (신규 기능) — 유형+규격을 하나씩 골라 "품목 목록"에 추가하는 방식.
-//    카드를 여러 개 쌓지 않고, 위쪽 "품목 추가" 한 칸에서 고른 뒤 목록에 줄로 쌓는다.
-let peOrderItems = []; // {code,name,spec,unit,type,site,qty,note}
-let peStageType = '', peStageCorner = '', peStageSelection = null;
-function peInitOrderForm() {
-    document.getElementById('peOrdDate').value = new Date().toISOString().slice(0, 10);
-    peRenderStageChips();
-    peRenderStageDims();
+// ── 발주서 (신규 기능) — 구글시트 발주서 폼과 같은 "표 형태": 자재명 칸에서
+//    고르면 코드·색상·유형·규격·단위·사업장이 자동으로 채워진다. 작성 중 내용은
+//    로컬에 자동 저장되어, 탭을 닫거나 PC를 꺼도 다음에 열면 그대로 남아있다.
+let peGridSeq = 0;
+let peGridSelections = {}; // id -> 품목마스터 행
+let peLastSavedOrder = null;
+const PE_DRAFT_KEY = 'peOrderDraftV1';
+function peComposeMasterLabel(r) { return r.name + ' · ' + r.spec + ' · ' + (r.site || '-'); }
+function peRenderMasterDatalist() {
+    document.getElementById('peMasterDatalist').innerHTML = peMasterRows.map(r =>
+        `<option value="${peComposeMasterLabel(r).replace(/"/g, '&quot;')}">`
+    ).join('');
 }
 function peOnWhChange() {
     const sel = document.getElementById('peOrdWhSel');
     const inp = document.getElementById('peOrdWh');
-    if (sel.value === '__custom__') { inp.hidden = false; inp.value = ''; inp.focus(); }
+    if (sel.value === '__custom__') { inp.hidden = false; inp.focus(); }
     else { inp.hidden = true; inp.value = ''; }
 }
 function peGetWhValue() {
     const sel = document.getElementById('peOrdWhSel');
     return sel.value === '__custom__' ? document.getElementById('peOrdWh').value.trim() : sel.value;
 }
-function peOrderTypes() {
-    const uniq = [...new Set(peMasterRows.map(r => r.type).filter(Boolean))];
-    const order = ['일자형', '코너형', '패드형', '롤형'];
-    const list = order.filter(t => uniq.includes(t)).concat(uniq.filter(t => !order.includes(t)));
-    return list.length ? list : ['일자형', '코너형', '패드형', '롤형'];
+
+// ── 초안 자동 저장/복원 ──
+let _peDraftTimer = null;
+function peSaveDraft() {
+    clearTimeout(_peDraftTimer);
+    _peDraftTimer = setTimeout(() => {
+        const rows = [];
+        document.querySelectorAll('#peGridBody tr').forEach(tr => {
+            const name = tr.querySelector('.pe-grid-name').value.trim();
+            if (!name) return;
+            rows.push({ name, qty: tr.querySelector('.pe-grid-qty').value, note: tr.querySelector('.pe-grid-note').value });
+        });
+        const draft = {
+            date: document.getElementById('peOrdDate').value,
+            user: document.getElementById('peOrdUser').value,
+            due: document.getElementById('peOrdDue').value,
+            whSel: document.getElementById('peOrdWhSel').value,
+            whCustom: document.getElementById('peOrdWh').value,
+            rows
+        };
+        try { safeLocalStorage.setItem(PE_DRAFT_KEY, JSON.stringify(draft)); } catch (e) {}
+    }, 250);
 }
-function peRenderStageChips() {
-    document.getElementById('peStageChips').innerHTML = peOrderTypes().map(t => {
-        const on = t === peStageType;
-        return `<div class="pe-type-chip${on ? ' on' : ''}" style="--pe-chip-color:${peTypeColor(t)};--pe-chip-soft:${peTypeColor(t)}1a;" onclick="pePickStageType('${t}')">
-          <div class="dot"></div><div class="lbl">${t}</div>
-        </div>`;
-    }).join('');
+function peLoadDraft() {
+    try {
+        const raw = safeLocalStorage.getItem(PE_DRAFT_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
 }
-function pePickStageType(t) {
-    if (peStageType === t) return;
-    peStageType = t; peStageCorner = ''; peStageSelection = null;
-    peRenderStageChips();
-    peRenderStageDims();
+function peClearDraft() {
+    try { safeLocalStorage.setItem(PE_DRAFT_KEY, ''); } catch (e) {}
 }
-function peStageCornerDims() {
-    const dims = new Set();
-    peMasterRows.filter(r => r.type === '코너형').forEach(r => {
-        const nums = peSpecNums(r.spec);
-        if (nums.length >= 2) dims.add(nums[0] + '×' + nums[1]);
+
+// ── 품목 표(그리드) ──
+function peGridRowHtml(id) {
+    return `<tr data-id="${id}">
+      <td style="padding:5px;text-align:center;color:var(--pe-label);font-weight:700;border-bottom:1px solid var(--pe-divider);" id="peGridNum-${id}"></td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);" class="pe-mono" id="peGridCode-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);color:var(--pe-ink-sub);" id="peGridColor-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);" id="peGridType-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);">
+        <input type="text" list="peMasterDatalist" class="pe-grid-name" autocomplete="off" placeholder="자재명 선택/검색"
+          oninput="peGridNameInput('${id}')" onchange="peGridNameChange('${id}')"
+          style="width:100%;box-sizing:border-box;border:1px solid var(--pe-border);border-radius:6px;padding:6px 7px;font-size:12px;outline:none;background:var(--pe-panel);font-family:inherit;">
+      </td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);color:var(--pe-ink-sub);" id="peGridSpec-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);"><input type="number" class="pe-grid-qty" oninput="peUpdateSum();peSaveDraft();" style="width:100%;box-sizing:border-box;border:1px solid var(--pe-border);border-radius:6px;padding:6px 7px;font-size:12px;outline:none;text-align:right;font-family:inherit;"></td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);color:var(--pe-ink-sub);" id="peGridUnit-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);color:var(--pe-ink-sub);" id="peGridSite-${id}">-</td>
+      <td style="padding:5px;border-bottom:1px solid var(--pe-divider);"><input type="text" class="pe-grid-note" oninput="peSaveDraft()" style="width:100%;box-sizing:border-box;border:1px solid var(--pe-border);border-radius:6px;padding:6px 7px;font-size:12px;outline:none;font-family:inherit;"></td>
+    </tr>`;
+}
+function peAddGridRow() {
+    const id = 'r' + (peGridSeq++);
+    document.getElementById('peGridBody').insertAdjacentHTML('beforeend', peGridRowHtml(id));
+    peRenumberGrid();
+    return id;
+}
+function peAddGridRows(n) { for (let i = 0; i < n; i++) peAddGridRow(); }
+function peRenumberGrid() {
+    document.querySelectorAll('#peGridBody tr').forEach((tr, i) => {
+        const span = tr.querySelector('[id^="peGridNum-"]');
+        if (span) span.textContent = i + 1;
     });
-    return [...dims].sort();
 }
-function peRenderStageDims() {
-    const wrap = document.getElementById('peStageDims');
-    if (!peStageType) { wrap.innerHTML = ''; return; }
-    let cornerHtml = '';
-    if (peStageType === '코너형') {
-        const dims = peStageCornerDims();
-        cornerHtml = dims.length ? `<div class="pe-corner-sub">` + dims.map(d =>
-            `<button class="${peStageCorner === d ? 'on' : ''}" onclick="pePickStageCorner('${d}')">${d}</button>`
-        ).join('') + `</div>` : '';
-    }
-    wrap.innerHTML = cornerHtml + `<div id="peStageSearchWrap"></div>`;
-    peRenderStageSearchField();
+function peGridNameChange(id, skipSave) {
+    const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+    const val = tr.querySelector('.pe-grid-name').value.trim();
+    const r = peMasterRows.find(x => peComposeMasterLabel(x) === val);
+    peGridSelections[id] = r || null;
+    document.getElementById('peGridCode-' + id).textContent = r ? r.code : '-';
+    document.getElementById('peGridColor-' + id).textContent = r ? (r.color || '-') : '-';
+    document.getElementById('peGridType-' + id).innerHTML = r ? `<span class="pe-pill" style="background:${peTypeColor(r.type)}1a;color:${peTypeColor(r.type)};">${r.type}</span>` : '-';
+    document.getElementById('peGridSpec-' + id).textContent = r ? r.spec : '-';
+    document.getElementById('peGridUnit-' + id).textContent = r ? (r.unit || 'EA') : '-';
+    document.getElementById('peGridSite-' + id).textContent = r ? (r.site || '-') : '-';
+    peUpdateSum();
+    if (!skipSave) peSaveDraft();
 }
-function pePickStageCorner(dim) {
-    peStageCorner = peStageCorner === dim ? '' : dim;
-    peStageSelection = null;
-    peRenderStageDims();
+function peGridNameInput(id) {
+    // 일부 브라우저는 datalist 항목 선택도 input 이벤트만 쏘는 경우가 있어, 정확히
+    // 일치하는 값이면 change를 기다리지 않고 바로 반영한다.
+    const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+    const val = tr.querySelector('.pe-grid-name').value.trim();
+    if (peMasterRows.some(x => peComposeMasterLabel(x) === val)) peGridNameChange(id);
 }
-function peStageCandidates() {
-    let list = peMasterRows.filter(r => r.type === peStageType);
-    if (peStageType === '코너형' && peStageCorner) {
-        list = list.filter(r => { const n = peSpecNums(r.spec); return n.length >= 2 && (n[0] + '×' + n[1]) === peStageCorner; });
-    }
-    return list;
+function peUpdateSum() {
+    let totalQty = 0, filled = 0;
+    document.querySelectorAll('#peGridBody tr').forEach(tr => {
+        const id = tr.dataset.id;
+        if (!peGridSelections[id]) return;
+        filled++;
+        totalQty += parseFloat(tr.querySelector('.pe-grid-qty').value) || 0;
+    });
+    document.getElementById('peItemCount').textContent = filled + '개 품목';
+    document.getElementById('peSumLabel').textContent = '합계 (품목 ' + filled + '종)';
+    document.getElementById('peSumQty').innerHTML = totalQty.toLocaleString() + '<span style="font-size:11px;font-weight:600;color:var(--pe-label);margin-left:4px;font-family:\'Inter\',sans-serif;">EA</span>';
 }
-function peRenderStageSearchField() {
-    const sw = document.getElementById('peStageSearchWrap');
-    if (peStageSelection) {
-        const sel = peStageSelection;
-        sw.innerHTML = `<div class="pe-selected-chip">
-          <div><span class="code">${sel.code}</span><span class="spec">${sel.spec} · ${sel.site || '-'}</span></div>
-          <button onclick="peClearStageSelection()"><i class="fa-solid fa-rotate-left"></i> 변경</button>
-        </div>`;
-        return;
-    }
-    sw.innerHTML = `<div class="pe-search-field">
-      <input type="text" id="peStageSearchInput" placeholder="규격·자재명으로 검색"
-        oninput="peStageOnSearchInput()" onfocus="peStageOnSearchInput()" onblur="setTimeout(peStageCloseDropdown,150)">
-      <div class="pe-search-dropdown" id="peStageSearchDropdown" hidden></div>
-    </div>`;
+function peInitOrderForm() {
+    peRenderMasterDatalist();
+    const draft = peLoadDraft();
+    document.getElementById('peOrdDate').value = (draft && draft.date) || new Date().toISOString().slice(0, 10);
+    document.getElementById('peOrdUser').value = (draft && draft.user) || '';
+    document.getElementById('peOrdDue').value = (draft && draft.due) || '';
+    document.getElementById('peOrdWhSel').value = (draft && draft.whSel) || '충주 1공장';
+    peOnWhChange();
+    if (draft && draft.whSel === '__custom__') document.getElementById('peOrdWh').value = draft.whCustom || '';
+
+    document.getElementById('peGridBody').innerHTML = '';
+    peGridSeq = 0; peGridSelections = {};
+    const draftRows = (draft && draft.rows) || [];
+    draftRows.forEach(dr => {
+        const id = peAddGridRow();
+        const tr = document.querySelector('#peGridBody tr[data-id="' + id + '"]');
+        tr.querySelector('.pe-grid-name').value = dr.name;
+        tr.querySelector('.pe-grid-qty').value = dr.qty || '';
+        tr.querySelector('.pe-grid-note').value = dr.note || '';
+        peGridNameChange(id, true);
+    });
+    while (document.querySelectorAll('#peGridBody tr').length < 15) peAddGridRow();
+    peUpdateSum();
 }
-function peStageOnSearchInput() {
-    const q = (document.getElementById('peStageSearchInput').value || '').trim().toLowerCase();
-    const all = peStageCandidates();
-    const filtered = q ? all.filter(r => (r.name + ' ' + r.spec + ' ' + r.code).toLowerCase().includes(q)) : all;
-    const dd = document.getElementById('peStageSearchDropdown');
-    dd.innerHTML = filtered.length ? filtered.slice(0, 50).map(r =>
-        `<div class="pe-search-opt" onmousedown="peSelectStageCandidate('${r.code.replace(/'/g, "\\'")}')"><span>${r.name} <span style="color:var(--pe-ink-sub);">${r.spec}</span></span><span style="font-family:'JetBrains Mono',monospace;color:var(--pe-ink-sub);">${r.code} · ${r.site || '-'}</span></div>`
-    ).join('') : `<div class="pe-search-empty">일치하는 품목이 없습니다.<br>품목마스터에 먼저 등록하면 목록에 나옵니다.</div>`;
-    dd.hidden = false;
-}
-function peStageCloseDropdown() { const dd = document.getElementById('peStageSearchDropdown'); if (dd) dd.hidden = true; }
-function peSelectStageCandidate(code) {
-    const r = peMasterRows.find(x => x.code === code);
-    if (!r) return;
-    peStageSelection = r;
-    peRenderStageSearchField();
-}
-function peClearStageSelection() {
-    peStageSelection = null;
-    peRenderStageSearchField();
-}
-function peAddStagedItem() {
-    if (!peStageType) { peShowToast('유형을 먼저 선택해주세요'); return; }
-    if (!peStageSelection) { peShowToast('품목을 검색해서 선택해주세요'); return; }
-    const qty = document.getElementById('peStageQty').value.trim();
-    if (!qty || parseFloat(qty) <= 0) { peShowToast('수량을 입력해주세요'); return; }
-    const note = document.getElementById('peStageNote').value.trim();
-    const sel = peStageSelection;
-    peOrderItems.push({ code: sel.code, name: sel.name, spec: sel.spec, unit: sel.unit, type: sel.type, site: sel.site, qty, note });
-    document.getElementById('peStageQty').value = '';
-    document.getElementById('peStageNote').value = '';
-    peStageSelection = null;
-    peRenderStageSearchField();
-    peRenderItemList();
-}
-function peRemoveListItem(i) {
-    peOrderItems.splice(i, 1);
-    peRenderItemList();
-}
-function peRenderItemList() {
-    document.getElementById('peItemCount').textContent = peOrderItems.length + '개 품목';
-    document.getElementById('peItemList').innerHTML = peOrderItems.length ? peOrderItems.map((it, i) => `
-      <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--pe-divider);">
-        <span class="pe-num">${i + 1}</span>
-        <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${peTypeColor(it.type)};"></span>
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:700;color:var(--pe-ink);">${it.name} <span style="color:var(--pe-ink-sub);font-weight:600;">${it.spec}</span></div>
-          <div style="font-size:11px;color:var(--pe-label);font-family:'JetBrains Mono',monospace;margin-top:1px;">${it.code} · ${it.site || '-'}</div>
-        </div>
-        <div style="font-size:13px;font-weight:800;color:var(--pe-ink);width:90px;text-align:right;flex-shrink:0;">${it.qty} ${it.unit}</div>
-        <div style="font-size:11px;color:var(--pe-ink-sub);width:110px;flex-shrink:0;">${it.note || ''}</div>
-        <button onclick="peRemoveListItem(${i})" style="border:none;background:transparent;color:var(--pe-label);cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-trash-can"></i></button>
-      </div>`).join('') : '<div class="pe-empty">품목을 위에서 추가해주세요</div>';
-}
-async function peSubmitOrder(format) {
-    if (!peOrderItems.length) { peShowToast('품목을 1개 이상 추가해주세요'); return; }
-    const btnId = format === 'pdf' ? 'peSubmitBtnPdf' : 'peSubmitBtnXlsx';
-    const btn = document.getElementById(btnId);
+async function peRegisterOrder() {
+    const items = [];
+    document.querySelectorAll('#peGridBody tr').forEach(tr => {
+        const id = tr.dataset.id;
+        const sel = peGridSelections[id];
+        if (!sel) return;
+        items.push({
+            code: sel.code, name: sel.name, spec: sel.spec, unit: sel.unit, type: sel.type, site: sel.site, color: sel.color,
+            qty: tr.querySelector('.pe-grid-qty').value.trim(), note: tr.querySelector('.pe-grid-note').value.trim()
+        });
+    });
+    if (!items.length) { peShowToast('품목을 1개 이상 입력해주세요'); return; }
+    if (items.some(it => !it.qty || parseFloat(it.qty) <= 0)) { peShowToast('수량이 비어있거나 0인 품목이 있습니다'); return; }
+    const btn = document.getElementById('peRegisterBtn');
     if (btn.disabled) return;
     const orig = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 저장 중...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 등록 중...';
     try {
         const meta = {
             ordDate: document.getElementById('peOrdDate').value,
@@ -12007,21 +12020,16 @@ async function peSubmitOrder(format) {
         };
         const body = {
             action: 'addOrder', date: meta.ordDate, user: meta.user, due: meta.due, wh: meta.wh,
-            items: peOrderItems.map(it => ({ code: it.code, qty: it.qty, note: it.note }))
+            items: items.map(it => ({ code: it.code, qty: it.qty, note: it.note }))
         };
         const res = await fetch(peGasUrl(), { method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
         const json = await res.json().catch(() => null);
         if (json && json.status === 'success') {
-            peShowToast('발주번호 ' + json.ordNo + ' 저장 완료 (' + json.rows + '줄)' + (json.skipped ? ' · ' + json.skipped + '줄은 품목을 못 찾아 제외됨' : ''));
-            if (format === 'pdf') await peExportOrderPdf(json.ordNo, meta, peOrderItems);
-            else await peExportOrderXlsx(json.ordNo, meta, peOrderItems);
-            peOrderItems = [];
-            peStageType = ''; peStageCorner = ''; peStageSelection = null;
-            peRenderStageChips();
-            peRenderStageDims();
-            peRenderItemList();
-            document.getElementById('peOrdUser').value = '';
-            document.getElementById('peOrdDue').value = '';
+            peLastSavedOrder = { ordNo: json.ordNo, meta, items };
+            document.getElementById('peSaveFormatOrdNo').textContent = '발주번호 ' + json.ordNo + ' · 품목 ' + items.length + '종';
+            document.getElementById('peSaveFormatModal').style.display = 'flex';
+            peClearDraft();
+            peInitOrderForm();
             await peLoadAll();
         } else {
             peShowToast('저장 실패: ' + (json && json.message || '알 수 없는 오류'));
@@ -12033,8 +12041,18 @@ async function peSubmitOrder(format) {
         btn.innerHTML = orig;
     }
 }
+function peCloseSaveFormatModal() { document.getElementById('peSaveFormatModal').style.display = 'none'; peLastSavedOrder = null; }
+async function peDownloadSaved(format) {
+    if (!peLastSavedOrder) return;
+    const btn = document.getElementById(format === 'pdf' ? 'peDownloadPdfBtn' : 'peDownloadXlsxBtn');
+    const orig = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+        if (format === 'pdf') await peExportOrderPdf(peLastSavedOrder.ordNo, peLastSavedOrder.meta, peLastSavedOrder.items);
+        else await peExportOrderXlsx(peLastSavedOrder.ordNo, peLastSavedOrder.meta, peLastSavedOrder.items);
+    } finally { btn.disabled = false; btn.innerHTML = orig; }
+}
 
-// ── 발주서 저장 파일(PDF/Excel) — 저장 직후 그 자리에서 실제 파일로 내려받는다 ──
+// ── 발주서 저장 파일(PDF/Excel) — 실제 구글시트 발주서 양식 느낌으로 ──
 function _peDueDisplay(meta) { return meta.due || '최단 시일내'; }
 async function peExportOrderPdf(ordNo, meta, items) {
     await new Promise(resolve => _pkgLoadPdfLibs(resolve));
