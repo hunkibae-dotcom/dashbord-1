@@ -1912,10 +1912,21 @@ function fiRenderDetStatusBtns() {
   document.getElementById('fiDetStatusBtns').innerHTML = FI_STATUS_LIST.map(function (s) {
     const active = s === fiDetStatus;
     const c = FI_STATUS_COLOR[s];
-    return '<button onclick="fiPickDetStatus(\'' + s + '\')" style="flex:1;min-width:48px;padding:9px 0;border-radius:10px;border:' + (active ? '2px solid ' + c : '1px solid var(--border)') + ';background:' + (active ? c + '1A' : 'var(--input-bg)') + ';color:' + (active ? c : 'var(--label)') + ';font-size:12px;font-weight:' + (active ? 800 : 600) + ';cursor:pointer;">' + s + '</button>';
+    return '<button onclick="fiPickDetStatus(\'' + s + '\')" style="flex:1;min-width:48px;padding:9px 6px;border-radius:10px;border:' + (active ? '2px solid ' + c : '1px solid var(--border)') + ';background:' + (active ? c + '1A' : 'var(--input-bg)') + ';color:' + (active ? c : 'var(--label)') + ';font-size:12px;font-weight:' + (active ? 800 : 600) + ';cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">' + FI_STATUS_ICON_PATH[s] + '</svg>' + s + '</button>';
   }).join('');
+  const card = document.getElementById('fiDetStatusCard');
+  if (card) card.style.borderLeftColor = FI_STATUS_COLOR[fiDetStatus] || 'var(--border)';
 }
-function fiPickDetStatus(s) { fiDetStatus = s; fiRenderDetStatusBtns(); }
+function fiPickDetStatus(s) { fiDetStatus = s; fiRenderDetStatusBtns(); fiRenderDetStatusPill(); }
+function fiRenderDetStatusPill() {
+  const pill = document.getElementById('fiDetStatusPill');
+  if (!pill) return;
+  const c = FI_STATUS_COLOR[fiDetStatus] || '#64748B';
+  pill.style.background = c + '1A';
+  pill.style.color = c;
+  pill.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">' + (FI_STATUS_ICON_PATH[fiDetStatus] || '') + '</svg>' + (fiDetStatus || '—');
+}
 function fiRenderDetPhotos() {
   const wrap = document.getElementById('fiDetPhotos');
   wrap.innerHTML = fiDetPhotos.map(function (p, i) {
