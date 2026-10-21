@@ -873,6 +873,10 @@ function openSub(type){
        (요청, 2026-10-19) — 품질검사 카테고리를 열었을 때만 보인다. */
     var fieldInspectItem = document.getElementById('fieldInspectMenuItem');
     if (fieldInspectItem) fieldInspectItem.style.display = (type === 'quality') ? '' : 'none';
+    /* PE폼은 더 이상 F.WORK 홈의 독립 카테고리가 아니라 포장강화 하위 메뉴다
+       (요청) — 포장강화 카테고리를 열었을 때만 보인다. */
+    var peFoamItem = document.getElementById('peFoamMenuItem');
+    if (peFoamItem) peFoamItem.style.display = (type === 'pack') ? '' : 'none';
 }
 
 function goFieldInspect(){
@@ -880,6 +884,13 @@ function goFieldInspect(){
        (요청, 2026-10-19), 현장검사 대시보드로 바로 가지 않고 품질검사 대시보드로
        가서 그 안의 iframe 오버레이가 자동으로 열리게 한다. */
     _navigate(MENUS.quality.dashboard + '?openFieldInspect=1');
+}
+
+function goPeFoam(){
+    /* PE폼은 이제 포장강화 대시보드 "안에서" 열리는 탭이므로(요청), 독자적인
+       MENUS.pe.dashboard로 가지 않고 포장강화 대시보드로 가서 그 안의 PE폼
+       뷰가 자동으로 열리게 한다. */
+    _navigate(MENUS.pack.dashboard + '?openPeFoam=1');
 }
 
 function closeSub(){
