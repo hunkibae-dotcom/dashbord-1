@@ -2293,24 +2293,96 @@ function setSortColumn(key) {
   applyFilters();
 }
 
-function setColInspect(val) {
-  // matchRow()는 pieFilter → ddayUrgencyFilter → colInspectFilter 순으로 딱 하나만
-  // 적용되는 구조다(if/else-if) — 그런데 이 함수는 지금까지 colInspectFilter만
-  // 바꾸고 앞의 두 개를 그대로 둬서, D-day 카드 등을 먼저 눌러 ddayUrgencyFilter가
-  // 걸려있던 채로 KPI 카드의 "상세보기"를 누르면 그 if/else-if에서 ddayUrgencyFilter
-  // 쪽이 먼저 걸려 colInspectFilter가 통째로 무시됐다("필터링이 전혀 안 된다"던
-  // 증상의 원인). 이 필터를 쓰겠다는 건 곧 다른 두 필터는 그만 쓰겠다는 뜻이므로
-  // 같이 해제한다.
+// 드롭다운의 9개 선택지 각각을 사람이 읽는 라벨로. KPI 카드 등에서 넘기는 화면전용
+// 카테고리(생산중/금일포장/검사대기)도 같이 넣어둬서 단일선택(setColInspect) 경로의
+// 라벨도 그대로 보여준다.
+const QC_COL_INSPECT_LABELS = {
+  '검사진행중': '검사완료(진행중)', '검사출고': '검사완료(출고)', '진행_미검사': '미검사(진행중)',
+  '미검사출고': '미검사(출고)', '재투입': '재투입', '양지': '양지(회수)', '생산완료': '포장대기',
+  '미투입': '미투입', '취소': '취소',
+  '생산중': '생산중', '금일포장': '금일 포장', '검사대기': '검사 대기 품목'
+};
+// 드롭다운(체크박스 다중선택)에 실제로 나타나는 9개 값만 — 셋에 이 값이 남아있어야 체크 표시.
+const QC_COL_INSPECT_DROPDOWN_VALUES = ['검사진행중', '검사출고', '진행_미검사', '미검사출고', '재투입', '양지', '생산완료', '미투입', '취소'];
+// 시트 필터(sourceTab)가 "진행중만"/"출고완료만"으로 좁혀져 있으면, 그 소스에 있을 수
+// 없는 진행상태는 드롭다운에서 숨긴다(요청, 2026-10-21: "시트 필터를 진행중/출고완료로
+// 바꾸면 진행 칼럼도 그에 맞게 바뀌어야 하는데 안 바뀐다") — '검사진행중'/'진행_미검사'는
+// source!==archive(진행중)에서만, '검사출고'/'미검사출고'는 source===archive(출고완료)
+// 에서만 나올 수 있는 값이라 반대쪽 시트를 고르면 항상 0건이 되므로 아예 숨긴다.
+const QC_COL_INSPECT_SOURCE_ONLY = {
+  '검사진행중': 'active', '진행_미검사': 'active',
+  '검사출고': 'archive', '미검사출고': 'archive'
+};
+
+// 여러 개 고를 수 있는 드롭다운 — colInspectFilters(Set)에서 켜고/끄고, 드롭다운은 열어둔다.
+function toggleColInspect(e, val) {
+  if (e) e.stopPropagation();
   pieFilter = null;
   ddayUrgencyFilter = null;
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
-  colInspectFilter = val;
-  const label = document.getElementById('inspectColLabel');
+  if (colInspectFilters.has(val)) colInspectFilters.delete(val); else colInspectFilters.add(val);
+  _qcSyncInspectDropdownChecks();
+  _qcUpdateInspectColLabel();
+  applyFilters();
+}
+// KPI 카드 "상세보기"나 "전체" 항목처럼, 그 카테고리 하나로 딱 못박아 보여줄 때 쓴다 —
+// 기존 다중선택은 모두 비우고 이 값 하나로(또는 빈 값이면 전부 해제) 바꾼다.
+function setColInspect(val) {
+  pieFilter = null;
+  ddayUrgencyFilter = null;
+  document.getElementById('ddayFilterChip')?.classList.add('hidden');
+  colInspectFilters = val ? new Set([val]) : new Set();
+  _qcSyncInspectDropdownChecks();
+  _qcUpdateInspectColLabel();
   const dd = document.getElementById('inspectColDropdown');
-  if (label) label.textContent = val === '검사진행중' ? '검사완료(진행중) ✓' : val === '검사출고' ? '검사완료(출고) ✓' : val === '진행_미검사' ? '미검사(진행중) ✓' : val === '미검사출고' ? '미검사(출고) ✓' : val === '생산중' ? '생산중 ✓' : val === '생산완료' ? '포장대기 ✓' : val === '재투입' ? '재투입 ✓' : val === '양지' ? '양지(회수) ✓' : val === '미투입' ? '미투입 ✓' : val === '취소' ? '취소 ✓' : val === '금일포장' ? '금일 포장 ✓' : val === '검사대기' ? '검사 대기 품목 ✓' : '검사상태';
-
   if (dd) dd.classList.add('hidden');
   applyFilters();
+}
+function _qcSyncInspectDropdownChecks() {
+  QC_COL_INSPECT_DROPDOWN_VALUES.forEach(v => {
+    const chk = document.getElementById('colInspChk-' + v);
+    if (chk) chk.style.display = colInspectFilters.has(v) ? '' : 'none';
+  });
+}
+function _qcUpdateInspectColLabel() {
+  const label = document.getElementById('inspectColLabel');
+  if (!label) return;
+  const n = colInspectFilters.size;
+  if (!n) { label.textContent = '검사상태'; return; }
+  const first = QC_COL_INSPECT_LABELS[[...colInspectFilters][0]] || '검사상태';
+  label.textContent = n === 1 ? (first + ' ✓') : (first + ' 외 ' + (n - 1) + '건 ✓');
+}
+// sourceTab(진행중 리스트/출고완료 리스트/전체 이력)이 바뀌면, 그 시트에 있을 수 없는
+// 진행상태 항목은 드롭다운에서 숨기고(QC_COL_INSPECT_SOURCE_ONLY), 지금 골라둔 값 중에
+// 이제 숨겨지는 게 있으면 같이 해제한다(안 그러면 선택은 돼 있는데 보이지도, 적용되지도
+// 않는 유령 선택 상태가 됨).
+function _qcSyncInspectDropdownVisibility() {
+  let changed = false;
+  QC_COL_INSPECT_DROPDOWN_VALUES.forEach(v => {
+    const need = QC_COL_INSPECT_SOURCE_ONLY[v];
+    const visible = !need || sourceTab === 'all' || sourceTab === need;
+    const row = document.getElementById('colInspRow-' + v);
+    if (row) row.style.display = visible ? '' : 'none';
+    if (!visible && colInspectFilters.has(v)) { colInspectFilters.delete(v); changed = true; }
+  });
+  if (changed) { _qcSyncInspectDropdownChecks(); _qcUpdateInspectColLabel(); }
+}
+function _qcColInspectTest(val, d) {
+  if (val === '진행_미검사') return d.source !== 'archive' && ((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d));
+  if (val === '검사대기') return d.source !== 'archive' && QC_WAIT_INSPECT_STATUSES.includes(d.검사);
+  if (val === '미검사출고') return d.source === 'archive' && d.검사 !== '검사';
+  if (val === '검사진행중') return d.source !== 'archive' && d.검사 === '검사';
+  if (val === '검사출고') return d.source === 'archive' && d.검사 === '검사';
+  if (val === '생산중') return d.source !== 'archive' && (d.검사 === '미검사' || d.검사 === '재투입');
+  if (val === '생산완료') return d.source !== 'archive' && d.검사 === '포장대기';
+  if (val === '금일포장') {
+    if (d.source === 'archive') return false;
+    if (d.검사 !== '미검사' && d.검사 !== '포장대기' && !isReinspectWaiting(d)) return false;
+    if (!d.포장일) return false;
+    const dd2 = ddayInfo(d.포장일);
+    return !(dd2 === null || dd2 > 0);
+  }
+  return d.검사 === val; // 재투입/양지/미투입/취소 등 — 검사 칼럼 값과 그대로 비교
 }
 
 // 이 드롭다운은 표를 감싼 overflow-auto 스크롤 영역(max-height:560px) 안의 th에
