@@ -2499,7 +2499,8 @@ function applyFilters() {
 
     const chartData = factoryTab === 'all' ? filtered : filtered.filter(d => d.공장 === factoryTab);
 
-    renderKPIs(filtered);
+    const kpiBaseData = allData.filter(matchDateOnly);
+    renderKPIs(kpiBaseData);
     renderFactoryPanels(filtered);
     renderTable(display);
     renderCharts(chartData);
