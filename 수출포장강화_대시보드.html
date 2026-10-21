@@ -8186,6 +8186,14 @@
                     });
                 }
 
+                // PE폼 유형은 구글시트가 아니라 이 브라우저에만 기억하는 값(단일 품목
+                // 수정창과 같은 저장소) — 네트워크 호출 없이 코드별로 바로 적용한다.
+                if (peTypeRaw) {
+                    _pkgBulkItems.forEach(it => {
+                        _pkgSetPeType(it.code, peTypeRaw, _pkgGetPeType(it.code).spec);
+                    });
+                }
+
                 fb.textContent = '✓ 적용 완료되었습니다.'; fb.style.color = '#16a34a';
                 setTimeout(() => {
                     pkgCloseBulkModal();
