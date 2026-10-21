@@ -11917,9 +11917,9 @@ function peSaveDraft() {
     _peDraftTimer = setTimeout(() => {
         const rows = [];
         document.querySelectorAll('#peGridBody tr').forEach(tr => {
-            const name = tr.querySelector('.pe-grid-name').value.trim();
-            if (!name) return;
-            rows.push({ name, qty: tr.querySelector('.pe-grid-qty').value, note: tr.querySelector('.pe-grid-note').value });
+            const sel = peGridSelections[tr.dataset.id];
+            if (!sel) return;
+            rows.push({ code: sel.code, qty: tr.querySelector('.pe-grid-qty').value, note: tr.querySelector('.pe-grid-note').value });
         });
         const draft = {
             date: document.getElementById('peOrdDate').value,
