@@ -11919,7 +11919,7 @@ function peSaveDraft() {
         document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
             const sel = peGridSelections[tr.dataset.id];
             if (!sel) return;
-            rows.push({ code: sel.code, qty: tr.querySelector('.pe-sheet-qty-input').value, note: tr.querySelector('.pe-grid-note').value });
+            rows.push({ code: sel.code, qty: tr.querySelector('.pe-sheet-qty-input').value, note: tr.querySelector('.pe-sheet-note-input').value });
         });
         const draft = {
             date: document.getElementById('peOrdDate').value,
@@ -12054,7 +12054,7 @@ function peInitOrderForm() {
         const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
         tr.querySelector('.pe-sheet-name-input').value = r.name;
         tr.querySelector('.pe-sheet-qty-input').value = dr.qty || '';
-        tr.querySelector('.pe-grid-note').value = dr.note || '';
+        tr.querySelector('.pe-sheet-note-input').value = dr.note || '';
         peGridSelections[id] = r;
         peGridFillRow(id, r);
     });
@@ -12069,7 +12069,7 @@ async function peRegisterOrder() {
         if (!sel) return;
         items.push({
             code: sel.code, name: sel.name, spec: sel.spec, unit: sel.unit, type: sel.type, site: sel.site, color: sel.color,
-            qty: tr.querySelector('.pe-sheet-qty-input').value.trim(), note: tr.querySelector('.pe-grid-note').value.trim()
+            qty: tr.querySelector('.pe-sheet-qty-input').value.trim(), note: tr.querySelector('.pe-sheet-note-input').value.trim()
         });
     });
     if (!items.length) { peShowToast('품목을 1개 이상 입력해주세요'); return; }
