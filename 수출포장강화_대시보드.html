@@ -11602,6 +11602,7 @@ function peRenderDashboard() {
       </tr>`).join('') : '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--pe-label);">발주 이력이 없습니다</td></tr>';
 
     peRenderDashSearchChips();
+    peRenderDashSearchField();
 }
 function peDeficitCardHtml(g) {
     const click = g.clickable ? ` onclick="peOpenStockDetailByKey('${g.key.replace(/'/g, "\\'")}')"` : '';
