@@ -1938,26 +1938,33 @@
             } catch (e) { /* 복사 실패는 조용히 무시 */ }
         }
 
-        // 포장강화 앱(shell.html) 하단탭 "포장불량조치"에서 이 대시보드를 iframe으로
-        // 띄우면서 ?openDefectAction=1을 붙여 보낸다 — 데이터가 다 불러와지면(그래야
-        // 카드에 사진·품목정보가 제대로 뜸) 자동으로 그 화면을 연다(요청, 2026-10-19).
-        if (new URLSearchParams(location.search).get('openDefectAction') === '1') {
-            let _pkgAutoOpenTries = 0;
-            const _pkgAutoOpenTimer = setInterval(() => {
-                _pkgAutoOpenTries++;
-                if ((state.data && state.data.length) || _pkgAutoOpenTries > 30) {
-                    clearInterval(_pkgAutoOpenTimer);
-                    if (typeof openPkgDefectActionView === 'function') openPkgDefectActionView();
+        // 포장강화 앱(shell.html) 하단탭 "포장" > 불량조치/PE폼, 또는 F.WORK 앱 허브
+        // (index.html) > 포장강화 > PE폼에서 이 대시보드를 iframe(또는 직접 이동)으로
+        // 띄우면서 ?openDefectAction=1 / ?openPeFoam=1을 붙여 보낸다 — 데이터가 다
+        // 불러와지면(그래야 카드에 사진·품목정보가 제대로 뜸) 자동으로 그 화면을 연다
+        // (요청, 2026-10-19).
+        // (버그 수정, 2026-10-21) PE폼 쪽은 화면을 여는 함수(openPkgPeFoamView)가 이
+        // 코드보다 한참 "뒤"에 있는 별도의 <script> 블록에서 정의돼있었다 — 함수 호이스팅은
+        // 같은 <script> 태그 안에서만 적용되기 때문에, 데이터가 다 불러와진 시점에도 그
+        // 함수가 아직 "존재하지 않는 상태"라 아무 일도 안 일어나고 평소 홈 화면만 계속
+        // 보이는 원인이었다(F.WORK > 포장강화 > PE폼, 포장강화 앱 > 포장 > PE폼 둘 다 동일).
+        // 데이터뿐 아니라 "그 화면을 여는 함수가 정의됐는지"까지 같이 기다리게 고친다.
+        function _pkgAutoOpenView(paramName, openFnName) {
+            if (new URLSearchParams(location.search).get(paramName) !== '1') return;
+            let tries = 0;
+            const timer = setInterval(() => {
+                tries++;
+                const fn = window[openFnName];
+                const dataReady = state.data && state.data.length;
+                if ((dataReady && typeof fn === 'function') || tries > 60) {
+                    clearInterval(timer);
+                    if (typeof fn === 'function') fn();
+                    else console.error('[pkgAutoOpen] ' + openFnName + ' 함수가 끝내 정의되지 않았습니다.');
                 }
-            }, 300);
+            }, 150);
         }
-
-        // F.WORK 앱 허브(index.html) > 포장강화 > PE폼, 또는 포장강화 앱(shell.html)에서
-        // ?openPeFoam=1을 붙여 보내면 PE폼 탭을 자동으로 연다 — 위 불량조치 자동열기와
-        // 같은 방식(데이터 로드 전이면 openPkgPeFoamView가 자체적으로 다시 불러온다).
-        if (new URLSearchParams(location.search).get('openPeFoam') === '1') {
-            if (typeof openPkgPeFoamView === 'function') openPkgPeFoamView();
-        }
+        _pkgAutoOpenView('openDefectAction', 'openPkgDefectActionView');
+        _pkgAutoOpenView('openPeFoam', 'openPkgPeFoamView');
 
         window.addEventListener('DOMContentLoaded', () => {
             initCard1();
