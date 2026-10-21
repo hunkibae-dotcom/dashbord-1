@@ -12604,35 +12604,30 @@ async function peExportOrderXlsx(ordNo, meta, items) {
   .pe-scope .items-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:14px; }
   .pe-scope .items-head .count { font-size:11.5px; font-weight:700; color:var(--pe-label); }
 
-  /* 발주서 품목 목록 — 좁은 격자 칸에 다 밀어넣지 않고, 자재명 검색을 넓게 쓰고
-     코드·색상·유형·규격은 그 아래 작은 메타 줄로 보여준다(요청, 너무 올드해 보임). */
-  .pe-scope .pe-grid-head { display:flex; align-items:center; gap:12px; padding:10px 14px; background:var(--pe-bg); border-bottom:1.5px solid var(--pe-border); font-size:10px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--pe-label); }
-  .pe-scope .pe-grid-head-num { width:28px; text-align:center; flex-shrink:0; }
-  .pe-scope .pe-grid-head-main { flex:1; min-width:0; }
-  .pe-scope .pe-grid-head-qty { width:96px; flex-shrink:0; }
-  .pe-scope .pe-grid-head-note { width:180px; flex-shrink:0; }
-  .pe-scope .pe-grid-head-del { width:28px; flex-shrink:0; }
-  .pe-scope .pe-grid-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-bottom:1px solid var(--pe-divider); transition:background .1s; background:var(--pe-panel); }
-  .pe-scope .pe-grid-row:last-child { border-bottom:none; }
-  .pe-scope .pe-grid-row:hover { background:var(--pe-bg); }
-  .pe-scope .pe-grid-row:focus-within { background:var(--pe-brand-soft); }
-  .pe-scope .pe-grid-num { width:28px; text-align:center; flex-shrink:0; color:var(--pe-label); font-weight:700; font-size:12px; }
-  .pe-scope .pe-grid-main { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
-  .pe-scope .pe-grid-search { position:relative; }
-  .pe-scope .pe-grid-name { width:100%; box-sizing:border-box; border:1.5px solid var(--pe-border); border-radius:9px; padding:8px 32px 8px 11px; font-size:13px; font-weight:600; outline:none; background:var(--pe-panel); font-family:inherit; transition:border-color .15s, box-shadow .15s; }
-  .pe-scope .pe-grid-name:focus { border-color:var(--pe-brand); box-shadow:0 0 0 3px var(--pe-brand-soft); }
-  .pe-scope .pe-grid-search-ic { position:absolute; right:11px; top:50%; transform:translateY(-50%); font-size:11px; color:var(--pe-label); pointer-events:none; }
-  .pe-scope .pe-grid-meta { font-size:10.5px; color:var(--pe-label); display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:14px; padding-left:2px; }
-  .pe-scope .pe-grid-meta-sep { color:var(--pe-border); }
-  .pe-scope .pe-grid-qty { width:96px; flex-shrink:0; box-sizing:border-box; border:1.5px solid var(--pe-border); border-radius:9px; padding:9px 10px; font-size:13px; font-weight:700; text-align:center; outline:none; background:var(--pe-panel); font-family:inherit; transition:border-color .15s; }
-  .pe-scope .pe-grid-qty:focus { border-color:var(--pe-brand); }
-  .pe-scope .pe-grid-note { width:180px; flex-shrink:0; box-sizing:border-box; border:1.5px solid var(--pe-border); border-radius:9px; padding:9px 10px; font-size:12.5px; outline:none; background:var(--pe-panel); font-family:inherit; transition:border-color .15s; }
-  .pe-scope .pe-grid-note:focus { border-color:var(--pe-brand); }
-  .pe-scope .pe-grid-clear { width:28px; height:28px; flex-shrink:0; border:none; background:transparent; color:var(--pe-label); cursor:pointer; border-radius:7px; display:flex; align-items:center; justify-content:center; }
-  .pe-scope .pe-grid-clear:hover { background:var(--pe-divider); color:#DC2626; }
-  @media (max-width:760px) {
-    .pe-scope .pe-grid-head-note, .pe-scope .pe-grid-note { display:none; }
+  /* 발주서 — 실제 "PE폼 발주서" 구글시트와 같은 느낌(남색 헤더/연파랑 정보밴드 +
+     촘촘한 격자)으로 맞췄다(요청, 모던 카드 UI가 아니라 시트 그대로를 원함). */
+  .pe-scope .pe-sheet-wrap { border:1px solid #B7C4D9; border-radius:4px; overflow:hidden; background:#fff; }
+  .pe-scope .pe-sheet-info { display:grid; grid-template-columns:repeat(5,1fr); }
+  .pe-scope .pe-sheet-info-label { background:#1F3864; color:#fff; font-size:10.5px; font-weight:700; text-align:center; padding:7px 4px; border:1px solid #16294A; }
+  .pe-scope .pe-sheet-info-value { background:#DCE6F5; border:1px solid #B7C4D9; }
+  .pe-scope .pe-sheet-info-value input, .pe-scope .pe-sheet-info-value select {
+    width:100%; box-sizing:border-box; border:none; background:transparent; text-align:center;
+    font-size:12.5px; font-weight:700; color:#1A2233; padding:8px 4px; outline:none; font-family:inherit; cursor:pointer;
   }
+  .pe-scope .pe-sheet-info-value input:disabled { cursor:default; }
+  .pe-scope .pe-sheet-info-value input:focus, .pe-scope .pe-sheet-info-value select:focus { background:#fff; box-shadow:inset 0 0 0 2px #1F3864; }
+  .pe-scope .pe-sheet-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .pe-scope .pe-sheet-table th { background:#1F3864; color:#fff; font-weight:700; padding:7px 5px; border:1px solid #16294A; white-space:nowrap; }
+  .pe-scope .pe-sheet-table td { border:1px solid #D4D7DD; padding:0; height:32px; }
+  .pe-scope .pe-sheet-table td.pe-sc-text { padding:0 6px; color:#1A2233; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pe-scope .pe-sheet-table td.pe-sc-num { text-align:center; color:#647088; font-weight:600; }
+  .pe-scope .pe-sheet-table tr:hover td { background:#F7F9FC; }
+  .pe-scope .pe-sheet-name-input { width:100%; height:32px; box-sizing:border-box; border:none; outline:none; padding:0 22px 0 7px; font-size:12px; background:transparent; font-family:inherit; }
+  .pe-scope .pe-sheet-name-input:focus { background:#EAF1FE; box-shadow:inset 0 0 0 2px #1F3864; }
+  .pe-scope .pe-sheet-qty-input, .pe-scope .pe-sheet-note-input { width:100%; height:32px; box-sizing:border-box; border:none; outline:none; padding:0 7px; font-size:12px; background:transparent; font-family:inherit; }
+  .pe-scope .pe-sheet-qty-input { text-align:center; }
+  .pe-scope .pe-sheet-qty-input:focus, .pe-scope .pe-sheet-note-input:focus { background:#EAF1FE; box-shadow:inset 0 0 0 2px #1F3864; }
+  .pe-scope .pe-sheet-total-cell { background:#DCE6F5; font-weight:800; color:#1A2233; padding:8px 6px; border:1px solid #B7C4D9; }
   .pe-scope .pe-batch { padding:10px 0; border-bottom:1px solid var(--pe-divider); display:flex; justify-content:space-between; font-size:11.5px; }
   .pe-scope .pe-batch:last-child { border-bottom:none; }
   .pe-scope .pe-batch.used { color:#DC2626; font-weight:700; }
