@@ -11574,6 +11574,18 @@ function peRenderDashboard() {
         byTypeUse[key].value += u.qty;
     });
     document.getElementById('peUsageTypeBars').innerHTML = peBarRowsHtml(Object.values(byTypeUse).sort((a, b) => b.value - a.value), 10);
+
+    const recent = [...peOrderRows].sort((a, b) => (b.date || '').localeCompare(a.date || '')).slice(0, 5);
+    document.getElementById('peRecentOrdersBody').innerHTML = recent.length ? recent.map(r => `
+      <tr>
+        <td style="padding:8px;" class="pe-mono">${r.ordNo}</td>
+        <td style="padding:8px;" class="pe-mono">${r.code}</td>
+        <td style="padding:8px;"><span class="pe-pill" style="background:${peTypeColor(r.type)}1a;color:${peTypeColor(r.type)};">${r.type || '—'}</span></td>
+        <td style="padding:8px;">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</td>
+        <td style="padding:8px;"><span class="pe-pill ${pePillClass(r.stat)}">${r.stat || '—'}</span></td>
+      </tr>`).join('') : '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--pe-label);">발주 이력이 없습니다</td></tr>';
+
+    peRenderDashSearchChips();
 }
 function peDeficitCardHtml(g) {
     const click = g.clickable ? ` onclick="peOpenStockDetailByKey('${g.key.replace(/'/g, "\\'")}')"` : '';
