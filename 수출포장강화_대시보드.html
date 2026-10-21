@@ -11549,8 +11549,8 @@ function peRenderDashboard() {
     document.getElementById('peKpiOngoing').textContent = ongoing.length + '건';
     const thisMonth = new Date().toISOString().slice(0, 7);
     document.getElementById('peKpiMonth').textContent = peOrderRows.filter(r => (r.date || '').slice(0, 7) === thisMonth).length + '건';
-    const leadNums = peOrderRows.map(r => parseFloat(r.lead)).filter(n => !isNaN(n) && n > 0);
-    document.getElementById('peKpiLead').textContent = (leadNums.length ? (leadNums.reduce((a, b) => a + b, 0) / leadNums.length).toFixed(1) : '–') + (leadNums.length ? '일' : '');
+    const totalStock = peRemainStockList().reduce((s, g) => s + g.total, 0);
+    document.getElementById('peKpiTotalStock').textContent = totalStock.toLocaleString() + 'EA';
 
     const deficits = peLowStockDeficitList();
     document.getElementById('peKpiLowStock').textContent = deficits.length + '종';
