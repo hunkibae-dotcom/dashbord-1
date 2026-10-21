@@ -12517,6 +12517,10 @@ async function peSubmitOrder() {
         <!-- 발주이력 -->
         <div id="peTab-history" class="hidden">
             <div class="pe-panel">
+                <div class="items-head">
+                    <div class="pe-panel-label" style="margin-bottom:0;">발주이력</div>
+                    <span class="count" id="peHistCount"></span>
+                </div>
                 <div class="master-filter-row">
                     <button class="hist-type-chip on" onclick="peHistTypePick('', this)">전체 유형</button>
                     <button class="hist-type-chip" onclick="peHistTypePick('일자형', this)">일자형</button>
