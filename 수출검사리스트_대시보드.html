@@ -2412,7 +2412,7 @@ document.addEventListener('click', () => {
 });
 
 // ===== FILTERS =====
-let colInspectFilter = '';
+let colInspectFilters = new Set(); // 검사상태(진행 칼럼) 드롭다운 — 여러 개 동시 선택 가능(요청, 2026-10-21)
 let ddayUrgencyFilter = null; // { factory:'cj1'|'cj2', urgency:'지연'|'D-7이하'|'D-14이하'|'여유'|'미정' }
 let pieFilter = null;         // { factory:'cj1'|'cj2', status:'검사'|'미검사' }
 let qualityFilter = null;     // { type:'product'|'country', value:string }
