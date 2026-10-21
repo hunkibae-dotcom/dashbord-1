@@ -11987,7 +11987,7 @@ function peGridFillRow(id, r) {
 function peGridSearchInput(id) {
     peGridActiveId = id;
     const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
-    const input = tr.querySelector('.pe-grid-name');
+    const input = tr.querySelector('.pe-sheet-name-input');
     const val = input.value.trim();
     if (!val && peGridSelections[id]) {
         peGridSelections[id] = null;
@@ -12016,7 +12016,7 @@ function peGridSelectName(id, code) {
     const r = peMasterRows.find(x => x.code === code);
     if (!r) return;
     const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
-    tr.querySelector('.pe-grid-name').value = r.name;
+    tr.querySelector('.pe-sheet-name-input').value = r.name;
     peGridSelections[id] = r;
     peGridFillRow(id, r);
     document.getElementById('peGridSharedDropdown').hidden = true;
@@ -12052,7 +12052,7 @@ function peInitOrderForm() {
         if (!r) return; // 품목마스터에서 코드가 사라졌으면 건너뜀
         const id = peAddGridRow();
         const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
-        tr.querySelector('.pe-grid-name').value = r.name;
+        tr.querySelector('.pe-sheet-name-input').value = r.name;
         tr.querySelector('.pe-grid-qty').value = dr.qty || '';
         tr.querySelector('.pe-grid-note').value = dr.note || '';
         peGridSelections[id] = r;
