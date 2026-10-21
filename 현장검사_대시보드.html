@@ -512,26 +512,51 @@ try {
   <div id="fiDetailModal" onclick="if(event.target===this)fiCloseDetail()" style="display:none; position:fixed; inset:0; background:var(--bg); flex-direction:column; z-index:30;">
    <div class="fi-dialog-box">
     <div style="flex-shrink:0; background:var(--panel); border-bottom:1px solid var(--border); padding:14px 16px;">
-      <div style="display:flex; align-items:center; gap:8px;">
+      <div style="display:flex; align-items:center; gap:10px;">
         <button onclick="fiCloseDetail()" style="width:26px; height:26px; border-radius:8px; border:none; background:var(--icon-bg); color:var(--text-sub); display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
         </button>
-        <span style="font-size:14.5px; font-weight:800;">하자 상세</span>
+        <div style="min-width:0;">
+          <div style="font-size:14.5px; font-weight:800;">하자 상세</div>
+          <span id="fiDetStatusPill" style="display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:800; padding:2px 9px; border-radius:999px; margin-top:2px;"></span>
+        </div>
         <button onclick="fiDeleteEntry()" title="삭제" style="margin-left:auto; width:26px; height:26px; border-radius:8px; border:none; background:rgba(220,38,38,.1); color:#DC2626; display:flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"></path></svg>
         </button>
       </div>
     </div>
     <div style="flex:1; overflow-y:auto; padding:14px 16px;">
-      <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:14px;">
-        <span id="fiDetCode" style="font-size:13px; font-weight:800; font-family:ui-monospace,monospace; padding:3px 0;"></span>
-        <span id="fiDetColor" style="font-size:10.5px; padding:3px 9px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-sub); font-weight:700; font-family:ui-monospace,monospace;"></span>
-        <span id="fiDetQty" style="font-size:10.5px; padding:3px 9px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; font-weight:800;"></span>
-        <span id="fiDetDate" style="font-size:10.5px; padding:3px 9px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--text-sub); font-weight:700; font-family:ui-monospace,monospace; margin-left:auto;"></span>
+
+      <!-- 품목 정보 요약 카드 -->
+      <div style="background:linear-gradient(135deg, var(--input-bg), var(--panel)); border:1px solid var(--border); border-radius:16px; padding:15px; margin-bottom:12px;">
+        <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+          <div style="min-width:0;">
+            <div style="font-size:9px; font-weight:800; color:var(--label); letter-spacing:.06em; margin-bottom:4px;">단품코드</div>
+            <div id="fiDetCode" style="font-size:18px; font-weight:800; font-family:ui-monospace,monospace; line-height:1.2; word-break:break-all;"></div>
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:9px; font-weight:800; color:var(--label); letter-spacing:.06em; margin-bottom:4px;">발견일</div>
+            <div id="fiDetDate" style="font-size:12px; font-weight:700; font-family:ui-monospace,monospace;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; margin-top:12px;">
+          <div style="flex:1; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:8px 10px; min-width:0;">
+            <div style="font-size:9px; font-weight:700; color:var(--label); margin-bottom:3px;">색상</div>
+            <div id="fiDetColor" style="font-size:12.5px; font-weight:800; font-family:ui-monospace,monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+          </div>
+          <div style="flex:1; background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:8px 10px; min-width:0;">
+            <div style="font-size:9px; font-weight:700; color:var(--label); margin-bottom:3px;">수량</div>
+            <div id="fiDetQty" style="font-size:12.5px; font-weight:800;"></div>
+          </div>
+        </div>
       </div>
+
       <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-          <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em;">현장 사진</div>
+          <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; display:flex; align-items:center; gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            현장 사진
+          </div>
           <button type="button" id="fiDetPhotoViewAllBtn" onclick="fiOpenPhotoViewer(fiDetPhotos, 0, 'det')" style="display:none; font-size:10px; font-weight:700; color:#D97706; background:none; border:none; cursor:pointer; padding:2px 4px; align-items:center; gap:3px;">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"></path><path d="M9 21H3v-6"></path><path d="M21 3l-7 7"></path><path d="M3 21l7-7"></path></svg>
             전체보기
@@ -542,21 +567,32 @@ try {
         <input type="file" id="fiDetPhotoFile" accept="image/*" style="display:none;" onchange="fiHandleDetPhotoFile(this)">
       </div>
       <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px;">
-        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:10px;">하자유형 (중복 선택 가능)</div>
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2.59 12.58a2 2 0 010-2.83L9.76 2.58A2 2 0 0111.17 2H19a2 2 0 012 2v7.83a2 2 0 01-.41 1.58z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+          하자유형 <span style="font-weight:600; color:var(--label);">(중복 선택 가능)</span>
+        </div>
         <div id="fiDetTypeBtns" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
       </div>
       <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:12px;">
-        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:8px;">부적합 상세내용</div>
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+          부적합 상세내용
+        </div>
         <textarea id="fiDetContent" style="width:100%; min-height:56px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:10px 11px; font-size:12.5px; color:var(--text); outline:none; box-sizing:border-box; resize:vertical; font-family:inherit;"></textarea>
       </div>
-      <div style="background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; margin-bottom:14px;">
-        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:10px;">조치상태</div>
-        <div id="fiDetStatusBtns" style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:10px;"></div>
+      <div id="fiDetStatusCard" style="background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--border); border-radius:14px; padding:14px; margin-bottom:14px; transition:border-color .2s;">
+        <div style="font-size:10.5px; font-weight:700; color:var(--text-sub); letter-spacing:.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          조치상태
+        </div>
+        <div id="fiDetStatusBtns" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;"></div>
         <div style="font-size:10px; font-weight:700; color:var(--label); margin-bottom:6px;">조치사항</div>
         <textarea id="fiDetAction" style="width:100%; min-height:48px; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:10px 11px; font-size:12.5px; color:var(--text); outline:none; box-sizing:border-box; resize:vertical; font-family:inherit;"></textarea>
       </div>
-      <div id="fiDetFeedback" style="font-size:12px; font-weight:700; text-align:center; min-height:16px; margin-bottom:8px;"></div>
-      <button id="fiDetSaveBtn" onclick="fiSaveDetail()" style="width:100%; background:#D97706; color:#fff; padding:13px; border-radius:12px; border:none; font-size:14px; font-weight:800; cursor:pointer; margin-bottom:16px;">
+    </div>
+    <div style="flex-shrink:0; background:var(--panel); border-top:1px solid var(--border); padding:10px 16px; padding-bottom:max(10px,env(safe-area-inset-bottom));">
+      <div id="fiDetFeedback" style="font-size:12px; font-weight:700; text-align:center; min-height:16px; margin-bottom:6px;"></div>
+      <button id="fiDetSaveBtn" onclick="fiSaveDetail()" style="width:100%; background:#D97706; color:#fff; padding:13px; border-radius:12px; border:none; font-size:14px; font-weight:800; cursor:pointer;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
         저장
       </button>
