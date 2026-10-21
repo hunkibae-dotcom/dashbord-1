@@ -3038,6 +3038,7 @@
 
         function applyFilters() {
             try {
+                _pendingFilterActive = false; // 정상 필터 경로가 한 번이라도 돌면 포장대기 특수 보기는 해제
                 _pkgCurrentPage = 0; // 필터가 바뀌면 결과 자체가 달라지므로 1페이지로 되돌린다.
                 _updateCardRoundFilterChip();
                 const roundQuery = (document.getElementById('roundFilter')?.value || '').toLowerCase().trim();
