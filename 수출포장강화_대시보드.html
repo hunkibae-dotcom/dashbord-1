@@ -13147,6 +13147,16 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <input id="pkgBulkPallet" type="text" placeholder="예: 1, 2, A-1, 미적재 ..."
                 style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
         </div>
+        <div style="margin-bottom:10px;">
+            <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">PE폼 유형 (전체 동일 적용, 선택 안 하면 변경 안 함)</div>
+            <select id="pkgBulkPeType" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;cursor:pointer;">
+                <option value="">변경 안 함</option>
+                <option value="일자형">일자형</option>
+                <option value="코너형">코너형</option>
+                <option value="패드형">패드형</option>
+                <option value="롤형">롤형</option>
+            </select>
+        </div>
 
         <div id="pkgBulkFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin:12px 0;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
