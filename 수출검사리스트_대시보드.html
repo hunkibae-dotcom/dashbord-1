@@ -606,6 +606,36 @@ try {
       <!-- KPI ROW -->
       <div id="kpiRow" class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-4">
 
+        <!-- 신규품목 — 신규품목확인 모달의 확인/등록/도면출력여부 탭과 같은 기준으로,
+             공장 구분 없이 세 건수를 보여준다(요청, 2026-10-22). 배지 색도 그 탭의
+             카운트 배지(#qtabCnt-notify/confirm/drawing)와 맞췄다. -->
+        <div class="relative group">
+          <div class="card p-4 cursor-default">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="kpi-icon bg-amber-50 shrink-0"><i class="fa-solid fa-star text-amber-500 text-[15px]"></i></span>
+              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">신규품목</span>
+            </div>
+            <div class="flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[12px] font-semibold text-slate-500">확인</span>
+                <span class="text-[17px] font-extrabold text-violet-600"><span id="kpiNewConfirm">—</span> <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[12px] font-semibold text-slate-500">등록</span>
+                <span class="text-[17px] font-extrabold text-amber-600"><span id="kpiNewRegister">—</span> <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-[12px] font-semibold text-slate-500">도면</span>
+                <span class="text-[17px] font-extrabold text-red-600"><span id="kpiNewDrawing">—</span> <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
+            <div id="kpiNewDetail" class="space-y-0.5"></div>
+            <button onclick="qcOpenNewItemsModal()" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
+          </div>
+        </div>
+
         <div class="relative group">
           <div class="card p-4 cursor-default">
             <div class="flex items-center gap-2 mb-3">
@@ -649,26 +679,6 @@ try {
           <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
             <div id="kpiWaitDetail" class="space-y-0.5"></div>
             <button onclick="viewDetailInTable('검사대기')" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
-          </div>
-        </div>
-
-        <!-- 신규품목 (각 공장 검사항목 리스트 "신규↓" 구분선 아래 품목) -->
-        <div class="relative group">
-          <div class="card p-4 cursor-default">
-            <div class="flex items-center gap-2 mb-3">
-              <span class="kpi-icon bg-amber-50 shrink-0"><i class="fa-solid fa-star text-amber-500 text-[15px]"></i></span>
-              <span class="text-[19.5px] font-bold text-slate-700 leading-tight">신규품목</span>
-            </div>
-            <div class="flex flex-col gap-2" id="kpiNewByColor">
-              <div class="flex items-center justify-between">
-                <span class="text-[12px] font-semibold text-slate-500">—</span>
-                <span class="text-[17px] font-extrabold text-slate-700">— <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
-              </div>
-            </div>
-          </div>
-          <div class="absolute left-0 top-full mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 opacity-0 invisible -translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 z-40">
-            <div id="kpiNewDetail" class="space-y-0.5"></div>
-            <button onclick="qcOpenNewItemsModal()" class="w-full mt-3 py-1.5 rounded-lg bg-accent-500 hover:bg-accent-600 text-white text-[12px] font-semibold">상세보기</button>
           </div>
         </div>
 
