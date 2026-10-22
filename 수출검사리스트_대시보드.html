@@ -4181,6 +4181,7 @@ function openProductSearchForMCard(factory, category) {
   if (factorySel) factorySel.value = (factory && factory !== 'all') ? factory : '';
   _psSourceFilter = 'active';
   _psStatusFilters.clear(); _psStatusFilterTouched = false;
+  _psBlockingFilters.clear(); _psBlockingFilterTouched = false;
   _psSpecialCategory = category || null;
   _updatePsSourceButtons();
   openProductSearch();
