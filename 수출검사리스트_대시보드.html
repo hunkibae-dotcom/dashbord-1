@@ -8366,6 +8366,24 @@ function _refreshMiStatusButtons(status) {
   if (pillText) pillText.textContent = _miStatusLabel(status);
 }
 
+// 블로킹(O열) 카드 — 요청(2026-10-23): 품목 수정창에서도 블로킹을 보고 바꿀 수 있어야
+// 한다. 검사완료 이력(source==='archive')엔 블로킹 칸 자체가 없어 카드를 숨긴다.
+function _miRenderBlockingButtons() {
+  const wrap = document.getElementById('miBlockingBtns');
+  if (!wrap || !_miCurrent) return;
+  const cur = ('블로킹' in _miPendingSync) ? _miPendingSync.블로킹 : (_miCurrent.블로킹 || '미등록');
+  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => `<button data-mi-blocking="${v}" onclick="setMiField('블로킹','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${v}</button>`).join('');
+  _refreshMiBlockingButtons(cur);
+}
+function _refreshMiBlockingButtons(v) {
+  document.querySelectorAll('#miBlockingBtns [data-mi-blocking]').forEach(btn => {
+    const on = btn.dataset.miBlocking === v;
+    btn.style.background = on ? '#6D5CE8' : 'var(--panel)';
+    btn.style.color = on ? '#fff' : 'var(--text-sub)';
+    btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
+  });
+}
+
 // 진행상태/일정/규격 카드는 각각 따로 보기↔수정을 토글한다(요청, 2026-10-15) —
 // 예전처럼 창 전체를 한 번에 다 수정 상태로 두지 않는다.
 function toggleMiStatusEdit() { _miEditStatus = !_miEditStatus; _miApplyCardToggle('miStatus', _miEditStatus); }
