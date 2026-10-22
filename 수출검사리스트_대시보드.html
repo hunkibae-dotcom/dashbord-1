@@ -6232,6 +6232,7 @@ function applyQcSheetPicker() {
 function applyPsSourcePicker() {
   _psSourceFilter = _psPickerSource;
   _psStatusFilters = new Set(_psPickerStatuses);
+  _psStatusFilterTouched = true;
   _psSpecialCategory = null;
   closePsSourcePicker();
   _updatePsSourceButtons();
