@@ -2777,12 +2777,12 @@
             // 같은 버튼 재클릭 시 해제(토글)
             if (_webDateField === field) field = '';
             _webDateField = field;
-            ['wdfDate','wdfDue','wdfReg'].forEach(id => {
+            ['wdfDate','wdfDue','wdfArrive','wdfReg'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; }
             });
             if (field) {
-                const map = { date:'wdfDate', dueDate:'wdfDue', regDate:'wdfReg' };
+                const map = { date:'wdfDate', dueDate:'wdfDue', arriveDate:'wdfArrive', regDate:'wdfReg' };
                 const active = document.getElementById(map[field]);
                 if (active) { active.style.background = '#6D5CE8'; active.style.color = '#fff'; }
             }
