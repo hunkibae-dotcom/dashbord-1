@@ -1581,10 +1581,25 @@ async function _fiRenderReportPdf(items, opts) {
   const SUMMARY_PX = 70;
   const PAGE_BUDGET_PX = Math.round(CONTENT_H_MM * MM_TO_PX) - 20;
 
+  // 발생처/원인처(요청, 2026-10-22) — "사업장 · 위치" 형태로 합쳐서 보여준다. 둘 다
+  // 없으면(아직 안 적은 품목) 줄 자체를 생략한다.
+  function _fiSiteLocText(site, loc) {
+    if (!site && !loc) return '';
+    return [site, loc].filter(Boolean).join(' · ');
+  }
   function cardHtml(d) {
     const key = d.sheet + '|' + d.row;
     const b64 = photoMap[key];
     const typesHtml = (d.types || []).map(function (t) { return '<span style="' + fiTypeChipStyle(t) + '">' + _fiPrintEsc(t) + '</span>'; }).join(' ');
+    const occText = _fiSiteLocText(d.occSite, d.occLoc);
+    const causeText = _fiSiteLocText(d.causeSite, d.causeLoc);
+    const siteLine = (occText || causeText)
+      ? '<div style="font-size:10.5px;color:#64748B;">' +
+          (occText ? '발생처: ' + _fiPrintEsc(occText) : '') +
+          (occText && causeText ? ' · ' : '') +
+          (causeText ? '원인처: ' + _fiPrintEsc(causeText) : '') +
+        '</div>'
+      : '';
     return '<div class="fi-pdf-card" style="display:flex;gap:10px;border:1px solid #E2E8F0;border-radius:10px;padding:10px;margin-bottom:8px;">' +
       (b64 ? '<img src="' + b64 + '" style="width:64px;height:64px;border-radius:7px;object-fit:cover;flex-shrink:0;">' : '<div style="width:64px;height:64px;border-radius:7px;background:#F1F5F9;flex-shrink:0;"></div>') +
       '<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;">' +
@@ -1595,6 +1610,7 @@ async function _fiRenderReportPdf(items, opts) {
           _fiPdfLabeledField('날짜', _fiPrintEsc(fiPcDate(d.date))) +
         '</div>' +
         '<div>' + typesHtml + '</div>' +
+        siteLine +
         '<div style="font-size:11px;color:#334155;line-height:1.4;">' + _fiPrintEsc(d.content || '') + '</div>' +
         (d.action ? '<div style="font-size:10.5px;color:#64748B;">조치: ' + _fiPrintEsc(d.action) + '</div>' : '') +
       '</div>' +
