@@ -2509,6 +2509,7 @@
                 let regDateVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? normalizeDate(row[indices.regDate]) : dateVal;
                 let roundVal = indices.round !== -1 && indices.round < row.length && row[indices.round] ? row[indices.round].toString().trim() : '-';
                 let dueDateVal = indices.dueDate !== -1 && indices.dueDate < row.length && row[indices.dueDate] ? normalizeDate(row[indices.dueDate]) : '-';
+                let arriveDateVal = indices.arriveDate !== -1 && indices.arriveDate < row.length && row[indices.arriveDate] ? normalizeDate(row[indices.arriveDate]) : '-';
 
                 let statusVal = indices.status !== -1 && indices.status < row.length && row[indices.status] ? row[indices.status].toString().trim() : '';
                 if (statusVal === '') statusVal = emptyStatusDefault;
@@ -2578,6 +2579,7 @@
                     round: roundVal,
                     qty: qtyVal,
                     dueDate: dueDateVal,
+                    arriveDate: arriveDateVal,
                     country: countryVal,
                     targetQty: targetQtyVal,
                     strengthenedQty: strengthenedQtyVal,
