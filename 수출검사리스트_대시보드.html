@@ -3452,8 +3452,9 @@ function _tblSetBulkBlocking(v) {
 async function _tblApplyBulkEdit() {
   const status = _tblBulkStatus;
   const dateVal = (document.getElementById('tblBulkDateInput').value || '').trim();
+  const blocking = _tblBulkBlocking;
   const resultEl = document.getElementById('tblBulkResult');
-  if (!status && !dateVal) { resultEl.textContent = '진행상태 또는 검사완료일 중 하나는 선택해주세요.'; return; }
+  if (!status && !dateVal && !blocking) { resultEl.textContent = '진행상태, 검사완료일, 블로킹 중 하나는 선택해주세요.'; return; }
 
   const items = _tblBulkTargetKeys.map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
   if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
@@ -3462,6 +3463,7 @@ async function _tblApplyBulkEdit() {
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...';
 
+  let blockingSkipped = 0;
   items.forEach(item => {
     const patch = {};
     if (status) { item.검사 = status; patch.검사 = status; }
@@ -3469,9 +3471,15 @@ async function _tblApplyBulkEdit() {
     _saveMiOverride(_miKey(item), patch);
     if (status) _postMiSync(item, { action: 'updateStatus', status: status });
     if (dateVal) _postMiSync(item, { action: 'updateInspectDate', date: dateVal });
+    // 블로킹은 검사완료 이력(source==='archive')엔 칸 자체가 없어서 그 품목만 건너뛴다.
+    if (blocking) {
+      if (item.source === 'archive') { blockingSkipped++; }
+      else { item.블로킹 = blocking; _saveMiOverride(_miKey(item), { 블로킹: blocking }); _postMiSync(item, { action: 'updateBlocking', blocking: blocking }); }
+    }
   });
 
-  resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`;
+  resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`
+    + (blockingSkipped ? ` (검사완료 이력 ${blockingSkipped}건은 블로킹 적용 제외)` : '');
   btn.disabled = false;
   btn.innerHTML = '적용';
 
