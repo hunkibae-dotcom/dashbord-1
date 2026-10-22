@@ -9947,6 +9947,9 @@
                 if (changed.regDate !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.regDate = changed.regDate; }); });
                 }
+                if (changed.arriveDate !== undefined) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.arriveDate = changed.arriveDate; }); });
+                }
                 if (changed.spec) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => {
                         if (_pkgMatch(it)) { if (newW) it.specW = newW; if (newD) it.specD = newD; if (newH) it.specH = newH; if (newG) it.specG = newG; }
