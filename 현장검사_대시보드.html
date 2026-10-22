@@ -1973,8 +1973,8 @@ function fiRenderList() {
   const filtered = fiAllData.filter(function (d) {
     if (fiStatusFilter !== '전체' && d.status !== fiStatusFilter) return false;
     if (fiTypeFilter !== '전체' && d.types.indexOf(fiTypeFilter) < 0) return false;
-    if (occF !== '전체' && d.occSite !== occF) return false;
-    if (causeF !== '전체' && d.causeSite !== causeF) return false;
+    if (occF !== '전체' && d.occLoc !== occF) return false;
+    if (causeF !== '전체' && d.causeLoc !== causeF) return false;
     if (dateFilter && d.date !== dateFilter) return false;
     if (q && d.code.toLowerCase().indexOf(q) < 0 && d.content.toLowerCase().indexOf(q) < 0) return false;
     return true;
