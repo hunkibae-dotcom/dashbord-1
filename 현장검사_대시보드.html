@@ -1945,6 +1945,8 @@ function fiGoKpiFilter(status) {
 function fiResetFilters() {
   fiStatusFilter = '전체'; fiTypeFilter = '전체';
   document.getElementById('fiDateFilter').value = '';
+  document.getElementById('fiOccFilter').value = '전체';
+  document.getElementById('fiCauseFilter').value = '전체';
   document.getElementById('fiSearchInput').value = '';
   document.getElementById('fiTypeDropdownLabel').textContent = '전체';
   document.getElementById('fiTypeDropdownLabel').style.color = 'var(--label)';
@@ -1953,10 +1955,14 @@ function fiResetFilters() {
 }
 function fiRenderList() {
   const dateFilter = document.getElementById('fiDateFilter').value;
+  const occF = document.getElementById('fiOccFilter').value;
+  const causeF = document.getElementById('fiCauseFilter').value;
   const q = document.getElementById('fiSearchInput').value.trim().toLowerCase();
   const filtered = fiAllData.filter(function (d) {
     if (fiStatusFilter !== '전체' && d.status !== fiStatusFilter) return false;
     if (fiTypeFilter !== '전체' && d.types.indexOf(fiTypeFilter) < 0) return false;
+    if (occF !== '전체' && d.occSite !== occF) return false;
+    if (causeF !== '전체' && d.causeSite !== causeF) return false;
     if (dateFilter && d.date !== dateFilter) return false;
     if (q && d.code.toLowerCase().indexOf(q) < 0 && d.content.toLowerCase().indexOf(q) < 0) return false;
     return true;
