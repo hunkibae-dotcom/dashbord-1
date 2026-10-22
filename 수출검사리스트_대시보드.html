@@ -6174,28 +6174,57 @@ let _psStatusFilterTouched = false;
 // 딱 떨어지지 않는 화면 전용 분류라(applyFilters()/renderMobileList()와 같은 정의),
 // _psStatusFilters(정확한 값 매칭)로는 표현이 안 돼 별도 플래그로 둔다.
 let _psSpecialCategory = null; // null | '금일포장' | '검사대기' | '생산중' | '생산완료'
-let _psPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
-let _psPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
+let _psPickerSource = '';  // 팝업이 지금 편집 중인 진행상태 카테고리(active/archive)
+let _psPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 진행상태들
 const _PS_SOURCE_META = {
   active:  { label: '검사 진행현황', statuses: ['미투입', '미검사', '검사', '재투입', '양지', '취소'] },
   archive: { label: '검사완료현황', statuses: ['미검사', '검사'] },
 };
+// 블로킹 필터(요청, 2026-10-22) — "진행상태"와 별개 차원이라 같은 팝업 안에 탭으로
+// 추가한다. 필터모양 버튼 → 팝업을 열면 기본은 진행상태 탭, 탭을 눌러 블로킹으로
+// 바꿀 수 있다. 둘 다 구글시트 방식(전체 체크 기본, 해제한 것만 제외).
+let _psBlockingFilters = new Set(); // 현재 적용된(커밋된) 블로킹 상태 — "포함"할 상태들
+let _psBlockingFilterTouched = false;
+let _psPickerBlocking = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 블로킹 상태들
+let _psPickerDimension = 'status'; // 'status'(진행상태) | 'blocking'
 function openPsSourcePicker(source) {
   const meta = _PS_SOURCE_META[source];
   if (!meta) return;
   _psPickerSource = source;
+  _psPickerDimension = 'status';
   // 구글시트 필터처럼 기본은 전체 체크 — 이미 이 소스로 걸어둔 필터가 있을 때만 그 상태를 이어받는다.
   _psPickerStatuses = (_psStatusFilterTouched && _psSourceFilter === source) ? new Set(_psStatusFilters) : new Set(meta.statuses);
-  document.getElementById('psSourceModalTitle').textContent = meta.label + ' 세부상태';
+  _psPickerBlocking = _psBlockingFilterTouched ? new Set(_psBlockingFilters) : new Set(QC_BLOCKING_VALUES);
+  _renderPsFilterDimTabs();
   _renderPsSourceList();
   document.getElementById('psSourceModal').style.display = 'flex';
   _armBackTrap();
 }
+function _renderPsFilterDimTabs() {
+  const tabs = [['status', '진행상태'], ['blocking', '블로킹상태']];
+  document.getElementById('psFilterDimTabs').innerHTML = tabs.map(([k, label]) => {
+    const active = _psPickerDimension === k;
+    return `<button onclick="_psSwitchFilterDim('${k}')" style="flex:1;padding:7px 0;border-radius:8px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'var(--icon-bg)'};color:${active ? '#fff' : 'var(--text-sub)'};font-size:12px;font-weight:700;cursor:pointer;-webkit-appearance:none;">${label}</button>`;
+  }).join('');
+}
+function _psSwitchFilterDim(dim) {
+  _psPickerDimension = dim;
+  _renderPsFilterDimTabs();
+  _renderPsSourceList();
+}
+function _psCurrentPickerList() {
+  return _psPickerDimension === 'blocking' ? QC_BLOCKING_VALUES : (_PS_SOURCE_META[_psPickerSource] || {}).statuses || [];
+}
+function _psCurrentPickerSet() {
+  return _psPickerDimension === 'blocking' ? _psPickerBlocking : _psPickerStatuses;
+}
 function _renderPsSourceList() {
+  const list = _psCurrentPickerList();
+  const picked = _psCurrentPickerSet();
   const meta = _PS_SOURCE_META[_psPickerSource];
-  if (!meta) return;
-  document.getElementById('psSourceModalList').innerHTML = meta.statuses.map(s => {
-    const active = _psPickerStatuses.has(s);
+  document.getElementById('psSourceModalTitle').textContent = _psPickerDimension === 'blocking' ? '블로킹 상태' : (meta ? meta.label + ' 세부상태' : '세부상태');
+  document.getElementById('psSourceModalList').innerHTML = list.map(s => {
+    const active = picked.has(s);
     return `<button onclick="togglePsPickerStatus('${s}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? 'rgba(109,92,232,.12)' : 'var(--icon-bg)'};color:${active ? '#6D5CE8' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
       <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#fff;"></i>' : ''}</span>
       ${s}
@@ -6203,17 +6232,17 @@ function _renderPsSourceList() {
   }).join('');
 }
 function togglePsPickerStatus(s) {
-  if (_psPickerStatuses.has(s)) _psPickerStatuses.delete(s); else _psPickerStatuses.add(s);
+  const set = _psCurrentPickerSet();
+  if (set.has(s)) set.delete(s); else set.add(s);
   _renderPsSourceList();
 }
 function _psSourceSelectAll() {
-  const meta = _PS_SOURCE_META[_psPickerSource];
-  if (!meta) return;
-  _psPickerStatuses = new Set(meta.statuses);
+  const list = _psCurrentPickerList();
+  if (_psPickerDimension === 'blocking') _psPickerBlocking = new Set(list); else _psPickerStatuses = new Set(list);
   _renderPsSourceList();
 }
 function _psSourceClearAll() {
-  _psPickerStatuses = new Set();
+  if (_psPickerDimension === 'blocking') _psPickerBlocking = new Set(); else _psPickerStatuses = new Set();
   _renderPsSourceList();
 }
 function closePsSourcePicker() {
