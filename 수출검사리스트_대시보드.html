@@ -8946,13 +8946,15 @@ async function qcNewConfirmSelected() {
       }).then(r => r.json());
       if (res.status !== 'success') throw new Error(res.message || (fac + ' 확인 처리 실패'));
       // GAS가 비고에서 "신규"/"신규 차수 추가됨" 문구를 지웠으니, 다음 새로고침을
-      // 기다리지 않고 화면에서도 바로 신규 표시를 뗀다.
-      byFac[fac].forEach(d => { d.신규 = false; });
+      // 기다리지 않고 화면에서도 바로 신규 표시를 뗀다 — "확인" 탭의 변경태그에도
+      // 같은 품목이 떠있을 수 있어서(의도된 중복) 거기서도 "신규" 태그만 뗀다.
+      byFac[fac].forEach(d => { d.신규 = false; if (d.변경태그) d.변경태그 = d.변경태그.filter(t => t !== 'new'); });
     }
     _qcNewSelected = new Set();
     statusEl.style.color = '#16a34a';
     statusEl.textContent = '✓ 확인 처리했습니다.';
     qcNewRenderList();
+    qcNotifyRender();
     applyFilters();
     if (isMobile()) renderMobileKPIs();
   } catch (e) {
