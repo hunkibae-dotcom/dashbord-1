@@ -1326,8 +1326,8 @@ function fiPcRender() {
   const filtered = fiAllData.filter(function (d) {
     if (statusF !== '전체' && d.status !== statusF) return false;
     if (typeF !== '전체' && d.types.indexOf(typeF) < 0) return false;
-    if (occF !== '전체' && d.occSite !== occF) return false;
-    if (causeF !== '전체' && d.causeSite !== causeF) return false;
+    if (occF !== '전체' && d.occLoc !== occF) return false;
+    if (causeF !== '전체' && d.causeLoc !== causeF) return false;
     if (dateFrom && d.date && d.date < dateFrom) return false;
     if (dateTo && d.date && d.date > dateTo) return false;
     if (q && !((d.code || '').toLowerCase().indexOf(q) >= 0 || (d.content || '').toLowerCase().indexOf(q) >= 0)) return false;
