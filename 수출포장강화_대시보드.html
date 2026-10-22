@@ -9882,6 +9882,10 @@
                 tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateRegDate', code:_pkgCode, round:_pkgRound, color:_pkgColor, regDate:newRegDate }), '포장완료일 저장'));
                 changed.regDate = newRegDate;
             }
+            if (newArriveDate !== _pkgOrigArriveDate) {
+                tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateArriveDate', code:_pkgCode, round:_pkgRound, color:_pkgColor, arriveDate:newArriveDate }), '입고일 저장'));
+                changed.arriveDate = newArriveDate;
+            }
             const specChanged = newW !== _pkgOrigW || newD !== _pkgOrigD || newH !== _pkgOrigH || newG !== _pkgOrigG;
             if (specChanged) {
                 tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateSpec', code:_pkgCode, round:_pkgRound, color:_pkgColor, w:newW, d:newD, h:newH, g:newG }), 'CBM(규격) 저장'));
