@@ -8580,6 +8580,10 @@ function openMItemDetail(key) {
   _miBasis = (d.source === 'archive') ? 'shipped' : 'inprogress';
   _miRenderBasisTabs();
   _miRenderStatusButtons();
+  // 블로킹은 진행중 품목에만 있는 칸이라(검사완료 이력 시트엔 없음) 그 경우만 카드를 보여준다.
+  const miBlockingCard = document.getElementById('miBlockingCard');
+  if (miBlockingCard) miBlockingCard.style.display = (d.source === 'archive') ? 'none' : '';
+  _miRenderBlockingButtons();
   document.getElementById('miReasonInput').value = d.비고 || '';
   document.getElementById('miDateInput').value = _miNormDate(d.검사일);
   document.getElementById('miPackDateInput').value = _miNormDate(d.포장일);
