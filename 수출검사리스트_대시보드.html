@@ -6148,7 +6148,13 @@ let _psSourceFilter = 'active'; // 'active'(검사 진행현황) | 'archive'(검
 // "범위" 대신 고른 날짜만 정확히 매칭한다. 날짜칸을 손으로 직접 고치거나 필터를
 // 초기화하면 다시 null로 돌아가 원래의 범위 검색으로 돌아온다.
 let _psExactDateFilter = null; // { dates: Set<'YYYY-MM-DD'>, field: 'all'|'due'|'pack' } | null
-let _psStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 검사상태들 — 비어있으면 전체
+// 세부 검사상태 필터 — 구글시트 필터 방식(요청, 2026-10-22: "웹의 상태 필터처럼").
+// _psStatusFilters는 "포함(표시)"할 상태 집합이고, picker를 열 때 기본은 전체 체크(=필터
+// 없음)다 — 체크 해제한 것만 걸러진다(전부 해제하면 결과 0건, 데스크톱 colInspectFilters와
+// 동일한 규칙). _psStatusFilterTouched는 "사용자가 실제로 좁혀뒀는지"를 구분한다 — false면
+// _psStatusFilters 값과 무관하게 전체를 보여준다(검색 초기화·스캔 등에서 그냥 꺼두는 용도).
+let _psStatusFilters = new Set(); // 현재 적용된(커밋된) 세부 검사상태 — "포함"할 상태들
+let _psStatusFilterTouched = false;
 // 앱 홈 화면의 KPI 카드(금일포장/검사대기/생산중/생산완료)는 '검사' 칼럼 값 하나로
 // 딱 떨어지지 않는 화면 전용 분류라(applyFilters()/renderMobileList()와 같은 정의),
 // _psStatusFilters(정확한 값 매칭)로는 표현이 안 돼 별도 플래그로 둔다.
