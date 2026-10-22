@@ -2493,13 +2493,24 @@ function toggleInspectDropdown(e) {
     dd.style.top = (r.bottom + 4) + 'px';
     dd.style.left = 'auto';
     dd.style.right = (window.innerWidth - r.right) + 'px';
+    // 열 때마다 지금 적용된 값으로 임시본(draft)을 새로 만든다 — 구글시트처럼 "확인"을
+    // 눌러야 실제로 반영되고, "취소"/바깥 클릭이면 그대로 버려진다(요청, 2026-10-22).
+    _qcInspectDraft = new Set(colInspectFilters);
+    const searchInput = document.getElementById('qcInspectSearchInput');
+    if (searchInput) searchInput.value = '';
+    _qcInspectRenderDraftList();
+  } else {
+    _qcInspectDraft = null; // 드롭다운 자체(헤더)를 다시 눌러서 닫은 경우도 취소와 동일 취급
   }
   dd.classList.toggle('hidden');
 }
 
 document.addEventListener('click', () => {
   const dd = document.getElementById('inspectColDropdown');
-  if (dd) dd.classList.add('hidden');
+  if (dd && !dd.classList.contains('hidden')) {
+    dd.classList.add('hidden');
+    _qcInspectDraft = null; // 바깥 클릭 = 취소(구글시트와 동일)
+  }
 });
 
 // ===== FILTERS =====
