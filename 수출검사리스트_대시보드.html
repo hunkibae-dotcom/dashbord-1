@@ -8598,6 +8598,16 @@ function qcNotifyRender() {
       const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
       const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
       const tagsHtml = (d.변경태그 || []).map(t => `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${QC_TAG_CLS[t] || ''}">${QC_TAG_LABELS[t] || t}</span>`).join(' ');
+      // 납기/포장/BOM이 바뀐 거라면 하단에 "원래 → 변경"을 같이 보여준다(요청, 2026-10-22:
+      // "납기변경이면 하단에 원래의 납기일써놓고 > 변경된납기일 이렇게 기재를해야해").
+      const cf = d.변경이전값 || {};
+      const changeFromParts = [];
+      if (cf.due)  changeFromParts.push(`<span>납기 ${_qcFmtChangeDate(cf.due)} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.납기일 || '—'}</span>`);
+      if (cf.pack) changeFromParts.push(`<span>포장 ${_qcFmtChangeDate(cf.pack)} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.포장일 || '—'}</span>`);
+      if (cf.bom)  changeFromParts.push(`<span>BOM ${cf.bom} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.BOM || '—'}</span>`);
+      const changeFromHtml = changeFromParts.length
+        ? `<div class="text-[11px] font-semibold flex gap-2.5 flex-wrap mt-0.5" style="color:#7C3AED;">${changeFromParts.join('')}</div>`
+        : '';
       return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
         <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcNotifyToggleOne('${_jsAttr(key)}', this.checked)">
         <div class="flex-1 min-w-0 flex flex-col gap-0.5">
@@ -8612,6 +8622,7 @@ function qcNotifyRender() {
             <span>${d.색상 || '-'} · ${d.수량 || 0}EA</span>
             <span>납기 ${d.납기일 || '—'} · 포장 ${d.포장일 || '—'}</span>
           </div>
+          ${changeFromHtml}
         </div>
       </div>`;
     }).join('');
