@@ -8928,7 +8928,9 @@ function _qcDrawingRenderChips() {
 function qcDrawingSetFac(fac) { _qcDrawingFac = fac; _qcDrawingRenderChips(); qcDrawingRender(); }
 function qcDrawingRender() {
   const body = document.getElementById('qcDrawingBody');
-  const items = _qcDrawingItems();
+  const sortBtnsEl = document.getElementById('qcDrawingSortBtns');
+  if (sortBtnsEl) sortBtnsEl.innerHTML = _qcModalSortBtnsHtml('drawing');
+  const items = _qcModalSortItems(_qcDrawingItems(), _qcDrawingSortKey, _qcDrawingSortAsc);
   if (!items.length) {
     body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">도면 미출력 품목이 없습니다.</div>';
   } else {
