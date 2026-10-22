@@ -9629,6 +9629,10 @@
             _pkgOrigRegDate = regDateNorm !== '-' ? regDateNorm : '';
             document.getElementById('pkgRegDate').value = _pkgOrigRegDate;
 
+            const arriveDateNorm = normalizeDate(item.arriveDate);
+            _pkgOrigArriveDate = arriveDateNorm !== '-' ? arriveDateNorm : '';
+            document.getElementById('pkgArriveDate').value = _pkgOrigArriveDate;
+
             const shipDateNorm = normalizeDate(item.date);
             _pkgOrigShipDate = shipDateNorm !== '-' ? shipDateNorm : '';
             document.getElementById('pkgShipDate').value = _pkgOrigShipDate;
