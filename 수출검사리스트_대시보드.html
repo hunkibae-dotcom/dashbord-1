@@ -2944,27 +2944,16 @@ function renderKPIs(fullData) {
   document.getElementById('kpiWaitCj2').textContent = cj2.waitInspect.toLocaleString();
   document.getElementById('kpiWaitDetail').innerHTML = renderDetailList(scopedPool(cj1Wait, cj2Wait), '납기일');
 
-  // 3) 신규품목 (비고에 "신규"/"신규 차수 추가됨" 문구가 남아있는 품목) — 공장 구분 없이
-  // 색상별 건수로 표시한다(요청, 2026-10-22: "각 색상별로 숫자표기하면될거같은데 1공장
-  // 2공장 상관없이").
+  // 3) 신규품목 — 공장 구분 없이, 신규품목확인 모달의 확인/등록/도면출력여부 탭과
+  // 정확히 같은 기준으로 세 건수를 보여준다(요청, 2026-10-22: "사진처럼 확인 N,
+  // 등록 N, 도면 N 이렇게 표기"). allData는 cj1+cj2 전체가 이미 합쳐진 전역
+  // 배열이라 그 탭들의 카운트 배지(qtabCnt-notify/confirm/drawing)와 같은 값이
+  // 그대로 나온다 — 여기 숫자가 바뀌면 모달 배지도 똑같이 바뀐다.
   const cj1New = cj1Items.filter(d => d.신규);
   const cj2New = cj2Items.filter(d => d.신규);
-  const newByColor = {};
-  [...cj1New, ...cj2New].forEach(d => {
-    const c = d.색상 || '—';
-    newByColor[c] = (newByColor[c] || 0) + 1;
-  });
-  const newColorEntries = Object.entries(newByColor).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  document.getElementById('kpiNewByColor').innerHTML = newColorEntries.length
-    ? newColorEntries.map(([color, count]) => `
-      <div class="flex items-center justify-between">
-        <span class="text-[12px] font-semibold text-slate-500">${color}</span>
-        <span class="text-[17px] font-extrabold text-slate-700">${count.toLocaleString()} <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
-      </div>`).join('')
-    : `<div class="flex items-center justify-between">
-        <span class="text-[12px] font-semibold text-slate-500">—</span>
-        <span class="text-[17px] font-extrabold text-slate-700">0 <span class="text-[11.5px] font-bold text-slate-400">건</span></span>
-      </div>`;
+  document.getElementById('kpiNewConfirm').textContent = allData.filter(d => d.변경태그 && d.변경태그.length).length.toLocaleString();
+  document.getElementById('kpiNewRegister').textContent = allData.filter(d => d.신규).length.toLocaleString();
+  document.getElementById('kpiNewDrawing').textContent = allData.filter(d => d.도면미출력 && d.source !== 'archive').length.toLocaleString();
   document.getElementById('kpiNewDetail').innerHTML = renderDetailList(scopedPool(cj1New, cj2New), '납기일');
 
   // 4) 생산중 (미검사 + 재투입)
