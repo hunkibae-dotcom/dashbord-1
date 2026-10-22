@@ -6172,7 +6172,8 @@ function openPsSourcePicker(source) {
   const meta = _PS_SOURCE_META[source];
   if (!meta) return;
   _psPickerSource = source;
-  _psPickerStatuses = (_psSourceFilter === source) ? new Set(_psStatusFilters) : new Set();
+  // 구글시트 필터처럼 기본은 전체 체크 — 이미 이 소스로 걸어둔 필터가 있을 때만 그 상태를 이어받는다.
+  _psPickerStatuses = (_psStatusFilterTouched && _psSourceFilter === source) ? new Set(_psStatusFilters) : new Set(meta.statuses);
   document.getElementById('psSourceModalTitle').textContent = meta.label + ' 세부상태';
   _renderPsSourceList();
   document.getElementById('psSourceModal').style.display = 'flex';
@@ -6188,24 +6189,20 @@ function _renderPsSourceList() {
       ${s}
     </button>`;
   }).join('');
-  _updatePsSourceAllBtn();
 }
 function togglePsPickerStatus(s) {
   if (_psPickerStatuses.has(s)) _psPickerStatuses.delete(s); else _psPickerStatuses.add(s);
   _renderPsSourceList();
 }
-function togglePsSourceAll() {
+function _psSourceSelectAll() {
   const meta = _PS_SOURCE_META[_psPickerSource];
   if (!meta) return;
-  const allSelected = _psPickerStatuses.size === meta.statuses.length;
-  _psPickerStatuses = allSelected ? new Set() : new Set(meta.statuses);
+  _psPickerStatuses = new Set(meta.statuses);
   _renderPsSourceList();
 }
-function _updatePsSourceAllBtn() {
-  const meta = _PS_SOURCE_META[_psPickerSource];
-  const btn = document.getElementById('psSourceAllBtn');
-  if (!btn || !meta) return;
-  btn.textContent = _psPickerStatuses.size === meta.statuses.length ? '전체 해제' : '전체 선택';
+function _psSourceClearAll() {
+  _psPickerStatuses = new Set();
+  _renderPsSourceList();
 }
 function closePsSourcePicker() {
   document.getElementById('psSourceModal').style.display = 'none';
