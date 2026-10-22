@@ -1423,8 +1423,7 @@ try {
     <div style="display:flex;flex-direction:column;gap:10px;">
       <button onclick="openSpuUploadModal('sales')" style="padding:13px;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-weight:700;font-size:13.5px;cursor:pointer;text-align:left;">📥 수주내역만</button>
       <button onclick="openSpuUploadModal('process')" style="padding:13px;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-weight:700;font-size:13.5px;cursor:pointer;text-align:left;">🏭 공정진행정보만</button>
-      <button onclick="openSpuUploadModal('both')" style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;text-align:left;">📥🏭 둘 다 함께</button>
-      <button onclick="openSpuUploadModal('blocking')" style="padding:13px;border-radius:12px;border:1.5px solid #e2e8f0;background:#f8fafc;color:#1e293b;font-weight:700;font-size:13.5px;cursor:pointer;text-align:left;">🔒 블로킹만</button>
+      <button onclick="openSpuUploadModal('both')" style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;font-size:13.5px;cursor:pointer;text-align:left;">📥🏭🔒 모두 함께</button>
     </div>
     <button onclick="closeSpuChoiceModal()" style="margin-top:14px;width:100%;padding:9px;border:none;background:none;color:#94a3b8;font-size:12.5px;font-weight:600;cursor:pointer;">취소</button>
   </div>
@@ -9577,13 +9576,17 @@ function openSpuUploadModal(mode) {
   _spuMode = mode;
   _spuDetected = {};
   closeSpuChoiceModal();
+  // "both" 모드는 이제 블로킹까지 같이 받는다(요청, 2026-10-23: "한 번에 파일 다 올리면
+  // 수주내역→공정진행정보→블로킹 순서로 자동 실행하는 원클릭 통합") — 파일 선택 시
+  // 종류별로 자동 분류되고, 실행 순서는 _spuRunImport의 jobs 배열 구성 순서(수주내역→
+  // 공정진행정보→블로킹)를 그대로 따른다.
   document.getElementById('spuUploadTitle').textContent =
-    mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : mode === 'blocking' ? '블로킹 업데이트' : '수주내역 + 공정진행정보 업데이트';
+    mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : '수주내역 + 공정진행정보 + 블로킹 업데이트';
 
   const descParts = [];
   if (mode === 'sales' || mode === 'both') descParts.push(_SPU_SALES_DESC);
   if (mode === 'process' || mode === 'both') descParts.push(_SPU_PROCESS_DESC);
-  if (mode === 'blocking') descParts.push(_SPU_BLOCKING_DESC);
+  if (mode === 'both') descParts.push(_SPU_BLOCKING_DESC);
 
   document.getElementById('spuUploadBody').innerHTML = `
     <div style="margin-bottom:14px;">
@@ -9640,10 +9643,6 @@ async function _spuOnFilesChosen() {
     }
     if (_spuMode === 'process' && kind.type !== 'process') {
       rows.push(`<div style="color:#94a3b8;">– ${file.name} — 다른 종류 파일로 보여서, 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
-      continue;
-    }
-    if (_spuMode === 'blocking' && kind.type !== 'blocking') {
-      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 다른 종류 파일로 보여서, 지금은 블로킹만 처리하는 중이라 건너뜁니다.</div>`);
       continue;
     }
     if (kind.type === 'sales') {

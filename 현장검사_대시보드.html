@@ -171,19 +171,14 @@ try {
         <option value="별도·조립철물">별도·조립철물</option>
         <option value="포장">포장</option>
       </select>
-      <!-- 발생처/원인처 필터(요청, 2026-10-22) — 사업장 단위로만 거른다(위치는 사업장마다
-           목록이 길어서 필터 칸으로는 사업장까지만). -->
+      <!-- 발견위치/원인위치 필터(요청, 2026-10-22, 수정 2026-10-23: "사업장이아니라 발견위치와
+           원인위치를 알려줘야해") — 사업장이 아니라 실제 등록된 위치 값으로 거른다. 옵션은
+           _fiPopulateLocationFilterOptions()가 실제 데이터에 있는 값만 동적으로 채운다. -->
       <select id="fipcOccFilter" onchange="fiPcRender()" style="max-width:118px;">
-        <option value="전체">발생처: 전체</option>
-        <option value="충주1공장">충주1공장</option>
-        <option value="충주2공장">충주2공장</option>
-        <option value="기타">기타</option>
+        <option value="전체">발견위치: 전체</option>
       </select>
       <select id="fipcCauseFilter" onchange="fiPcRender()" style="max-width:118px;">
-        <option value="전체">원인처: 전체</option>
-        <option value="충주1공장">충주1공장</option>
-        <option value="충주2공장">충주2공장</option>
-        <option value="기타">기타</option>
+        <option value="전체">원인위치: 전체</option>
       </select>
       <input type="date" id="fipcDateFrom" onchange="fiPcRender()">
       <span style="color:var(--label); font-size:12px;">~</span>
