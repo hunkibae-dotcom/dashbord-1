@@ -1558,9 +1558,12 @@ try {
         <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
       </button>
     </div>
-    <div style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;justify-content:space-between;margin-top:-6px;">
-      <span>복수 선택 가능 · 아무것도 선택 안 하면 전체</span>
-      <button id="psSourceAllBtn" onclick="togglePsSourceAll()" style="font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0;-webkit-appearance:none;">전체 선택</button>
+    <div style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;justify-content:space-between;margin-top:-6px;gap:8px;">
+      <span>전체 체크됨 · 제외할 상태만 해제하세요</span>
+      <div style="display:flex;gap:10px;flex-shrink:0;">
+        <button onclick="_psSourceSelectAll()" style="font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;padding:2px 4px;-webkit-appearance:none;">모두선택</button>
+        <button onclick="_psSourceClearAll()" style="font-size:11px;font-weight:700;color:var(--text-sub);background:none;border:none;cursor:pointer;padding:2px 4px;-webkit-appearance:none;">지우기</button>
+      </div>
     </div>
     <div id="psSourceModalList" style="display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;"></div>
     <button onclick="applyPsSourcePicker()" style="width:100%;background:#6D5CE8;color:#fff;border:none;border-radius:10px;padding:11px;font-size:13.5px;font-weight:800;cursor:pointer;-webkit-appearance:none;">적용</button>
