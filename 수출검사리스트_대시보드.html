@@ -2579,24 +2579,6 @@ document.addEventListener('click', () => {
 });
 
 // ===== FILTERS =====
-// "출력" 버튼 — 도면 미출력 품목만 보기(요청, 2026-10-22). 구글시트에서 신규 품목이
-// 들어오면 건명 글자색이 자동으로 빨간색(#ff0000)이 되는데(도면을 아직 안 뽑았다는
-// 뜻 — 도면을 뽑으면 담당자가 그 칸 글자색을 수기로 검정으로 바꿔서 끈다), 그 신호를
-// 그대로 쓴다. 진행중 리스트 기준만 본다(출고완료 이력은 대상 아님).
-let unprintedFilterActive = false;
-function toggleUnprintedFilter() {
-  unprintedFilterActive = !unprintedFilterActive;
-  const btn = document.getElementById('unprintedFilterBtn');
-  if (btn) {
-    btn.style.background = unprintedFilterActive ? '#6D5CE8' : '';
-    btn.style.borderColor = unprintedFilterActive ? '#6D5CE8' : '';
-    btn.style.color = unprintedFilterActive ? '#fff' : '';
-  }
-  // 도면 미출력 품목을 바로 골라 "수정" → "도면 출력완료"로 넘길 수 있게, 필터를 켜면
-  // "#" 칼럼에 체크박스(선택 모드)도 같이 켜고, 끄면 같이 끈다(요청, 2026-10-22).
-  if (unprintedFilterActive !== _tblMultiSelectMode) toggleTblMultiSelect();
-  applyFilters();
-}
 let ddayUrgencyFilter = null; // { factory:'cj1'|'cj2', urgency:'지연'|'D-7이하'|'D-14이하'|'여유'|'미정' }
 let pieFilter = null;         // { factory:'cj1'|'cj2', status:'검사'|'미검사' }
 let qualityFilter = null;     // { type:'product'|'country', value:string }
