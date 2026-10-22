@@ -1588,12 +1588,6 @@ async function _fiRenderReportPdf(items, opts) {
   const SUMMARY_PX = 70;
   const PAGE_BUDGET_PX = Math.round(CONTENT_H_MM * MM_TO_PX) - 20;
 
-  // 발생처/원인처(요청, 2026-10-22) — "사업장 · 위치" 형태로 합쳐서 보여준다. 둘 다
-  // 없으면(아직 안 적은 품목) 줄 자체를 생략한다.
-  function _fiSiteLocText(site, loc) {
-    if (!site && !loc) return '';
-    return [site, loc].filter(Boolean).join(' · ');
-  }
   function cardHtml(d) {
     const key = d.sheet + '|' + d.row;
     const b64 = photoMap[key];
