@@ -966,18 +966,26 @@ try {
                     <span id="inspectColLabel">검사상태</span>
                     <i class="fa-solid fa-chevron-down text-[9px]" id="inspectColChevron"></i>
                   </div>
-                  <div id="inspectColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl py-1.5 z-50 min-w-[160px] text-left">
-                    <div onclick="setColInspect('')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-600 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 전체</div>
-                    <div class="h-px bg-slate-100 my-1"></div>
-                    <div id="colInspRow-검사진행중" onclick="toggleColInspect(event,'검사진행중')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-emerald-600 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span> 검사완료(진행중) <i class="fa-solid fa-check text-[10px]" id="colInspChk-검사진행중" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-검사출고" onclick="toggleColInspect(event,'검사출고')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-emerald-700 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span> 검사완료(출고) <i class="fa-solid fa-check text-[10px]" id="colInspChk-검사출고" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-진행_미검사" onclick="toggleColInspect(event,'진행_미검사')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-rose-600 font-medium"><span class="w-2 h-2 rounded-full bg-rose-400 shrink-0"></span> 미검사(진행중) <i class="fa-solid fa-check text-[10px]" id="colInspChk-진행_미검사" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-미검사출고" onclick="toggleColInspect(event,'미검사출고')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-red-700 font-medium"><span class="w-2 h-2 rounded-full bg-red-600 shrink-0"></span> 미검사(출고) <i class="fa-solid fa-check text-[10px]" id="colInspChk-미검사출고" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-재투입" onclick="toggleColInspect(event,'재투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-violet-700 font-medium"><span class="w-2 h-2 rounded-full bg-violet-400 shrink-0"></span> 재투입 <i class="fa-solid fa-check text-[10px]" id="colInspChk-재투입" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-양지" onclick="toggleColInspect(event,'양지')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-amber-700 font-medium"><span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"></span> 양지(회수) <i class="fa-solid fa-check text-[10px]" id="colInspChk-양지" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-생산완료" onclick="toggleColInspect(event,'생산완료')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-sky-700 font-medium"><span class="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span> 포장대기 <i class="fa-solid fa-check text-[10px]" id="colInspChk-생산완료" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-미투입" onclick="toggleColInspect(event,'미투입')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-slate-400 shrink-0"></span> 미투입 <i class="fa-solid fa-check text-[10px]" id="colInspChk-미투입" style="display:none;margin-left:auto;"></i></div>
-                    <div id="colInspRow-취소" onclick="toggleColInspect(event,'취소')" class="flex items-center gap-2.5 px-3 py-2 hover:bg-slate-50 cursor-pointer text-[13px] text-slate-400 font-medium"><span class="w-2 h-2 rounded-full bg-slate-300 shrink-0"></span> 취소 <i class="fa-solid fa-check text-[10px]" id="colInspChk-취소" style="display:none;margin-left:auto;"></i></div>
+                  <!-- 구글시트 필터 스타일(요청, 2026-10-22) — 기본은 전부 체크(=전체 표시), 빼고 싶은
+                       것만 체크 해제. "확인"을 눌러야 실제로 적용되고 "취소"/바깥 클릭이면 그대로 버려진다. -->
+                  <div id="inspectColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 text-left" style="width:230px;" onclick="event.stopPropagation()">
+                    <div style="padding:10px 12px 6px;display:flex;align-items:center;gap:6px;font-size:11.5px;">
+                      <button onclick="_qcInspectDraftSelectAll()" class="text-accent-600 font-bold hover:underline">모두 선택</button>
+                      <span class="text-slate-300">-</span>
+                      <button onclick="_qcInspectDraftClearAll()" class="text-accent-600 font-bold hover:underline">지우기</button>
+                      <span class="text-slate-400 font-semibold" id="qcInspectDraftCount" style="margin-left:auto;">—</span>
+                    </div>
+                    <div style="padding:0 12px 8px;">
+                      <div style="position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;"></i>
+                        <input type="text" id="qcInspectSearchInput" oninput="_qcInspectRenderDraftList()" placeholder="검색" style="width:100%;padding:6px 10px 6px 26px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;box-sizing:border-box;">
+                      </div>
+                    </div>
+                    <div id="qcInspectDraftList" style="max-height:220px;overflow-y:auto;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:4px 0;"></div>
+                    <div style="padding:10px 12px;display:flex;gap:8px;justify-content:flex-end;">
+                      <button onclick="_qcInspectCancelDropdown()" style="padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">취소</button>
+                      <button onclick="_qcInspectConfirmDropdown()" style="padding:6px 14px;border-radius:8px;border:none;background:#16A34A;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">확인</button>
+                    </div>
                   </div>
                 </th>
               </tr>
