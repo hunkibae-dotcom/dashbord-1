@@ -2250,6 +2250,10 @@ function parseRows(rows, factory) {
     const 검사raw = g(13).trim();
     const inspectStatus = 검사raw === '검사' ? '검사' : 검사raw === '양지' ? '양지' : 검사raw === '재투입' ? '재투입' : 검사raw === '미투입' ? '미투입' : 검사raw === '취소' ? '취소' : 검사raw === '포장대기' ? '포장대기' : '미검사';
     const 가로 = parseFloat(g(9)) || 0, 세로 = parseFloat(g(10)) || 0, 높이 = parseFloat(g(11)) || 0;
+    // O열(블로킹, 요청 2026-10-22) — 드롭다운 값 중 하나(미등록/검사대기/검사완료/취소).
+    // 값이 비어있거나(과거 체크박스 흔적 등) 알 수 없는 값이면 미등록으로 본다.
+    const 블로킹raw = g(14).trim();
+    const 블로킹 = QC_BLOCKING_VALUES.includes(블로킹raw) ? 블로킹raw : '미등록';
 
     result.push({
       source: 'active',
