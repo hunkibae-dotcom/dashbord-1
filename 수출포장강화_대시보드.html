@@ -2817,14 +2817,100 @@
         // 상태 드롭다운 필터
         let activeStatusFilters = new Set(['전체']);
 
+        // 구글시트 필터 스타일(요청, 2026-10-22) — 열 때마다 지금 상태로 임시본(draft)을
+        // 새로 만들고, 기본은 전부 체크(=전체 표시)다. "확인"을 눌러야 실제로 반영되고
+        // "취소"/바깥 클릭이면 그대로 버려진다.
+        let _pkgStatusDraft = null;
         function toggleStatusDropdown(e) {
             e.stopPropagation();
             const dd = document.getElementById('statusDropdown');
             const arrow = document.getElementById('statusDropdownArrow');
             const isOpen = !dd.classList.contains('hidden');
-            if (!dd.childElementCount) _renderStatusDropdownOptions(); // 아직 한 번도 안 그려졌으면 지금 그린다
+            if (isOpen) {
+                _pkgStatusDraft = null; // 헤더를 다시 눌러서 닫은 경우도 취소와 동일 취급
+            } else {
+                const list = _pkgStatusListForSource(_activeSourceFilter);
+                _pkgStatusDraft = activeStatusFilters.has('전체') ? new Set(list) : new Set(Array.from(activeStatusFilters).filter(v => list.includes(v)));
+                _pkgRenderStatusDraftList();
+            }
             dd.classList.toggle('hidden');
             arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+        }
+        function _pkgRenderStatusDraftList() {
+            const dd = document.getElementById('statusDropdown');
+            if (!dd || !_pkgStatusDraft) return;
+            const list = _pkgStatusListForSource(_activeSourceFilter);
+            const q = (document.getElementById('pkgStatusSearchInput')?.value || '').trim().toLowerCase();
+            const visible = list.filter(s => s.toLowerCase().includes(q));
+            const rowsHtml = visible.map(s => {
+                const c = PKG_STATUS_COLOR[s] || '#64748b';
+                const checked = _pkgStatusDraft.has(s);
+                return `<label style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#334155;">
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="_pkgStatusDraftToggle('${s}', this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#16A34A;flex-shrink:0;">
+                    <i class="fa-solid fa-circle" style="font-size:9px;color:${c};flex-shrink:0;"></i>
+                    <span style="color:${c};">${s}</span>
+                </label>`;
+            }).join('') || '<div style="padding:14px 12px;color:#94a3b8;font-size:12px;text-align:center;">일치하는 항목이 없습니다</div>';
+            dd.innerHTML = `
+                <div style="padding:10px 12px 6px;display:flex;align-items:center;gap:6px;font-size:11.5px;">
+                    <button onclick="_pkgStatusDraftSelectAll()" style="background:none;border:none;color:#2563eb;font-weight:700;cursor:pointer;padding:0;">모두 선택</button>
+                    <span style="color:#cbd5e1;">-</span>
+                    <button onclick="_pkgStatusDraftClearAll()" style="background:none;border:none;color:#2563eb;font-weight:700;cursor:pointer;padding:0;">지우기</button>
+                    <span style="color:#94a3b8;font-weight:600;margin-left:auto;" id="pkgStatusDraftCount"></span>
+                </div>
+                <div style="padding:0 12px 8px;">
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;"></i>
+                        <input type="text" id="pkgStatusSearchInput" oninput="_pkgRenderStatusDraftList()" placeholder="검색" style="width:100%;padding:6px 10px 6px 26px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="max-height:220px;overflow-y:auto;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:4px 0;">${rowsHtml}</div>
+                <div style="padding:10px 12px;display:flex;gap:8px;justify-content:flex-end;">
+                    <button onclick="_pkgStatusCancelDropdown()" style="padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">취소</button>
+                    <button onclick="_pkgStatusConfirmDropdown()" style="padding:6px 14px;border-radius:8px;border:none;background:#16A34A;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">확인</button>
+                </div>`;
+            // 검색창에 포커스가 있었으면 다시 그린 뒤에도 유지(검색하면서 끊기지 않게).
+            const si = document.getElementById('pkgStatusSearchInput');
+            if (si && document.activeElement !== si) { /* 포커스 복원은 검색 입력 중(oninput)에만 필요 없음 */ }
+            const cnt = document.getElementById('pkgStatusDraftCount');
+            if (cnt) cnt.textContent = visible.filter(s => _pkgStatusDraft.has(s)).length + '/' + visible.length + ' 표시';
+        }
+        function _pkgStatusDraftToggle(s, checked) {
+            if (!_pkgStatusDraft) return;
+            if (checked) _pkgStatusDraft.add(s); else _pkgStatusDraft.delete(s);
+            const cnt = document.getElementById('pkgStatusDraftCount');
+            if (cnt) {
+                const list = _pkgStatusListForSource(_activeSourceFilter);
+                const q = (document.getElementById('pkgStatusSearchInput')?.value || '').trim().toLowerCase();
+                const visible = list.filter(v => v.toLowerCase().includes(q));
+                cnt.textContent = visible.filter(v => _pkgStatusDraft.has(v)).length + '/' + visible.length + ' 표시';
+            }
+        }
+        function _pkgStatusDraftSelectAll() {
+            if (!_pkgStatusDraft) return;
+            _pkgStatusListForSource(_activeSourceFilter).forEach(s => _pkgStatusDraft.add(s));
+            _pkgRenderStatusDraftList();
+        }
+        function _pkgStatusDraftClearAll() {
+            if (!_pkgStatusDraft) return;
+            _pkgStatusDraft.clear();
+            _pkgRenderStatusDraftList();
+        }
+        function _pkgStatusCancelDropdown() {
+            _pkgStatusDraft = null;
+            document.getElementById('statusDropdown')?.classList.add('hidden');
+            document.getElementById('statusDropdownArrow').style.transform = '';
+        }
+        function _pkgStatusConfirmDropdown() {
+            if (_pkgStatusDraft) {
+                const list = _pkgStatusListForSource(_activeSourceFilter);
+                activeStatusFilters = (_pkgStatusDraft.size >= list.length) ? new Set(['전체']) : new Set(_pkgStatusDraft);
+            }
+            _pkgStatusDraft = null;
+            document.getElementById('statusDropdown')?.classList.add('hidden');
+            document.getElementById('statusDropdownArrow').style.transform = '';
+            _syncStatusFilterUI();
+            applyFilters();
         }
 
         // 카테고리(입고현황/실재고/적재/출고)마다 실제로 그 시트에서 나오는 상태만 보여준다.
