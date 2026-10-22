@@ -6371,6 +6371,9 @@ function runProductSearch() {
           if (dd === null || dd > 0) return false;
         }
       } else if (_psStatusFilterTouched && !_psStatusFilters.has(d.검사 || '미검사')) return false;
+      // 블로킹 필터(요청, 2026-10-22) — 진행상태와 별개 차원이라 항상 같이 적용된다.
+      // 검사완료 이력(source='archive')엔 블로킹 칸 자체가 없어서 대상에서 뺀다.
+      if (d.source !== 'archive' && _psBlockingFilterTouched && !_psBlockingFilters.has(d.블로킹 || '미등록')) return false;
       if (_psExactDateFilter) {
         // 달력에서 고른 날짜만 정확히 매칭 — 범위(from~to) 검색이 아니다. 어떤 종류의
         // 날짜를 기준으로 골랐는지(포장일/납기일/둘 다)도 그대로 따른다.
