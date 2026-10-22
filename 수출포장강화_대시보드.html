@@ -2622,9 +2622,10 @@
                 const isValid = d => d && typeof d === 'string' && d !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(d);
                 const allDates = [];
                 state.data.forEach(item => {
-                    if (isValid(item.date))    allDates.push(item.date);
-                    if (isValid(item.dueDate)) allDates.push(item.dueDate);
-                    if (isValid(item.regDate)) allDates.push(item.regDate);
+                    if (isValid(item.date))       allDates.push(item.date);
+                    if (isValid(item.dueDate))    allDates.push(item.dueDate);
+                    if (isValid(item.regDate))    allDates.push(item.regDate);
+                    if (isValid(item.arriveDate)) allDates.push(item.arriveDate);
                 });
                 if (allDates.length === 0) {
                     document.getElementById('startDateFilter').value = '';
