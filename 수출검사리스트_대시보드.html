@@ -9020,7 +9020,9 @@ async function qcSortInspectList(targetFacs) {
 let _qcMrFac = 'cj1';
 let _qcMrRowSeq = 0;
 
-function qcOpenManualRegister() {
+// "신규등록" 탭 전환 시(요청, 2026-10-22: 별도 모달이었던 걸 탭으로 통합) 폼을 초기화한다
+// — qcOpenNewItemsModal()이 PC에서 모달을 열 때 미리 한 번 불러둔다.
+function qcMrResetForm() {
   _qcMrFac = 'cj1';
   document.getElementById('mrFacBtnCj1').classList.add('on');
   document.getElementById('mrFacBtnCj2').classList.remove('on');
@@ -9030,10 +9032,11 @@ function qcOpenManualRegister() {
   document.getElementById('mrItemRows').innerHTML = '';
   _qcMrRowSeq = 0;
   qcMrAddRow();
-  document.getElementById('qcManualRegisterModal').classList.remove('hidden');
 }
-function qcCloseManualRegister() {
-  document.getElementById('qcManualRegisterModal').classList.add('hidden');
+function qcMrPickFac(fac) {
+  _qcMrFac = fac;
+  document.getElementById('mrFacBtnCj1').classList.toggle('on', fac === 'cj1');
+  document.getElementById('mrFacBtnCj2').classList.toggle('on', fac === 'cj2');
 }
 function qcMrPickFac(fac) {
   _qcMrFac = fac;
