@@ -8714,6 +8714,7 @@ function setMiField(field, value) {
   // 실제 객체 값 반영·오버라이드 저장·목록 재렌더링은 전부 saveMItemDetail()이 저장
   // 버튼을 눌렀을 때 한 번에 한다.
   if (field === '검사') _refreshMiStatusButtons(value);
+  if (field === '블로킹') _refreshMiBlockingButtons(value);
   _miPendingSync[field] = value;
   _miSyncViewMirrors();
 }
