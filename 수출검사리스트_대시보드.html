@@ -8579,6 +8579,183 @@ function _gasUrlForFactory(factoryKey) {
 let _qcNewFac = 'all';
 let _qcNewSelected = new Set(); // key = 공장|건명|단품코드|색상
 
+// ───── "확인" 탭 — 차수추가/납기변경/포장변경/BOM변경 알림(요청, 2026-10-22) ─────
+const QC_TAG_LABELS = { new: '신규', due: '납기변경', pack: '포장변경', bom: 'BOM변경' };
+const QC_TAG_CLS = { new: 'bg-amber-50 text-amber-700', due: 'bg-violet-50 text-violet-700', pack: 'bg-sky-50 text-sky-700', bom: 'bg-rose-50 text-rose-700' };
+let _qcNotifyFac = 'all';
+let _qcNotifySelected = new Set();
+function _qcNotifyItems() {
+  const items = allData.filter(d => d.변경태그 && d.변경태그.length);
+  return _qcNotifyFac === 'all' ? items : items.filter(d => d.공장 === _qcNotifyFac);
+}
+function _qcNotifyRenderChips() {
+  document.querySelectorAll('#qcNotifyFacChips .chip-fac').forEach(b => b.classList.toggle('on', b.dataset.fac === _qcNotifyFac));
+}
+function qcNotifySetFac(fac) { _qcNotifyFac = fac; _qcNotifyRenderChips(); qcNotifyRender(); }
+function qcNotifyRender() {
+  const body = document.getElementById('qcNotifyBody');
+  const items = _qcNotifyItems();
+  if (!items.length) {
+    body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">알림이 없습니다.</div>';
+  } else {
+    body.innerHTML = items.map(d => {
+      const key = _qcNewKey(d);
+      const checked = _qcNotifySelected.has(key) ? 'checked' : '';
+      const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
+      const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
+      const tagsHtml = (d.변경태그 || []).map(t => `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${QC_TAG_CLS[t] || ''}">${QC_TAG_LABELS[t] || t}</span>`).join(' ');
+      return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
+        <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcNotifyToggleOne('${_jsAttr(key)}', this.checked)">
+        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
+            ${tagsHtml}
+            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
+          </div>
+          <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
+            <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
+            <span class="cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품명칭 || '')}', event)">${d.단품명칭 || '-'}</span>
+            <span>${d.색상 || '-'} · ${d.수량 || 0}EA</span>
+            <span>납기 ${d.납기일 || '—'} · 포장 ${d.포장일 || '—'}</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  _qcNotifyUpdateSelUi();
+  const cnt = document.getElementById('qtabCnt-notify');
+  if (cnt) cnt.textContent = allData.filter(d => d.변경태그 && d.변경태그.length).length;
+}
+function qcNotifyToggleOne(key, checked) {
+  if (checked) _qcNotifySelected.add(key); else _qcNotifySelected.delete(key);
+  _qcNotifyUpdateSelUi();
+}
+function qcNotifyToggleAll(checked) {
+  _qcNotifyItems().forEach(d => { const k = _qcNewKey(d); if (checked) _qcNotifySelected.add(k); else _qcNotifySelected.delete(k); });
+  qcNotifyRender();
+}
+function _qcNotifyUpdateSelUi() {
+  const items = _qcNotifyItems();
+  document.getElementById('qcNotifySelCount').textContent = _qcNotifySelected.size + '건 선택';
+  const allCb = document.getElementById('qcNotifySelectAll');
+  if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcNotifySelected.has(_qcNewKey(d)));
+  const btn = document.getElementById('qcNotifyOkBtn');
+  if (btn) btn.disabled = _qcNotifySelected.size === 0;
+}
+// "확인 처리" — 선택한 품목의 납기일/포장일/BOM확정 보라색(#9900ff) 칸을 실제 구글시트에서
+// 검정으로 되돌리고, 신규였다면 비고의 "신규" 마커도 같이 지운다(요청, 2026-10-22).
+async function qcNotifyConfirmSelected() {
+  const selected = allData.filter(d => d.변경태그 && d.변경태그.length && _qcNotifySelected.has(_qcNewKey(d)));
+  if (!selected.length) return;
+  const statusEl = document.getElementById('qcNotifyStatus');
+  const btn = document.getElementById('qcNotifyOkBtn');
+  btn.disabled = true;
+  statusEl.style.color = '#64748b';
+  statusEl.textContent = '확인 처리 중...';
+  const byFac = { cj1: [], cj2: [] };
+  selected.forEach(d => { if (byFac[d.공장]) byFac[d.공장].push(d); });
+  try {
+    for (const fac of ['cj1', 'cj2']) {
+      if (!byFac[fac].length) continue;
+      const url = _gasUrlForFactory(fac);
+      const items = byFac[fac].map(d => ({ round: d.건명, code: d.단품코드, color: d.색상, qty: String(d.수량 || '') }));
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'ackChangeNotices', items: items }),
+        signal: AbortSignal.timeout(60000)
+      }).then(r => r.json());
+      if (res.status !== 'success') throw new Error(res.message || (fac + ' 확인 처리 실패'));
+      byFac[fac].forEach(d => { d.변경태그 = []; d.신규 = false; });
+    }
+    _qcNotifySelected = new Set();
+    statusEl.style.color = '#16a34a';
+    statusEl.textContent = '✓ 확인 처리했습니다.';
+    qcNotifyRender();
+    if (!isMobile()) qcNewRenderList(); // 등록 탭도 같은 데이터(신규 품목)를 보니 같이 갱신
+    applyFilters();
+    if (isMobile()) renderMobileKPIs();
+  } catch (e) {
+    statusEl.style.color = '#dc2626';
+    statusEl.textContent = '오류: ' + e.message;
+  } finally {
+    btn.disabled = _qcNotifySelected.size === 0;
+  }
+}
+
+// ───── "도면출력여부" 탭 — 건명 글자색이 빨간색인(도면 미출력) 진행중 품목 ─────
+let _qcDrawingFac = 'all';
+let _qcDrawingSelected = new Set();
+function _qcDrawingItems() {
+  const items = allData.filter(d => d.도면미출력 && d.source !== 'archive');
+  return _qcDrawingFac === 'all' ? items : items.filter(d => d.공장 === _qcDrawingFac);
+}
+function _qcDrawingRenderChips() {
+  document.querySelectorAll('#qcDrawingFacChips .chip-fac').forEach(b => b.classList.toggle('on', b.dataset.fac === _qcDrawingFac));
+}
+function qcDrawingSetFac(fac) { _qcDrawingFac = fac; _qcDrawingRenderChips(); qcDrawingRender(); }
+function qcDrawingRender() {
+  const body = document.getElementById('qcDrawingBody');
+  const items = _qcDrawingItems();
+  if (!items.length) {
+    body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">도면 미출력 품목이 없습니다.</div>';
+  } else {
+    body.innerHTML = items.map(d => {
+      const key = _qcNewKey(d);
+      const checked = _qcDrawingSelected.has(key) ? 'checked' : '';
+      const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
+      const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
+      return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
+        <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcDrawingToggleOne('${_jsAttr(key)}', this.checked)">
+        <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
+            <span class="text-[13.5px] font-bold text-red-600 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
+          </div>
+          <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
+            <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
+            <span class="cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품명칭 || '')}', event)">${d.단품명칭 || '-'}</span>
+            <span>${d.색상 || '-'} · ${d.수량 || 0}EA</span>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  _qcDrawingUpdateSelUi();
+  const cnt = document.getElementById('qtabCnt-drawing');
+  if (cnt) cnt.textContent = allData.filter(d => d.도면미출력 && d.source !== 'archive').length;
+}
+function qcDrawingToggleOne(key, checked) {
+  if (checked) _qcDrawingSelected.add(key); else _qcDrawingSelected.delete(key);
+  _qcDrawingUpdateSelUi();
+}
+function qcDrawingToggleAll(checked) {
+  _qcDrawingItems().forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
+  qcDrawingRender();
+}
+function _qcDrawingUpdateSelUi() {
+  const items = _qcDrawingItems();
+  document.getElementById('qcDrawingSelCount').textContent = _qcDrawingSelected.size + '건 선택';
+  const allCb = document.getElementById('qcDrawingSelectAll');
+  if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcDrawingSelected.has(_qcNewKey(d)));
+  const btn = document.getElementById('qcDrawingOkBtn');
+  if (btn) btn.disabled = _qcDrawingSelected.size === 0;
+}
+// 기존 "출력" 필터 버튼의 일괄수정과 같은 액션(markDrawingPrinted)을 재사용한다.
+function qcDrawingConfirmSelected() {
+  const selected = allData.filter(d => d.도면미출력 && _qcDrawingSelected.has(_qcNewKey(d)));
+  if (!selected.length) return;
+  const statusEl = document.getElementById('qcDrawingStatus');
+  const btn = document.getElementById('qcDrawingOkBtn');
+  btn.disabled = true;
+  selected.forEach(d => { d.도면미출력 = false; _postMiSync(d, { action: 'markDrawingPrinted' }); });
+  statusEl.style.color = '#16a34a';
+  statusEl.textContent = `${selected.length}개 품목 도면 출력완료 처리했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`;
+  _qcDrawingSelected = new Set();
+  qcDrawingRender();
+  applyFilters();
+  btn.disabled = _qcDrawingSelected.size === 0;
+}
+
 function _qcNewKey(d) {
   return d.공장 + '|' + d.건명 + '|' + d.단품코드 + '|' + (d.색상 || '');
 }
