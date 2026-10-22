@@ -8758,6 +8758,55 @@ function _qcFmtChangeDate(s) {
   if (!m) return s || '';
   return `${m[1]}. ${parseInt(m[2], 10)}. ${parseInt(m[3], 10)}`;
 }
+// 신규품목확인 모달의 확인/등록/도면출력여부 탭 공통 정렬(요청, 2026-10-23) — 건명/
+// 단품코드/납기 중 하나로 오름↔내림차순. 탭마다 독립된 상태를 쓴다(다른 탭을 눌러도
+// 서로 영향 없음).
+let _qcNotifySortKey = null, _qcNotifySortAsc = true;
+let _qcNewSortKey = null, _qcNewSortAsc = true;
+let _qcDrawingSortKey = null, _qcDrawingSortAsc = true;
+const _QC_MODAL_SORT_DEFS = [['round', '건명'], ['code', '단품코드'], ['due', '납기']];
+const _QC_MODAL_SORT_FIELD = { round: '건명', code: '단품코드', due: '납기일' };
+function _qcModalSortItems(items, key, asc) {
+  if (!key) return items;
+  const field = _QC_MODAL_SORT_FIELD[key];
+  return [...items].sort((a, b) => {
+    if (key === 'due') {
+      const da = parseKDate(a[field]), db = parseKDate(b[field]);
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return asc ? da - db : db - da;
+    }
+    const av = (a[field] || '').toString(), bv = (b[field] || '').toString();
+    if (!av && !bv) return 0;
+    if (!av) return 1;
+    if (!bv) return -1;
+    return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+}
+const _QC_MODAL_SORT_STATE = {
+  notify:  { get key()  { return _qcNotifySortKey;  }, get asc()  { return _qcNotifySortAsc;  }, set(k, a) { _qcNotifySortKey = k; _qcNotifySortAsc = a; }, render: () => qcNotifyRender() },
+  confirm: { get key()  { return _qcNewSortKey;     }, get asc()  { return _qcNewSortAsc;     }, set(k, a) { _qcNewSortKey = k; _qcNewSortAsc = a; }, render: () => qcNewRenderList() },
+  drawing: { get key()  { return _qcDrawingSortKey; }, get asc()  { return _qcDrawingSortAsc; }, set(k, a) { _qcDrawingSortKey = k; _qcDrawingSortAsc = a; }, render: () => qcDrawingRender() },
+};
+function _qcModalSortBtnsHtml(tab) {
+  const st = _QC_MODAL_SORT_STATE[tab];
+  return _QC_MODAL_SORT_DEFS.map(([k, label]) => {
+    const active = st.key === k;
+    const arrow = active ? (st.asc ? '↑' : '↓') : '';
+    const style = active
+      ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#6D5CE8;color:#fff;'
+      : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
+    return `<button onclick="_qcModalPickSort('${tab}','${k}')" style="${style}">${label} ${arrow}</button>`;
+  }).join('');
+}
+function _qcModalPickSort(tab, key) {
+  const st = _QC_MODAL_SORT_STATE[tab];
+  if (!st) return;
+  if (st.key === key) st.set(key, !st.asc); else st.set(key, true);
+  st.render();
+}
+
 function qcNotifyRender() {
   const body = document.getElementById('qcNotifyBody');
   const items = _qcNotifyItems();
