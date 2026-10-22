@@ -171,6 +171,20 @@ try {
         <option value="별도·조립철물">별도·조립철물</option>
         <option value="포장">포장</option>
       </select>
+      <!-- 발생처/원인처 필터(요청, 2026-10-22) — 사업장 단위로만 거른다(위치는 사업장마다
+           목록이 길어서 필터 칸으로는 사업장까지만). -->
+      <select id="fipcOccFilter" onchange="fiPcRender()" style="max-width:118px;">
+        <option value="전체">발생처: 전체</option>
+        <option value="충주1공장">충주1공장</option>
+        <option value="충주2공장">충주2공장</option>
+        <option value="기타">기타</option>
+      </select>
+      <select id="fipcCauseFilter" onchange="fiPcRender()" style="max-width:118px;">
+        <option value="전체">원인처: 전체</option>
+        <option value="충주1공장">충주1공장</option>
+        <option value="충주2공장">충주2공장</option>
+        <option value="기타">기타</option>
+      </select>
       <input type="date" id="fipcDateFrom" onchange="fiPcRender()">
       <span style="color:var(--label); font-size:12px;">~</span>
       <input type="date" id="fipcDateTo" onchange="fiPcRender()">
