@@ -2417,6 +2417,19 @@ const QC_COL_INSPECT_DOT_COLOR = {
 const QC_COL_INSPECT_DROPDOWN_VALUES = ['검사진행중', '검사출고', '진행_미검사', '미검사출고', '재투입', '양지', '생산완료', '미투입', '취소'];
 // 블로킹(O열) 드롭다운 값(요청 2026-10-22) — GAS Main 스크립트의 QC_BLOCKING_STATUSES와 동일.
 const QC_BLOCKING_VALUES = ['미등록', '검사대기', '검사완료', '취소'];
+const QC_BLOCKING_CLS = {
+  '미등록': 'bg-slate-100 text-slate-500',
+  '검사대기': 'bg-rose-50 text-rose-600',
+  '검사완료': 'bg-emerald-50 text-emerald-600',
+  '취소': 'bg-slate-200 text-slate-500',
+};
+// 날짜를 "26. 10. 10"처럼 두 자리 연도로 줄인다(요청 2026-10-22, 웹 제품검색 표 폭
+// 조정용) — GAS가 내려주는 "2026. 10. 23" 형식만 다루면 된다.
+function _qcShortYearDate(s) {
+  const m = /^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/.exec((s || '').toString().trim());
+  if (!m) return s;
+  return m[1].slice(2) + '. ' + m[2] + '. ' + m[3];
+}
 // 시트 필터(sourceTab)가 "진행중만"/"출고완료만"으로 좁혀져 있으면, 그 소스에 있을 수
 // 없는 진행상태는 드롭다운에서 숨긴다(요청, 2026-10-21: "시트 필터를 진행중/출고완료로
 // 바꾸면 진행 칼럼도 그에 맞게 바뀌어야 하는데 안 바뀐다") — '검사진행중'/'진행_미검사'는
