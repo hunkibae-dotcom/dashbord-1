@@ -9365,7 +9365,13 @@ function _spuDetectFileKindFromGrid(grid) {
   // 자리에 그럴듯한 값(건명 텍스트 + 숫자 수량)이 실제로 있는지로 수주내역 파일인지를
   // 판정한다.
   if (_spuLooksLikeSalesGrid(grid)) return { type: 'sales' };
-  return null; // 둘 중 어느 파일인지 구분 못함
+  // 블로킹(grd_inStockPlan_*, 요청 2026-10-22) — D=3 품질검사/G=6 제품코드/H=7 색상
+  // 고정 위치. 이 파일도 실제 칼럼 헤더가 없을 수 있어(제목줄만 있음) 헤더 문구 검색을
+  // 먼저 시도하고, 못 찾으면 D열 값이 거의 다 "공백/검사대기/검사완료/취소" 중 하나인지로
+  // 판정한다(수주내역의 _spuLooksLikeSalesGrid와 같은 방식).
+  const iBlockCheck = _spuFindHeaderCol(grid, ['품질검사']);
+  if (iBlockCheck !== -1 || _spuLooksLikeBlockingGrid(grid)) return { type: 'blocking' };
+  return null; // 어느 파일인지 구분 못함
 }
 
 function openSpuUploadModal(mode) {
