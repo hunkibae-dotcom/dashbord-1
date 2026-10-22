@@ -1312,6 +1312,8 @@ function fiPcRender() {
 
   const statusF = document.getElementById('fipcStatusFilter').value;
   const typeF = document.getElementById('fipcTypeFilter').value;
+  const occF = document.getElementById('fipcOccFilter').value;
+  const causeF = document.getElementById('fipcCauseFilter').value;
   const dateFrom = document.getElementById('fipcDateFrom').value;
   const dateTo = document.getElementById('fipcDateTo').value;
   const q = (document.getElementById('fipcSearchInput').value || '').trim().toLowerCase();
@@ -1319,6 +1321,8 @@ function fiPcRender() {
   const filtered = fiAllData.filter(function (d) {
     if (statusF !== '전체' && d.status !== statusF) return false;
     if (typeF !== '전체' && d.types.indexOf(typeF) < 0) return false;
+    if (occF !== '전체' && d.occSite !== occF) return false;
+    if (causeF !== '전체' && d.causeSite !== causeF) return false;
     if (dateFrom && d.date && d.date < dateFrom) return false;
     if (dateTo && d.date && d.date > dateTo) return false;
     if (q && !((d.code || '').toLowerCase().indexOf(q) >= 0 || (d.content || '').toLowerCase().indexOf(q) >= 0)) return false;
