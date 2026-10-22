@@ -9810,6 +9810,7 @@
 
             let newRegDate = (document.getElementById('pkgRegDate').value || '').trim();
             if (_pkgCurStatus === '포장완료' && !newRegDate) newRegDate = normalizeDate(new Date());
+            const newArriveDate = (document.getElementById('pkgArriveDate').value || '').trim();
             const newShipDate = (document.getElementById('pkgShipDate').value || '').trim();
             const newDueDate = (document.getElementById('pkgDueDate').value || '').trim();
             const newPalletRaw = (document.getElementById('pkgPallet').value || '').trim();
