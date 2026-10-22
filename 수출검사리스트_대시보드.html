@@ -2607,6 +2607,94 @@ document.addEventListener('click', () => {
   }
 });
 
+// 블로킹(O열) 칼럼 필터 — 검사상태 칼럼(colInspectFilters)과 완전히 같은 구글시트
+// 방식(요청, 2026-10-22: "블로킹 필터선택할때 구글 시트의 필터처럼 되어야해(지금
+// 웹의 검사상태 칼럼 선택하는것처럼)"). 기본은 4개 값 전부 포함.
+let blockingColFilters = new Set(QC_BLOCKING_VALUES);
+let _qcBlockingDraft = null;
+function _qcBlockingRenderDraftList() {
+  const list = document.getElementById('qcBlockingDraftList');
+  if (!list || !_qcBlockingDraft) return;
+  const q = (document.getElementById('qcBlockingSearchInput')?.value || '').trim().toLowerCase();
+  const values = QC_BLOCKING_VALUES.filter(v => v.toLowerCase().includes(q));
+  list.innerHTML = values.map(v => {
+    const checked = _qcBlockingDraft.has(v);
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="_qcBlockingDraftToggle('${v}', this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#16A34A;flex-shrink:0;">
+      ${v}
+    </label>`;
+  }).join('') || '<div style="padding:14px 12px;color:#94a3b8;font-size:12px;text-align:center;">일치하는 항목이 없습니다</div>';
+  _qcBlockingUpdateDraftCount();
+}
+function _qcBlockingUpdateDraftCount() {
+  const el = document.getElementById('qcBlockingDraftCount');
+  if (!el || !_qcBlockingDraft) return;
+  el.textContent = _qcBlockingDraft.size + '/' + QC_BLOCKING_VALUES.length + ' 표시';
+}
+function _qcBlockingDraftToggle(v, checked) {
+  if (!_qcBlockingDraft) return;
+  if (checked) _qcBlockingDraft.add(v); else _qcBlockingDraft.delete(v);
+  _qcBlockingUpdateDraftCount();
+}
+function _qcBlockingDraftSelectAll() {
+  if (!_qcBlockingDraft) return;
+  QC_BLOCKING_VALUES.forEach(v => _qcBlockingDraft.add(v));
+  _qcBlockingRenderDraftList();
+}
+function _qcBlockingDraftClearAll() {
+  if (!_qcBlockingDraft) return;
+  QC_BLOCKING_VALUES.forEach(v => _qcBlockingDraft.delete(v));
+  _qcBlockingRenderDraftList();
+}
+function _qcBlockingCancelDropdown() {
+  _qcBlockingDraft = null;
+  document.getElementById('blockingColDropdown')?.classList.add('hidden');
+}
+function _qcBlockingConfirmDropdown() {
+  if (_qcBlockingDraft) blockingColFilters = new Set(_qcBlockingDraft);
+  _qcBlockingDraft = null;
+  document.getElementById('blockingColDropdown')?.classList.add('hidden');
+  _qcUpdateBlockingColLabel();
+  applyFilters();
+}
+function _qcUpdateBlockingColLabel() {
+  const label = document.getElementById('blockingColLabel');
+  if (!label) return;
+  const total = QC_BLOCKING_VALUES.length;
+  const n = blockingColFilters.size;
+  if (n >= total) { label.textContent = '블로킹'; return; }
+  if (n === 0) { label.textContent = '전체 제외됨'; return; }
+  const included = QC_BLOCKING_VALUES.filter(v => blockingColFilters.has(v));
+  label.textContent = included.length > 1 ? (included[0] + ' 외 ' + (included.length - 1) + '개') : included[0];
+}
+function toggleBlockingDropdown(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('blockingColDropdown');
+  const willOpen = dd.classList.contains('hidden');
+  if (willOpen) {
+    const btn = e.currentTarget || e.target.closest('.inline-flex');
+    const r = (btn || e.target).getBoundingClientRect();
+    dd.style.position = 'fixed';
+    dd.style.top = (r.bottom + 4) + 'px';
+    dd.style.left = 'auto';
+    dd.style.right = (window.innerWidth - r.right) + 'px';
+    _qcBlockingDraft = new Set(blockingColFilters);
+    const searchInput = document.getElementById('qcBlockingSearchInput');
+    if (searchInput) searchInput.value = '';
+    _qcBlockingRenderDraftList();
+  } else {
+    _qcBlockingDraft = null;
+  }
+  dd.classList.toggle('hidden');
+}
+document.addEventListener('click', () => {
+  const dd = document.getElementById('blockingColDropdown');
+  if (dd && !dd.classList.contains('hidden')) {
+    dd.classList.add('hidden');
+    _qcBlockingDraft = null;
+  }
+});
+
 // ===== FILTERS =====
 let ddayUrgencyFilter = null; // { factory:'cj1'|'cj2', urgency:'지연'|'D-7이하'|'D-14이하'|'여유'|'미정' }
 let pieFilter = null;         // { factory:'cj1'|'cj2', status:'검사'|'미검사' }
