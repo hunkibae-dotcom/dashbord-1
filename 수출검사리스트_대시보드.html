@@ -8809,7 +8809,9 @@ function _qcModalPickSort(tab, key) {
 
 function qcNotifyRender() {
   const body = document.getElementById('qcNotifyBody');
-  const items = _qcNotifyItems();
+  const sortBtnsEl = document.getElementById('qcNotifySortBtns');
+  if (sortBtnsEl) sortBtnsEl.innerHTML = _qcModalSortBtnsHtml('notify');
+  const items = _qcModalSortItems(_qcNotifyItems(), _qcNotifySortKey, _qcNotifySortAsc);
   if (!items.length) {
     body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">알림이 없습니다.</div>';
   } else {
