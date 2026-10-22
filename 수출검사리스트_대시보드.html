@@ -9422,11 +9422,12 @@ function openSpuUploadModal(mode) {
   _spuDetected = {};
   closeSpuChoiceModal();
   document.getElementById('spuUploadTitle').textContent =
-    mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : '수주내역 + 공정진행정보 업데이트';
+    mode === 'sales' ? '수주내역 업데이트' : mode === 'process' ? '공정진행정보 업데이트' : mode === 'blocking' ? '블로킹 업데이트' : '수주내역 + 공정진행정보 업데이트';
 
   const descParts = [];
   if (mode === 'sales' || mode === 'both') descParts.push(_SPU_SALES_DESC);
   if (mode === 'process' || mode === 'both') descParts.push(_SPU_PROCESS_DESC);
+  if (mode === 'blocking') descParts.push(_SPU_BLOCKING_DESC);
 
   document.getElementById('spuUploadBody').innerHTML = `
     <div style="margin-bottom:14px;">
