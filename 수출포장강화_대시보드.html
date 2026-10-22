@@ -2869,9 +2869,6 @@
                     <button onclick="_pkgStatusCancelDropdown()" style="padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">취소</button>
                     <button onclick="_pkgStatusConfirmDropdown()" style="padding:6px 14px;border-radius:8px;border:none;background:#16A34A;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">확인</button>
                 </div>`;
-            // 검색창에 포커스가 있었으면 다시 그린 뒤에도 유지(검색하면서 끊기지 않게).
-            const si = document.getElementById('pkgStatusSearchInput');
-            if (si && document.activeElement !== si) { /* 포커스 복원은 검색 입력 중(oninput)에만 필요 없음 */ }
             const cnt = document.getElementById('pkgStatusDraftCount');
             if (cnt) cnt.textContent = visible.filter(s => _pkgStatusDraft.has(s)).length + '/' + visible.length + ' 표시';
         }
