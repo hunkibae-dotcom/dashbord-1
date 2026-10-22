@@ -5822,7 +5822,7 @@
             _clr('startDateFilter'); _clr('endDateFilter');
             // 날짜 기준 탭 초기화 — 선택 없음
             _webDateField = '';
-            ['wdfDate','wdfDue','wdfReg'].forEach(id => {
+            ['wdfDate','wdfDue','wdfArrive','wdfReg'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) { btn.style.background = 'transparent'; btn.style.color = '#64748b'; }
             });
