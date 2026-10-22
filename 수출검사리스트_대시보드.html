@@ -2339,58 +2339,124 @@ const QC_COL_INSPECT_SOURCE_ONLY = {
   '검사출고': 'archive', '미검사출고': 'archive'
 };
 
-// 여러 개 고를 수 있는 드롭다운 — colInspectFilters(Set)에서 켜고/끄고, 드롭다운은 열어둔다.
-function toggleColInspect(e, val) {
-  if (e) e.stopPropagation();
-  pieFilter = null;
-  ddayUrgencyFilter = null;
-  document.getElementById('ddayFilterChip')?.classList.add('hidden');
-  if (colInspectFilters.has(val)) colInspectFilters.delete(val); else colInspectFilters.add(val);
-  _qcSyncInspectDropdownChecks();
+// 행 하나하나를 9개 카테고리 중 정확히 하나로 분류한다(구글시트 체크박스 필터는
+// "이 칸의 값이 체크된 값들 중 하나인가"로 동작하므로, OR로 겹쳐 판정하던 예전 방식
+// (_qcColInspectTest)과 달리 배타적 분류가 필요하다). "재투입이면서 검사일이 없는"
+// 행은 예전엔 "미검사(진행중)" 체크에도 걸렸지만, 이제는 "재투입" 체크 하나로만
+// 걸린다 — 그 행을 숨기고 싶으면 "재투입"을 꺼야 한다는 뜻이 더 명확하다.
+function _qcRowCategory(d) {
+  if (d.source === 'archive') return d.검사 === '검사' ? '검사출고' : '미검사출고';
+  if (d.검사 === '검사') return '검사진행중';
+  if (d.검사 === '재투입') return '재투입';
+  if (d.검사 === '양지') return '양지';
+  if (d.검사 === '포장대기') return '생산완료';
+  if (d.검사 === '미투입') return '미투입';
+  if (d.검사 === '취소') return '취소';
+  return '진행_미검사'; // '미검사' 및 그 외 전부
+}
+
+// colInspectFilters: 지금 "포함(표시)"으로 체크된 카테고리 집합 — 기본은 9개 전부.
+let colInspectFilters = new Set(QC_COL_INSPECT_DROPDOWN_VALUES);
+// KPI 카드 "상세보기"에서 넘어오는 화면전용 카테고리(생산중/검사대기/금일포장)는 체크박스
+// 목록에 없는 값이라 별도로 둔다 — 설정돼 있으면 체크박스 목록 전체를 무시하고 이 하나만 본다.
+let colInspectSpecialFilter = null;
+// 드롭다운이 열려있는 동안의 임시 선택본(구글시트처럼 "확인"을 눌러야 실제로 반영됨).
+let _qcInspectDraft = null;
+
+function _qcInspectVisibleValues() {
+  return QC_COL_INSPECT_DROPDOWN_VALUES.filter(v => {
+    const need = QC_COL_INSPECT_SOURCE_ONLY[v];
+    return !need || sourceTab === 'all' || sourceTab === need;
+  });
+}
+function _qcInspectRenderDraftList() {
+  const list = document.getElementById('qcInspectDraftList');
+  if (!list || !_qcInspectDraft) return;
+  const q = (document.getElementById('qcInspectSearchInput')?.value || '').trim().toLowerCase();
+  const values = _qcInspectVisibleValues().filter(v => QC_COL_INSPECT_LABELS[v].toLowerCase().includes(q));
+  list.innerHTML = values.map(v => {
+    const checked = _qcInspectDraft.has(v);
+    return `<label style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;">
+      <input type="checkbox" ${checked ? 'checked' : ''} onchange="_qcInspectDraftToggle('${v}', this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#16A34A;flex-shrink:0;">
+      <span style="width:8px;height:8px;border-radius:50%;background:${QC_COL_INSPECT_DOT_COLOR[v]};flex-shrink:0;"></span>
+      ${QC_COL_INSPECT_LABELS[v]}
+    </label>`;
+  }).join('') || '<div style="padding:14px 12px;color:#94a3b8;font-size:12px;text-align:center;">일치하는 항목이 없습니다</div>';
+  _qcInspectUpdateDraftCount();
+}
+function _qcInspectUpdateDraftCount() {
+  const el = document.getElementById('qcInspectDraftCount');
+  if (!el || !_qcInspectDraft) return;
+  const visible = _qcInspectVisibleValues();
+  const n = visible.filter(v => _qcInspectDraft.has(v)).length;
+  el.textContent = n + '/' + visible.length + ' 표시';
+}
+function _qcInspectDraftToggle(v, checked) {
+  if (!_qcInspectDraft) return;
+  if (checked) _qcInspectDraft.add(v); else _qcInspectDraft.delete(v);
+  _qcInspectUpdateDraftCount();
+}
+function _qcInspectDraftSelectAll() {
+  if (!_qcInspectDraft) return;
+  _qcInspectVisibleValues().forEach(v => _qcInspectDraft.add(v));
+  _qcInspectRenderDraftList();
+}
+function _qcInspectDraftClearAll() {
+  if (!_qcInspectDraft) return;
+  _qcInspectVisibleValues().forEach(v => _qcInspectDraft.delete(v));
+  _qcInspectRenderDraftList();
+}
+function _qcInspectCancelDropdown() {
+  _qcInspectDraft = null;
+  document.getElementById('inspectColDropdown')?.classList.add('hidden');
+}
+function _qcInspectConfirmDropdown() {
+  if (_qcInspectDraft) colInspectFilters = new Set(_qcInspectDraft);
+  colInspectSpecialFilter = null;
+  _qcInspectDraft = null;
+  document.getElementById('inspectColDropdown')?.classList.add('hidden');
   _qcUpdateInspectColLabel();
   applyFilters();
 }
-// KPI 카드 "상세보기"나 "전체" 항목처럼, 그 카테고리 하나로 딱 못박아 보여줄 때 쓴다 —
-// 기존 다중선택은 모두 비우고 이 값 하나로(또는 빈 값이면 전부 해제) 바꾼다.
+// KPI 카드 "상세보기"나 초기화에서 쓴다 — 체크박스 목록 전체를 한 번에 정하거나(값이
+// 9개 중 하나면 그것만 포함), 체크박스 목록 밖의 화면전용 카테고리로 못박거나,
+// 빈 값이면 전체(9개 다 포함)로 되돌린다.
 function setColInspect(val) {
   pieFilter = null;
   ddayUrgencyFilter = null;
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
-  colInspectFilters = val ? new Set([val]) : new Set();
-  _qcSyncInspectDropdownChecks();
+  if (!val) {
+    colInspectFilters = new Set(QC_COL_INSPECT_DROPDOWN_VALUES);
+    colInspectSpecialFilter = null;
+  } else if (QC_COL_INSPECT_DROPDOWN_VALUES.includes(val)) {
+    colInspectFilters = new Set([val]);
+    colInspectSpecialFilter = null;
+  } else {
+    colInspectSpecialFilter = val;
+  }
   _qcUpdateInspectColLabel();
   const dd = document.getElementById('inspectColDropdown');
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
-function _qcSyncInspectDropdownChecks() {
-  QC_COL_INSPECT_DROPDOWN_VALUES.forEach(v => {
-    const chk = document.getElementById('colInspChk-' + v);
-    if (chk) chk.style.display = colInspectFilters.has(v) ? '' : 'none';
-  });
-}
 function _qcUpdateInspectColLabel() {
   const label = document.getElementById('inspectColLabel');
   if (!label) return;
+  if (colInspectSpecialFilter) {
+    label.textContent = (QC_COL_INSPECT_LABELS[colInspectSpecialFilter] || '검사상태') + ' ✓';
+    return;
+  }
+  const total = QC_COL_INSPECT_DROPDOWN_VALUES.length;
   const n = colInspectFilters.size;
-  if (!n) { label.textContent = '검사상태'; return; }
-  const first = QC_COL_INSPECT_LABELS[[...colInspectFilters][0]] || '검사상태';
-  label.textContent = n === 1 ? (first + ' ✓') : (first + ' 외 ' + (n - 1) + '건 ✓');
+  if (n >= total) { label.textContent = '검사상태'; return; }
+  if (n === 0) { label.textContent = '전체 제외됨'; return; }
+  const included = QC_COL_INSPECT_DROPDOWN_VALUES.filter(v => colInspectFilters.has(v));
+  const first = QC_COL_INSPECT_LABELS[included[0]];
+  label.textContent = included.length > 1 ? (first + ' 외 ' + (included.length - 1) + '개') : first;
 }
-// sourceTab(진행중 리스트/출고완료 리스트/전체 이력)이 바뀌면, 그 시트에 있을 수 없는
-// 진행상태 항목은 드롭다운에서 숨기고(QC_COL_INSPECT_SOURCE_ONLY), 지금 골라둔 값 중에
-// 이제 숨겨지는 게 있으면 같이 해제한다(안 그러면 선택은 돼 있는데 보이지도, 적용되지도
-// 않는 유령 선택 상태가 됨).
+// 시트 필터(sourceTab)가 바뀌면 드롭다운이 열려있는 동안이라도 목록을 다시 그린다.
 function _qcSyncInspectDropdownVisibility() {
-  let changed = false;
-  QC_COL_INSPECT_DROPDOWN_VALUES.forEach(v => {
-    const need = QC_COL_INSPECT_SOURCE_ONLY[v];
-    const visible = !need || sourceTab === 'all' || sourceTab === need;
-    const row = document.getElementById('colInspRow-' + v);
-    if (row) row.style.display = visible ? '' : 'none';
-    if (!visible && colInspectFilters.has(v)) { colInspectFilters.delete(v); changed = true; }
-  });
-  if (changed) { _qcSyncInspectDropdownChecks(); _qcUpdateInspectColLabel(); }
+  if (_qcInspectDraft) _qcInspectRenderDraftList();
 }
 function _qcColInspectTest(val, d) {
   if (val === '진행_미검사') return d.source !== 'archive' && ((d.검사 || '미검사') === '미검사' || isReinspectWaiting(d));
