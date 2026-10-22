@@ -8667,6 +8667,7 @@ async function qcNotifyConfirmSelected() {
     statusEl.textContent = '오류: ' + e.message;
   } finally {
     btn.disabled = _qcNotifySelected.size === 0;
+    btn.innerHTML = _qcNotifyBtnOrigHtml;
   }
 }
 
