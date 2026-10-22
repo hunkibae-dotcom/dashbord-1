@@ -8847,6 +8847,8 @@ function qcNewRenderList() {
     }).join('');
   }
   _qcNewUpdateSelUi();
+  const cnt = document.getElementById('qtabCnt-confirm');
+  if (cnt) cnt.textContent = allData.filter(d => d.신규).length;
 }
 
 function qcNewToggleOne(key, checked) {
