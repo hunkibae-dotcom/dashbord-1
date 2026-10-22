@@ -9824,6 +9824,7 @@ async function _spuLoadStatus() {
       };
       lines.push(fmt(json.data.sales, '수주내역'));
       lines.push(fmt(json.data.process, '공정'));
+      lines.push(fmt(json.data.blocking, '블로킹'));
     } catch (e) { /* 조용히 무시 — 사이드바 표시만 못할 뿐 다른 기능엔 영향 없음 */ }
   }));
   box.innerHTML = lines.length ? lines.join('<br>') : '—';
