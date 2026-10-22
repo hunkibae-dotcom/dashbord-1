@@ -123,6 +123,12 @@ try {
   .chip-fac { background:#fff; border-color:#e2e8f0; color:#94a3b8; cursor:pointer; }
   .chip-fac.on { background:#0ea5e9; border-color:#0ea5e9; color:#fff; }
 
+  /* 신규품목 확인 모달의 탭바(확인/등록/도면출력여부/신규등록, 요청 2026-10-22) */
+  .qtab { position:relative; padding:12px 4px; font-weight:800; font-size:13.5px; color:#94a3b8; cursor:pointer; white-space:nowrap; }
+  .qtab.on { color:#1e293b; }
+  .qtab.on::after { content:''; position:absolute; left:0; right:0; bottom:-1px; height:2.5px; border-radius:2px; background:#6D5CE8; }
+  .qtab .cnt { font-size:11px; font-weight:800; padding:1px 6px; border-radius:999px; margin-left:5px; }
+
 
   .dash-line { position:relative; height:2px; background-image:linear-gradient(to right,#CBD5E1 50%,transparent 50%); background-size:10px 2px; }
 
