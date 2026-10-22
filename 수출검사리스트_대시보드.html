@@ -9197,7 +9197,7 @@ async function qcMrSubmit() {
     fb.style.color = '#16a34a';
     fb.textContent = '✓ ' + items.length + '건 등록되었습니다. 목록을 새로고침합니다...';
     await loadData();
-    setTimeout(qcCloseManualRegister, 700);
+    setTimeout(qcCloseNewItemsModal, 700);
   } catch (e) {
     fb.style.color = '#dc2626';
     fb.textContent = '오류: ' + e.message;
