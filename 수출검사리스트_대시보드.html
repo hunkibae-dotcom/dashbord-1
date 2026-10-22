@@ -9675,20 +9675,20 @@ async function _spuRunImport() {
 
   const logs = [];
   for (const job of jobs) {
-    const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : '공정진행정보');
+    const label = (job.factory === 'cj1' ? '충주1 ' : '충주2 ') + (job.type === 'sales' ? '수주내역' : job.type === 'blocking' ? '블로킹' : '공정진행정보');
     try {
-      // 수주내역은 파일 선택 시(_spuOnFilesChosen)에 이미 행 단위로 공장별로 나눠서
-      // job.rows에 담아뒀다(여러 파일이어도 이미 합쳐짐) — 공정진행정보만 기존처럼
-      // 여기서 grid를 다시 읽어 추출한다(같은 파일을 두 번 읽지 않도록 캐시해둔 grid 사용).
+      // 수주내역/블로킹은 파일 선택 시(_spuOnFilesChosen)에 이미 job.rows에 담아뒀다
+      // (여러 파일이어도 이미 합쳐짐) — 공정진행정보만 기존처럼 여기서 grid를 다시 읽어
+      // 추출한다(같은 파일을 두 번 읽지 않도록 캐시해둔 grid 사용).
       let rows;
-      if (job.type === 'sales') {
+      if (job.type === 'sales' || job.type === 'blocking') {
         rows = job.rows || [];
       } else {
         const grid = job.grid || await new Promise((resolve, reject) => _spuReadFileAsGrid(job.file, (err, g) => err ? reject(err) : resolve(g)));
         rows = _spuExtractProcessRows(grid);
       }
       const url = _gasUrlForFactory(job.factory);
-      const action = job.type === 'sales' ? 'importSalesOrders' : 'importProcessProgress';
+      const action = job.type === 'sales' ? 'importSalesOrders' : job.type === 'blocking' ? 'importBlocking' : 'importProcessProgress';
       const res = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({ action: action, rows: rows, name: name }),
