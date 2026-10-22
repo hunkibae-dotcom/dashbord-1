@@ -1231,7 +1231,37 @@ function fiRefresh() {
   fiFetchList();
 }
 
+// 발견위치/원인위치 필터 옵션(요청, 2026-10-23) — 사업장이 아니라 실제 등록된 위치
+// 값으로 걸러야 해서, 고정 목록(FI_SITE_LOCATIONS) 대신 지금 불러온 데이터에 실제로
+// 쓰인 값만 모아 채운다. 데이터를 새로 불러올 때마다(fiRenderAll) 다시 채운다 —
+// 이미 골라둔 값이 새 목록에도 있으면 그대로 유지한다.
+function _fiPopulateLocationFilterOptions() {
+  function collect(field) {
+    const values = new Set();
+    fiAllData.forEach(function (d) {
+      const v = (d[field] || '').toString().trim();
+      if (v) values.add(v);
+    });
+    return Array.from(values).sort(function (a, b) { return a.localeCompare(b, 'ko'); });
+  }
+  const occValues = collect('occLoc');
+  const causeValues = collect('causeLoc');
+  function fillSelect(id, label, values) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const prev = sel.value;
+    sel.innerHTML = '<option value="전체">' + label + ': 전체</option>' +
+      values.map(function (v) { return '<option value="' + v.replace(/"/g, '&quot;') + '">' + v + '</option>'; }).join('');
+    if (values.indexOf(prev) >= 0) sel.value = prev;
+  }
+  fillSelect('fipcOccFilter', '발견위치', occValues);
+  fillSelect('fipcCauseFilter', '원인위치', causeValues);
+  fillSelect('fiOccFilter', '발견위치', occValues);
+  fillSelect('fiCauseFilter', '원인위치', causeValues);
+}
+
 function fiRenderAll() {
+  _fiPopulateLocationFilterOptions();
   fiRenderKpis();
   fiRenderTypeBars();
   fiRenderRecent();
