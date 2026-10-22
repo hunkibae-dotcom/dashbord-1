@@ -2655,8 +2655,6 @@ function applyFilters() {
         !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
     if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
     if (packerSearch && !(d.포장처||'').toLowerCase().includes(packerSearch)) return false;
-    // "출력" 버튼 — 도면 미출력(건명 글자색 빨간색) 품목만, 진행중 리스트 기준만.
-    if (unprintedFilterActive && (d.source === 'archive' || !d.도면미출력)) return false;
     if (!matchDateOnly(d)) return false;
     if (pieFilter) {
       if (d.source !== 'archive') return false;
