@@ -8636,6 +8636,8 @@ async function qcNotifyConfirmSelected() {
   const statusEl = document.getElementById('qcNotifyStatus');
   const btn = document.getElementById('qcNotifyOkBtn');
   btn.disabled = true;
+  const _qcNotifyBtnOrigHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>처리 중...';
   statusEl.style.color = '#64748b';
   statusEl.textContent = '확인 처리 중...';
   const byFac = { cj1: [], cj2: [] };
