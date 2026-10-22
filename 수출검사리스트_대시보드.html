@@ -2662,7 +2662,7 @@ function applyFilters() {
   // 곳이 워낙 많아서(정렬 클릭, 탭 전환, 카드 클릭 필터 등) 매번 거기서 리셋하는 대신,
   // 여기 한 곳에서 "직전 호출 때와 조건이 달라졌는지"만 보고 판단한다.
   const _dateFilterSig = _tblExactDateFilter ? (Array.from(_tblExactDateFilter.dates).sort().join(',') + ':' + _tblExactDateFilter.field) : '';
-  const _tblSig = JSON.stringify([roundSearch, codeSearch, colorSearch, packerSearch, _qcDateField, qStartDate, qEndDate, pieFilter, ddayUrgencyFilter, [...colInspectFilters].sort(), colInspectSpecialFilter, qualityFilter, _dateFilterSig, factoryTab, sourceTab, tableSortKey, tableSortDir]);
+  const _tblSig = JSON.stringify([roundSearch, codeSearch, colorSearch, packerSearch, _qcDateField, qStartDate, qEndDate, pieFilter, ddayUrgencyFilter, [...colInspectFilters].sort(), colInspectSpecialFilter, [...blockingColFilters].sort(), qualityFilter, _dateFilterSig, factoryTab, sourceTab, tableSortKey, tableSortDir]);
   if (_tblSig !== _tblLastFilterSig) { _tblPage = 1; _tblLastFilterSig = _tblSig; }
 
   // 상단 KPI 카드는 검색창/카드클릭 필터와 무관하게 고정된 숫자를 보여줘야 하므로
