@@ -9660,6 +9660,13 @@ async function _spuRunImport() {
       const [type, factory] = key.split('_');
       return { type: type, factory: factory, file: _spuDetected[key].file, grid: _spuDetected[key].grid, rows: _spuDetected[key].rows };
     });
+  // 블로킹은 공장 구분이 없어서(요청, 2026-10-22) 같은 rows를 충주1/충주2 양쪽에 그대로
+  // 보낸다 — 각 공장 시트가 실제로 가진 단품코드+색상만 알아서 매칭된다.
+  if (_spuDetected['blocking'] && _spuDetected['blocking'].rows && _spuDetected['blocking'].rows.length) {
+    const blockingRows = _spuDetected['blocking'].rows;
+    jobs.push({ type: 'blocking', factory: 'cj1', rows: blockingRows });
+    jobs.push({ type: 'blocking', factory: 'cj2', rows: blockingRows });
+  }
   if (!jobs.length) { resultEl.textContent = '업로드할 파일을 선택해주세요(내용에서 자동으로 구분됩니다).'; return; }
 
   btn.disabled = true;
