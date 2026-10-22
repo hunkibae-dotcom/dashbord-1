@@ -1557,6 +1557,13 @@ async function _fiMapWithLimit(arr, limit, fn) {
   return result;
 }
 
+// 발생처/원인처(요청, 2026-10-22) — "사업장 · 위치" 형태로 합쳐서 보여준다. 둘 다
+// 없으면(아직 안 적은 품목) 줄 자체를 생략한다. PDF/엑셀 보고서 양쪽에서 같이 쓴다.
+function _fiSiteLocText(site, loc) {
+  if (!site && !loc) return '';
+  return [site, loc].filter(Boolean).join(' · ');
+}
+
 // ── PDF: 보고서 시안(claude.ai/artifact/NZ1NDgZ2tyHdrfQM5VaNiq)의 ②번 화면과 같은
 // 카드 레이아웃을 품목별로 그려서, 실제 높이를 잰 뒤(_pkgRenderGenericPrintPdf와 같은
 // 방식) 페이지를 나누고 html2canvas로 캡처해 jsPDF에 붙인다.
