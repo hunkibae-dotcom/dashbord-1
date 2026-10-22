@@ -6304,7 +6304,9 @@ function _updatePsSourceButtons() {
   // 구글시트 방식(전체 체크=필터 없음)이라, "뭔가 좁혀져 있다"는 전부 체크된 상태가
   // 아닐 때만 표시한다(요청, 2026-10-22).
   const _psMetaNow = _PS_SOURCE_META[_psSourceFilter] || _PS_SOURCE_META.active;
-  const _psNarrowed = _psStatusFilterTouched && _psStatusFilters.size < _psMetaNow.statuses.length;
+  const _psStatusNarrowed = _psStatusFilterTouched && _psStatusFilters.size < _psMetaNow.statuses.length;
+  const _psBlockingNarrowed = _psBlockingFilterTouched && _psBlockingFilters.size < QC_BLOCKING_VALUES.length;
+  const _psNarrowed = _psStatusNarrowed || _psBlockingNarrowed;
   const dot = document.getElementById('psSrcDetailDot');
   if (dot) dot.style.display = _psNarrowed ? 'block' : 'none';
   const detailBtn = document.getElementById('psSrcDetailBtn');
