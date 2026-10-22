@@ -2945,12 +2945,9 @@ function renderKPIs(fullData) {
   // 등록 N, 도면 N 이렇게 표기"). allData는 cj1+cj2 전체가 이미 합쳐진 전역
   // 배열이라 그 탭들의 카운트 배지(qtabCnt-notify/confirm/drawing)와 같은 값이
   // 그대로 나온다 — 여기 숫자가 바뀌면 모달 배지도 똑같이 바뀐다.
-  const cj1New = cj1Items.filter(d => d.신규);
-  const cj2New = cj2Items.filter(d => d.신규);
   document.getElementById('kpiNewConfirm').textContent = allData.filter(d => d.변경태그 && d.변경태그.length).length.toLocaleString();
   document.getElementById('kpiNewRegister').textContent = allData.filter(d => d.신규).length.toLocaleString();
   document.getElementById('kpiNewDrawing').textContent = allData.filter(d => d.도면미출력 && d.source !== 'archive').length.toLocaleString();
-  document.getElementById('kpiNewDetail').innerHTML = renderDetailList(scopedPool(cj1New, cj2New), '납기일');
 
   // 4) 생산중 (미검사 + 재투입)
   const cj1Producing = cj1Items.filter(d => d.검사 === '미검사' || d.검사 === '재투입');
