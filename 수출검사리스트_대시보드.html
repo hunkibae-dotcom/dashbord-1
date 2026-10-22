@@ -8579,6 +8579,13 @@ function _qcNotifyRenderChips() {
   document.querySelectorAll('#qcNotifyFacChips .chip-fac').forEach(b => b.classList.toggle('on', b.dataset.fac === _qcNotifyFac));
 }
 function qcNotifySetFac(fac) { _qcNotifyFac = fac; _qcNotifyRenderChips(); qcNotifyRender(); }
+// 변경이전값(메모, "yyyy-MM-dd")을 화면에 보이는 다른 날짜들과 같은 표기(2026. 10. 23)로
+// 맞춘다 — GAS _fmtCell()이 Date를 "yyyy. M. d"로 내려보내는 것과 동일한 형식.
+function _qcFmtChangeDate(s) {
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec((s || '').toString().trim());
+  if (!m) return s || '';
+  return `${m[1]}. ${parseInt(m[2], 10)}. ${parseInt(m[3], 10)}`;
+}
 function qcNotifyRender() {
   const body = document.getElementById('qcNotifyBody');
   const items = _qcNotifyItems();
