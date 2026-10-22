@@ -9460,6 +9460,11 @@ async function _spuOnFilesChosen() {
   // 덮어쓰지 않음).
   const salesAccum = { cj1: [], cj2: [], excludedCount: 0 };
   let hasSales = false;
+  // 블로킹은 공장 구분이 없는 파일이라(요청, 2026-10-22: 단품코드+색상만으로 매칭),
+  // 여러 파일이어도 한 풀에 누적했다가 실행 시 충주1/충주2 양쪽에 똑같이 보낸다 —
+  // 각 공장 시트에 실제로 있는 코드+색상만 매칭되니 안전하다.
+  const blockingAccum = [];
+  let hasBlocking = false;
   for (const file of files) {
     let grid;
     try {
@@ -9470,15 +9475,19 @@ async function _spuOnFilesChosen() {
     }
     const kind = _spuDetectFileKindFromGrid(grid);
     if (!kind) {
-      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 내용에서 수주내역/공정진행정보 여부를 구분하지 못했습니다(헤더에 제품구분·수주량·생산라인·공정진행률 칼럼이 있는지 확인해주세요).</div>`);
+      rows.push(`<div style="color:#ef4444;">✗ ${file.name} — 내용에서 수주내역/공정진행정보/블로킹 여부를 구분하지 못했습니다(헤더에 제품구분·수주량·생산라인·공정진행률·품질검사 칼럼이 있는지 확인해주세요).</div>`);
       continue;
     }
     if (_spuMode === 'sales' && kind.type !== 'sales') {
-      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 공정진행정보 파일로 보여서, 지금은 수주내역만 처리하는 중이라 건너뜁니다.</div>`);
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 다른 종류 파일로 보여서, 지금은 수주내역만 처리하는 중이라 건너뜁니다.</div>`);
       continue;
     }
     if (_spuMode === 'process' && kind.type !== 'process') {
-      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 수주내역 파일로 보여서, 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 다른 종류 파일로 보여서, 지금은 공정진행정보만 처리하는 중이라 건너뜁니다.</div>`);
+      continue;
+    }
+    if (_spuMode === 'blocking' && kind.type !== 'blocking') {
+      rows.push(`<div style="color:#94a3b8;">– ${file.name} — 다른 종류 파일로 보여서, 지금은 블로킹만 처리하는 중이라 건너뜁니다.</div>`);
       continue;
     }
     if (kind.type === 'sales') {
@@ -9492,6 +9501,11 @@ async function _spuOnFilesChosen() {
       if (split.cj2.length) parts.push(`충주2 ${split.cj2.length}건`);
       if (split.excludedCount) parts.push(`제외 ${split.excludedCount}건`);
       rows.push(`<div style="color:#16a34a;">✓ ${file.name} → 수주내역(${parts.join(' · ') || '해당 품목 없음'})</div>`);
+    } else if (kind.type === 'blocking') {
+      hasBlocking = true;
+      const extracted = _spuExtractBlockingRows(grid);
+      blockingAccum.push(...extracted);
+      rows.push(`<div style="color:#16a34a;">✓ ${file.name} → 블로킹(${extracted.length}건)</div>`);
     } else {
       // 공정진행정보는 기존과 동일하게 파일 전체를 한 공장으로 본다.
       _spuDetected[kind.type + '_' + kind.factory] = { file: file, grid: grid };
@@ -9503,6 +9517,7 @@ async function _spuOnFilesChosen() {
     if (salesAccum.cj1.length) _spuDetected['sales_cj1'] = { rows: salesAccum.cj1 };
     if (salesAccum.cj2.length) _spuDetected['sales_cj2'] = { rows: salesAccum.cj2 };
   }
+  if (hasBlocking) _spuDetected['blocking'] = { rows: blockingAccum };
   listEl.innerHTML = rows.join('') || '';
 }
 
