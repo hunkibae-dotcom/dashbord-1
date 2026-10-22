@@ -105,6 +105,10 @@ try {
   .nav-item.active .nav-chevron { opacity:1; }
 
   .card { background:var(--panel); border:1px solid var(--border); border-radius:16px; }
+  /* 상단 KPI 카드 5개는 내용 줄 수가 서로 달라도(2줄 vs 3줄) 한 줄로 높이가
+     맞아야 한다(요청, 2026-10-22) — 그리드 기본 stretch로 늘어난 셀 높이를
+     카드 자신에게도 그대로 채운다. */
+  #kpiRow .card { height:100%; box-sizing:border-box; }
   .kpi-icon { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; }
 
   .pill { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; padding:3px 9px; border-radius:999px; white-space:nowrap; }
