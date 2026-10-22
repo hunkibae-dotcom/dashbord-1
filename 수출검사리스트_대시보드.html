@@ -3409,10 +3409,12 @@ function _tblToggleRowSelect(key) {
 
 function openTblBulkEditModal() {
   _tblBulkStatus = null;
+  _tblBulkBlocking = null;
   document.getElementById('tblBulkDateInput').value = '';
   document.getElementById('tblBulkResult').textContent = '';
   document.getElementById('tblBulkCount').textContent = _tblBulkTargetKeys.length + '개 품목 선택됨';
   _tblRenderBulkStatusBtns();
+  _tblRenderBulkBlockingBtns();
   document.getElementById('tblBulkEditModal').style.display = 'flex';
 }
 function closeTblBulkEditModal() {
@@ -3429,6 +3431,20 @@ function _tblRenderBulkStatusBtns() {
 function _tblSetBulkStatus(v) {
   _tblBulkStatus = (_tblBulkStatus === v) ? null : v; // 같은 걸 다시 누르면 "변경 안 함"으로
   _tblRenderBulkStatusBtns();
+}
+// 블로킹 일괄 수정(요청, 2026-10-23) — 진행상태 버튼과 완전히 같은 방식.
+let _tblBulkBlocking = null;
+function _tblRenderBulkBlockingBtns() {
+  const wrap = document.getElementById('tblBulkBlockingBtns');
+  if (!wrap) return;
+  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => {
+    const on = _tblBulkBlocking === v;
+    return `<button type="button" onclick="_tblSetBulkBlocking('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${v}</button>`;
+  }).join('');
+}
+function _tblSetBulkBlocking(v) {
+  _tblBulkBlocking = (_tblBulkBlocking === v) ? null : v;
+  _tblRenderBulkBlockingBtns();
 }
 
 // 저장 버튼을 눌렀을 때만 실제로 반영한다(단일 품목 상세창의 저장 방식과 동일) —
