@@ -920,7 +920,8 @@ try {
             <button onclick="toggleTblMultiSelect()" id="tblMultiBtn" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-list-check"></i> 선택</button>
             <button onclick="tblOpenBulkEditFromSelection()" class="tab-btn" style="background:#f8fafc;"><i class="fa-solid fa-pen"></i> 수정</button>
             <button onclick="resetFilters()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] border border-slate-200 text-slate-500 flex items-center gap-1.5 hover:bg-slate-50 transition-all"><i class="fa-solid fa-arrow-rotate-left"></i> 초기화</button>
-            <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 데이터 출력</button>
+            <button onclick="toggleUnprintedFilter()" id="unprintedFilterBtn" title="도면 미출력 품목만 보기(진행중 기준)" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] border border-slate-200 text-slate-500 flex items-center gap-1.5 hover:bg-slate-50 transition-all"><i class="fa-solid fa-print"></i> 출력</button>
+            <button onclick="exportTableData()" class="shrink-0 px-3.5 py-2 rounded-lg font-semibold text-[13px] text-white bg-accent-500 hover:bg-accent-600 flex items-center gap-1.5 transition-all"><i class="fa-solid fa-file-export"></i> 내보내기</button>
           </div>
         </div>
 
@@ -1420,6 +1421,13 @@ try {
 
     <div style="font-size:12.5px;font-weight:700;color:#475569;margin-bottom:8px;">검사완료일 <span style="font-weight:500;color:#94a3b8;">(비워두면 변경 안 함)</span></div>
     <input type="date" id="tblBulkDateInput" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:13px;margin-bottom:18px;box-sizing:border-box;">
+
+    <div style="border-top:1px solid #f1f5f9;padding-top:14px;margin-bottom:14px;">
+      <div style="font-size:12.5px;font-weight:700;color:#475569;margin-bottom:8px;">도면</div>
+      <button type="button" id="tblBulkDrawingBtn" onclick="_tblMarkDrawingPrinted()" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #16A34A;background:rgba(22,163,74,.08);color:#16A34A;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">
+        <i class="fa-solid fa-print"></i> 도면 출력완료 처리
+      </button>
+    </div>
 
     <div id="tblBulkResult" style="font-size:12px;color:#475569;white-space:pre-line;margin-bottom:12px;line-height:1.5;"></div>
 
@@ -2192,6 +2200,10 @@ function parseRows(rows, factory) {
       비고: g(15).trim(),
       신규: /신규/.test(g(15)),
       불량사진: g(16).trim(),
+      // "출력" 버튼용 — GAS getActive가 실제 칼럼들 뒤에 덧붙여 보내는 값이라(요청,
+      // 2026-10-22), 고정 인덱스가 아니라 배열 맨 끝에서 읽어야 시트에 칼럼이 늘어나도
+      // 안전하다. 건명(A열) 글자색이 빨간색이면 true(도면 아직 안 뽑음).
+      도면미출력: row[row.length - 1] === true,
     });
   }
   return result;
@@ -2413,6 +2425,24 @@ document.addEventListener('click', () => {
 
 // ===== FILTERS =====
 let colInspectFilters = new Set(); // 검사상태(진행 칼럼) 드롭다운 — 여러 개 동시 선택 가능(요청, 2026-10-21)
+// "출력" 버튼 — 도면 미출력 품목만 보기(요청, 2026-10-22). 구글시트에서 신규 품목이
+// 들어오면 건명 글자색이 자동으로 빨간색(#ff0000)이 되는데(도면을 아직 안 뽑았다는
+// 뜻 — 도면을 뽑으면 담당자가 그 칸 글자색을 수기로 검정으로 바꿔서 끈다), 그 신호를
+// 그대로 쓴다. 진행중 리스트 기준만 본다(출고완료 이력은 대상 아님).
+let unprintedFilterActive = false;
+function toggleUnprintedFilter() {
+  unprintedFilterActive = !unprintedFilterActive;
+  const btn = document.getElementById('unprintedFilterBtn');
+  if (btn) {
+    btn.style.background = unprintedFilterActive ? '#6D5CE8' : '';
+    btn.style.borderColor = unprintedFilterActive ? '#6D5CE8' : '';
+    btn.style.color = unprintedFilterActive ? '#fff' : '';
+  }
+  // 도면 미출력 품목을 바로 골라 "수정" → "도면 출력완료"로 넘길 수 있게, 필터를 켜면
+  // "#" 칼럼에 체크박스(선택 모드)도 같이 켜고, 끄면 같이 끈다(요청, 2026-10-22).
+  if (unprintedFilterActive !== _tblMultiSelectMode) toggleTblMultiSelect();
+  applyFilters();
+}
 let ddayUrgencyFilter = null; // { factory:'cj1'|'cj2', urgency:'지연'|'D-7이하'|'D-14이하'|'여유'|'미정' }
 let pieFilter = null;         // { factory:'cj1'|'cj2', status:'검사'|'미검사' }
 let qualityFilter = null;     // { type:'product'|'country', value:string }
@@ -2489,6 +2519,8 @@ function applyFilters() {
         !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
     if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
     if (packerSearch && !(d.포장처||'').toLowerCase().includes(packerSearch)) return false;
+    // "출력" 버튼 — 도면 미출력(건명 글자색 빨간색) 품목만, 진행중 리스트 기준만.
+    if (unprintedFilterActive && (d.source === 'archive' || !d.도면미출력)) return false;
     if (!matchDateOnly(d)) return false;
     if (pieFilter) {
       if (d.source !== 'archive') return false;
@@ -2617,6 +2649,7 @@ function resetFilters() {
   pieFilter = null;
   qualityFilter = null;
   _tblExactDateFilter = null;
+  if (unprintedFilterActive) toggleUnprintedFilter(); // 버튼 강조 표시도 같이 꺼준다
   document.getElementById('ddayFilterChip')?.classList.add('hidden');
   document.getElementById('pieFilterChip')?.classList.add('hidden');
   document.getElementById('qualityFilterChip')?.classList.add('hidden');
@@ -3145,6 +3178,31 @@ async function _tblApplyBulkEdit() {
   renderMobileList();
   if (typeof applyFilters === 'function') applyFilters();
   setTimeout(() => { closeTblBulkEditModal(); }, 900);
+}
+
+// "도면 출력완료" — "출력"(도면 미출력) 필터로 고른 품목들을 선택해서 일괄수정을
+// 열었을 때 쓰는 전용 버튼(요청, 2026-10-22). 진행상태/검사완료일 "적용"과 달리
+// 즉시 실행되고, 시트 쪽에서는 그 행의 빨간 글자(#ff0000)만 검정으로 되돌린다 —
+// 납기일/포장일 변경으로 생긴 보라색(#9900ff) 칸은 markDrawingPrinted가 알아서
+// 건드리지 않는다.
+async function _tblMarkDrawingPrinted() {
+  const items = _tblBulkTargetKeys.map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  const resultEl = document.getElementById('tblBulkResult');
+  if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+
+  const btn = document.getElementById('tblBulkDrawingBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
+
+  items.forEach(item => {
+    item.도면미출력 = false; // 다음 새로고침 전까지도 화면에 바로 반영
+    _postMiSync(item, { action: 'markDrawingPrinted' });
+  });
+
+  resultEl.textContent = `${items.length}개 품목 도면 출력완료 처리했습니다. 시트 반영은 몇 초 정도 걸릴 수 있습니다.`;
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-print"></i> 도면 출력완료 처리';
+  if (typeof applyFilters === 'function') applyFilters();
 }
 
 // ===== CHARTS =====
