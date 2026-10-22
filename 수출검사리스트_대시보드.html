@@ -1668,26 +1668,116 @@ try {
 
 <!-- ===== 신규품목 상세보기 ===== -->
 <div id="qcNewItemsModal" class="hidden fixed inset-0 z-[210] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseNewItemsModal()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 flex flex-col" style="max-height:86vh;">
-    <div class="flex items-center justify-between mb-1">
+  <div class="bg-white rounded-2xl shadow-2xl w-full flex flex-col overflow-hidden" style="max-width:720px;max-height:90vh;">
+    <div class="flex items-center justify-between px-6 pt-5 pb-0 shrink-0">
       <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-star text-amber-500 mr-1.5"></i>신규품목 확인</div>
       <button onclick="qcCloseNewItemsModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="text-[12px] text-slate-400 my-2">각 공장 검사항목 리스트에서 비고에 "신규"/"신규 차수 추가됨"이 남아있는 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
-    <div class="flex gap-1.5 mb-2" id="qcNewFacChips">
-      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="all" onclick="qcNewSetFac('all')">전체</button>
-      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcNewSetFac('cj1')">충주1공장</button>
-      <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcNewSetFac('cj2')">충주2공장</button>
+    <div class="px-6 text-[12px] text-slate-400 mt-1 mb-2 shrink-0">변경사항 확인, 신규품목 등록, 도면 출력 여부, 수기 등록을 한 창에서 처리합니다.</div>
+
+    <!-- 탭바 — 모바일 앱에서는 숨기고 "확인" 탭 하나만 쓴다(등록/도면출력은 PC 전용,
+         요청 2026-10-22: 모바일로는 그 작업을 할 수 없어서). -->
+    <div class="flex items-center gap-6 px-6 border-b border-slate-100 shrink-0" id="qcTabBar">
+      <div class="qtab on" id="qtabBtn-notify" onclick="qcSwitchTab('notify')">확인 <span class="cnt bg-violet-50 text-violet-600" id="qtabCnt-notify">0</span></div>
+      <div class="qtab" id="qtabBtn-confirm" onclick="qcSwitchTab('confirm')">등록 <span class="cnt bg-amber-50 text-amber-600" id="qtabCnt-confirm">0</span></div>
+      <div class="qtab" id="qtabBtn-drawing" onclick="qcSwitchTab('drawing')">도면출력여부 <span class="cnt bg-red-50 text-red-600" id="qtabCnt-drawing">0</span></div>
+      <div class="qtab" id="qtabBtn-manual" onclick="qcSwitchTab('manual')">신규등록</div>
     </div>
-    <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
-      <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcNewSelectAll" onchange="qcNewToggleAll(this.checked)"> 전체선택</label>
-      <span id="qcNewSelCount" class="text-slate-400 font-semibold">0건 선택</span>
+
+    <div class="flex-1 overflow-y-auto px-6" style="min-height:0;">
+
+      <!-- 탭1: 확인 — 차수추가/납기·포장일·BOM확정 변경 알림(순수 알림, 선택 후 확인 처리만) -->
+      <div id="qtab-notify" class="py-4 flex flex-col" style="display:flex;">
+        <div class="text-[12px] text-slate-400 mb-2">차수 추가(신규 품목), 납기일·포장일·BOM확정 변경을 모아서 보여줍니다. 건명/단품코드/단품명칭을 누르면 복사됩니다.</div>
+        <div class="flex gap-1.5 mb-2" id="qcNotifyFacChips">
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="all" onclick="qcNotifySetFac('all')">전체</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcNotifySetFac('cj1')">충주1공장</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcNotifySetFac('cj2')">충주2공장</button>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
+          <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcNotifySelectAll" onchange="qcNotifyToggleAll(this.checked)"> 전체선택</label>
+          <span id="qcNotifySelCount" class="text-slate-400 font-semibold">0건 선택</span>
+        </div>
+        <div id="qcNotifyBody" class="overflow-y-auto py-1" style="flex:1;min-height:120px;"></div>
+        <div id="qcNotifyStatus" class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
+      </div>
+
+      <!-- 탭2: 등록 (기존 "신규품목 확인" 그대로 — 비고에 "신규"가 남은 품목만) -->
+      <div id="qtab-confirm" class="py-4 flex flex-col" style="display:none;">
+        <div class="text-[12px] text-slate-400 mb-2">각 공장 검사항목 리스트에서 비고에 "신규"/"신규 차수 추가됨"이 남아있는 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
+        <div class="flex gap-1.5 mb-2" id="qcNewFacChips">
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="all" onclick="qcNewSetFac('all')">전체</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcNewSetFac('cj1')">충주1공장</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcNewSetFac('cj2')">충주2공장</button>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
+          <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcNewSelectAll" onchange="qcNewToggleAll(this.checked)"> 전체선택</label>
+          <span id="qcNewSelCount" class="text-slate-400 font-semibold">0건 선택</span>
+        </div>
+        <div id="qcNewBody" class="overflow-y-auto py-1" style="flex:1;min-height:120px;"></div>
+        <div id="qcNewStatus" class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
+      </div>
+
+      <!-- 탭3: 도면출력여부 — 건명 글자색이 빨간색인(도면 미출력) 진행중 품목 -->
+      <div id="qtab-drawing" class="py-4 flex flex-col" style="display:none;">
+        <div class="text-[12px] text-slate-400 mb-2">건명 글자색이 빨간색인(도면 미출력) 품목입니다 — 진행중 리스트 기준. 도면을 뽑았으면 선택 후 아래 버튼을 눌러주세요.</div>
+        <div class="flex gap-1.5 mb-2" id="qcDrawingFacChips">
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="all" onclick="qcDrawingSetFac('all')">전체</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcDrawingSetFac('cj1')">충주1공장</button>
+          <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcDrawingSetFac('cj2')">충주2공장</button>
+        </div>
+        <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
+          <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcDrawingSelectAll" onchange="qcDrawingToggleAll(this.checked)"> 전체선택</label>
+          <span id="qcDrawingSelCount" class="text-slate-400 font-semibold">0건 선택</span>
+        </div>
+        <div id="qcDrawingBody" class="overflow-y-auto py-1" style="flex:1;min-height:120px;"></div>
+        <div id="qcDrawingStatus" class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
+      </div>
+
+      <!-- 탭4: 신규등록 (기존 "신규품목 수기등록" 모달 내용 그대로 이식 — 붙여넣기/자동완성 포함) -->
+      <div id="qtab-manual" class="py-4 flex flex-col gap-3" style="display:none;">
+        <div class="text-[12px] text-slate-400 mb-1">수주공정 파일 업데이트가 아니라 직접 입력하는 품목입니다. 한 건명 아래 품목이 여러 개면 줄을 늘려 한 번에 등록할 수 있습니다.</div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
+          <div class="text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider">이 건 공통 정보</div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">공장</div>
+            <div class="flex gap-1.5">
+              <button id="mrFacBtnCj1" onclick="qcMrPickFac('cj1')" class="chip-fac on px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주1공장</button>
+              <button id="mrFacBtnCj2" onclick="qcMrPickFac('cj2')" class="chip-fac px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주2공장</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">건명</div>
+              <input type="text" id="mrBuild" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500" placeholder="예: 두산에너빌리티(주) 창원">
+            </div>
+            <div>
+              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">납기일 <span class="normal-case text-slate-400 font-normal">· 비우면 빈칸 저장</span></div>
+              <input type="date" id="mrDue" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500">
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">품목 목록</div>
+            <span id="mrItemCountLabel" class="text-[11px] font-bold text-slate-400">1개 품목</span>
+          </div>
+          <div id="mrItemRows" class="flex flex-col gap-2"></div>
+          <button onclick="qcMrAddRow()" class="w-full mt-2.5 py-2 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 font-bold text-[12.5px] hover:border-accent-400 hover:text-accent-500 flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus"></i>품목 추가</button>
+        </div>
+        <div id="mrFeedback" class="text-[12px] font-semibold text-center min-h-[16px]"></div>
+      </div>
+
     </div>
-    <div id="qcNewBody" class="overflow-y-auto py-1" style="flex:1;min-height:120px;"></div>
-    <div id="qcNewStatus" class="text-[12px] font-semibold min-h-[16px] mt-1.5 text-center"></div>
-    <div class="flex items-center justify-between border-t border-slate-100 pt-3 mt-1">
-      <button onclick="qcOpenManualRegister()" class="py-2 px-4 rounded-lg border-2 border-accent-500 text-accent-600 font-bold text-[13px] flex items-center gap-1.5 bg-accent-50 hover:bg-accent-100"><i class="fa-solid fa-plus"></i>신규등록</button>
-      <div class="flex gap-2">
+
+    <!-- 하단 액션 영역 — 탭마다 다른 버튼 세트 -->
+    <div class="border-t border-slate-100 px-6 py-3.5 shrink-0 bg-white">
+
+      <div id="qfoot-notify" class="flex items-center justify-end" style="display:flex;">
+        <button onclick="qcNotifyConfirmSelected()" id="qcNotifyOkBtn" disabled class="py-2 px-5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-solid fa-check"></i>확인 처리</button>
+      </div>
+
+      <div id="qfoot-confirm" class="flex items-center justify-between" style="display:none;">
         <div class="relative inline-block">
           <button onclick="qcToggleSortMenu(event)" id="qcSortBtn" class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] flex items-center gap-1.5"><i class="fa-solid fa-arrow-down-wide-short"></i>검사리스트 정렬</button>
           <div id="qcSortMenu" class="hidden absolute left-0 bottom-full mb-1.5 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-10" style="min-width:160px;">
@@ -1696,53 +1786,21 @@ try {
             <button onclick="qcRunSort('cj2')" class="w-full text-left px-3.5 py-2.5 text-[12.5px] font-semibold text-slate-700 hover:bg-slate-50 border-t border-slate-100">충주2공장만 정렬</button>
           </div>
         </div>
-        <button onclick="qcNewCopySelected(event)" id="qcNewCopySelBtn" disabled class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-regular fa-copy"></i>선택 복사</button>
-        <button onclick="qcNewConfirmSelected()" id="qcNewConfirmBtn" disabled class="py-2 px-5 rounded-lg bg-accent-500 text-white font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-solid fa-check"></i>확인</button>
+        <div class="flex gap-2">
+          <button onclick="qcNewCopySelected(event)" id="qcNewCopySelBtn" disabled class="py-2 px-4 rounded-lg border border-slate-200 text-slate-600 font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-regular fa-copy"></i>선택 복사</button>
+          <button onclick="qcNewConfirmSelected()" id="qcNewConfirmBtn" disabled class="py-2 px-5 rounded-lg bg-accent-500 text-white font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-solid fa-check"></i>확인</button>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- ===== 신규품목 수기등록 ===== -->
-<div id="qcManualRegisterModal" class="hidden fixed inset-0 z-[215] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) qcCloseManualRegister()">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 flex flex-col" style="max-height:88vh;">
-    <div class="flex items-center justify-between mb-1">
-      <div class="text-[16px] font-extrabold text-slate-800"><i class="fa-solid fa-plus text-accent-500 mr-1.5"></i>신규품목 수기등록</div>
-      <button onclick="qcCloseManualRegister()" class="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="text-[12px] text-slate-400 mb-3">수주공정 파일 업데이트가 아니라 직접 입력하는 품목입니다. 한 건명 아래 품목이 여러 개면 줄을 늘려 한 번에 등록할 수 있습니다.</div>
-    <div class="overflow-y-auto flex flex-col gap-3" style="flex:1;">
-      <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
-        <div class="text-[10.5px] font-extrabold text-slate-400 uppercase tracking-wider">이 건 공통 정보</div>
-        <div>
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">공장</div>
-          <div class="flex gap-1.5">
-            <button id="mrFacBtnCj1" onclick="qcMrPickFac('cj1')" class="chip-fac on px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주1공장</button>
-            <button id="mrFacBtnCj2" onclick="qcMrPickFac('cj2')" class="chip-fac px-3.5 py-1.5 rounded-full text-[12px] font-bold border">충주2공장</button>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">건명</div>
-            <input type="text" id="mrBuild" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500" placeholder="예: 두산에너빌리티(주) 창원">
-          </div>
-          <div>
-            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">납기일 <span class="normal-case text-slate-400 font-normal">· 비우면 빈칸 저장</span></div>
-            <input type="date" id="mrDue" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500">
-          </div>
-        </div>
+      <div id="qfoot-drawing" class="flex items-center justify-end" style="display:none;">
+        <button onclick="qcDrawingConfirmSelected()" id="qcDrawingOkBtn" disabled class="py-2 px-5 rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-600 font-bold text-[13px] disabled:opacity-40 flex items-center gap-1.5"><i class="fa-solid fa-print"></i>도면 출력완료 처리</button>
       </div>
-      <div>
-        <div class="flex items-center justify-between mb-2">
-          <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">품목 목록</div>
-          <span id="mrItemCountLabel" class="text-[11px] font-bold text-slate-400">1개 품목</span>
-        </div>
-        <div id="mrItemRows" class="flex flex-col gap-2"></div>
-        <button onclick="qcMrAddRow()" class="w-full mt-2.5 py-2 rounded-lg border-2 border-dashed border-slate-300 text-slate-500 font-bold text-[12.5px] hover:border-accent-400 hover:text-accent-500 flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus"></i>품목 추가</button>
+
+      <div id="qfoot-manual" class="flex items-center justify-end" style="display:none;">
+        <button onclick="qcMrSubmit()" id="mrSubmitBtn" class="w-full py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white font-bold text-[14px] flex items-center justify-center gap-2"><i class="fa-solid fa-check"></i><span id="mrSubmitLabel">신규 등록 (1건)</span></button>
       </div>
+
     </div>
-    <div id="mrFeedback" class="text-[12px] font-semibold text-center min-h-[16px] mt-2"></div>
-    <button onclick="qcMrSubmit()" id="mrSubmitBtn" class="w-full mt-1 py-3 rounded-xl bg-accent-500 hover:bg-accent-600 text-white font-bold text-[14px] flex items-center justify-center gap-2"><i class="fa-solid fa-check"></i><span id="mrSubmitLabel">신규 등록 (1건)</span></button>
   </div>
 </div>
 
