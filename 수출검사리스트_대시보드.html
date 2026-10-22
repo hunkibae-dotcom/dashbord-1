@@ -8587,12 +8587,41 @@ function _qcNewItems() {
   return _qcNewFac === 'all' ? items : items.filter(d => d.공장 === _qcNewFac);
 }
 
+// 탭 전환 — 확인(notify)/등록(confirm)/도면출력여부(drawing)/신규등록(manual).
+function qcSwitchTab(tab) {
+  ['notify', 'confirm', 'drawing', 'manual'].forEach(t => {
+    document.getElementById('qtabBtn-' + t)?.classList.toggle('on', t === tab);
+    document.getElementById('qtab-' + t).style.display = (t === tab) ? 'flex' : 'none';
+    document.getElementById('qfoot-' + t).style.display = (t === tab) ? 'flex' : 'none';
+  });
+}
 function qcOpenNewItemsModal() {
-  _qcNewFac = 'all';
-  _qcNewSelected = new Set();
-  document.getElementById('qcNewStatus').textContent = '';
-  _qcNewRenderChips();
-  qcNewRenderList();
+  // 모바일 앱에서는 "확인" 탭만 쓴다 — 등록(시트에 붙여넣기용 복사)/도면출력여부/
+  // 신규등록(수기입력)은 PC에서 하는 작업이라 탭바 자체를 숨긴다(요청, 2026-10-22).
+  const mobile = isMobile();
+  const tabBar = document.getElementById('qcTabBar');
+  if (tabBar) tabBar.style.display = mobile ? 'none' : 'flex';
+  qcSwitchTab('notify');
+
+  _qcNotifyFac = 'all'; _qcNotifySelected = new Set();
+  document.getElementById('qcNotifyStatus').textContent = '';
+  _qcNotifyRenderChips();
+  qcNotifyRender();
+
+  if (!mobile) {
+    _qcNewFac = 'all';
+    _qcNewSelected = new Set();
+    document.getElementById('qcNewStatus').textContent = '';
+    _qcNewRenderChips();
+    qcNewRenderList();
+
+    _qcDrawingFac = 'all'; _qcDrawingSelected = new Set();
+    document.getElementById('qcDrawingStatus').textContent = '';
+    _qcDrawingRenderChips();
+    qcDrawingRender();
+
+    qcMrResetForm();
+  }
   document.getElementById('qcNewItemsModal').classList.remove('hidden');
 }
 function qcCloseNewItemsModal() {
