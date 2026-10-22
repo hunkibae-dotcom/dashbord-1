@@ -2923,6 +2923,8 @@ function resetFilters() {
   ['fRound','fCode','fColor','fPacker','qStartDateFilter','qEndDateFilter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   setQcDateField('');
   setColInspect('');
+  blockingColFilters = new Set(QC_BLOCKING_VALUES);
+  _qcUpdateBlockingColLabel();
   ddayUrgencyFilter = null;
   pieFilter = null;
   qualityFilter = null;
