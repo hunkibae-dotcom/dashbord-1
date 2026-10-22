@@ -2623,16 +2623,14 @@ function applyFilters() {
       const dd = ddayInfo(d.납기일);
       const cat = dd === null ? '미정' : dd < 0 ? '지연' : dd <= 7 ? 'D-7이하' : dd <= 14 ? 'D-14이하' : '여유';
       if (cat !== ddayUrgencyFilter.urgency) return false;
+    } else if (colInspectSpecialFilter) {
+      // KPI 카드 "상세보기"에서 넘어온 화면전용 카테고리(생산중/검사대기/금일포장) —
+      // 체크박스 목록과 무관하게 이 하나로만 못박아 본다.
+      if (!_qcColInspectTest(colInspectSpecialFilter, d)) return false;
     } else {
-      // 검사상태(진행 칼럼) 드롭다운은 여러 개 동시 선택 가능(요청, 2026-10-21) — 고른
-      // 카테고리 중 하나라도 맞으면 통과(OR). 각 카테고리별 실제 판정 로직은
-      // _qcColInspectTest()에 모아뒀다(예전엔 여기 if/else-if 사슬 하나였는데, 단일
-      // 선택 전제라 여러 개를 동시에 못 골랐다).
-      if (colInspectFilters.size) {
-        let _anyColInspectMatch = false;
-        for (const _v of colInspectFilters) { if (_qcColInspectTest(_v, d)) { _anyColInspectMatch = true; break; } }
-        if (!_anyColInspectMatch) return false;
-      }
+      // 검사상태(진행 칼럼) — 구글시트 필터처럼 "포함"으로 체크된 카테고리에 속하는
+      // 행만 통과한다(요청, 2026-10-22). 기본은 9개 전부 포함이라 아무 영향 없음.
+      if (!colInspectFilters.has(_qcRowCategory(d))) return false;
     }
     if (qualityFilter) {
       if (qualityFilter.type === 'product') {
