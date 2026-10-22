@@ -8653,7 +8653,9 @@ async function qcNotifyConfirmSelected() {
         signal: AbortSignal.timeout(60000)
       }).then(r => r.json());
       if (res.status !== 'success') throw new Error(res.message || (fac + ' 확인 처리 실패'));
-      byFac[fac].forEach(d => { d.변경태그 = []; d.신규 = false; });
+      // 확인탭 "확인 처리"는 등록탭의 "신규" 상태를 건드리지 않는다(요청, 2026-10-22) —
+      // d.신규는 그대로 둬서, 아직 등록 전인 신규 품목이 등록탭에서 계속 보이게 한다.
+      byFac[fac].forEach(d => { d.변경태그 = []; });
     }
     _qcNotifySelected = new Set();
     statusEl.style.color = '#16a34a';
