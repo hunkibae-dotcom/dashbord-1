@@ -6278,9 +6278,11 @@ function setPsSourceFromDropdown(value) {
   if (value === 'active_done') {
     _psSourceFilter = 'active';
     _psStatusFilters = new Set(['검사']);
+    _psStatusFilterTouched = true;
   } else {
     _psSourceFilter = value;
     _psStatusFilters.clear();
+    _psStatusFilterTouched = false;
   }
   _updatePsSourceButtons();
   runProductSearch();
