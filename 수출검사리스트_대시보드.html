@@ -6702,6 +6702,7 @@ function renderProductSearchResults(results) {
         <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
           ${d.색상 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--input-bg);border-radius:5px;padding:1px 6px;">${d.색상}</span>` : ''}
           <span style="font-size:10.5px;color:var(--text-sub);font-family:ui-monospace,monospace;">${d.수량 || 0}EA</span>
+          ${d.블로킹 && d.블로킹 !== '-' ? `<span class="${QC_BLOCKING_CLS[d.블로킹] || QC_BLOCKING_CLS['미등록']}" style="font-size:9.5px;font-weight:700;border-radius:5px;padding:1px 6px;">${d.블로킹}</span>` : ''}
           ${cbm ? `<span style="font-size:10.5px;color:#2563EB;font-family:ui-monospace,monospace;">${cbm}m³</span>` : ''}
         </div>
       </div>
