@@ -1027,6 +1027,47 @@ function fiViewerDeleteCurrent() {
   _fiRenderPhotoViewer();
 }
 
+// 사진 다운로드(요청, 2026-10-23) — 화면에 보이는 viewUrl(썸네일로 캐시될 수 있는
+// Drive 미리보기 링크)이 아니라, 저장돼 있는 사진 파일 그 자체를 받는다. fileId가
+// 있으면(이미 서버에 저장된 사진) GAS 프록시 getPhotoBase64로 원본 그대로(blob을
+// base64만 인코딩, 리사이즈 없음) 받아오고, 아직 저장 전(dataUrl만 있는 새 사진)이면
+// 그 dataUrl을 그대로 쓴다 — 어느 쪽이든 화질 손실이 없다.
+async function fiPhotoViewerDownload() {
+  const isAddSlide = !!fiViewerEditable && fiViewerIndex === fiViewerPhotos.length;
+  if (isAddSlide) return;
+  const photo = fiViewerPhotos[fiViewerIndex];
+  if (!photo) return;
+  const filename = 'fieldinspect_' + Date.now() + (fiViewerPhotos.length > 1 ? '_' + (fiViewerIndex + 1) : '') + '.jpg';
+  let href = photo.dataUrl || photo.downloadUrl || photo.viewUrl;
+  if (photo.fileId) {
+    if (fiResolvedImageCache[photo.fileId]) {
+      href = fiResolvedImageCache[photo.fileId];
+    } else {
+      const url = fiGasUrl();
+      if (url) {
+        try {
+          const res = await fetch(url + '?' + new URLSearchParams({ action: 'getPhotoBase64', fileId: photo.fileId }), { signal: AbortSignal.timeout(20000) });
+          const json = await res.json();
+          if (json.status === 'success' && json.dataUrl) { href = json.dataUrl; fiResolvedImageCache[photo.fileId] = json.dataUrl; }
+        } catch (e) { /* 실패하면 위에서 이미 잡아둔 downloadUrl/viewUrl로라도 시도 */ }
+      }
+    }
+  }
+  if (!href) return;
+  // <a download>는 웹에서는 되지만, 네이티브 앱(WebView)에는 다운로드 매니저가 연결돼
+  // 있지 않아 클릭해도 아무 반응이 없다 — 앱에서는 대신 네이티브 브릿지로 갤러리에 저장한다.
+  if (window.Android && typeof window.Android.saveBase64Image === 'function' && href.startsWith('data:')) {
+    window.Android.saveBase64Image(href, filename);
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = href;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
 // ── 사진 확대/축소 — PC에선 마우스 휠, 터치에선 두 손가락 핀치, 더블클릭/더블탭으론
 // 토글(1배↔2.4배). 확대된 상태에선 드래그(한 손가락)로 끌어서 볼 수 있다(요청,
 // 2026-10-19 "현장검사 웹에서 사진볼때 확대 축소 가능했으면 좋겠어"). Pointer Events로
