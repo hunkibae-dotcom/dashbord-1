@@ -5909,7 +5909,7 @@ function openRpNoteEditor(key) {
     <textarea id="rpNoteText" rows="4" placeholder="특이사항을 입력하세요 (PPTX에는 이 글자만 들어갑니다)" style="width:100%;box-sizing:border-box;background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;resize:vertical;">${(sel.note || '').replace(/</g, '&lt;')}</textarea>
     <div style="font-size:11px;color:var(--label);margin:10px 0 6px;">참고 사진 (여러 장 가능, PPTX에는 포함되지 않음) — 품목 수정창의 "불량사진"과 같은 사진입니다.</div>
     <div id="rpNoteDefectPhotoWrap" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-    <input type="file" id="rpNoteDefectPhotoFile" accept="image/*" style="display:none;" onchange="_rpHandleNoteDefectPhotoFile(this)">
+    <input type="file" id="rpNoteDefectPhotoFile" accept="image/*,application/pdf" style="display:none;" onchange="_rpHandleNoteDefectPhotoFile(this)">
   `;
   _rpRenderNoteDefectPhotos();
   document.getElementById('rpEditModal').style.display = 'flex';
