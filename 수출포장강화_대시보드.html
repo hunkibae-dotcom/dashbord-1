@@ -2768,10 +2768,10 @@
         let _ugState = { cat: null, openKey: null, q: '' };
         function openUsageGuideModal() {
             _ugState = { cat: null, openKey: null, q: '' };
-            document.getElementById('usageGuideModal').style.display = 'flex';
+            document.getElementById('usageGuideModal').classList.remove('hidden');
             _ugRender();
         }
-        function closeUsageGuide() { document.getElementById('usageGuideModal').style.display = 'none'; }
+        function closeUsageGuide() { document.getElementById('usageGuideModal').classList.add('hidden'); }
         function _ugPickCat(c) { _ugState.cat = (_ugState.cat === c) ? null : c; _ugRender(); }
         function _ugToggle(key) { _ugState.openKey = (_ugState.openKey === key) ? null : key; _ugRender(); }
         function _ugOnSearch(v) { _ugState.q = v; _ugRender(); }
