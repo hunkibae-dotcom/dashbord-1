@@ -8545,12 +8545,27 @@ function _saveMiOverride(key, patch) {
   all[key] = Object.assign({}, all[key], patch);
   try { localStorage.setItem(MI_OVERRIDE_KEY, JSON.stringify(all)); } catch (e) { /* 저장공간 부족 등은 무시 */ }
 }
-// 새로 불러온 데이터에 이 기기에 저장해둔 수정값을 다시 입혀준다
+// 새로 불러온 데이터에 이 기기에 저장해둔 수정값을 다시 입혀준다. 수주 업데이트 등으로
+// 그 사이 수량이 살짝 바뀌면 _miKey(건명+단품코드+색상+수량)가 정확히 안 맞아 방금 저장한
+// 변경값이 다음 자동 새로고침(5분 주기) 때 조용히 사라져 보이는 문제가 있었다(요청,
+// 2026-10-23: "상태를 재투입으로 바꿨는데 가끔 원래대로 돌아와 있어" — 가끔 재현).
+// 정확한 키로 먼저 찾고, 없으면 수량을 뺀 "건명+단품코드+색상"만으로 한 번 더 찾는다 —
+// 단, 그 느슨한 키에 걸리는 후보가 2개 이상(진짜 수량만 다른 별개 행들)이면 어느 쪽인지
+// 알 수 없으므로 건드리지 않는다(잘못된 행에 덮어씌우는 사고 방지).
 function applyMiOverrides(list) {
   const overrides = _loadMiOverrides();
   if (!Object.keys(overrides).length) return;
+  const looseIndex = {};
+  Object.keys(overrides).forEach(k => {
+    const loose = k.split('|').slice(0, 3).join('|'); // 건명|단품코드|색상
+    (looseIndex[loose] || (looseIndex[loose] = [])).push(k);
+  });
   list.forEach(d => {
-    const o = overrides[_miKey(d)];
+    let o = overrides[_miKey(d)];
+    if (!o) {
+      const candidates = looseIndex[[d.건명, d.단품코드, d.색상].join('|')];
+      if (candidates && candidates.length === 1) o = overrides[candidates[0]];
+    }
     if (o) Object.assign(d, o);
   });
 }
