@@ -8900,8 +8900,8 @@
         // ✕로 지운 것만 삭제 — GAS updateDefectPhotos가 세 시트(수출현황/재고/출고완료)
         // 전부에 반영한다(품질검사 수정창과 동일한 생각).
         async function _pkgSyncDefectPhotosTask() {
-            const newOnes = _pkgDefectPhotos.filter(p => !p.fileId).map(p => p.dataUrl);
-            const kept = _pkgDefectPhotos.filter(p => p.fileId).map(p => ({ fileId: p.fileId, viewUrl: p.viewUrl, downloadUrl: p.downloadUrl }));
+            const newOnes = _pkgDefectPhotos.filter(p => !p.fileId).map(p => ({ dataUrl: p.dataUrl, thumb: p.thumb, isPdf: !!p.isPdf }));
+            const kept = _pkgDefectPhotos.filter(p => p.fileId).map(p => ({ fileId: p.fileId, viewUrl: p.viewUrl, downloadUrl: p.downloadUrl, isPdf: p.isPdf, thumb: p.thumb }));
             const removed = _pkgDefectRemovedFileIds.slice();
             const res = await fetch(_pkgGasUrl(), {
                 method: 'POST',
