@@ -2700,7 +2700,7 @@ function _qcUpdateBlockingColLabel() {
   if (n >= total) { label.textContent = '블로킹'; return; }
   if (n === 0) { label.textContent = '전체 제외됨'; return; }
   const included = QC_BLOCKING_VALUES.filter(v => blockingColFilters.has(v));
-  label.textContent = included.length > 1 ? (included[0] + ' 외 ' + (included.length - 1) + '개') : included[0];
+  label.textContent = included.length > 1 ? (_qcBlockingLabel(included[0]) + ' 외 ' + (included.length - 1) + '개') : _qcBlockingLabel(included[0]);
 }
 function toggleBlockingDropdown(e) {
   e.stopPropagation();
