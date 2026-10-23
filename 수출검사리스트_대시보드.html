@@ -8830,15 +8830,19 @@ function _qcProcessUploadedFile(file, cb) {
 function _qcPdfBadge() {
   return '<span style="position:absolute;bottom:3px;left:3px;background:rgba(220,38,38,.9);color:#fff;font-size:8px;font-weight:800;padding:1.5px 5px;border-radius:5px;line-height:1.4;pointer-events:none;">PDF</span>';
 }
-// 특이사항 사진 썸네일 — 사진은 기존처럼, PDF는 1페이지 미리보기(thumb)를 대신 보여준다.
-function _qcDefectPhotoImgTag(photo, styleAttr) {
+// 특이사항 사진 썸네일 공용 — 사진은 기존처럼(원격 사진은 Drive 권한 문제 대비 폴백
+// 포함), PDF는 1페이지 미리보기(thumb)를 대신 보여준다. factoryKey는 원격 사진 폴백
+// (_rpImgFallback)에 필요한 공장 구분값.
+function _qcDefectPhotoImgTag(photo, styleAttr, factoryKey) {
   if (photo.isPdf) {
     if (photo.thumb) return '<img src="' + photo.thumb + '" style="' + styleAttr + '">' + _qcPdfBadge();
     return '<div style="' + styleAttr + ';display:flex;align-items:center;justify-content:center;background:var(--input-bg);">' +
       '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
       '</div>' + _qcPdfBadge();
   }
-  return '';
+  const src = photo.dataUrl || photo.viewUrl;
+  const onerr = (!photo.dataUrl && photo.fileId) ? (' onerror="this.onerror=null;_rpImgFallback(this,\'' + photo.fileId + '\',\'' + (factoryKey || '') + '\')"') : '';
+  return '<img src="' + src + '"' + onerr + ' style="' + styleAttr + '">';
 }
 function _miHandleDefectPhotoFile(input) {
   const file = input.files && input.files[0];
