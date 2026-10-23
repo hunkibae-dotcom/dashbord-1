@@ -2332,15 +2332,16 @@ function fiHandleDetPhotoFile(input) {
   if (!file || !fiDetKey) return;
   // 저장을 누르기 전엔 서버에 아무것도 보내지 않는다 — 화면에만 임시로 더해두고
   // (dataUrl만 있는 "아직 안 올린 사진"), 실제 업로드는 fiSaveDetail()에서 한다.
-  fiCompressImageFile(file, function (dataUrl) {
+  _fiProcessUploadedFile(file, function (result) {
+    if (!result) { alert('파일을 불러오지 못했습니다. 다시 시도해주세요.'); return; }
     if (fiDetPhotoChangeIndex != null) {
       const i = fiDetPhotoChangeIndex;
       fiDetPhotoChangeIndex = null;
       const old = fiDetPhotos[i];
       if (old && old.fileId) fiDetRemovedFileIds.push(old.fileId);
-      fiDetPhotos[i] = { dataUrl: dataUrl };
+      fiDetPhotos[i] = result;
     } else {
-      fiDetPhotos.push({ dataUrl: dataUrl });
+      fiDetPhotos.push(result);
     }
     fiRenderDetPhotos();
     if (fiViewerEditable === 'det' && document.getElementById('fiPhotoViewerModal').style.display === 'flex') {
