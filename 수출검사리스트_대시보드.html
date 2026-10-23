@@ -1756,7 +1756,13 @@ try {
           <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj1" onclick="qcNewSetFac('cj1')">충주1공장</button>
           <button class="chip-fac px-3 py-1 rounded-full text-[11.5px] font-bold border" data-fac="cj2" onclick="qcNewSetFac('cj2')">충주2공장</button>
         </div>
-        <div class="flex gap-1.5 mb-2" id="qcNewSortBtns"></div>
+        <div class="flex items-center gap-1.5 mb-2">
+          <div class="flex gap-1.5" id="qcNewSortBtns"></div>
+          <div class="relative ml-auto" style="width:130px;">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:10px;color:#94a3b8;"></i>
+            <input type="text" id="qcNewSearchInput" oninput="qcNewRenderList()" placeholder="건명/코드 검색" class="w-full border border-slate-200 rounded-full outline-none focus:border-accent-500" style="padding:5px 10px 5px 24px;font-size:11px;box-sizing:border-box;">
+          </div>
+        </div>
         <div class="flex items-center justify-between py-2 border-b border-slate-100 text-[12px]">
           <label class="flex items-center gap-1.5 font-bold text-slate-600 cursor-pointer"><input type="checkbox" id="qcNewSelectAll" onchange="qcNewToggleAll(this.checked)"> 전체선택</label>
           <span id="qcNewSelCount" class="text-slate-400 font-semibold">0건 선택</span>
