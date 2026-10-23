@@ -3291,6 +3291,15 @@
                         if (isValidItemDate) {
                             if (startDate) matchesDate = matchesDate && (itemDate >= startDate);
                             if (endDate)   matchesDate = matchesDate && (itemDate <= endDate);
+                        } else {
+                            // 날짜 조건을 걸었는데(기간 지정) 이 항목엔 쓸만한 날짜가 하나도
+                            // 없으면(상차일/납기일로도 대체가 안 되면) 필터를 그냥 건너뛰고
+                            // 전부 통과시켜버리는 문제가 있었다 — 날짜 자체가 없는 재고활용
+                            // 품목 등이 "입고일 2026-10-23~2026-10-23" 같은 특정 날짜 조회에도
+                            // 매번 같이 보였다(요청, 2026-10-23: "입고날짜 입혀지지않은 항목들도
+                            // 막보이는데"). 날짜로 좁혀 달라는 요청인데 비교할 날짜가 없으면
+                            // 그 항목은 제외하는 게 맞다.
+                            matchesDate = false;
                         }
                     }
 
