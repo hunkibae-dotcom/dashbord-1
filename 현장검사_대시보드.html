@@ -992,10 +992,12 @@ function _fiRenderPhotoViewer() {
   const img = document.getElementById('fiPhotoViewerImg');
   const addBox = document.getElementById('fiPhotoViewerAddBox');
   const delBtn = document.getElementById('fiPhotoViewerDelBtn');
+  const dlBtn = document.getElementById('fiPhotoViewerDownloadBtn');
   if (isAddSlide) {
     img.style.display = 'none';
     addBox.style.display = 'flex';
     delBtn.style.display = 'none';
+    dlBtn.style.display = 'none';
   } else {
     const p = fiViewerPhotos[fiViewerIndex];
     img.style.display = '';
@@ -1004,6 +1006,7 @@ function _fiRenderPhotoViewer() {
     img.src = p.dataUrl || p.viewUrl;
     if (p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
     delBtn.style.display = fiViewerEditable ? 'flex' : 'none';
+    dlBtn.style.display = 'flex';
   }
   const multi = total > 1;
   const counter = document.getElementById('fiPhotoViewerCounter');
