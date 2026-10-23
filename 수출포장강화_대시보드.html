@@ -3282,24 +3282,23 @@
                 const _baseList = _isStockTab ? (state.stockRowItems || []) : state.data;
 
                 state.filteredData = _baseList.filter(item => {
-                    // 날짜 필터 — _webDateField 없으면(초기/미선택) 날짜 조건 무시
+                    // 날짜 필터 — _webDateField 없으면(초기/미선택) 날짜 조건 무시.
+                    // 탭(상차일/납기일/입고일/포장완료일) 중 하나를 고르는 것 자체가 "그
+                    // 날짜가 실제로 찍혀있는 항목만 보겠다"는 뜻이어야 한다(요청, 2026-10-23:
+                    // "입고일을 클릭한다는것 자체가 제품입고 날짜가 적힌 항목만나와야하는게
+                    // 정상이야") — 기간을 아직 안 넣었어도 그 칸이 비어있는 항목은 제외한다.
+                    // 예전엔 그 칸이 비어있으면 상차일→납기일로 대신 때워서 조건을 넘겨버리는
+                    // 바람에, 입고일이 아예 없는 재고활용/출고완료 품목이 "입고일" 탭에서도
+                    // 같이 보이는 문제가 있었다 — 그 대체(fallback) 자체를 없앴다.
                     let matchesDate = true;
-                    if (_webDateField && (startDate || endDate)) {
-                        let itemDate = item[_webDateField] || '';
-                        if (!itemDate || itemDate === '-') itemDate = item.date && item.date !== '-' ? item.date : item.dueDate;
+                    if (_webDateField) {
+                        const itemDate = item[_webDateField] || '';
                         const isValidItemDate = itemDate && itemDate !== '-' && /^\d{4}-\d{2}-\d{2}$/.test(itemDate);
-                        if (isValidItemDate) {
+                        if (!isValidItemDate) {
+                            matchesDate = false;
+                        } else if (startDate || endDate) {
                             if (startDate) matchesDate = matchesDate && (itemDate >= startDate);
                             if (endDate)   matchesDate = matchesDate && (itemDate <= endDate);
-                        } else {
-                            // 날짜 조건을 걸었는데(기간 지정) 이 항목엔 쓸만한 날짜가 하나도
-                            // 없으면(상차일/납기일로도 대체가 안 되면) 필터를 그냥 건너뛰고
-                            // 전부 통과시켜버리는 문제가 있었다 — 날짜 자체가 없는 재고활용
-                            // 품목 등이 "입고일 2026-10-23~2026-10-23" 같은 특정 날짜 조회에도
-                            // 매번 같이 보였다(요청, 2026-10-23: "입고날짜 입혀지지않은 항목들도
-                            // 막보이는데"). 날짜로 좁혀 달라는 요청인데 비교할 날짜가 없으면
-                            // 그 항목은 제외하는 게 맞다.
-                            matchesDate = false;
                         }
                     }
 
