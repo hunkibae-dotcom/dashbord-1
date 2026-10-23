@@ -763,6 +763,9 @@ try {
 
   <!-- 사진 크게보기(라이트박스) — 부적합조회 카드/하자상세 "전체보기"에서 공용으로 사용 -->
   <div id="fiPhotoViewerModal" onclick="if(event.target===this)fiClosePhotoViewer()" style="display:none; position:fixed; inset:0; z-index:97; background:rgba(0,0,0,.92); align-items:center; justify-content:center; flex-direction:column;">
+    <button id="fiPhotoViewerDownloadBtn" onclick="fiPhotoViewerDownload()" title="원본 사진 다운로드" style="display:none; position:absolute; top:max(14px,env(safe-area-inset-top)); right:58px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; align-items:center; justify-content:center; cursor:pointer; z-index:2;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    </button>
     <button onclick="fiClosePhotoViewer()" style="position:absolute; top:max(14px,env(safe-area-inset-top)); right:14px; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:16px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:2;">✕</button>
     <div id="fiPhotoViewerCounter" style="display:none; position:absolute; top:max(18px,env(safe-area-inset-top)); left:50%; transform:translateX(-50%); color:#fff; font-size:12px; font-weight:700; background:rgba(255,255,255,.15); padding:5px 13px; border-radius:20px;"></div>
     <img id="fiPhotoViewerImg" draggable="false" style="max-width:92vw; max-height:78vh; object-fit:contain; border-radius:4px; touch-action:none; user-select:none; -webkit-user-drag:none; cursor:zoom-in; transition:transform .08s linear;">
