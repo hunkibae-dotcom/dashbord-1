@@ -952,7 +952,20 @@ async function fiImgFallback(imgEl, fileId) {
   try { imgEl.src = await p; } catch (e) { /* 이것마저 실패하면 깨진 채로 둔다 */ }
   finally { delete fiImgFallbackInFlight[fileId]; }
 }
+// PDF 썸네일 배지(요청, 2026-10-23: "pdf여도 썸네일보이게 해줘") — 1페이지 미리보기
+// 그림 위에 작게 "PDF"라고 표시해서 사진과 구분되게 한다.
+function _fiPdfBadge() {
+  return '<span style="position:absolute;bottom:3px;left:3px;background:rgba(220,38,38,.9);color:#fff;font-size:8px;font-weight:800;padding:1.5px 5px;border-radius:5px;line-height:1.4;pointer-events:none;">PDF</span>';
+}
 function fiPhotoImgTag(photo, styleAttr) {
+  // PDF는 <img>로 직접 못 띄우므로, 올릴 때 미리 만들어 둔 1페이지 미리보기(thumb)를
+  // 대신 보여준다. thumb조차 없으면(렌더링 실패 등) 깨진 이미지 대신 문서 아이콘을 둔다.
+  if (photo.isPdf) {
+    if (photo.thumb) return '<img src="' + photo.thumb + '" style="' + styleAttr + '">' + _fiPdfBadge();
+    return '<div style="' + styleAttr + ';display:flex;align-items:center;justify-content:center;background:var(--input-bg);">' +
+      '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
+      '</div>' + _fiPdfBadge();
+  }
   // 저장 전 임시로 들고 있는(아직 서버에 안 올린) 사진은 dataUrl만 있다 — 그걸 그대로 src로 쓴다.
   const src = photo.dataUrl || photo.viewUrl;
   const onerr = photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '';
