@@ -11764,6 +11764,40 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 사용 설명서 (웹 사이드바 "사용 설명서" / 모바일 설정 맨 아래 공용 모달) ===== -->
+<style>
+  .ug-cat-chip { flex-shrink:0;padding:6px 12px;border-radius:18px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap; }
+  .ug-cat-chip.on { border-color:#6D5CE8;background:rgba(109,92,232,.1);color:#6D5CE8; }
+  .ug-cat-label { font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--label);margin:10px 2px 1px; }
+  .ug-cat-label:first-child { margin-top:2px; }
+  .ug-feat-card { background:var(--input-bg);border:1px solid var(--border);border-radius:13px;overflow:hidden; }
+  .ug-feat-head { display:flex;align-items:center;gap:10px;padding:12px 13px;cursor:pointer; }
+  .ug-feat-head .ug-ic { width:30px;height:30px;border-radius:9px;background:rgba(109,92,232,.1);color:#6D5CE8;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12.5px; }
+  .ug-feat-head .ug-txt { flex:1;min-width:0; }
+  .ug-feat-head .ug-name-row { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+  .ug-feat-head .ug-name { font-size:13px;font-weight:700;color:var(--text); }
+  .ug-plat-tag { font-size:8.5px;font-weight:800;letter-spacing:.03em;padding:1.5px 6px;border-radius:6px;flex-shrink:0; }
+  .ug-plat-tag.web { background:#FFF1E0;color:#B6650A; }
+  .ug-plat-tag.app { background:#E3F6EA;color:#117A3D; }
+  .ug-feat-head .ug-hint { font-size:10.5px;color:var(--label);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+  .ug-chev { color:var(--label);font-size:10.5px;transition:transform .15s;flex-shrink:0; }
+  .ug-feat-card.open .ug-chev { transform:rotate(180deg); }
+  .ug-feat-body { display:none;padding:0 13px 14px 53px; }
+  .ug-feat-card.open .ug-feat-body { display:block; }
+  .ug-feat-sec { margin-bottom:11px; }
+  .ug-feat-sec:last-child { margin-bottom:0; }
+  .ug-feat-sec-label { font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#6D5CE8;margin-bottom:5px; }
+  .ug-feat-sec p { margin:0;font-size:12px;line-height:1.6;color:var(--text-sub); }
+  .ug-feat-sec p + p { margin-top:6px; }
+  .ug-steps { margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px; }
+  .ug-steps li { display:flex;gap:8px;font-size:12px;line-height:1.55;color:var(--text); }
+  .ug-steps li .ug-num { flex-shrink:0;width:16px;height:16px;border-radius:50%;background:var(--border);color:var(--text-sub);font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px; }
+  .ug-tip-box { margin-top:2px;background:var(--border);border-radius:9px;padding:9px 11px;display:flex;gap:7px; }
+  .ug-tip-box i { color:#6D5CE8;font-size:11px;margin-top:2px;flex-shrink:0; }
+  .ug-tip-box p { margin:0;font-size:11.5px;line-height:1.5;color:var(--text-sub); }
+  .ug-tip-box.warn i { color:#D1472A; }
+  .ug-tip-box.warn { background:#FDECEA; }
+  .ug-no-result { text-align:center;padding:40px 10px;color:var(--label);font-size:12.5px; }
+</style>
 <div id="usageGuideModal" onclick="if(event.target===this)closeUsageGuide()" style="display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);padding:16px;">
   <div style="background:var(--panel);border:1px solid var(--border);border-radius:18px;width:480px;max-width:100%;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25);">
     <div style="padding:18px 20px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:11px;flex-shrink:0;">
