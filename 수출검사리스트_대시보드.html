@@ -2447,6 +2447,10 @@ const QC_BLOCKING_CLS = {
   '검사완료': 'bg-emerald-50 text-emerald-600',
   '취소': 'bg-slate-200 text-slate-500',
 };
+// 화면 표시용 짧은 라벨(요청 2026-10-23: "검사상태 칼럼이랑 헷갈려서") — 시트에
+// 저장되는 실제 값(QC_BLOCKING_VALUES)은 그대로 두고, 보이는 글자만 줄인다.
+const QC_BLOCKING_LABELS = { '미등록': '미등록', '검사대기': '대기', '검사완료': '완료', '취소': '취소' };
+function _qcBlockingLabel(v) { return QC_BLOCKING_LABELS[v] || v || '미등록'; }
 // 날짜를 "26. 10. 10"처럼 두 자리 연도로 줄인다(요청 2026-10-22, 웹 제품검색 표 폭
 // 조정용) — GAS가 내려주는 "2026. 10. 23" 형식만 다루면 된다.
 function _qcShortYearDate(s) {
