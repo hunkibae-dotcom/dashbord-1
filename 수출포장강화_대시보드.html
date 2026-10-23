@@ -9832,10 +9832,8 @@
             const wraps = document.querySelectorAll('.pkg-defect-photo-wrap');
             if (!wraps.length) return;
             const html = _pkgDefectPhotos.map((p, i) => {
-                const src = p.dataUrl || p.viewUrl;
-                const onerr = (!p.dataUrl && p.fileId) ? ` onerror="this.onerror=null;_pkgImgFallback(this,'${p.fileId}')"` : '';
                 return `<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:#f1f5f9;flex-shrink:0;">
-                    <img src="${src}"${onerr} style="width:100%;height:100%;object-fit:cover;">
+                    ${_pkgDefectPhotoImgTag(p, 'width:100%;height:100%;object-fit:cover;')}
                     <span onclick="_pkgRemoveDefectPhoto(${i})" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>
                 </div>`;
             }).join('') + `<div onclick="document.getElementById('pkgDefectPhotoFile').click()" style="width:64px;height:64px;background:#f1f5f9;border:1.5px dashed #e2e8f0;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">
