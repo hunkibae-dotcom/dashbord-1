@@ -2784,29 +2784,30 @@
             document.getElementById('ugCatRow').innerHTML = data.categories.map(c => {
                 const n = data.features.filter(f => f.cat === c).length;
                 const on = _ugState.cat === c;
-                return '<button type="button" class="ug-cat-chip' + (on ? ' on' : '') + '" onclick="_ugPickCat(\'' + c + '\')">' + c + ' <span style="opacity:.7;font-size:10px;">' + n + '</span></button>';
+                const cls = on ? 'border-accentBlue bg-accentBlue/10 text-accentBlue' : 'border-borderSlate/50 text-slate-400';
+                return '<button type="button" class="flex-shrink-0 px-3 py-1.5 rounded-full border text-[11.5px] font-bold whitespace-nowrap ' + cls + '" onclick="_ugPickCat(\'' + c + '\')">' + c + ' <span class="opacity-70 text-[10px]">' + n + '</span></button>';
             }).join('');
             let body = '';
             if (!features.length) {
-                body = '<div class="ug-no-result"><i class="fa-solid fa-magnifying-glass" style="font-size:20px;margin-bottom:8px;display:block;"></i>일치하는 기능이 없습니다</div>';
+                body = '<div class="text-center py-10 text-slate-500 text-[12.5px]"><i class="fa-solid fa-magnifying-glass text-[20px] mb-2 block"></i>일치하는 기능이 없습니다</div>';
             } else {
                 let lastCat = null;
                 features.forEach(f => {
-                    if (!_ugState.cat && !q && f.cat !== lastCat) { body += '<div class="ug-cat-label">' + f.cat + '</div>'; lastCat = f.cat; }
+                    if (!_ugState.cat && !q && f.cat !== lastCat) { body += '<div class="text-[10px] font-extrabold tracking-wider uppercase text-slate-500 mt-2 mb-0.5 px-0.5">' + f.cat + '</div>'; lastCat = f.cat; }
                     const key = (f.cat + '|' + f.name).replace(/'/g, "\\'");
                     const open = _ugState.openKey === (f.cat + '|' + f.name);
-                    body += '<div class="ug-feat-card' + (open ? ' open' : '') + '">' +
-                        '<div class="ug-feat-head" onclick="_ugToggle(\'' + key + '\')">' +
-                            '<div class="ug-ic"><i class="' + f.icon + '"></i></div>' +
-                            '<div class="ug-txt"><div class="ug-name-row"><span class="ug-name">' + f.name + '</span></div><div class="ug-hint">' + f.when + '</div></div>' +
-                            '<i class="fa-solid fa-chevron-down ug-chev"></i>' +
+                    body += '<div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl overflow-hidden">' +
+                        '<div class="flex items-center gap-2.5 p-3 cursor-pointer" onclick="_ugToggle(\'' + key + '\')">' +
+                            '<div class="w-[30px] h-[30px] rounded-lg bg-accentBlue/10 text-accentBlue flex items-center justify-center flex-shrink-0 text-[12.5px]"><i class="' + f.icon + '"></i></div>' +
+                            '<div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-white">' + f.name + '</div><div class="text-[10.5px] text-slate-500 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">' + f.when + '</div></div>' +
+                            '<i class="fa-solid fa-chevron-down text-slate-500 text-[10.5px] flex-shrink-0 transition-transform' + (open ? ' rotate-180' : '') + '"></i>' +
                         '</div>' +
-                        '<div class="ug-feat-body">' +
-                            '<div class="ug-feat-sec"><div class="ug-feat-sec-label">언제 사용하나요</div><p>' + f.when + '</p></div>' +
-                            (f.body ? '<div class="ug-feat-sec"><div class="ug-feat-sec-label">알아두면 좋은 점</div>' + f.body.map(p => '<p>' + p + '</p>').join('') + '</div>' : '') +
-                            '<div class="ug-feat-sec"><div class="ug-feat-sec-label">사용 방법</div><ol class="ug-steps">' + f.steps.map((s, i) => '<li><span class="ug-num">' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol></div>' +
-                            (f.tip ? '<div class="ug-tip-box' + ((f.tip.includes('되돌릴 수 없') || f.tip.includes('지워지며')) ? ' warn' : '') + '"><i class="fa-solid fa-circle-info"></i><p>' + f.tip + '</p></div>' : '') +
-                        '</div>' +
+                        (open ? ('<div class="px-3 pb-4 pl-[53px] flex flex-col gap-2.5">' +
+                            '<div><div class="text-[9.5px] font-extrabold tracking-wider uppercase text-accentBlue mb-1">언제 사용하나요</div><p class="text-[12px] leading-relaxed text-slate-300 m-0">' + f.when + '</p></div>' +
+                            (f.body ? ('<div><div class="text-[9.5px] font-extrabold tracking-wider uppercase text-accentBlue mb-1">알아두면 좋은 점</div>' + f.body.map(p => '<p class="text-[12px] leading-relaxed text-slate-300 m-0 mt-1.5">' + p + '</p>').join('') + '</div>') : '') +
+                            '<div><div class="text-[9.5px] font-extrabold tracking-wider uppercase text-accentBlue mb-1">사용 방법</div><ol class="m-0 p-0 list-none flex flex-col gap-1.5">' + f.steps.map((s, i) => '<li class="flex gap-2 text-[12px] leading-snug text-slate-200"><span class="flex-shrink-0 w-4 h-4 rounded-full bg-borderSlate/60 text-slate-400 text-[9px] font-extrabold flex items-center justify-center mt-0.5">' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol></div>' +
+                            (f.tip ? ('<div class="mt-0.5 rounded-lg p-2.5 flex gap-2 ' + ((f.tip.includes('되돌릴 수 없') || f.tip.includes('지워지며')) ? 'bg-accentRed/10' : 'bg-borderSlate/30') + '"><i class="fa-solid fa-circle-info text-[11px] mt-0.5 flex-shrink-0 ' + ((f.tip.includes('되돌릴 수 없') || f.tip.includes('지워지며')) ? 'text-accentRed' : 'text-accentBlue') + '"></i><p class="text-[11.5px] leading-snug text-slate-400 m-0">' + f.tip + '</p></div>') : '') +
+                        '</div>') : '') +
                     '</div>';
                 });
             }
