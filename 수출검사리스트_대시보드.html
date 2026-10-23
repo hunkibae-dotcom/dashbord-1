@@ -9097,6 +9097,7 @@ function qcOpenNewItemsModal() {
 
   _qcNotifyFac = 'all'; _qcNotifySelected = new Set();
   document.getElementById('qcNotifyStatus').textContent = '';
+  const qcNotifySearchEl = document.getElementById('qcNotifySearchInput'); if (qcNotifySearchEl) qcNotifySearchEl.value = '';
   _qcNotifyRenderChips();
   qcNotifyRender();
 
@@ -9104,11 +9105,13 @@ function qcOpenNewItemsModal() {
     _qcNewFac = 'all';
     _qcNewSelected = new Set();
     document.getElementById('qcNewStatus').textContent = '';
+    const qcNewSearchEl = document.getElementById('qcNewSearchInput'); if (qcNewSearchEl) qcNewSearchEl.value = '';
     _qcNewRenderChips();
     qcNewRenderList();
 
     _qcDrawingFac = 'all'; _qcDrawingSelected = new Set();
     document.getElementById('qcDrawingStatus').textContent = '';
+    const qcDrawingSearchEl = document.getElementById('qcDrawingSearchInput'); if (qcDrawingSearchEl) qcDrawingSearchEl.value = '';
     _qcDrawingRenderChips();
     qcDrawingRender();
 
