@@ -6363,7 +6363,7 @@ function _renderPsSourceList() {
     const active = picked.has(s);
     return `<button onclick="togglePsPickerStatus('${s}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? 'rgba(109,92,232,.12)' : 'var(--icon-bg)'};color:${active ? '#6D5CE8' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
       <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#6D5CE8' : 'var(--border)'};background:${active ? '#6D5CE8' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#fff;"></i>' : ''}</span>
-      ${s}
+      ${_psPickerDimension === 'blocking' ? _qcBlockingLabel(s) : s}
     </button>`;
   }).join('');
 }
