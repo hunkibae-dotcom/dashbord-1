@@ -8403,7 +8403,7 @@ function _miRenderBlockingButtons() {
   const wrap = document.getElementById('miBlockingBtns');
   if (!wrap || !_miCurrent) return;
   const cur = ('블로킹' in _miPendingSync) ? _miPendingSync.블로킹 : (_miCurrent.블로킹 || '미등록');
-  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => `<button data-mi-blocking="${v}" onclick="setMiField('블로킹','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${v}</button>`).join('');
+  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => `<button data-mi-blocking="${v}" onclick="setMiField('블로킹','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${_qcBlockingLabel(v)}</button>`).join('');
   _refreshMiBlockingButtons(cur);
 }
 function _refreshMiBlockingButtons(v) {
