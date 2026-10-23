@@ -2252,7 +2252,7 @@ async function fiSubmitRegister() {
     content: document.getElementById('fiRegContent').value.trim(),
     actionText: document.getElementById('fiRegAction').value.trim(),
     status: fiRegStatus,
-    photos: fiRegPhotos.map(function (p) { return p.dataUrl; }),
+    photos: fiRegPhotos.map(function (p) { return { dataUrl: p.dataUrl, thumb: p.thumb, isPdf: !!p.isPdf }; }),
     occSite: occ.site, occLoc: occ.loc,
     causeSite: cause.site, causeLoc: cause.loc,
     causeConfidence: (cause.loc && cause.loc !== '파악중') ? fiRegCauseConfidence : ''
