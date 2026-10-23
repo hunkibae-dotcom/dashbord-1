@@ -9131,7 +9131,7 @@ function qcNewRenderList() {
   const body = document.getElementById('qcNewBody');
   const sortBtnsEl = document.getElementById('qcNewSortBtns');
   if (sortBtnsEl) sortBtnsEl.innerHTML = _qcModalSortBtnsHtml('confirm');
-  const items = _qcModalSortItems(_qcNewItems(), _qcNewSortKey, _qcNewSortAsc);
+  const items = _qcModalSortItems(_qcModalSearchFilter(_qcNewItems(), 'qcNewSearchInput'), _qcNewSortKey, _qcNewSortAsc);
   if (!items.length) {
     body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">신규 품목이 없습니다.</div>';
   } else {
