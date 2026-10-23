@@ -2136,12 +2136,56 @@ function fiCompressImageFile(file, cb) {
   };
   reader.readAsDataURL(file);
 }
+// PDF 1페이지를 캔버스에 그려 작은 미리보기 그림을 만든다 — PDF 자체는 <img>로 못
+// 띄우므로, 실제 파일(PDF 원본)은 그대로 올리되 화면 썸네일용으로만 따로 쓴다.
+function _fiRenderPdfThumb(dataUrl, cb) {
+  if (typeof pdfjsLib === 'undefined') { cb(null); return; }
+  try {
+    const base64 = dataUrl.replace(/^data:application\/pdf;base64,/, '');
+    const bytes = Uint8Array.from(atob(base64), function (c) { return c.charCodeAt(0); });
+    pdfjsLib.getDocument({ data: bytes }).promise.then(function (pdf) {
+      return pdf.getPage(1);
+    }).then(function (page) {
+      const MAX = 480;
+      const vp0 = page.getViewport({ scale: 1 });
+      const scale = Math.min(2, MAX / Math.max(vp0.width, vp0.height));
+      const viewport = page.getViewport({ scale: scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise.then(function () {
+        cb(canvas.toDataURL('image/jpeg', 0.8));
+      });
+    }).catch(function () { cb(null); });
+  } catch (e) { cb(null); }
+}
+// 사진(이미지) 외에 PDF도 올릴 수 있게(요청, 2026-10-23: "업로드할때 pdf파일업로드도
+// 가능하게해줘"). 이미지는 기존처럼 압축해서 그 자체를 미리보기로 쓰고, PDF는 원본
+// 그대로 올리되(압축 대상이 아님) 1페이지를 그려 작은 미리보기(thumb)를 따로 만들어
+// 같이 들고 다닌다 — 저장 후 다시 불러올 때도 이 thumb을 그대로 쓰므로 목록을 열 때마다
+// PDF를 매번 다시 렌더링하지 않는다.
+function _fiProcessUploadedFile(file, cb) {
+  const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+  if (!isPdf) {
+    fiCompressImageFile(file, function (dataUrl) { cb({ dataUrl: dataUrl, isPdf: false }); });
+    return;
+  }
+  const reader = new FileReader();
+  reader.onerror = function () { cb(null); };
+  reader.onload = function (e) {
+    const dataUrl = e.target.result;
+    _fiRenderPdfThumb(dataUrl, function (thumb) {
+      cb({ dataUrl: dataUrl, thumb: thumb, isPdf: true });
+    });
+  };
+  reader.readAsDataURL(file);
+}
 function fiHandleRegPhotoFile(input) {
   const file = input.files && input.files[0];
   input.value = '';
   if (!file) return;
-  fiCompressImageFile(file, function (dataUrl) {
-    fiRegPhotos.push({ dataUrl: dataUrl });
+  _fiProcessUploadedFile(file, function (result) {
+    if (!result) { alert('파일을 불러오지 못했습니다. 다시 시도해주세요.'); return; }
+    fiRegPhotos.push(result);
     fiRenderRegPhotos();
     if (fiViewerEditable === 'reg' && document.getElementById('fiPhotoViewerModal').style.display === 'flex') {
       fiViewerIndex = fiRegPhotos.length - 1;
