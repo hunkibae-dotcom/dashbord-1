@@ -4267,27 +4267,31 @@
             _pkgRenderPagination(state.filteredData.length, _pkgTotalPages);
         }
 
-        // 처음/이전/다음/끝 버튼 + "N~M / 총 T건" 안내를 그린다. 결과가 비어있거나
-        // 1페이지뿐이면 굳이 보여줄 필요가 없어 통째로 숨긴다.
+        // 품질검사 대시보드 보고서 목록(_rpRenderPagination)과 같은 방식 — 현재 페이지
+        // 주변 번호(1,2,3,4...) 버튼을 보여주고 양 끝엔 처음/이전·다음/마지막 버튼을 둔다.
+        // 전부 다 보여주면(품목이 많을 때 수십 페이지) 버튼이 끝없이 늘어서므로 창(window)
+        // 처럼 일부만 보여준다. 결과가 비어있거나 1페이지뿐이면 통째로 숨긴다.
         function _pkgRenderPagination(totalCount, totalPages) {
             const bar = document.getElementById('pkgPaginationBar');
             if (!bar) return;
-            if (totalCount === 0 || totalPages <= 1) { bar.style.display = 'none'; return; }
-            bar.style.display = 'flex';
-            const from = _pkgCurrentPage * _pkgPageSize + 1;
-            const to = Math.min(totalCount, (_pkgCurrentPage + 1) * _pkgPageSize);
-            document.getElementById('pkgPageRangeLabel').textContent = `${from.toLocaleString()}–${to.toLocaleString()} / 총 ${totalCount.toLocaleString()}건`;
-            document.getElementById('pkgPageNumLabel').textContent = `${_pkgCurrentPage + 1} / ${totalPages}`;
-            const atFirst = _pkgCurrentPage === 0;
-            const atLast = _pkgCurrentPage === totalPages - 1;
-            ['pkgPageFirstBtn', 'pkgPagePrevBtn'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.disabled = atFirst; el.style.opacity = atFirst ? '.4' : '1'; el.style.cursor = atFirst ? 'default' : 'pointer'; }
-            });
-            ['pkgPageNextBtn', 'pkgPageLastBtn'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.disabled = atLast; el.style.opacity = atLast ? '.4' : '1'; el.style.cursor = atLast ? 'default' : 'pointer'; }
-            });
+            if (totalCount === 0 || totalPages <= 1) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+            bar.style.display = 'block';
+            const cur = _pkgCurrentPage + 1; // 내부 상태는 0-based, 화면 표시는 1-based
+            const WINDOW = window.innerWidth < 640 ? 5 : 7;
+            let start = Math.max(1, cur - Math.floor(WINDOW / 2));
+            let end = Math.min(totalPages, start + WINDOW - 1);
+            start = Math.max(1, end - WINDOW + 1);
+            const btn = (label, page, disabled, active) =>
+                `<button type="button" onclick="_pkgGoToPage(${page - 1})" ${disabled ? 'disabled' : ''} style="flex-shrink:0;min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1.5px solid ${active ? '#0ea5e9' : '#e2e8f0'};background:${active ? '#0ea5e9' : '#fff'};color:${active ? '#fff' : '#475569'};font-size:12.5px;font-weight:800;cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};">${label}</button>`;
+            let html = `<div style="text-align:center;font-size:12.5px;color:#94a3b8;margin-bottom:8px;">총 ${totalCount.toLocaleString()}건 · ${cur}/${totalPages}페이지</div>`;
+            html += `<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;">`;
+            html += btn('<i class="fa-solid fa-angles-left"></i>', 1, cur === 1, false);
+            html += btn('<i class="fa-solid fa-angle-left"></i>', Math.max(1, cur - 1), cur === 1, false);
+            for (let p = start; p <= end; p++) html += btn(String(p), p, false, p === cur);
+            html += btn('<i class="fa-solid fa-angle-right"></i>', Math.min(totalPages, cur + 1), cur === totalPages, false);
+            html += btn('<i class="fa-solid fa-angles-right"></i>', totalPages, cur === totalPages, false);
+            html += `</div>`;
+            bar.innerHTML = html;
         }
 
         // 페이지를 넘기면 화면에 없는 품목에 대한 체크가 남아 헷갈리지 않도록 선택을
@@ -4296,11 +4300,9 @@
             _pkgCurrentPage = p;
             _pkgSelectedKeys.clear();
             renderTable();
+            const cardsWrap = document.getElementById('tableCardsMobile');
+            if (cardsWrap) cardsWrap.scrollTop = 0;
         }
-        function pkgGoFirstPage() { _pkgGoToPage(0); }
-        function pkgGoPrevPage()  { _pkgGoToPage(_pkgCurrentPage - 1); }
-        function pkgGoNextPage()  { _pkgGoToPage(_pkgCurrentPage + 1); }
-        function pkgGoLastPage()  { _pkgGoToPage(Math.max(0, Math.ceil(state.filteredData.length / _pkgPageSize) - 1)); }
 
         // 차트 가공 렌더러
         // 제품별 실적 비교차트 — 제품구분(충주1제품/충주2제품/목제N상품 등, item.country
