@@ -963,7 +963,7 @@ function fiPhotoImgTag(photo, styleAttr, extraAttrs) {
   // 대신 보여준다. thumb조차 없으면(렌더링 실패 등) 깨진 이미지 대신 문서 아이콘을 둔다.
   if (photo.isPdf) {
     if (photo.thumb) return '<img src="' + photo.thumb + '" style="' + styleAttr + '"' + extraAttrs + '>' + _fiPdfBadge();
-    return '<div style="' + styleAttr + ';display:flex;align-items:center;justify-content:center;background:var(--input-bg);">' +
+    return '<div' + extraAttrs + ' style="' + styleAttr + ';display:flex;align-items:center;justify-content:center;background:var(--input-bg);">' +
       '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
       '</div>' + _fiPdfBadge();
   }
