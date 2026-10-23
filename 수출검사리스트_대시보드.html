@@ -5984,7 +5984,7 @@ async function _rpSyncNoteToSheet(item, noteText) {
 // 올리거나 지워도 똑같이 보이게 하기 위함(요청, 2026-10-19). 로직은 _miSyncDefectPhotos와
 // 같지만 이 모달 자신의 로컬 상태(_rpNoteDefectPhotos/_rpNoteDefectRemovedFileIds)를 쓴다.
 async function _rpSyncNoteDefectPhotos(item) {
-  const newOnes = _rpNoteDefectPhotos.filter(function (p) { return !p.fileId; }).map(function (p) { return p.dataUrl; });
+  const newOnes = _rpNoteDefectPhotos.filter(function (p) { return !p.fileId; }).map(function (p) { return { dataUrl: p.dataUrl, thumb: p.thumb, isPdf: !!p.isPdf }; });
   const removed = _rpNoteDefectRemovedFileIds.slice();
   if (!newOnes.length && !removed.length) return;
   const url = _gasUrlForFactory(item.공장);
