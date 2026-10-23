@@ -2111,13 +2111,18 @@ function fiCompressImageFile(file, cb) {
   reader.onload = function (e) {
     const img = new Image();
     img.onload = function () {
-      const MAX = 1280;
+      // 전엔 긴 변 기준 1280px/화질 0.72로 줄여서 저장했는데, 화면에서 작게 볼 땐
+      // 괜찮아도 보고서 등으로 인쇄하면 흐리게 나온다는 지적(요청, 2026-10-23: "현장검사
+      // 사진다운할때 원본그대로맞아? 출력하니까 흐려지는데") — 인쇄해도 괜찮을 해상도로
+      // 올렸다. 그래도 끝없이 큰 원본(요즘 폰 카메라는 4000px 넘기도 함)을 그대로
+      // 올리면 용량이 과도하게 커지므로 상한선 자체는 유지한다.
+      const MAX = 2400;
       const ratio = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
       const w = Math.max(1, Math.round(img.naturalWidth * ratio)), h = Math.max(1, Math.round(img.naturalHeight * ratio));
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      cb(canvas.toDataURL('image/jpeg', 0.72));
+      cb(canvas.toDataURL('image/jpeg', 0.88));
     };
     img.src = e.target.result;
   };
