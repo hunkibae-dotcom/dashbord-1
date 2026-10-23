@@ -4796,7 +4796,7 @@
     // 실제로 온 시트(item.source: standard/stock/shipped)를 기본 기준으로 보여주되
     // 다른 기준으로도 전환해 볼 수 있게 한다.
     const PKG_STATUS_GROUPS = {
-        standard: ['포장대기', '포장완료', '피킹', '출고', '재고활용'],
+        standard: ['미입고', '입고', '일부입고', '포장대기', '포장완료', '피킹', '출고', '재고활용'],
         stock:    ['미확인', '포장대기', '포장완료', '철물', '미포장'],
         shipped:  ['출고', '피킹', '미포장'],
     };
@@ -4806,7 +4806,7 @@
         { key: 'stock', label: '충주공장 재고' },
         { key: 'shipped', label: '출고완료' },
     ];
-    const PKG_STATUS_COLOR = { 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
+    const PKG_STATUS_COLOR = { 미입고:'#DC2626', 입고:'#38BDF8', 일부입고:'#FBBF24', 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
     let _ieBasis = 'standard';
 
     function _ieApplyCardToggle(prefix, editing) {
