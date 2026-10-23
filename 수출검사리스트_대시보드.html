@@ -8742,10 +8742,8 @@ function _miRenderDefectPhotos() {
   if (!wrap) return;
   const factoryKey = _miCurrent ? _miCurrent.공장 : '';
   wrap.innerHTML = _miDefectPhotos.map(function (p, i) {
-    const src = p.dataUrl || p.viewUrl;
-    const onerr = (!p.dataUrl && p.fileId) ? (' onerror="this.onerror=null;_rpImgFallback(this,\'' + p.fileId + '\',\'' + factoryKey + '\')"') : '';
     return '<div style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;">' +
-      '<img src="' + src + '"' + onerr + ' style="width:100%;height:100%;object-fit:cover;">' +
+      _qcDefectPhotoImgTag(p, 'width:100%;height:100%;object-fit:cover;', factoryKey) +
       '<span onclick="_miRemoveDefectPhoto(' + i + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
     '</div>';
   }).join('') + '<div onclick="document.getElementById(\'miDefectPhotoFile\').click()" style="width:64px;height:64px;background:var(--input-bg);border:1.5px dashed var(--border);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;flex-shrink:0;cursor:pointer;">' +
