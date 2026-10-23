@@ -1025,8 +1025,10 @@ function _fiRenderPhotoViewer() {
     img.style.display = '';
     addBox.style.display = 'none';
     img.onerror = null;
-    img.src = p.dataUrl || p.viewUrl;
-    if (p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
+    // PDF는 <img>로 못 띄우므로 1페이지 미리보기(thumb)를 대신 크게 보여준다 — 실제
+    // PDF 원본은 우상단 다운로드 버튼으로 받을 수 있다.
+    img.src = p.isPdf ? (p.thumb || '') : (p.dataUrl || p.viewUrl);
+    if (!p.isPdf && p.fileId) img.onerror = function () { img.onerror = null; fiImgFallback(img, p.fileId); };
     delBtn.style.display = fiViewerEditable ? 'flex' : 'none';
     dlBtn.style.display = 'flex';
   }
