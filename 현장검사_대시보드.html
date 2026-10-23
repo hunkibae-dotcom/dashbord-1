@@ -1361,7 +1361,7 @@ function fiPcCardHtml(d) {
     '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;">' +
       '<div style="position:relative;">' +
         (photo
-          ? '<img class="fipc-photo" src="' + (photo.dataUrl || photo.viewUrl) + '"' + (photo.fileId ? ' onerror="this.onerror=null;fiImgFallback(this,\'' + photo.fileId + '\')"' : '') + ' onclick="fiOpenPhotoViewerFor(\'' + key + '\')">'
+          ? fiPhotoImgTag(photo, '', ' class="fipc-photo" onclick="fiOpenPhotoViewerFor(\'' + key + '\')"')
           : '<div class="fipc-photo empty">📷</div>') +
         _fiPhotoCountBadge(d.photos) +
       '</div>' +
