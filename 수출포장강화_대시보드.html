@@ -9873,12 +9873,68 @@
             };
             reader.readAsDataURL(file);
         }
+        // PDF 1페이지를 캔버스에 그려 작은 미리보기 그림을 만든다 — PDF 자체는 <img>로 못
+        // 띄우므로, 실제 파일(PDF 원본)은 그대로 올리되 화면 썸네일용으로만 따로 쓴다.
+        function _pkgRenderPdfThumb(dataUrl, cb) {
+            if (typeof pdfjsLib === 'undefined') { cb(null); return; }
+            try {
+                const base64 = dataUrl.replace(/^data:application\/pdf;base64,/, '');
+                const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+                pdfjsLib.getDocument({ data: bytes }).promise.then(pdf => pdf.getPage(1)).then(page => {
+                    const MAX = 480;
+                    const vp0 = page.getViewport({ scale: 1 });
+                    const scale = Math.min(2, MAX / Math.max(vp0.width, vp0.height));
+                    const viewport = page.getViewport({ scale });
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width; canvas.height = viewport.height;
+                    return page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise.then(() => {
+                        cb(canvas.toDataURL('image/jpeg', 0.8));
+                    });
+                }).catch(() => cb(null));
+            } catch (e) { cb(null); }
+        }
+        // 사진(이미지) 외에 PDF도 올릴 수 있게(요청, 2026-10-23: "업로드할때 pdf파일업로드도
+        // 가능하게해줘"). 이미지는 기존처럼 압축해서 그 자체를 미리보기로 쓰고, PDF는 원본
+        // 그대로 올리되(압축 대상이 아님) 1페이지를 그려 작은 미리보기(thumb)를 따로 만들어
+        // 같이 들고 다닌다.
+        function _pkgProcessUploadedFile(file, cb) {
+            const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+            if (!isPdf) {
+                _pkgCompressImageFile(file, (dataUrl) => cb({ dataUrl, isPdf: false }));
+                return;
+            }
+            const reader = new FileReader();
+            reader.onerror = () => cb(null);
+            reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                _pkgRenderPdfThumb(dataUrl, (thumb) => cb({ dataUrl, thumb, isPdf: true }));
+            };
+            reader.readAsDataURL(file);
+        }
+        // PDF 썸네일 배지(요청, 2026-10-23: "pdf여도 썸네일보이게 해줘").
+        function _pkgPdfBadge() {
+            return '<span style="position:absolute;bottom:3px;left:3px;background:rgba(220,38,38,.9);color:#fff;font-size:8px;font-weight:800;padding:1.5px 5px;border-radius:5px;line-height:1.4;pointer-events:none;">PDF</span>';
+        }
+        // 불량사진 썸네일 공용 — 사진은 기존처럼(원격 사진은 Drive 권한 문제 대비 폴백
+        // 포함), PDF는 1페이지 미리보기(thumb)를 대신 보여준다.
+        function _pkgDefectPhotoImgTag(photo, styleAttr) {
+            if (photo.isPdf) {
+                if (photo.thumb) return `<img src="${photo.thumb}" style="${styleAttr}">` + _pkgPdfBadge();
+                return `<div style="${styleAttr};display:flex;align-items:center;justify-content:center;background:#f1f5f9;">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                </div>` + _pkgPdfBadge();
+            }
+            const src = photo.dataUrl || photo.viewUrl;
+            const onerr = (!photo.dataUrl && photo.fileId) ? ` onerror="this.onerror=null;_pkgImgFallback(this,'${photo.fileId}')"` : '';
+            return `<img src="${src}"${onerr} style="${styleAttr}">`;
+        }
         function _pkgHandleDefectPhotoFile(input) {
             const file = input.files && input.files[0];
             input.value = '';
             if (!file) return;
-            _pkgCompressImageFile(file, (dataUrl) => {
-                _pkgDefectPhotos.push({ dataUrl });
+            _pkgProcessUploadedFile(file, (result) => {
+                if (!result) { alert('파일을 불러오지 못했습니다. 다른 파일로 다시 시도해주세요.'); return; }
+                _pkgDefectPhotos.push(result);
                 _pkgRenderDefectPhotos();
             });
         }
