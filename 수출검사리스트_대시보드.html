@@ -2651,12 +2651,12 @@ function _qcBlockingRenderDraftList() {
   const list = document.getElementById('qcBlockingDraftList');
   if (!list || !_qcBlockingDraft) return;
   const q = (document.getElementById('qcBlockingSearchInput')?.value || '').trim().toLowerCase();
-  const values = QC_BLOCKING_VALUES.filter(v => v.toLowerCase().includes(q));
+  const values = QC_BLOCKING_VALUES.filter(v => v.toLowerCase().includes(q) || _qcBlockingLabel(v).toLowerCase().includes(q));
   list.innerHTML = values.map(v => {
     const checked = _qcBlockingDraft.has(v);
     return `<label style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:12.5px;font-weight:600;color:#334155;">
       <input type="checkbox" ${checked ? 'checked' : ''} onchange="_qcBlockingDraftToggle('${v}', this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#16A34A;flex-shrink:0;">
-      ${v}
+      ${_qcBlockingLabel(v)}
     </label>`;
   }).join('') || '<div style="padding:14px 12px;color:#94a3b8;font-size:12px;text-align:center;">일치하는 항목이 없습니다</div>';
   _qcBlockingUpdateDraftCount();
