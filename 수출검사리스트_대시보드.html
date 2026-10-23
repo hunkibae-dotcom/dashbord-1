@@ -9044,11 +9044,11 @@ function qcDrawingToggleOne(key, checked) {
   _qcDrawingUpdateSelUi();
 }
 function qcDrawingToggleAll(checked) {
-  _qcDrawingItems().forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
+  _qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput').forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
   qcDrawingRender();
 }
 function _qcDrawingUpdateSelUi() {
-  const items = _qcDrawingItems();
+  const items = _qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput');
   document.getElementById('qcDrawingSelCount').textContent = _qcDrawingSelected.size + '건 선택';
   const allCb = document.getElementById('qcDrawingSelectAll');
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcDrawingSelected.has(_qcNewKey(d)));
