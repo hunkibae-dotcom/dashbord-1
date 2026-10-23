@@ -2672,6 +2672,129 @@
             }
         }
 
+        // ── 사용 설명서 (2026-10-23 추가) — 사이드바 "사용 설명서"에서 여는 모달. 내용은
+        // 검토용으로 먼저 만든 "대시보드 사용 설명서(4종)" 아티팩트의 pkgWeb 데이터를
+        // 그대로 옮겨왔다 — 실제 화면에 들어가는 거라 수정 시 그 아티팩트와 같이 맞춰줄 것.
+        const USAGE_GUIDE_PKG_WEB = {
+            categories: ['현황·진행', '차트', '검색·조회', '신규 품목', '불량조치', 'PE폼', '데이터 출력', '설정·기타'],
+            features: [
+                { cat: '현황·진행', icon: 'fa-solid fa-house', name: '홈 화면 KPI 카드 4가지',
+                  when: '지금 포장강화 작업이 어떻게 돌아가는지 한눈에 보고 싶을 때 사용합니다.',
+                  body: ['금일 작업계획(포장대기 수량, 신규품목 상세보기), 이전 작업내용 Log(전일 포장완료 내역), 수출 일정(가까운 수출 건 진행률), Inform(전달사항 슬라이드 5장: 일정 달력/납기·상차 변경내역/진행별 현황/파렛트 현황/용역 요청현황) — 4개 카드로 구성됩니다.'],
+                  steps: ['포장대기 수량 박스를 누르면 표가 포장대기 항목만으로 필터링됩니다.', '"수출 일정" 카드를 누르면 가까운 건명을 골라 표를 그 차수로 필터링할 수 있습니다.', 'Inform 카드는 좌우 화살표로 5장의 슬라이드를 넘겨봅니다.'] },
+                { cat: '현황·진행', icon: 'fa-solid fa-truck-ramp-box', name: '입고·포장완료 처리',
+                  when: '물건이 실제로 들어왔거나 포장이 끝났을 때 상태를 갱신합니다.',
+                  body: ['진행상태는 수출현황/출고완료/실재고 3개 그룹으로 묶여서 접었다 펴는 방식입니다. 품목을 열면 현재 상태가 속한 그룹이 자동으로 펼쳐집니다.', '수출현황 그룹: 미입고·입고·출고·피킹·일부입고·포장완료·재고활용 / 출고완료 그룹: 출고·피킹·미포장 / 실재고 그룹: 미확인·포장대기·포장완료·철물·미포장.'],
+                  steps: ['품목을 눌러 수정창을 엽니다.', '진행상태 그룹 이름을 눌러 펼친 뒤, 입고 / 포장완료 등 바뀐 상태를 고릅니다.', '"일부입고"를 고르면 실제 입고 수량 입력칸이 추가로 나타나므로 꼭 채워야 저장됩니다.', '포장완료로 바꾸면서 등록일자(포장일)를 비워두면 오늘 날짜가 자동으로 채워집니다.'] },
+                { cat: '현황·진행', icon: 'fa-solid fa-list-check', name: '여러 품목 한 번에 수정 (일괄수정)',
+                  when: '같은 조건의 품목 여러 건을 한 번에 진행상태·일정·적재번호로 바꿔야 할 때 사용합니다.',
+                  steps: ['표 위쪽의 "선택" 버튼을 눌러 선택 모드로 바꿉니다.', '수정할 품목들을 체크합니다.', '"수정" 버튼으로 일괄수정창을 엽니다.', '진행상태·납기일·상차일·적재번호·PE폼 유형 중 바꿀 항목만 고릅니다(하나 이상 선택해야 적용 가능).', '"일부입고"를 고르면 선택한 품목마다 각각 입고 수량을 따로 입력하는 칸이 줄줄이 생깁니다.', '"적용"을 누르면 선택한 전체 품목에 한 번에 반영됩니다.'] },
+                { cat: '현황·진행', icon: 'fa-solid fa-boxes-stacked', name: '적재번호 정렬',
+                  when: '적재번호가 중간중간 비어서 순서를 깔끔하게 다시 매겨야 할 때 사용합니다.',
+                  steps: ['홈 화면 Inform 카드의 "파렛트 현황" 슬라이드로 이동합니다.', '"적재정렬" 버튼을 누릅니다.', '빈 번호를 당겨 순서를 자동으로 재배열하고, 몇 건이 바뀌었는지 알려줍니다.'] },
+                { cat: '현황·진행', icon: 'fa-solid fa-user-group', name: '용역 요청·요청이력',
+                  when: '포장 인력이 더 필요해서 용역을 신청하거나, 그동안의 신청 이력을 확인하고 싶을 때 사용합니다.',
+                  steps: ['Inform 카드의 "용역 요청현황" 슬라이드로 이동합니다.', '"용역 요청" 버튼으로 날짜·부서·인원을 입력해 신청합니다.', '"용역 요청이력" 버튼으로 지금까지의 신청 내역을 표로 확인합니다.'] },
+                { cat: '차트', icon: 'fa-solid fa-chart-line', name: '포장강화 누적차트',
+                  when: '포장강화 작업량이 날짜별로 어떻게 쌓였는지 추이를 보고 싶을 때 사용합니다.',
+                  steps: ['연도를 고르고 일별/주간별/월간별/년도별 중 보기 방식을 고릅니다.', '화살표로 기간을 이동합니다.', '막대나 점을 누르면 그 구간의 상세 품목 리스트가 뜹니다.', '"데이터 출력"으로 지금 보고 있는 데이터를 CSV로 받을 수 있습니다.'] },
+                { cat: '차트', icon: 'fa-solid fa-chart-simple', name: '제품별 실적 비교차트',
+                  when: '제품구분(상품군)별로 출고 실적을 비교해서 보고 싶을 때 사용합니다.',
+                  steps: ['연도·보기 방식(일/주/월/년)을 고릅니다.', '막대를 누르면 상세 모달이 뜹니다.', '"데이터 출력"에서 비교할 제품구분을 체크해 리포트를 받습니다.'] },
+                { cat: '검색·조회', icon: 'fa-solid fa-magnifying-glass', name: '제품검색(표)',
+                  when: '건명·단품코드·색상·적재번호 등으로 품목을 찾고, 상태별로 좁혀 보고 싶을 때 사용합니다.',
+                  body: ['상단 탭으로 전체/입고현황/실재고/적재/출고 중 보고 싶은 범위를 고릅니다. "실재고"는 충주공장 재고 시트의 실제 행을 그대로 보여주므로, 같은 코드+차수가 여러 파렛트에 나뉘어 있으면 그만큼 행도 나뉘어 보입니다.', '칼럼 제목을 누르면 정렬되고, "상태" 칼럼은 구글시트 스타일 체크박스 필터로 원하는 값만 골라 "확인"을 눌러야 반영됩니다.'],
+                  steps: ['상단 탭에서 원하는 범위를 고릅니다.', '검색칸(건명/코드/색상/적재/특이사항)에 조건을 입력합니다.', '필요하면 날짜 기준(상차일/납기일/입고일/포장완료일)을 바꿔 기간을 좁힙니다.', '결과가 50건을 넘으면 하단 번호(1, 2, 3, 4…) 버튼으로 다음 페이지를 봅니다.'] },
+                { cat: '검색·조회', icon: 'fa-solid fa-ruler-combined', name: '상세스펙 조회',
+                  when: '같은 단품코드의 과거 규격(가로·세로·높이·CBM) 평균과 진행 이력을 확인하고 싶을 때 사용합니다.',
+                  steps: ['사이드바의 "상세스펙"을 엽니다.', '제품코드를 입력하면 자동완성 제안과 함께 평균 규격, 표본 수, 허용오차가 뜹니다.', '제품 종류·PE폼 높이를 직접 적어 기억시켜 둘 수 있습니다(이 값은 이 브라우저에만 저장됩니다).', '아래 "세부 진행 이력" 표에서 이 코드의 모든 수주 이력을 확인하고, "데이터 출력"으로 엑셀로 받을 수 있습니다.'] },
+                { cat: '검색·조회', icon: 'fa-solid fa-calendar-days', name: '수출 일정 달력',
+                  when: '상차일·납기일이 날짜별로 어떻게 몰려있는지 달력으로 확인하고 싶을 때 사용합니다.',
+                  steps: ['Inform 카드의 첫 슬라이드(미니 달력)를 누르면 전체 달력 모달이 열립니다.', '파란 점(상차일)·빨간 점(납기일)이 있는 날짜를 누르면 그날의 일정 목록이 뜹니다.'] },
+                { cat: '신규 품목', icon: 'fa-solid fa-star', name: '신규 추가 품목 확인·삭제',
+                  when: '분류(수주)로 새로 들어온 품목을 확인하거나, 잘못 들어온 품목을 지워야 할 때 사용합니다.',
+                  steps: ['금일 작업계획 카드의 "신규품목 상세보기"를 누릅니다.', '확인할 품목은 체크 후 "확인"을 누르면 신규 표시만 지워지고 품목은 그대로 남습니다.', '잘못 들어온 품목은 체크 후 "삭제"를 누릅니다 — 이 경우 시트에서 완전히 지워지며 되돌릴 수 없으므로 확인창이 한 번 더 뜹니다.'] },
+                { cat: '불량조치', icon: 'fa-solid fa-clipboard-check', name: '포장불량조치 등록·관리',
+                  when: '포장 중 불량/하자를 발견해 사진과 함께 기록하고 조치 이력을 남길 때 사용합니다.',
+                  body: ['상단에 총 등록건·미조치·조치 진행중·조치완료율이 요약되어 보입니다. 여기서 등록하는 사진은 품목 수정창의 "특이사항 및 사진"과 같은 자리를 공유합니다 — 어느 쪽에서 추가/삭제해도 서로 똑같이 반영됩니다.'],
+                  steps: ['사이드바의 "포장불량조치"를 엽니다.', '"등록(신규)"을 누르고 품목코드나 건명으로 검색해 대상 품목을 고릅니다.', '불량유형을 복수 선택하고 불량 내용을 적습니다.', '조치 상태(미조치/조치중/조치완료)와 조치 내용, 사진을 입력하고 저장합니다.', '기존 항목은 카드 우상단의 연필(수정)·휴지통(삭제) 아이콘으로 다룹니다.'] },
+                { cat: 'PE폼', icon: 'fa-solid fa-layer-group', name: 'PE폼 발주 서브 대시보드 (웹 전용)',
+                  when: 'PE폼 재고 현황을 확인하고 발주서를 작성해야 할 때 사용합니다.',
+                  steps: ['사이드바의 "PE폼"을 엽니다.', '대시보드·재고현황·품목마스터를 확인합니다.', '발주서 작성 화면에서 품목을 선택해 발주서를 만들고 저장합니다(발주 이력에 남습니다).'],
+                  tip: '발주서 "작성"은 PC 웹에서만 되고, 대시보드·이력·재고 열람은 앱에서도 가능합니다.' },
+                { cat: 'PE폼', icon: 'fa-solid fa-ruler-combined', name: '품목 수정창의 PE폼 유형·규격',
+                  when: '품목별로 어떤 PE폼을 쓰는지 유형과 규격을 기록해두고 싶을 때 사용합니다.',
+                  steps: ['품목 수정창의 "PE폼 유형" 영역에서 유형(일자형 등)을 고릅니다.', '규격을 직접 입력합니다(자동완성 제안이 뜹니다).'],
+                  tip: '이 값은 구글시트가 아니라 이 브라우저에만 코드별로 저장됩니다 — 다른 컴퓨터에서는 다시 입력해야 합니다.' },
+                { cat: '데이터 출력', icon: 'fa-solid fa-file-export', name: '데이터 출력(PDF/엑셀)',
+                  when: '조회된 목록을 인쇄하거나, 엑셀로 받아서 고쳐 써야 할 때 사용합니다.',
+                  steps: ['조회 결과에서 "데이터 출력"을 누릅니다.', '기본출력(전체 항목) / 포장항목 출력 / 상차항목 출력 중 목적을 고릅니다.', '엑셀(.xls) 또는 PDF를 고릅니다(PDF는 용지 방향도 선택).', '표에서 미리 체크해둔 품목이 있으면 그 품목만, 없으면 지금 필터링된 전체가 출력됩니다.'] },
+                { cat: '데이터 출력', icon: 'fa-solid fa-tag', name: '인식표 출력',
+                  when: '적재·출고할 품목에 붙일 인식표(라벨)를 뽑아야 할 때 사용합니다.',
+                  steps: ['표 위쪽 "인식표 출력"을 누릅니다.', '재고용 / 출고용을 고릅니다.', '출고용이면 김효진님 / 최필재님 / 사전조립 / 양지출고 중 받는 사람·방식을 고르고, 필요한 추가 정보(구역이름, 건명+성함 등)를 입력합니다.', '표에서 품목을 미리 선택해뒀으면 적재번호 입력 없이 바로 생성되고, 아니면 적재번호를 입력해 생성합니다.', '생성과 동시에 시트에도 기록되고 PDF가 바로 다운로드됩니다.'],
+                  tip: '지금 제품검색에 걸려있는 조건 그대로 인식표를 뽑고 싶으면 "제품검색 출력" 버튼을 쓰면 적재번호 입력 없이 바로 생성됩니다.' },
+                { cat: '설정·기타', icon: 'fa-solid fa-upload', name: '수주입고 업데이트',
+                  when: '엑셀로 받은 통합품목/분류-수주/분류-입고 파일을 반영해야 할 때 사용합니다.',
+                  steps: ['사이드바의 "수주입고 업데이트"를 엽니다.', '관련 엑셀 파일들을 한꺼번에 올립니다.', '자동으로 분류되어 반영됩니다.'] },
+                { cat: '설정·기타', icon: 'fa-solid fa-bars', name: '사이드바 접기·펼치기',
+                  when: '표 화면을 더 넓게 쓰고 싶을 때 사용합니다.',
+                  steps: ['사이드바 상단의 접기 아이콘을 누릅니다.', '상태는 다음에 열어도 그대로 기억됩니다.'] },
+                { cat: '설정·기타', icon: 'fa-solid fa-users', name: '접속현황·내 이름 설정',
+                  when: '지금 누가 같이 접속해 있는지 보고, 내 표시 이름을 바꾸고 싶을 때 사용합니다.',
+                  steps: ['사이드바의 "프로필 변경"을 누릅니다.', '표시할 이름을 입력하고 저장합니다.'] },
+                { cat: '설정·기타', icon: 'fa-solid fa-link', name: '연동 설정 / 연동 초기화',
+                  when: '구글시트와 연결하는 주소가 바뀌었거나, 연동에 문제가 생겨 초기화해야 할 때 사용합니다.',
+                  steps: ['사이드바의 "연동 설정"에서 주소를 입력합니다.', '문제가 심각하면 "연동 초기화"(빨간 글씨)로 완전히 되돌립니다 — 확인창이 한 번 더 뜨는 되돌릴 수 없는 작업입니다.'] },
+            ]
+        };
+        let _ugState = { cat: null, openKey: null, q: '' };
+        function openUsageGuideModal() {
+            _ugState = { cat: null, openKey: null, q: '' };
+            document.getElementById('usageGuideModal').style.display = 'flex';
+            _ugRender();
+        }
+        function closeUsageGuide() { document.getElementById('usageGuideModal').style.display = 'none'; }
+        function _ugPickCat(c) { _ugState.cat = (_ugState.cat === c) ? null : c; _ugRender(); }
+        function _ugToggle(key) { _ugState.openKey = (_ugState.openKey === key) ? null : key; _ugRender(); }
+        function _ugOnSearch(v) { _ugState.q = v; _ugRender(); }
+        function _ugRender() {
+            const data = USAGE_GUIDE_PKG_WEB;
+            const q = (_ugState.q || '').trim().toLowerCase();
+            let features = data.features;
+            if (_ugState.cat) features = features.filter(f => f.cat === _ugState.cat);
+            if (q) features = features.filter(f => f.name.toLowerCase().includes(q) || f.when.toLowerCase().includes(q));
+            document.getElementById('ugCatRow').innerHTML = data.categories.map(c => {
+                const n = data.features.filter(f => f.cat === c).length;
+                const on = _ugState.cat === c;
+                return '<button type="button" class="ug-cat-chip' + (on ? ' on' : '') + '" onclick="_ugPickCat(\'' + c + '\')">' + c + ' <span style="opacity:.7;font-size:10px;">' + n + '</span></button>';
+            }).join('');
+            let body = '';
+            if (!features.length) {
+                body = '<div class="ug-no-result"><i class="fa-solid fa-magnifying-glass" style="font-size:20px;margin-bottom:8px;display:block;"></i>일치하는 기능이 없습니다</div>';
+            } else {
+                let lastCat = null;
+                features.forEach(f => {
+                    if (!_ugState.cat && !q && f.cat !== lastCat) { body += '<div class="ug-cat-label">' + f.cat + '</div>'; lastCat = f.cat; }
+                    const key = (f.cat + '|' + f.name).replace(/'/g, "\\'");
+                    const open = _ugState.openKey === (f.cat + '|' + f.name);
+                    body += '<div class="ug-feat-card' + (open ? ' open' : '') + '">' +
+                        '<div class="ug-feat-head" onclick="_ugToggle(\'' + key + '\')">' +
+                            '<div class="ug-ic"><i class="' + f.icon + '"></i></div>' +
+                            '<div class="ug-txt"><div class="ug-name-row"><span class="ug-name">' + f.name + '</span></div><div class="ug-hint">' + f.when + '</div></div>' +
+                            '<i class="fa-solid fa-chevron-down ug-chev"></i>' +
+                        '</div>' +
+                        '<div class="ug-feat-body">' +
+                            '<div class="ug-feat-sec"><div class="ug-feat-sec-label">언제 사용하나요</div><p>' + f.when + '</p></div>' +
+                            (f.body ? '<div class="ug-feat-sec"><div class="ug-feat-sec-label">알아두면 좋은 점</div>' + f.body.map(p => '<p>' + p + '</p>').join('') + '</div>' : '') +
+                            '<div class="ug-feat-sec"><div class="ug-feat-sec-label">사용 방법</div><ol class="ug-steps">' + f.steps.map((s, i) => '<li><span class="ug-num">' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol></div>' +
+                            (f.tip ? '<div class="ug-tip-box' + ((f.tip.includes('되돌릴 수 없') || f.tip.includes('지워지며')) ? ' warn' : '') + '"><i class="fa-solid fa-circle-info"></i><p>' + f.tip + '</p></div>' : '') +
+                        '</div>' +
+                    '</div>';
+                });
+            }
+            document.getElementById('ugBody').innerHTML = body;
+        }
+
         function confirmResetConnection() {
             document.getElementById('resetConnectionModal').classList.remove('hidden');
         }
