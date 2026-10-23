@@ -1061,7 +1061,8 @@ async function fiPhotoViewerDownload() {
   if (isAddSlide) return;
   const photo = fiViewerPhotos[fiViewerIndex];
   if (!photo) return;
-  const filename = 'fieldinspect_' + Date.now() + (fiViewerPhotos.length > 1 ? '_' + (fiViewerIndex + 1) : '') + '.jpg';
+  const ext = photo.isPdf ? '.pdf' : '.jpg';
+  const filename = 'fieldinspect_' + Date.now() + (fiViewerPhotos.length > 1 ? '_' + (fiViewerIndex + 1) : '') + ext;
   let href = photo.dataUrl || photo.downloadUrl || photo.viewUrl;
   if (photo.fileId) {
     if (fiResolvedImageCache[photo.fileId]) {
