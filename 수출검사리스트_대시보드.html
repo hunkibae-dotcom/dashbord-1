@@ -5933,8 +5933,9 @@ function _rpHandleNoteDefectPhotoFile(input) {
   const file = input.files && input.files[0];
   input.value = '';
   if (!file) return;
-  _rpCompressImage(file, function (rec) {
-    _rpNoteDefectPhotos.push({ dataUrl: rec.dataUrl });
+  _qcProcessUploadedFile(file, function (result) {
+    if (!result) { alert('파일을 불러오지 못했습니다. 다른 파일로 다시 시도해주세요.'); return; }
+    _rpNoteDefectPhotos.push(result);
     _rpRenderNoteDefectPhotos();
   });
 }
