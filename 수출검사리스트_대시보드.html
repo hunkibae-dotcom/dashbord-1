@@ -8839,6 +8839,12 @@ let _qcNewSortKey = null, _qcNewSortAsc = true;
 let _qcDrawingSortKey = null, _qcDrawingSortAsc = true;
 const _QC_MODAL_SORT_DEFS = [['round', '건명'], ['code', '단품코드'], ['due', '납기']];
 const _QC_MODAL_SORT_FIELD = { round: '건명', code: '단품코드', due: '납기일' };
+// 신규품목확인 모달 검색(요청, 2026-10-23) — 건명/단품코드 부분일치. 탭마다 자기 검색칸만 본다.
+function _qcModalSearchFilter(items, inputId) {
+  const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
+  if (!q) return items;
+  return items.filter(d => (d.건명 || '').toLowerCase().includes(q) || (d.단품코드 || '').toLowerCase().includes(q));
+}
 function _qcModalSortItems(items, key, asc) {
   if (!key) return items;
   const field = _QC_MODAL_SORT_FIELD[key];
