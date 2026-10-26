@@ -7681,6 +7681,19 @@ function onSpecFieldEdit(card) {
   const codeType = card.querySelector('[data-spec-codetype]').value;
   const standardName = card.querySelector('[data-spec-standardname]').value;
   localStorage.setItem('specOverride_' + code, JSON.stringify({ standardName, codeType }));
+  // 어느 PC에서도 같게 보이도록 구글시트("상세스펙" 탭)에도 올린다(요청, 2026-10-26:
+  // "다른 PC에도 똑같이 보여야해"). 이 코드가 실제로 나온 공장(들)의 시트에 저장한다 —
+  // 어느 공장인지 전혀 안 걸리면(이력이 하나도 없는 코드를 직접 타이핑한 경우 등)
+  // 두 공장 다 저장해 둔다. 실패해도 이 브라우저엔 이미 저장됐으니 조용히 넘어간다.
+  const codeUpper = code.toString().trim().toUpperCase();
+  _qcServerSpecMap[codeUpper] = Object.assign({}, _qcServerSpecMap[codeUpper], { code: codeUpper, standardName, codeType });
+  const rawFactories = (card.dataset.factories || '').split(',').filter(Boolean);
+  const targetFactories = rawFactories.length ? rawFactories : ['cj1', 'cj2'];
+  targetFactories.forEach(f => {
+    const url = _gasUrlForFactory(f);
+    if (!url) return;
+    fetch(url, { method: 'POST', body: JSON.stringify({ action: 'updateSpecOverride', code: codeUpper, standardName, codeType }), signal: AbortSignal.timeout(20000) }).catch(() => {});
+  });
 }
 
 function openSpecModal(code) {
