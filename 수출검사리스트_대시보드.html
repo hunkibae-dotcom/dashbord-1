@@ -12474,11 +12474,14 @@ function onNativeScanResult(raw) {
     var aside = document.querySelector('aside');
     if(aside) aside.style.display = 'none';
 
-    /* 코드검색 바로가기: ?openScan=1 → 바코드 스캐너 자동 오픈 */
+    /* 코드검색 바로가기: ?openScan=1 → 바코드 스캐너 자동 오픈 — 전엔 데이터 로딩과
+       상관없이 400ms 뒤 무조건 열어서, 느린 네트워크에서는 데이터가 하나도 없는 채로
+       스캔하게 됐다(요청, 2026-10-26: "스캐너에서는 미연동 상태에서 켜지기 때문에
+       바로스캔하면 소용이 없더라고"). 이제 "불러오는 중" 화면이 실제로 내려가는
+       시점(데이터 준비 완료)까지 기다렸다가 연다. */
     if (p.get('openScan') === '1') {
         history.replaceState(null, '', location.pathname + '?shell=1&theme=' + (p.get('theme') || 'dark'));
-        // 데이터 로드 후 스캐너 열기 (loadData는 DOMContentLoaded 이후 실행되므로 약간 지연)
-        setTimeout(function(){ if(typeof _openScanSmart === 'function') _openScanSmart(); }, 400);
+        _qcInitReadyPromise.then(function(){ if(typeof _openScanSmart === 'function') _openScanSmart(); });
     }
 })();
 </script>
