@@ -2525,7 +2525,14 @@
                 if (!rawCodeStr && row[0]) rawCodeStr = row[0].toString().trim();
 
                 let dateVal = indices.date !== -1 && indices.date < row.length && row[indices.date] ? normalizeDate(row[indices.date]) : '-';
-                let regDateVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? normalizeDate(row[indices.regDate]) : dateVal;
+                // regDateRaw: 시트에 실제로 적혀있는 포장완료일 그대로(없으면 빈 문자열) — 수정창이
+                // "원래 값"을 판단할 때 이걸 쓴다. regDateVal은 표/목록 표시용으로 실제 값이 없으면
+                // 상차일로 대신 보여주는 근사치인데, 이걸 수정창에 그대로 넣으면 실제로는 비어있는
+                // 칸이 "이미 상차일과 같은 날짜가 입력되어있다"처럼 보여서 혼동을 준다(요청,
+                // 2026-10-26: "포장완료일이 이상한게있어서 수정을했는데 자꾸 수정해도 다시보면
+                // 금일날짜로바뀌어있어... 실제시트엔 포장일 자체도 입력안되어있고").
+                let regDateRawVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? normalizeDate(row[indices.regDate]) : '';
+                let regDateVal = regDateRawVal || dateVal;
                 let roundVal = indices.round !== -1 && indices.round < row.length && row[indices.round] ? row[indices.round].toString().trim() : '-';
                 let dueDateVal = indices.dueDate !== -1 && indices.dueDate < row.length && row[indices.dueDate] ? normalizeDate(row[indices.dueDate]) : '-';
                 let arriveDateVal = indices.arriveDate !== -1 && indices.arriveDate < row.length && row[indices.arriveDate] ? normalizeDate(row[indices.arriveDate]) : '-';
