@@ -7515,10 +7515,14 @@
         // 동일한 localStorage 키)를 그대로 가져온다 — 포장 항목출력의 "진행" 칸을 대신해서
         // 보여준다(요청, 2026-10-15).
         function _pkgProductTypeOf(item) {
-            const code = (item.code || '').toString().trim();
+            const code = (item.code || '').toString().trim().toUpperCase();
             if (!code) return '';
+            // 구글시트(상세스펙 탭)에서 받아온 값을 우선 쓰고, 아직 시트에 없는 코드만
+            // 레거시 로컬값을 그대로 쓴다(요청, 2026-10-26: "다른 PC에도 똑같이 보여야해").
+            const server = _pkgServerSpecMap[code];
+            if (server && server.productType) return server.productType;
             try {
-                const ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code.toUpperCase()) || '{}');
+                const ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}');
                 return ov.productType || '';
             } catch (e) { return ''; }
         }
