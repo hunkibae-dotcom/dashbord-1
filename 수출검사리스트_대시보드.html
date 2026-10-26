@@ -8914,6 +8914,21 @@ function _qcDefectPhotoImgTag(photo, styleAttr, factoryKey) {
   const onerr = (!photo.dataUrl && photo.fileId) ? (' onerror="this.onerror=null;_rpImgFallback(this,\'' + photo.fileId + '\',\'' + (factoryKey || '') + '\')"') : '';
   return '<img src="' + src + '"' + onerr + ' style="' + styleAttr + '">';
 }
+// 썸네일을 눌러 원본 크기로 보기(요청, 2026-10-26: "사진 클릭 시 원본크기로
+// 크게볼수 있게해줘") — 실제 <img>가 그 순간 들고 있는 src를 그대로 쓴다(원격
+// 사진이 onerror로 대체 경로를 받은 뒤여도 항상 지금 보이는 그대로 확대됨).
+// PDF라 <img>가 아예 없으면(아이콘만 있는 경우) 조용히 아무 일도 안 한다.
+function _qcOpenPhotoThumbZoom(el) {
+  const img = el.querySelector('img');
+  if (img) qcOpenImageLightbox(img.src);
+}
+// 특이사항 사진 썸네일 한 장(원본 크게보기 + 삭제 버튼) — 보고서/품목수정창 공용.
+function _qcDefectPhotoThumbHtml(photo, idx, removeFnName, factoryKey) {
+  return '<div onclick="_qcOpenPhotoThumbZoom(this)" style="position:relative;width:64px;height:64px;border-radius:10px;overflow:hidden;background:var(--input-bg);flex-shrink:0;cursor:zoom-in;">' +
+    _qcDefectPhotoImgTag(photo, 'width:100%;height:100%;object-fit:cover;', factoryKey) +
+    '<span onclick="event.stopPropagation();' + removeFnName + '(' + idx + ')" style="position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;">✕</span>' +
+  '</div>';
+}
 function _miHandleDefectPhotoFile(input) {
   const file = input.files && input.files[0];
   input.value = '';
