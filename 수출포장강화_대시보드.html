@@ -8060,6 +8060,13 @@
           const key = _pkgPeKey(code);
           if (!type && !spec) { delete map[key]; } else { map[key] = { type: type || '', spec: spec || '' }; }
           try { localStorage.setItem(PKG_PE_TYPE_STORE_KEY, JSON.stringify(map)); } catch (e) {}
+          // 어느 PC에서도 같게 보이도록 구글시트(상세스펙 탭)에도 올린다(요청,
+          // 2026-10-26). 실패해도 이 브라우저엔 이미 저장됐으니 조용히 넘어간다.
+          _pkgServerSpecMap[key] = Object.assign({}, _pkgServerSpecMap[key], { code: key, peType: type || '', peSpec: spec || '' });
+          const peUrl = _pkgGasUrl();
+          if (peUrl) {
+            fetch(peUrl, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: key, peType: type || '', peSpec: spec || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {});
+          }
         }
         // 저장된 값에 두 가지 보정을 더해 실제로 화면/출력에 쓸 유형·규격을 계산한다.
         // 1) 수주건명에 "FVN1"이 들어있으면 그 수주만 무조건 유형=일자형(코드의 저장값은
