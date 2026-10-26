@@ -8033,7 +8033,18 @@
           return (code || '').toString().trim().toUpperCase();
         }
         function _pkgPeTypeMap() {
-          try { return JSON.parse(localStorage.getItem(PKG_PE_TYPE_STORE_KEY) || '{}'); } catch (e) { return {}; }
+          let legacy = {};
+          try { legacy = JSON.parse(localStorage.getItem(PKG_PE_TYPE_STORE_KEY) || '{}'); } catch (e) {}
+          // 전엔 이 브라우저(localStorage)에만 있어서 PC마다 다르게 보였다(요청,
+          // 2026-10-26: "다른 PC에도 똑같이 보여야해") — 구글시트(상세스펙 탭)에서
+          // 받아온 값이 있는 코드는 그걸 우선 쓰고, 아직 시트에 없는 코드(이 브라우저에서
+          // 예전에 적어뒀지만 아직 안 옮겨진 값)만 레거시 로컬값을 그대로 쓴다.
+          const merged = Object.assign({}, legacy);
+          Object.keys(_pkgServerSpecMap).forEach(code => {
+            const s = _pkgServerSpecMap[code];
+            if (s.peType || s.peSpec) merged[code] = { type: s.peType || '', spec: s.peSpec || '' };
+          });
+          return merged;
         }
         // item(또는 code)에 저장된 PE폼 유형/규격을 읽는다 — 없으면 둘 다 빈 문자열. FVN1
         // 예외나 높이 기본값 같은 보정 없이 "실제로 저장된 값 그대로"만 돌려준다 —
