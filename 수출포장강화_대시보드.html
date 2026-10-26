@@ -1544,9 +1544,9 @@
     </div>
 
     <!-- 사용 설명서 모달 (사이드바 "사용 설명서") -->
-    <div id="usageGuideModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm hidden" onclick="if(event.target===this)closeUsageGuide()">
-        <div class="bg-panelBg border border-borderSlate/60 rounded-2xl w-[480px] max-w-[95vw] max-h-[85vh] shadow-2xl flex flex-col overflow-hidden">
-            <div class="p-5 pb-3 border-b border-borderSlate/40 flex flex-col gap-3 flex-shrink-0">
+    <div id="usageGuideModal" class="bg-black/70 backdrop-blur-sm hidden" style="position:fixed;inset:0;z-index:50;align-items:center;justify-content:center;" onclick="if(event.target===this)closeUsageGuide()">
+        <div class="bg-panelBg border border-borderSlate/60 shadow-2xl" style="width:480px;max-width:95vw;height:85vh;border-radius:16px;display:flex;flex-direction:column;overflow:hidden;">
+            <div class="border-b border-borderSlate/40" style="padding:20px 20px 12px;display:flex;flex-direction:column;gap:12px;flex:0 0 auto;">
                 <div class="flex items-center justify-between">
                     <span class="text-[16px] font-bold text-white flex items-center gap-2"><i class="fa-solid fa-circle-question text-accentBlue"></i> 사용 설명서</span>
                     <button onclick="closeUsageGuide()" class="w-8 h-8 rounded-lg border-none bg-darkBg/60 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
@@ -1557,7 +1557,7 @@
                 </div>
                 <div id="ugCatRow" class="flex gap-2 overflow-x-auto pb-0.5"></div>
             </div>
-            <div id="ugBody" class="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col gap-2"></div>
+            <div id="ugBody" class="p-4" style="flex:1 1 auto;min-height:0;overflow-y:scroll;display:flex;flex-direction:column;gap:8px;"></div>
         </div>
     </div>
 
@@ -2804,7 +2804,7 @@
                     if (!_ugState.cat && !q && f.cat !== lastCat) { body += '<div class="text-[10px] font-extrabold tracking-wider uppercase text-slate-500 mt-2 mb-0.5 px-0.5">' + f.cat + '</div>'; lastCat = f.cat; }
                     const key = (f.cat + '|' + f.name).replace(/'/g, "\\'");
                     const open = _ugState.openKey === (f.cat + '|' + f.name);
-                    body += '<div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl overflow-hidden">' +
+                    body += '<div class="bg-darkBg/40 border border-borderSlate/40 rounded-xl" style="overflow:visible;flex-shrink:0;">' +
                         '<div class="flex items-center gap-2.5 p-3 cursor-pointer" onclick="_ugToggle(\'' + key + '\')">' +
                             '<div class="w-[30px] h-[30px] rounded-lg bg-accentBlue/10 text-accentBlue flex items-center justify-center flex-shrink-0 text-[12.5px]"><i class="' + f.icon + '"></i></div>' +
                             '<div class="flex-1 min-w-0"><div class="text-[13px] font-bold text-white">' + f.name + '</div><div class="text-[10.5px] text-slate-500 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">' + f.when + '</div></div>' +
@@ -3384,8 +3384,17 @@
         // specOverride_ 방식과 동일, 요청 2026-10-13).
         const PKG_PRODUCT_TYPES = ['상판', '캐비닛(스크류O)', '캐비닛(스크류X)', '도어', '서랍', '철물', '거울', '베이스'];
         function loadPkgSpecOverride(code) {
+            // 전엔 이 브라우저(localStorage)에만 있어서 PC마다 다르게 보였다(요청,
+            // 2026-10-26: "다른 PC에도 똑같이 보여야해") — 구글시트(상세스펙 탭)에서
+            // 받아온 값이 있으면 그걸 우선 쓰고, 아직 이 코드가 시트에 없으면(이
+            // 브라우저에서 예전에 적어뒀지만 아직 옮겨지지 않은 값) 레거시 로컬값을
+            // 그대로 보여준다.
             let ov = {};
             try { ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}'); } catch (e) {}
+            const serverEntry = _pkgServerSpecMap[(code || '').toString().trim().toUpperCase()];
+            if (serverEntry && (serverEntry.productType || serverEntry.boxHeight)) {
+                ov = { productType: serverEntry.productType || '', boxHeight: serverEntry.boxHeight || '' };
+            }
             const sel = document.getElementById('pkgProductTypeSelect');
             const custom = document.getElementById('pkgProductTypeCustom');
             const boxH = document.getElementById('pkgBoxHeight');
