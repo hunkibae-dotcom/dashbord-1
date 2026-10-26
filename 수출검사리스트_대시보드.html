@@ -8694,8 +8694,6 @@ function _refreshMiStatusButtons(status) {
     btn.style.color = on ? '#fff' : 'var(--text-sub)';
     btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
   });
-  const pillText = document.getElementById('miStatusPillText');
-  if (pillText) pillText.textContent = _miStatusLabel(status);
 }
 
 // 블로킹(O열) 카드 — 요청(2026-10-23): 품목 수정창에서도 블로킹을 보고 바꿀 수 있어야
