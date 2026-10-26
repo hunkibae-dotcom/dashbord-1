@@ -5773,6 +5773,12 @@ function _rpEnsureRecord(key) {
     // ({fileId, viewUrl, downloadUrl}) — 화면 표시/다운로드는 viewUrl/downloadUrl로,
     // PPTX에 넣을 때만 fileId로 원본을 한 번 받아온다.
     productPhotoRemote: null, packagePhotoRemote: null, notePhotoRemote: null,
+    // 보고서 자동 포함(내수/수출 추정) 판정을 사람이 직접 뒤집어둔 값 — ''(자동
+    // 판정 그대로) | 'excluded'(강제 제외) | 'included'(강제 포함). 요청, 2026-10-27:
+    // "보고서에서 제외시키는 버튼, 보고서 추가버튼좀 만들어줘... 내수건인데
+    // 영어로되어있어서 보고서에 뜰때가있거든... 수출건인데 한글이들어가서
+    // 보고서에없거나... 취소된품목인데 보고서에있거나".
+    override: '',
     _updatedAt: 0
   };
 }
