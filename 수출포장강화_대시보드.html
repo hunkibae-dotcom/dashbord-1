@@ -10273,8 +10273,9 @@
             if (defectPhotosChanged) {
                 tasks.push(_pkgSyncDefectPhotosTask().then(res => { changed.defectPhotos = res.photos || []; }));
             }
-            // PE폼 유형/규격은 구글시트와 무관하게 이 브라우저에만 저장하는 값이라 네트워크
-            // 요청이 필요 없다 — 다른 변경사항과 별개로 바로 기억해둔다.
+            // PE폼 유형/높이는 _pkgSetPeType 안에서 구글시트(상세스펙 탭)로 직접
+            // POST하므로(2026-10-26부터 서버 동기화됨) 위의 tasks 배열에 안 넣고
+            // 별도로 바로 호출한다.
             if (peChanged) {
                 _pkgSetPeType(_pkgCode, newPeType, newPeSpec);
                 _pkgAddPeSpecHistory(newPeType, newPeSpec); // 다음에 같은 유형 고를 때 추천으로 뜨게 누적
