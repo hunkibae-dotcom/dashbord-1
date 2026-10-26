@@ -11616,6 +11616,8 @@ loadData();
 // 페이지 같은 화면 상태는 안 건드리고 데이터만 새로 받아 applyFilters()로 다시 그리기만
 // 하므로, 보고 있던 화면이 조용히 초기화되는 일은 없다.
 setInterval(() => loadData(), 5 * 60 * 1000);
+// 진행중 리스트가 한 번은 불러와진 뒤에 돌려야 공장을 찾을 수 있으니 살짝 늦게 실행.
+setTimeout(() => { _qcMigrateLegacySpecToSheet(); }, 6000);
 _presenceInit();
 _spuLoadStatus();
 
