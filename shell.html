@@ -3936,6 +3936,7 @@
         if (s === 'ok' || s === 'error') {
             const initOv = document.getElementById('pkgInitLoadingOverlay');
             if (initOv) initOv.style.display = 'none';
+            if (_pkgInitReadyResolve) { _pkgInitReadyResolve(); _pkgInitReadyResolve = null; }
         }
     }
 
