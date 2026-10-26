@@ -5349,6 +5349,16 @@ async function _rpImgFallback(imgEl, fileId, factoryKey) {
   finally { delete _rpImgFallbackInFlight[fileId]; }
 }
 
+// 사진 썸네일을 누르면 원본 크기로 크게 보여주는 공용 뷰어(요청, 2026-10-26: "사진
+// 클릭 시 원본크기로 크게볼수 있게해줘") — 검사사진/포장사진/특이사항 사진 전부 공용.
+function qcOpenImageLightbox(src) {
+  if (!src) return;
+  document.getElementById('qcImgLightboxImg').src = src;
+  document.getElementById('qcImgLightbox').style.display = 'flex';
+}
+function qcCloseImgLightbox() {
+  document.getElementById('qcImgLightbox').style.display = 'none';
+}
 function _rpPhotoBox(safeKey, side, sel, size) {
   size = size || 48;
   const eff = _rpEffectivePhoto(sel, side);
