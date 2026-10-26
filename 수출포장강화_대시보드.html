@@ -8181,10 +8181,15 @@
           try { localStorage.setItem(PKG_PE_TYPE_STORE_KEY, JSON.stringify(map)); } catch (e) {}
           // 어느 PC에서도 같게 보이도록 구글시트(상세스펙 탭)에도 올린다(요청,
           // 2026-10-26). 실패해도 이 브라우저엔 이미 저장됐으니 조용히 넘어간다.
-          _pkgServerSpecMap[key] = Object.assign({}, _pkgServerSpecMap[key], { code: key, peType: type || '', peSpec: spec || '' });
+          // spec은 더 이상 별도 칸(옛 "규격"/E열)이 아니라 PE폼높이(boxHeight, C열)
+          // 그 자체라서 updateProductSpec으로 보낸다 — 2026-10-26: "상세스펙의
+          // 규격칼럼은 지울거야". productType 키를 아예 안 보내서(undefined) GAS가
+          // 제품종류 칸은 그대로 두고 PE폼높이 칸만 고치게 한다.
+          _pkgServerSpecMap[key] = Object.assign({}, _pkgServerSpecMap[key], { code: key, peType: type || '', boxHeight: spec || '' });
           const peUrl = _pkgGasUrl();
           if (peUrl) {
-            fetch(peUrl, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: key, peType: type || '', peSpec: spec || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {});
+            fetch(peUrl, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: key, peType: type || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {});
+            fetch(peUrl, { method: 'POST', body: JSON.stringify({ action: 'updateProductSpec', code: key, boxHeight: spec || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {});
           }
         }
         // 저장된 값에 두 가지 보정을 더해 실제로 화면/출력에 쓸 유형·규격을 계산한다.
