@@ -10278,7 +10278,7 @@
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.dueDate = changed.dueDate; }); });
                 }
                 if (changed.regDate !== undefined) {
-                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.regDate = changed.regDate; }); });
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) { it.regDate = changed.regDate; it.regDateRaw = changed.regDate; } }); });
                 }
                 if (changed.arriveDate !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.arriveDate = changed.arriveDate; }); });
