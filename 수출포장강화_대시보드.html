@@ -8085,10 +8085,22 @@
         // 2) 코드 키 자체가 "ZBU0082|FAM-NY-46/26|IO"처럼 건명·색상까지 같이 붙어있는
         // 예전 깨진 값이 섞여있던 게 있어서(요청, 2026-10-26: "건명+색상같이입력되네"),
         // "|" 앞부분만 진짜 코드로 쓰도록 걸러낸다.
-        const PKG_SPEC_MIGRATE_FLAG = 'pkg_spec_migrated_v2';
+        // v2 → v3: 레거시 localStorage 이전과 별개로, 수출현황/충주공장재고/출고완료에
+        // 실제로 있는 모든 품목코드가 상세스펙 시트에 코드만이라도 미리 올라가 있도록
+        // 한다(요청, 2026-10-26: "지금까지 작업해서 출고한 단품코드들 또는 현재
+        // 진행중인 수출현황의 단품코드들등이 상세스펙에는 없어서 조회를 못하는데
+        // 전부 나왔으면 좋겠어"). 서버가 코드 목록을 직접 긁어서 없는 것만 한 번에
+        // 추가하므로(backfillSpecCodes) 코드별로 요청을 나눠 보낼 필요가 없다.
+        const PKG_SPEC_MIGRATE_FLAG = 'pkg_spec_migrated_v3';
         function _pkgCleanMigrateCode(raw) {
             const first = (raw || '').toString().trim().split('|')[0].trim();
             return first.toUpperCase();
+        }
+        async function _pkgBackfillSpecCodes(url) {
+            try {
+                const res = await fetch(url + '?' + new URLSearchParams({ action: 'backfillSpecCodes' }), { signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                return res.result === 'success' ? (res.added || 0) : 0;
+            } catch (e) { return 0; }
         }
         async function _pkgMigrateLegacySpecToSheet() {
             if (localStorage.getItem(PKG_SPEC_MIGRATE_FLAG)) return;
