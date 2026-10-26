@@ -8729,27 +8729,16 @@ function _miDisplayDate(v) {
   const p = n.split('-');
   return p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
 }
-// 보기 모드 글자들은 입력칸과 별개 엘리먼트라, 값이 바뀔 때마다(초기 로드·수정 중) 같이
-// 맞춰준다 — 저장 전까지는 _miCurrent(목록이 참조하는 실제 객체)를 안 건드리므로, 아직
-// 저장 안 한 변경사항은 _miPendingSync에서 먼저 찾고 없으면 원래 값을 보여준다. 이렇게
-// 해야 모달 안에서는 방금 고친 값이 바로 보이면서도, 모달 밖 목록·테이블은 저장 전까지
-// 그대로 원래 값을 유지한다.
+// 일정/규격은 이제 입력칸 자체가 값을 보여주는 요소라 별도로 맞춰줄 "보기용" 엘리먼트가
+// 없다 — 진행상태 알약 옆에 남아있던 "변경" 날짜 캡션만 여기서 계속 맞춘다. 저장 전까지는
+// _miCurrent(목록이 참조하는 실제 객체)를 안 건드리므로, 아직 저장 안 한 변경사항은
+// _miPendingSync에서 먼저 찾고 없으면 원래 값을 보여준다.
 function _miSyncViewMirrors() {
   if (!_miCurrent) return;
   const d = _miCurrent;
   const val = (field) => (field in _miPendingSync) ? _miPendingSync[field] : d[field];
-  const dv = (id, field) => { const el = document.getElementById(id); if (el) el.textContent = _miDisplayDate(val(field)); };
-  dv('miPackDateView', '포장일');
-  dv('miDueDateView', '납기일');
-  dv('miInspectDateView', '검사일');
-  const nv = (id, field) => { const el = document.getElementById(id); const v = val(field); if (el) el.textContent = (v === '' || v == null) ? '—' : v; };
-  nv('miWView', '가로');
-  nv('miDView', '세로');
-  nv('miHView', '높이');
-  nv('miGView', '중량');
-  // 진행상태 알약 옆의 "변경" 날짜 — 실제로 추적하는 "상태 변경 시각"은 없어서, 지금
-  // 상태와 가장 직접적으로 연결된 실제 필드(검사일)를 그대로 보여준다(시안의 캡션 자리,
-  // 값은 지어내지 않고 실제 검사일을 씀).
+  // 실제로 추적하는 "상태 변경 시각"은 없어서, 지금 상태와 가장 직접적으로 연결된 실제
+  // 필드(검사일)를 그대로 보여준다(시안의 캡션 자리, 값은 지어내지 않고 실제 검사일을 씀).
   const changedEl = document.getElementById('miStatusChangedDate');
   if (changedEl) { const disp = _miDisplayDate(val('검사일')); changedEl.textContent = disp === '—' ? '' : disp + ' 변경'; }
 }
