@@ -3449,8 +3449,17 @@
             const custom = document.getElementById('pkgProductTypeCustom');
             const boxH = document.getElementById('pkgBoxHeight');
             const productType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
-            const data = { productType, boxHeight: boxH.value.trim() };
+            const boxHeight = boxH.value.trim();
+            const data = { productType, boxHeight };
             try { localStorage.setItem('pkgSpecOverride_' + _currentDetailProductCode, JSON.stringify(data)); } catch (e) {}
+            // 어느 PC에서도 같게 보이도록 구글시트(상세스펙 탭)에도 올린다(요청,
+            // 2026-10-26). 실패해도 이 브라우저엔 이미 저장됐으니 조용히 넘어간다.
+            const code = _currentDetailProductCode;
+            _pkgServerSpecMap[code] = Object.assign({}, _pkgServerSpecMap[code], { code, productType, boxHeight });
+            const specUrl = _pkgGasUrl();
+            if (specUrl) {
+                fetch(specUrl, { method: 'POST', body: JSON.stringify({ action: 'updateProductSpec', code, productType, boxHeight }), signal: AbortSignal.timeout(20000) }).catch(() => {});
+            }
         }
 
         function switchToProductDetailView(productCode) {
