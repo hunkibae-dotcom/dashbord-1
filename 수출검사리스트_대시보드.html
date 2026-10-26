@@ -9163,7 +9163,26 @@ function _qcFindFactoryForCode(code) {
 // 처리하는 잠금(LockService) 때문에 뒤쪽 요청들이 줄줄이 시간 초과로 조용히 실패해서
 // "한 개만 입력되고 멈춘 것처럼" 보였다(요청, 2026-10-26: "품질검사는 1개정도
 // 입력되다가 멈췄어") — 한 번에 하나씩 순서대로 기다렸다 보내도록 고쳤다.
-const QC_SPEC_MIGRATE_FLAG = 'qc_spec_migrated_v2';
+// v2 → v3: 레거시 localStorage 이전과 별개로, 진행중/검사완료 이력에 실제로 있는
+// 모든 단품코드가 상세스펙 시트에 코드만이라도 미리 올라가 있도록 한다(요청,
+// 2026-10-26: "지금까지 작업해서 출고한 단품코드들 또는 현재 진행중인 수출현황의
+// 단품코드들등이 상세스펙에는 없어서 조회를 못하는데 전부 나왔으면 좋겠어 ...
+// 검사진행중인 단품코드, 검사완료되어 완료시트로 넘어간 단품코드들 모두"). 서버가
+// 코드 목록을 직접 긁어서 없는 것만 한 번에 추가하므로(backfillSpecCodes) 코드별로
+// 요청을 나눠 보낼 필요 없이 공장당 호출 한 번이면 된다.
+const QC_SPEC_MIGRATE_FLAG = 'qc_spec_migrated_v3';
+async function _qcBackfillSpecCodes() {
+  let added = 0;
+  for (const f of FACTORIES) {
+    const url = _gasUrlForFactory(f.key);
+    if (!url) continue;
+    try {
+      const res = await fetch(url + '?' + new URLSearchParams({ action: 'backfillSpecCodes' }), { signal: AbortSignal.timeout(60000) }).then(r => r.json());
+      if (res.status === 'success') added += res.added || 0;
+    } catch (e) { /* 실패해도 다음 공장은 계속 */ }
+  }
+  return added;
+}
 async function _qcMigrateLegacySpecToSheet() {
   if (localStorage.getItem(QC_SPEC_MIGRATE_FLAG)) return;
   await _qcFetchSpecOverrides();
@@ -9189,8 +9208,9 @@ async function _qcMigrateLegacySpecToSheet() {
     did = true;
     try { await fetch(url, { method: 'POST', body: JSON.stringify({ action: 'updateSpecOverride', code: job.code, standardName: job.standardName, codeType: job.codeType }), signal: AbortSignal.timeout(20000) }); } catch (e) { /* 하나 실패해도 나머지는 계속 */ }
   }
+  const addedCount = await _qcBackfillSpecCodes();
   localStorage.setItem(QC_SPEC_MIGRATE_FLAG, '1');
-  if (did) _qcFetchSpecOverrides();
+  if (did || addedCount) _qcFetchSpecOverrides();
 }
 
 // ═══════════════════════════════════════════════════════════════
