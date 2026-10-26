@@ -5892,6 +5892,68 @@ function _rpSetOverride(key, value) {
 function rpExcludeItem(key) {
   _rpSetOverride(key, 'excluded');
 }
+// 이 품목이 지금 보고서 목록에 보여야 하는지 — 자동 판정(내수/수출 추정)을 사람이
+// 직접 뒤집어둔 override가 있으면 그게 우선이다. _rpFilteredRows()와 추가/제외
+// 검색창(openRpAddItemModal)이 똑같이 이 함수 하나를 기준으로 삼는다.
+function _rpIsIncluded(d) {
+  const ov = (_reportSelected[_miKey(d)] || {}).override;
+  if (ov === 'excluded') return false;
+  if (ov === 'included') return true;
+  return !_spuIsDomesticRound(d.건명);
+}
+
+// ── 보고서: 전체 품목에서 검색해서 추가/제외 ──────────────────────────
+function openRpAddItemModal() {
+  document.getElementById('rpAddItemSearch').value = '';
+  document.getElementById('rpAddItemResults').innerHTML = '';
+  document.getElementById('rpAddItemModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('rpAddItemSearch').focus(), 50);
+}
+function closeRpAddItemModal() {
+  document.getElementById('rpAddItemModal').style.display = 'none';
+}
+function _rpRenderAddItemResults() {
+  const wrap = document.getElementById('rpAddItemResults');
+  const q = (document.getElementById('rpAddItemSearch').value || '').trim().toLowerCase();
+  if (!q) {
+    wrap.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--label);font-size:12.5px;">건명·단품코드·단품명칭으로 검색하세요.</div>';
+    return;
+  }
+  // 제품검색과 달리 내수/수출 필터가 전혀 없다 — 지금 보고서에 자동으로 안 걸리는
+  // 품목(내수로 잘못 판정된 수출건 등)을 찾는 게 목적이라 전체를 대상으로 한다.
+  const pool = [...allData, ...archiveRows];
+  const seen = new Set();
+  const matches = [];
+  for (const d of pool) {
+    const key = _miKey(d);
+    if (seen.has(key)) continue;
+    const hay = (d.건명 + ' ' + d.단품코드 + ' ' + (d.단품명칭 || '')).toLowerCase();
+    if (!hay.includes(q)) continue;
+    seen.add(key);
+    matches.push(d);
+    if (matches.length >= 50) break; // 너무 많으면 검색어를 더 구체적으로 적게 유도
+  }
+  if (!matches.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--label);font-size:12.5px;">일치하는 품목이 없습니다.</div>';
+    return;
+  }
+  wrap.innerHTML = matches.map(d => {
+    const key = _miKey(d);
+    const safeKey = key.replace(/'/g, "\\'");
+    const included = _rpIsIncluded(d);
+    const btn = included
+      ? `<button onclick="_rpSetOverride('${safeKey}','excluded');_rpRenderAddItemResults()" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:none;background:#FEE2E2;color:#DC2626;font-weight:700;font-size:11.5px;cursor:pointer;">제외</button>`
+      : `<button onclick="_rpSetOverride('${safeKey}','included');_rpRenderAddItemResults()" style="flex-shrink:0;padding:6px 12px;border-radius:8px;border:none;background:#6D5CE8;color:#fff;font-weight:700;font-size:11.5px;cursor:pointer;">추가</button>`;
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--border);border-radius:10px;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12.5px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 || '—'}</div>
+        <div style="font-size:11px;color:var(--text-sub);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.단품코드 || '—'} · ${d.색상 || '—'} · ${d.수량 || 0}개${d.단품명칭 ? ' · ' + d.단품명칭 : ''}</div>
+        <div style="font-size:10px;color:${included ? '#16a34a' : '#94a3b8'};margin-top:2px;">${included ? '지금 보고서에 포함됨' : '지금 보고서에 없음'}</div>
+      </div>
+      ${btn}
+    </div>`;
+  }).join('');
+}
 
 // 헤더 클릭 일괄 토글 — 지금 필터/검색 조건에 맞는(화면에 보이는) 행 전체를 대상으로,
 // 하나라도 안 켜져있으면 전부 켜고, 이미 다 켜져있으면 전부 끈다(선택/작성완료/철물
