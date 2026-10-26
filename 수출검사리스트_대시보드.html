@@ -4669,7 +4669,8 @@ function _rpSyncMetaToServer(key, onDone) {
       checked: _reportChecked.has(key) ? '1' : '0',
       hasHardware: sel.hasHardware ? '1' : '0',
       written: sel.written ? '1' : '0',
-      writtenAt: sel.writtenAt || ''
+      writtenAt: sel.writtenAt || '',
+      override: sel.override || ''
     }, _gasQcSyncParams(sel.item));
     let ok = false;
     try {
