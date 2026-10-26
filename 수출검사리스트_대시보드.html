@@ -7646,6 +7646,14 @@ const QC_CODE_TYPES = ['색상비', '형태비', '복합비', '기획주문품',
 // 단품코드의 종류를 고정 드롭다운으로 바꾸면서(요청, 2026-10-13) 예전에 저장된 '단종비'는
 // '단종코드'로 한 번만 옮겨준다 — 기존에 수기 입력해둔 값은 그대로 유지(덮어쓰지 않음).
 function loadSpecOverride(code) {
+  // 전엔 이 브라우저(localStorage)에만 있어서 PC마다 다르게 보였다(요청, 2026-10-26:
+  // "다른 PC에도 똑같이 보여야해") — 구글시트(충주1/충주2 "상세스펙" 탭)에서 받아온
+  // 값이 있으면 그걸 우선 쓰고, 아직 이 코드가 시트에 없으면(이 브라우저에서 예전에
+  // 적어뒀지만 아직 옮겨지지 않은 값) 레거시 로컬값을 그대로 보여준다.
+  const serverEntry = _qcServerSpecMap[(code || '').toString().trim().toUpperCase()];
+  if (serverEntry && (serverEntry.standardName || serverEntry.codeType)) {
+    return { standardName: serverEntry.standardName || '', codeType: serverEntry.codeType || '' };
+  }
   let ov = null;
   try { ov = JSON.parse(localStorage.getItem('specOverride_' + code) || 'null'); }
   catch (e) { return null; }
