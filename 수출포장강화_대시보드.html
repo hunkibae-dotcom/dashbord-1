@@ -8054,10 +8054,13 @@
             try { localStorage.setItem(PKG_PE_SPEC_HISTORY_KEY, JSON.stringify(hist)); } catch (e) {}
           }
         }
-        // 제품코드별 "제품종류"/"PE폼높이"/"PE폼유형"/"규격"을 구글시트(상세스펙 탭,
-        // getProductAttrs)에서 한 번에 받아와 담아두는 곳 — 전엔 이 네 값이 전부
+        // 제품코드별 "제품종류"/"PE폼높이"/"PE폼유형"을 구글시트(상세스펙 탭,
+        // getProductAttrs)에서 한 번에 받아와 담아두는 곳 — 전엔 이 값들이 전부
         // localStorage(이 브라우저)에만 있어서 PC마다 다르게 보였다(요청, 2026-10-26:
-        // "다른 PC에도 똑같이 보여야해"). code -> {code, productType, boxHeight, peType, peSpec}.
+        // "다른 PC에도 똑같이 보여야해"). code -> {code, productType, boxHeight, peType}.
+        // PE폼높이는 원래 "규격"(품목 수정창의 PE폼 유형 옆 칸)이라는 별도 값이 더
+        // 있었는데, 사실상 같은 걸 가리키는 중복이라는 지적으로 하나로 합쳤다
+        // (2026-10-26: "둘다 똑같은 재고 관리용 자재 식별값으로 바꿔").
         let _pkgServerSpecMap = {};
         async function _pkgFetchProductAttrs() {
             const url = _pkgGasUrl();
