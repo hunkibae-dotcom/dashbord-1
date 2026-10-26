@@ -7885,7 +7885,7 @@ function exportSpecHistoryXlsx() {
   const ovOf = (rawCode) => {
     const code = (rawCode || '').toString().trim();
     if (!(code in ovCache)) {
-      try { ovCache[code] = JSON.parse(localStorage.getItem('specOverride_' + code) || '{}'); } catch (e) { ovCache[code] = {}; }
+      ovCache[code] = loadSpecOverride(code) || {};
     }
     return ovCache[code];
   };
