@@ -9472,6 +9472,10 @@ function qcDrawingRender() {
             <span class="cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품명칭 || '')}', event)">${d.단품명칭 || '-'}</span>
             <span>${d.색상 || '-'} · ${d.수량 || 0}EA</span>
           </div>
+          <div class="text-[10.5px] text-slate-400 flex gap-2.5 flex-wrap font-mono">
+            <span>납기 ${d.납기일 || '—'}</span>
+            <span>포장 ${d.포장일 || '—'}</span>
+          </div>
         </div>
       </div>`;
     }).join('');
