@@ -9902,8 +9902,10 @@
             document.getElementById('pkgPartialQty').value = '';
             _renderPkgStatusOpts();
 
-            const regDateNorm = normalizeDate(item.regDate);
-            _pkgOrigRegDate = regDateNorm !== '-' ? regDateNorm : '';
+            // item.regDate는 표 목록 표시용(실제 값이 없으면 상차일로 근사해서 보여줌)이라
+            // 수정창에 그대로 넣으면 "이미 입력된 값"처럼 보여 혼동을 준다 — 여기선 시트에
+            // 실제로 적힌 값(regDateRaw, 없으면 빈 문자열)만 쓴다.
+            _pkgOrigRegDate = item.regDateRaw || '';
             document.getElementById('pkgRegDate').value = _pkgOrigRegDate;
 
             const arriveDateNorm = normalizeDate(item.arriveDate);
