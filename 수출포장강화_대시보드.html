@@ -8159,7 +8159,9 @@
           const merged = Object.assign({}, legacy);
           Object.keys(_pkgServerSpecMap).forEach(code => {
             const s = _pkgServerSpecMap[code];
-            if (s.peType || s.peSpec) merged[code] = { type: s.peType || '', spec: s.peSpec || '' };
+            // spec은 더 이상 별도 칸이 아니라 PE폼높이(boxHeight)를 그대로 쓴다
+            // (2026-10-26: "둘다 똑같은 재고 관리용 자재 식별값으로 바꿔").
+            if (s.peType || s.boxHeight) merged[code] = { type: s.peType || '', spec: s.boxHeight || '' };
           });
           return merged;
         }
