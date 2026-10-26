@@ -2236,6 +2236,17 @@ async function loadData() {
     renderLoadWarnings();
     setConnStatus(loadErrors.length ? 'partial' : 'ok');
 
+    // 신규품목확인 창(확인/등록/도면출력여부 탭)이 열려있으면 방금 받은 최신 데이터로
+    // 다시 그린다 — 전엔 열어둔 채로 5분 자동새로고침이 돌아도 BOM확정 등 값이 안
+    // 바뀌어서, 닫았다 다시 열어야만 최신값이 보였다(요청, 2026-10-26: "BOM확정이
+    // Y인지 N인지도 표시좀 업데이트될때마다도 바뀌어야해").
+    const qcNewModalEl = document.getElementById('qcNewItemsModal');
+    if (qcNewModalEl && !qcNewModalEl.classList.contains('hidden')) {
+      qcNotifyRender();
+      if (typeof qcNewRenderList === 'function') qcNewRenderList();
+      qcDrawingRender();
+    }
+
     // 스캐너에서 전달된 코드가 있으면 최초 1회 필터 검색창 자동 열기
     if (!_scanCodeHandled) {
       var _sc = new URLSearchParams(location.search).get('scan');
