@@ -8129,10 +8129,13 @@
                     const code = _pkgCleanMigrateCode(rawCode);
                     if (!code) return;
                     const existing = _pkgServerSpecMap[code];
-                    if (existing && (existing.peType || existing.peSpec)) return;
+                    // spec은 이제 별도 칸(옛 "규격")이 아니라 PE폼높이(boxHeight) 그 자체다
+                    // (2026-10-26: "상세스펙의 규격칼럼은 지울거야").
+                    if (existing && (existing.peType || existing.boxHeight)) return;
                     const v = peMap[rawCode];
                     if (!v || (!v.type && !v.spec)) return;
-                    jobs.push({ action: 'updateProductPeType', code, peType: v.type || '', peSpec: v.spec || '' });
+                    if (v.type) jobs.push({ action: 'updateProductPeType', code, peType: v.type });
+                    if (v.spec) jobs.push({ action: 'updateProductSpec', code, boxHeight: v.spec });
                 });
             } catch (e) {}
             for (const job of jobs) {
