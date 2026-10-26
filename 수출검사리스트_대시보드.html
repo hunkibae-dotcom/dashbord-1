@@ -5203,6 +5203,7 @@ function _rpRowHtmlMobile(d, checkedOrderMap) {
         ${d.포장처 ? `<span style="font-size:10.5px;font-weight:700;color:var(--text-sub);background:var(--icon-bg);border-radius:6px;padding:2px 8px;">${d.포장처}</span>` : ''}
         <button onclick="event.stopPropagation();openRpDateDetail('${safeKey}')" title="납기/포장/검사일 보기" style="width:19px;height:19px;border:none;border-radius:50%;background:var(--icon-bg);color:#6D5CE8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-calendar-days" style="font-size:9px;"></i></button>
         <span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span>
+        <button onclick="event.stopPropagation();rpExcludeItem('${safeKey}')" title="이 품목을 보고서에서 제외" style="margin-left:auto;width:19px;height:19px;border:none;border-radius:50%;background:var(--icon-bg);color:#DC2626;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark" style="font-size:9px;"></i></button>
       </div>
       <div style="margin-bottom:12px;">
         <div style="font-size:15px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.건명 ? `<span onclick="copyCellText('${_jsAttr(d.건명)}', event)" title="클릭하여 복사">${d.건명}</span>` : '—'}</div>
