@@ -8970,10 +8970,6 @@ function openMItemDetail(key) {
   document.getElementById('miChipFactory').textContent = d.공장 === 'cj1' ? '충주1공장' : '충주2공장';
   document.getElementById('miChipColor').textContent = d.색상 || '—';
   document.getElementById('miChipQty').textContent = (d.수량 || 0) + 'EA';
-  _miEditStatus = false; _miEditSchedule = false; _miEditSpec = false;
-  _miApplyCardToggle('miStatus', false);
-  _miApplyCardToggle('miSchedule', false);
-  _miApplyCardToggle('miSpec', false);
   _miBasis = (d.source === 'archive') ? 'shipped' : 'inprogress';
   _miRenderBasisTabs();
   _miRenderStatusButtons();
