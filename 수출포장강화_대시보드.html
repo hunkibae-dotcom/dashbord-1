@@ -2786,10 +2786,20 @@
         let _ugState = { cat: null, openKey: null, q: '' };
         function openUsageGuideModal() {
             _ugState = { cat: null, openKey: null, q: '' };
-            document.getElementById('usageGuideModal').classList.remove('hidden');
+            const m = document.getElementById('usageGuideModal');
+            m.classList.remove('hidden');
+            // "hidden"을 떼도 div 기본값은 display:block이라 인라인 style의
+            // align-items/justify-content(가운데 정렬)가 전혀 먹히지 않아 왼쪽 위에
+            // 그대로 붙어버렸다(요청, 2026-10-26: "좌상단에 딱붙어있는데 왜저렇게한거야").
+            // flex로 켜줘야 가운데 정렬이 실제로 작동한다.
+            m.style.display = 'flex';
             _ugRender();
         }
-        function closeUsageGuide() { document.getElementById('usageGuideModal').classList.add('hidden'); }
+        function closeUsageGuide() {
+            const m = document.getElementById('usageGuideModal');
+            m.classList.add('hidden');
+            m.style.display = 'none';
+        }
         function _ugPickCat(c) { _ugState.cat = (_ugState.cat === c) ? null : c; _ugRender(); }
         function _ugToggle(key) { _ugState.openKey = (_ugState.openKey === key) ? null : key; _ugRender(); }
         function _ugOnSearch(v) { _ugState.q = v; _ugRender(); }
