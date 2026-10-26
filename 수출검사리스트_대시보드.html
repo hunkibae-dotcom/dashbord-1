@@ -7766,7 +7766,7 @@ function _qcSpecCardHtml(code, matches, hintText) {
     </div>`;
   }).join('') : `<div style="text-align:center;padding:24px 0;color:#94A3B8;font-size:12.5px;">${hintText || '이력이 없어요.'}</div>`;
 
-  return `<div data-spec-card data-code="${codeAttr}" style="border:1px solid #E2E8F0;border-radius:14px;padding:16px;background:#fff;">
+  return `<div data-spec-card data-code="${codeAttr}" data-factories="${factoriesAttr}" style="border:1px solid #E2E8F0;border-radius:14px;padding:16px;background:#fff;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
       <span style="font-size:14px;font-weight:800;color:#1E293B;font-family:ui-monospace,monospace;">${code || '—'}</span>
       ${matches.length ? `<span style="font-size:10px;color:#94A3B8;font-family:ui-monospace,monospace;">n=${matches.length}</span>` : ''}
