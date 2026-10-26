@@ -3910,6 +3910,15 @@
         runSearch();
     }
 
+    // "코드 검색" 바로가기(?openScan=1)로 앱을 열면 데이터가 아직 하나도 안 불러와진
+    // 채로 카메라부터 열렸다 — 스캐너는 열리지만 그 순간 찾을 데이터가 없어서 바로
+    // 스캔해도 "검색결과 없음"으로 보였다(요청, 2026-10-26: "스캐너에서는 미연동
+    // 상태에서 켜지기 때문에 바로스캔하면 소용이 없더라고"). 데이터가 실제로 준비된
+    // 시점(= pkgInitLoadingOverlay가 내려가는 시점)을 이 약속으로 알 수 있게 해서,
+    // 스캐너는 그때까지 기다렸다가 열리게 한다.
+    let _pkgInitReadyResolve;
+    const _pkgInitReadyPromise = new Promise(res => { _pkgInitReadyResolve = res; });
+
     // ── 상태 표시 ─────────────────────────────────────────
     function setStatus(s) {
         const bar = document.getElementById('statusBar');
