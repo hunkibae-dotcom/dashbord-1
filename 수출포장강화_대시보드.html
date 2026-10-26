@@ -8048,6 +8048,46 @@
                 if (typeof _currentDetailProductCode !== 'undefined' && _currentDetailProductCode) loadPkgSpecOverride(_currentDetailProductCode);
             } catch (e) { /* 실패해도 로컬(localStorage) 값으로 계속 동작한다 */ }
         }
+        // 이 브라우저에 예전부터 쌓여있던 제품종류/PE폼높이/PE폼유형/규격을 구글시트
+        // (상세스펙 탭)로 한 번에 옮긴다(요청, 2026-10-26: "기존 대시보드데이터를
+        // 구글시트 상세스펙탭에... 자동으로 해줄수 있니"). 시트에 이미 값이 있는
+        // 코드는 덮어쓰지 않고 건너뛴다 — 혹시 다른 PC에서 이미 더 최신으로 고쳐둔
+        // 값을 옛날 로컬값으로 되돌리지 않기 위해서다. 한 번 끝내면 다시 안 하도록
+        // 이 브라우저에 표시를 남긴다.
+        const PKG_SPEC_MIGRATE_FLAG = 'pkg_spec_migrated_v1';
+        async function _pkgMigrateLegacySpecToSheet() {
+            if (localStorage.getItem(PKG_SPEC_MIGRATE_FLAG)) return;
+            const url = _pkgGasUrl();
+            if (!url) return; // 연동 전이면 다음 방문 때 다시 시도(플래그를 아직 안 남김)
+            await _pkgFetchProductAttrs();
+            const tasks = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (!k || !k.startsWith('pkgSpecOverride_')) continue;
+                const code = k.slice('pkgSpecOverride_'.length).toString().trim().toUpperCase();
+                if (!code) continue;
+                const existing = _pkgServerSpecMap[code];
+                if (existing && (existing.productType || existing.boxHeight)) continue;
+                let data;
+                try { data = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) { continue; }
+                if (!data || (!data.productType && !data.boxHeight)) continue;
+                tasks.push(fetch(url, { method: 'POST', body: JSON.stringify({ action: 'updateProductSpec', code, productType: data.productType || '', boxHeight: data.boxHeight || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {}));
+            }
+            try {
+                const peMap = JSON.parse(localStorage.getItem(PKG_PE_TYPE_STORE_KEY) || '{}');
+                Object.keys(peMap).forEach(rawCode => {
+                    const code = rawCode.toString().trim().toUpperCase();
+                    const existing = _pkgServerSpecMap[code];
+                    if (existing && (existing.peType || existing.peSpec)) return;
+                    const v = peMap[rawCode];
+                    if (!v || (!v.type && !v.spec)) return;
+                    tasks.push(fetch(url, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code, peType: v.type || '', peSpec: v.spec || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {}));
+                });
+            } catch (e) {}
+            if (tasks.length) await Promise.all(tasks);
+            localStorage.setItem(PKG_SPEC_MIGRATE_FLAG, '1');
+            if (tasks.length) _pkgFetchProductAttrs();
+        }
         const PKG_PE_TYPE_STORE_KEY = 'pkg_pe_type_map';
         // 코드만으로 키를 잡는다 — "같은 단품코드는 어느 수주로 들어오든 같은 PE폼을 쓴다"는
         // 전제라, 새 수주에 전에 쓰던 코드가 다시 들어오면 이전에 적어둔 유형·규격이 자동으로
