@@ -9101,6 +9101,28 @@ function _gasUrlForFactory(factoryKey) {
   return '';
 }
 
+// 단품코드별 "표준품명"/"단품코드의 종류"를 구글시트(충주1/충주2 각각의 "상세스펙"
+// 탭, getSpecOverrides)에서 한 번에 받아와 담아두는 곳 — 전엔 이 두 값이 전부
+// localStorage(이 브라우저)에만 있어서 PC마다 다르게 보였다(요청, 2026-10-26:
+// "다른 PC에도 똑같이 보여야해"). code -> {code, standardName, codeType}. 단품코드는
+// 공장 구분 없이 하나로 취급하므로(기존 localStorage 방식과 동일) 두 공장에서 받은
+// 걸 하나의 맵에 합친다.
+let _qcServerSpecMap = {};
+async function _qcFetchSpecOverrides() {
+  await Promise.all(FACTORIES.map(async f => {
+    const url = _gasUrlForFactory(f.key);
+    if (!url) return;
+    try {
+      const res = await fetch(url + '?' + new URLSearchParams({ action: 'getSpecOverrides' }), { signal: AbortSignal.timeout(20000) }).then(r => r.json());
+      if (res.status !== 'success' || !res.items) return;
+      res.items.forEach(it => { _qcServerSpecMap[it.code] = it; });
+    } catch (e) { /* 실패해도 로컬(localStorage) 값으로 계속 동작한다 */ }
+  }));
+  // 상세스펙 화면이 이미 열려있으면 방금 받은 값으로 다시 그린다.
+  const backdrop = document.getElementById('specBackdrop');
+  if (backdrop && !backdrop.classList.contains('hidden') && typeof runSpecLookup === 'function') runSpecLookup();
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 신규품목 상세보기 — 비고에 "신규"/"신규 차수 추가됨" 문구가 남은 품목을 공장별로
 // 보여주고, 다중선택 확인(비고 문구 제거) / 검사리스트 정렬(서버의 실제 정렬 매크로
