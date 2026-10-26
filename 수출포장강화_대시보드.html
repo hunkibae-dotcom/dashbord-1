@@ -2004,6 +2004,7 @@
             _pkgLoadDefectActionsFromStorage();
             _pkgFetchDefectActions();
             _pkgFetchProductAttrs();
+            _pkgMigrateLegacySpecToSheet();
 
             // 0. 모바일 캐러셀 초기화 — window.load 이후로 지연 (레이아웃 확정 후 실행)
             window.addEventListener('load', function() {
