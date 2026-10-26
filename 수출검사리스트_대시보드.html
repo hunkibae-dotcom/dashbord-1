@@ -5861,6 +5861,25 @@ function undoReportWritten(key) {
   toggleReportWritten(key, false);
 }
 
+// 보고서 자동 포함 판정(내수/수출 추정)을 사람이 직접 뒤집는다 — "제외"는 지금
+// 보이는 행에서 바로, "추가"는 전체 품목 검색 창(openRpAddItemModal)에서 고른다
+// (요청, 2026-10-27: "보고서에서 제외시키는 버튼, 보고서 추가버튼좀 만들어줘").
+// value: 'excluded' | 'included' | ''(자동 판정으로 되돌리기)
+function _rpSetOverride(key, value) {
+  _rpEnsureRecord(key);
+  const sel = _reportSelected[key];
+  if (!sel) return;
+  sel.override = value;
+  sel._updatedAt = Date.now();
+  _rpDirtyMetaKeys.add(key);
+  _rpSaveToStorage(false, true);
+  _rpSyncMetaToServer(key);
+  renderReportList(); // 제외/추가는 목록에 보이는 행 자체가 바뀌므로 항상 전체를 다시 그린다
+}
+function rpExcludeItem(key) {
+  _rpSetOverride(key, 'excluded');
+}
+
 // 헤더 클릭 일괄 토글 — 지금 필터/검색 조건에 맞는(화면에 보이는) 행 전체를 대상으로,
 // 하나라도 안 켜져있으면 전부 켜고, 이미 다 켜져있으면 전부 끈다(선택/작성완료/철물
 // 세 헤더 공통 로직). 페이지네이션과 무관하게 "조건에 맞는 전체"가 대상이다.
