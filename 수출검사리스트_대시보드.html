@@ -5007,7 +5007,17 @@ function _rpFilteredRows() {
   // 고르게 하던 상단 선택버튼은 없앴다 — 항상 두 공장을 같이 보여주고, 대신 포장처/
   // 진행상태 칼럼의 드롭다운으로 필요한 만큼만 좁혀본다.
   let rows = [...allData, ...archiveRows];
-  rows = rows.filter(d => !_spuIsDomesticRound(d.건명)); // 보고서는 내수건 제외 — 수출건만 대상
+  // 보고서는 기본적으로 내수건 제외(수출건만) — 그런데 이 자동 판정(한글 포함
+  // 여부)이 가끔 틀려서(요청, 2026-10-27: "내수건인데 영어로되어있어서
+  // 보고서에 뜰때가있거든... 수출건인데 한글이들어가서 보고서에없거나...
+  // 취소된품목인데 보고서에있거나") 사람이 직접 뒤집어둔 override가 있으면
+  // 그걸 자동 판정보다 우선한다.
+  rows = rows.filter(d => {
+    const ov = (_reportSelected[_miKey(d)] || {}).override;
+    if (ov === 'excluded') return false;
+    if (ov === 'included') return true;
+    return !_spuIsDomesticRound(d.건명);
+  });
   if (_rpPackerFilter) rows = rows.filter(d => d.포장처 === _rpPackerFilter);
   if (_rpStatusFilter) rows = rows.filter(d => d.검사 === _rpStatusFilter);
   if (_rpWrittenFilter) rows = rows.filter(d => {
