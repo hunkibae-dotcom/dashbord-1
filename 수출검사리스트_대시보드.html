@@ -9147,6 +9147,45 @@ async function _qcFetchSpecOverrides() {
   const backdrop = document.getElementById('specBackdrop');
   if (backdrop && !backdrop.classList.contains('hidden') && typeof runSpecLookup === 'function') runSpecLookup();
 }
+// 이 단품코드가 지금 불러온 데이터(진행중/출고완료) 중 어느 공장에서 나왔는지 찾는다 —
+// 못 찾으면(아직 데이터가 다 안 불러와졌거나, 이력 자체가 없는 코드) null.
+function _qcFindFactoryForCode(code) {
+  const hit = (allData || []).find(d => (d.단품코드 || '').toString().trim().toUpperCase() === code)
+    || (archiveRows || []).find(d => (d.단품코드 || '').toString().trim().toUpperCase() === code);
+  return hit ? hit.공장 : null;
+}
+// 이 브라우저에 예전부터 쌓여있던 표준품명/단품코드의 종류를 구글시트(충주1/충주2
+// "상세스펙" 탭)로 한 번에 옮긴다(요청, 2026-10-26: "기존 대시보드데이터를 구글시트
+// 상세스펙탭에... 자동으로 해줄수 있니"). 시트에 이미 값이 있는 코드는 덮어쓰지
+// 않고 건너뛴다(다른 PC가 이미 더 최신으로 고쳐둔 값을 되돌리지 않기 위해). 한 번
+// 끝내면 다시 안 하도록 이 브라우저에 표시를 남긴다.
+const QC_SPEC_MIGRATE_FLAG = 'qc_spec_migrated_v1';
+async function _qcMigrateLegacySpecToSheet() {
+  if (localStorage.getItem(QC_SPEC_MIGRATE_FLAG)) return;
+  await _qcFetchSpecOverrides();
+  const tasks = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (!k || !k.startsWith('specOverride_')) continue;
+    const code = k.slice('specOverride_'.length).toString().trim().toUpperCase();
+    if (!code) continue;
+    const existing = _qcServerSpecMap[code];
+    if (existing && (existing.standardName || existing.codeType)) continue;
+    let ov;
+    try { ov = JSON.parse(localStorage.getItem(k) || '{}'); } catch (e) { continue; }
+    if (!ov || (!ov.standardName && !ov.codeType)) continue;
+    const factory = _qcFindFactoryForCode(code);
+    const targets = factory ? [factory] : ['cj1', 'cj2'];
+    targets.forEach(f => {
+      const url = _gasUrlForFactory(f);
+      if (!url) return;
+      tasks.push(fetch(url, { method: 'POST', body: JSON.stringify({ action: 'updateSpecOverride', code, standardName: ov.standardName || '', codeType: ov.codeType || '' }), signal: AbortSignal.timeout(20000) }).catch(() => {}));
+    });
+  }
+  if (tasks.length) await Promise.all(tasks);
+  localStorage.setItem(QC_SPEC_MIGRATE_FLAG, '1');
+  if (tasks.length) _qcFetchSpecOverrides();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // 신규품목 상세보기 — 비고에 "신규"/"신규 차수 추가됨" 문구가 남은 품목을 공장별로
