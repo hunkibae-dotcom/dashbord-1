@@ -9436,11 +9436,16 @@ function qcDrawingRender() {
       const checked = _qcDrawingSelected.has(key) ? 'checked' : '';
       const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
       const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
+      // BOM확정 Y/N — 도면을 뽑아도 되는지는 BOM이 확정됐는지와도 관련이 있어서 같이
+      // 보여달라는 요청(2026-10-26: "도면출력단계에서 BOM확정이 Y인지 N인지도 표시좀
+      // 업데이트될때마다도 바뀌어야해"). 메인 표의 BOM 뱃지(pill-bom-y/n)와 같은 스타일.
+      const bomBadge = d.BOM ? `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${d.BOM === 'Y' ? 'pill-bom-y' : 'pill-bom-n'}">BOM ${d.BOM}</span>` : '';
       return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
         <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcDrawingToggleOne('${_jsAttr(key)}', this.checked)">
         <div class="flex-1 min-w-0 flex flex-col gap-0.5">
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
+            ${bomBadge}
             <span class="text-[13.5px] font-bold text-red-600 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
