@@ -3465,8 +3465,15 @@
             const custom = document.getElementById('pkgProductTypeCustom');
             if (val === '__custom__') custom.value = '';
             onPkgSpecFieldEdit();
-            _pkgSyncProductTypeVisibility();
-            if (val === '__custom__') custom.focus();
+            // 드롭다운 자기 자신의 onchange 안에서 곧바로 그 드롭다운을 숨기면(직접입력
+            // 모드 전환), 일부 안드로이드 웹뷰에서 드롭다운이 값을 막 확정하고 닫히는
+            // 도중이라 숨김 처리가 씹히는 경우가 있었다 — "다른 제품 선택했다가 다시
+            // 직접입력 누르면 입력창이 안 나옴"(요청, 2026-10-27). 한 박자(다음
+            // 이벤트 루프) 늦춰서 드롭다운이 완전히 닫힌 뒤에 전환하면 안정적이다.
+            setTimeout(() => {
+                _pkgSyncProductTypeVisibility();
+                if (val === '__custom__') custom.focus();
+            }, 0);
         }
         function onPkgSpecFieldEdit() {
             if (!_currentDetailProductCode) return;
