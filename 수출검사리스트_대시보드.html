@@ -2179,6 +2179,10 @@ async function loadData() {
 
   loadErrors = [];
 
+  // 상세스펙(단품코드별 표준품명/단품코드의 종류)은 다른 데이터와 따로, 기다리지
+  // 않고 받아온다 — 실패해도 메인 데이터 로딩엔 영향 없게.
+  _qcFetchSpecOverrides();
+
   // 캐시가 있으면 먼저 그걸로 즉시 렌더 (네트워크 기다리지 않음)
   const cached = _loadArchiveCache();
   if (cached) {
