@@ -7733,6 +7733,10 @@ function _qcSpecCardHtml(code, matches, hintText) {
   const standardName = override?.standardName ?? withDims.단품명칭 ?? '';
   const codeType = override?.codeType ?? deriveCodeType(withDims.단품명칭);
   const codeAttr = (code || '').replace(/"/g, '&quot;');
+  // 이 코드가 실제로 어느 공장(들) 데이터에서 나왔는지 — 저장할 때 그 공장의 구글시트로
+  // 보내야 하므로 기억해둔다. 둘 다에서 나온(공용) 코드면 두 공장 다 저장한다.
+  const factories = [...new Set(matches.map(d => d.공장).filter(Boolean))];
+  const factoriesAttr = factories.join(',');
 
   const wS = _qcSpecStat(matches, '가로'), dS = _qcSpecStat(matches, '세로'), hS = _qcSpecStat(matches, '높이'), gS = _qcSpecStat(matches, '중량');
   const cbmVals = matches.map(d => d.CBM).filter(v => typeof v === 'number' && v > 0);
