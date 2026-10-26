@@ -5426,11 +5426,15 @@
         _startSlideTimer();
         _presenceInit();
 
-        // F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈
+        // F.WORK 앱 "코드 검색" 메뉴에서 진입 시(?openScan=1) 스캐너 자동 오픈 — 전엔
+        // 데이터 로딩과 상관없이 400ms 뒤 무조건 열어서, 느린 네트워크에서는 데이터가
+        // 하나도 없는 채로 스캔하게 됐다. 이제 "불러오는 중" 화면이 실제로 내려가는
+        // 시점(데이터 준비 완료)까지 기다렸다가 연다 — 그동안은 전체화면 로딩 표시가
+        // 계속 보인다.
         const p = new URLSearchParams(location.search);
         if (p.get('openScan') === '1') {
             history.replaceState(null, '', location.pathname);
-            setTimeout(function(){ _openScanSmart(); }, 400);
+            _pkgInitReadyPromise.then(function(){ _openScanSmart(); });
         }
     });
 
