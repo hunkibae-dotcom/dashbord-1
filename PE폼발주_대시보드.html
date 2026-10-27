@@ -1449,12 +1449,18 @@ function switchTab(name) {
   document.querySelectorAll('.pnav-item').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
 }
 
-// ── PC 대시보드 웹으로 열기 (다른 대시보드들과 같은 패턴) ──
+// ── PC 대시보드 웹으로 열기 — 전엔 이 PE폼 전용 앱 자신을 데스크톱 모드로 다시
+// 띄우고 있었는데, 그건 "PC 대시보드"가 아니라 "이 앱의 넓은 화면 버전"일 뿐이었다
+// (요청, 2026-10-27: "실제 웹대시보드의 pe폼을 말하는거야"). 진짜 PC 웹 대시보드인
+// 수출포장강화_대시보드.html을 열고, 그 안의 PE폼 탭이 자동으로 열리게
+// ?openPeFoam=1을 붙인다(그 대시보드의 _pkgAutoOpenView 참고). 이 파일은 이미
+// 모바일 전용이라 forceDesktop 같은 강제 모드가 필요 없다 — 그냥 기본 PC 웹 그대로.
 function openPeWebDashboard() {
-  const url = 'https://hunkibae-dotcom.github.io/dashbord-1/PE%ED%8F%BC%EB%B0%9C%EC%A3%BC_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1';
+  const path = encodeURIComponent('수출포장강화_대시보드.html') + '?openPeFoam=1';
+  const url = 'https://hunkibae-dotcom.github.io/dashbord-1/' + path;
   if (/Android/i.test(navigator.userAgent)) {
     // Android TWA/PWA scope 내부 URL → intent:// 로 Chrome 외부 브라우저 강제 실행
-    window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/PE%ED%8F%BC%EB%B0%9C%EC%A3%BC_%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C.html?forceDesktop=1#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
+    window.location.href = 'intent://hunkibae-dotcom.github.io/dashbord-1/' + path + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(url) + ';end;';
   } else {
     window.open(url, '_blank', 'noopener,noreferrer');
   }
