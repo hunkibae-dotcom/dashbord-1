@@ -8351,18 +8351,191 @@
             if (el) el.textContent = window._pkgNewList.length;
         }
 
+        // 품질검사 "신규품목확인"처럼 탭으로 나눴다(요청, 2026-10-27) — 확인/미구성
+        // 품목/유형 선택. qcSwitchTab과 같은 패턴(버튼 active 토글 + 패널 표시 전환).
+        const PKG_NEW_TABS = ['confirm', 'missing', 'type'];
+        function pkgNewSwitchTab(tab) {
+            PKG_NEW_TABS.forEach(t => {
+                const btn = document.querySelector('#pkgNewModal .pkgNewTabBtn[data-tab="' + t + '"]');
+                const on = t === tab;
+                if (btn) {
+                    btn.style.background = on ? '#fff' : 'transparent';
+                    btn.style.color = on ? '#0284c7' : '#64748b';
+                    btn.style.boxShadow = on ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
+                }
+                const panel = document.getElementById('pkgNewTab-' + t);
+                if (panel) panel.style.display = on ? 'flex' : 'none';
+            });
+        }
         function openPkgNewModal() {
             _pkgNewSelected = new Set();
+            _pkgMissingSpecEditCode = null;
+            _pkgMissingTypeEditCode = null;
             renderPkgNewList();
+            renderPkgMissingSpecList();
+            renderPkgMissingTypeList();
+            pkgNewSwitchTab('confirm');
             document.getElementById('pkgNewModal').style.display = 'flex';
         }
         function closePkgNewModal() {
             document.getElementById('pkgNewModal').style.display = 'none';
         }
 
+        // ── 탭2/3 공용: 수출 현황·출고 완료에 지금 보이는 제품코드를 코드 기준으로
+        // 한 번씩만 모은다(건명은 맨 처음 만난 행의 것을 대표로 보여줌). ──────────
+        function _pkgActiveCodeRounds() {
+            const seen = new Map();
+            Object.keys(datasetMap).forEach(k => {
+                if (!k.includes('수출 현황') && !k.includes('출고 완료')) return;
+                (datasetMap[k] || []).forEach(it => {
+                    const code = (it.code || '').toString().trim().toUpperCase();
+                    if (!code || seen.has(code)) return;
+                    seen.set(code, { code: code, round: it.round || '' });
+                });
+            });
+            return Array.from(seen.values());
+        }
+        function _pkgMissingSpecList() {
+            return _pkgActiveCodeRounds().filter(it => {
+                const spec = _pkgServerSpecMap[it.code] || {};
+                return !spec.productType || !spec.boxHeight;
+            });
+        }
+        function _pkgMissingTypeList() {
+            return _pkgActiveCodeRounds().filter(it => {
+                const spec = _pkgServerSpecMap[it.code] || {};
+                return spec.productType && spec.boxHeight && !spec.peType;
+            });
+        }
+        function _pkgMissingRowId(prefix, code) { return prefix + '_' + code.replace(/[^A-Z0-9]/g, '_'); }
+
+        // ── 탭2: 미구성 품목(제품종류/PE폼 높이 누락) ──────────────────────
+        let _pkgMissingSpecEditCode = null;
+        function renderPkgMissingSpecList() {
+            const body = document.getElementById('pkgMissingSpecBody');
+            const list = _pkgMissingSpecList();
+            document.getElementById('pkgNewTabCnt-missing').textContent = list.length;
+            if (!list.length) {
+                body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">미구성 품목이 없습니다.</div>';
+                return;
+            }
+            body.innerHTML = list.map(it => {
+                const spec = _pkgServerSpecMap[it.code] || {};
+                const editing = _pkgMissingSpecEditCode === it.code;
+                const rowId = _pkgMissingRowId('pms', it.code);
+                const isCustomType = spec.productType && PKG_PRODUCT_TYPES.indexOf(spec.productType) < 0;
+                return `<div style="border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 8px;cursor:pointer;" onclick="_pkgMissingSpecToggle('${_jsAttr(it.code)}')">
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                            <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
+                            <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
+                                <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.code)}', event)">${it.code}</span>
+                                ${!spec.productType ? '<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef2f2;color:#dc2626;">제품종류 없음</span>' : `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${spec.productType}</span>`}
+                                ${!spec.boxHeight ? '<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef2f2;color:#dc2626;">PE폼 높이 없음</span>' : ''}
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-${editing ? 'up' : 'down'}" style="font-size:11px;color:#94a3b8;flex-shrink:0;"></i>
+                    </div>
+                    ${editing ? `<div style="padding:4px 8px 12px;display:flex;flex-direction:column;gap:8px;background:#f8fafc;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <select id="${rowId}_sel" onchange="_pkgMissingSpecSelChange('${_jsAttr(it.code)}', this.value)" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                                <option value="">제품종류 선택</option>
+                                ${PKG_PRODUCT_TYPES.map(t => `<option value="${t}" ${spec.productType === t ? 'selected' : ''}>${t}</option>`).join('')}
+                                <option value="__custom__" ${isCustomType ? 'selected' : ''}>직접입력</option>
+                            </select>
+                            <input type="text" id="${rowId}_custom" placeholder="제품 종류 직접 입력" value="${isCustomType ? _jsAttr(spec.productType) : ''}" class="${isCustomType ? '' : 'hidden'}" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                        </div>
+                        <input type="text" id="${rowId}_height" placeholder="PE폼 높이" value="${_jsAttr(spec.boxHeight || '')}" style="border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                        <button onclick="_pkgMissingSpecConfirm('${_jsAttr(it.code)}')" style="align-self:flex-end;padding:7px 18px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;"><i class="fa-solid fa-check"></i> 확인</button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+        function _pkgMissingSpecToggle(code) {
+            _pkgMissingSpecEditCode = (_pkgMissingSpecEditCode === code) ? null : code;
+            renderPkgMissingSpecList();
+        }
+        function _pkgMissingSpecSelChange(code, val) {
+            const custom = document.getElementById(_pkgMissingRowId('pms', code) + '_custom');
+            if (custom) custom.classList.toggle('hidden', val !== '__custom__');
+        }
+        async function _pkgMissingSpecConfirm(code) {
+            const rowId = _pkgMissingRowId('pms', code);
+            const sel = document.getElementById(rowId + '_sel');
+            const custom = document.getElementById(rowId + '_custom');
+            const heightInput = document.getElementById(rowId + '_height');
+            const productType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
+            const boxHeight = heightInput.value.trim();
+            if (!productType && !boxHeight) return;
+            const payload = { action: 'updateProductSpec', code: code };
+            if (productType) payload.productType = productType;
+            if (boxHeight) payload.boxHeight = boxHeight;
+            _pkgServerSpecMap[code] = Object.assign({}, _pkgServerSpecMap[code], { code: code },
+                productType ? { productType: productType } : {}, boxHeight ? { boxHeight: boxHeight } : {});
+            const url = _pkgGasUrl();
+            if (url) {
+                try { await fetch(url, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
+            }
+            _pkgMissingSpecEditCode = null;
+            renderPkgMissingSpecList();
+            renderPkgMissingTypeList();
+        }
+
+        // ── 탭3: 유형 선택(제품종류·높이는 있지만 PE폼 유형 누락) ──────────
+        let _pkgMissingTypeEditCode = null;
+        const PKG_PE_TYPE_OPTIONS = ['일자형', '코너형', '패드형', '롤형'];
+        function renderPkgMissingTypeList() {
+            const body = document.getElementById('pkgMissingTypeBody');
+            const list = _pkgMissingTypeList();
+            document.getElementById('pkgNewTabCnt-type').textContent = list.length;
+            if (!list.length) {
+                body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">유형을 고를 품목이 없습니다.</div>';
+                return;
+            }
+            body.innerHTML = list.map(it => {
+                const spec = _pkgServerSpecMap[it.code] || {};
+                const editing = _pkgMissingTypeEditCode === it.code;
+                const rowId = _pkgMissingRowId('pmt', it.code);
+                return `<div style="border-bottom:1px solid #f1f5f9;">
+                    <div style="display:flex;align-items:center;gap:10px;padding:9px 8px;cursor:pointer;" onclick="_pkgMissingTypeToggle('${_jsAttr(it.code)}')">
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                            <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
+                            <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
+                                <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.code)}', event)">${it.code}</span>
+                                <span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${spec.productType}</span>
+                                <span>높이 ${spec.boxHeight}</span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-${editing ? 'up' : 'down'}" style="font-size:11px;color:#94a3b8;flex-shrink:0;"></i>
+                    </div>
+                    ${editing ? `<div style="padding:4px 8px 12px;display:flex;align-items:center;gap:8px;background:#f8fafc;">
+                        <select id="${rowId}_sel" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                            <option value="">PE폼 유형 선택</option>
+                            ${PKG_PE_TYPE_OPTIONS.map(t => `<option value="${t}">${t}</option>`).join('')}
+                        </select>
+                        <button onclick="_pkgMissingTypeConfirm('${_jsAttr(it.code)}')" style="padding:7px 18px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-check"></i> 확인</button>
+                    </div>` : ''}
+                </div>`;
+            }).join('');
+        }
+        function _pkgMissingTypeToggle(code) {
+            _pkgMissingTypeEditCode = (_pkgMissingTypeEditCode === code) ? null : code;
+            renderPkgMissingTypeList();
+        }
+        function _pkgMissingTypeConfirm(code) {
+            const sel = document.getElementById(_pkgMissingRowId('pmt', code) + '_sel');
+            const type = sel.value;
+            if (!type) return;
+            const existingSpec = _pkgServerSpecMap[code] || {};
+            _pkgSetPeType(code, type, existingSpec.boxHeight || '');
+            _pkgMissingTypeEditCode = null;
+            renderPkgMissingTypeList();
+        }
+
         function renderPkgNewList() {
             const body = document.getElementById('pkgNewBody');
             const list = window._pkgNewList || [];
+            document.getElementById('pkgNewTabCnt-confirm').textContent = list.length;
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">신규 품목이 없습니다.</div>';
             } else {
