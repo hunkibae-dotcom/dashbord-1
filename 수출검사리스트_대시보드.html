@@ -1382,6 +1382,85 @@ try {
   </div>
 </div>
 
+<!-- ===== 보고서: 사진 분류기(요청, 2026-10-27) — 시안 단계. 실제 사진 속 글자를 읽는
+     부분(제품코드/CBM 인식)은 아직 연결 전이라, 지금은 화면 흐름만 보여주는 가짜
+     분류 결과를 만든다(_qcClfRunMockDetection). 실제 인식(Gemini API) 연동은
+     사용자 승인 후 다음 단계에서 이 함수만 바꿔치기하면 된다. ===== -->
+<div id="qcClassifierModal" onclick="if(event.target===this)closeQcClassifier()" style="display:none;position:fixed;inset:0;z-index:208;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:22px;width:100%;max-width:640px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <span style="font-size:16px;font-weight:800;color:var(--text);"><i class="fa-solid fa-wand-magic-sparkles" style="color:#6D5CE8;margin-right:7px;"></i>분류기
+        <span style="margin-left:8px;font-size:10px;font-weight:800;background:#fef3c7;color:#b45309;padding:2.5px 9px;border-radius:999px;vertical-align:middle;">시안 · 실제 인식 미연결</span>
+      </span>
+      <button onclick="closeQcClassifier()" style="width:30px;height:30px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <!-- 1단계: 업로드 -->
+    <div id="qcClfStepUpload">
+      <div style="font-size:11.5px;color:var(--label);line-height:1.6;margin-bottom:12px;">검사사진·포장사진을 한꺼번에 올리면 자동으로 구분해서 제품코드·색상·CBM을 읽어냅니다. 확실하지 않은 건은 따로 확인을 요청합니다.</div>
+      <label for="qcClfFileInput" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;border:2px dashed var(--border);border-radius:14px;padding:40px 16px;cursor:pointer;color:var(--label);">
+        <i class="fa-solid fa-images" style="font-size:28px;color:#6D5CE8;"></i>
+        <span style="font-size:13px;font-weight:700;color:var(--text-sub);">눌러서 사진 선택(여러 장 가능)</span>
+      </label>
+      <input type="file" id="qcClfFileInput" accept="image/*" multiple style="display:none;" onchange="_qcClfFilesSelected(this.files)">
+    </div>
+
+    <!-- 2단계: 분석 중 -->
+    <div id="qcClfStepProcessing" style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:54px 16px;">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size:30px;color:#6D5CE8;"></i>
+      <div style="font-size:13px;font-weight:700;color:var(--text-sub);" id="qcClfProcessingLabel">사진 분석 중...</div>
+    </div>
+
+    <!-- 3단계: 결과 -->
+    <div id="qcClfStepResults" style="display:none;flex-direction:column;gap:10px;flex:1;min-height:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <span style="font-size:12px;color:var(--label);"><b id="qcClfCount" style="color:var(--text);">0</b>장 분석 완료 · <span id="qcClfNeedConfirm" style="color:#dc2626;font-weight:700;"></span></span>
+        <button onclick="_qcClfReset()" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;text-decoration:underline;">처음부터 다시</button>
+      </div>
+      <div id="qcClfResultList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:120px;"></div>
+      <div style="display:flex;gap:8px;flex-shrink:0;border-top:1px solid var(--border);padding-top:12px;flex-wrap:wrap;">
+        <button onclick="_qcClfDownloadPhotos()" style="flex:1;min-width:120px;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;font-size:12.5px;"><i class="fa-solid fa-download"></i> 사진 다운로드</button>
+        <button onclick="_qcClfDownloadCbm()" style="flex:1;min-width:120px;padding:11px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;font-size:12.5px;"><i class="fa-solid fa-file-csv"></i> CBM 다운로드</button>
+        <button onclick="_qcClfApplyToReport()" style="flex:1;min-width:120px;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;font-size:12.5px;"><i class="fa-solid fa-check"></i> 보고서에 반영</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 분류기: 코드/CBM 확인 팝업 -->
+<div id="qcClfConfirmModal" onclick="if(event.target===this)_qcClfCloseConfirm()" style="display:none;position:fixed;inset:0;z-index:209;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:var(--panel);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14.5px;font-weight:800;color:var(--text);">확인이 필요해요</span>
+      <button onclick="_qcClfCloseConfirm()" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <img id="qcClfConfirmImg" src="" style="width:100%;border-radius:12px;border:1px solid var(--border);cursor:zoom-in;transition:transform .2s;" onclick="this.style.transform = this.style.transform ? '' : 'scale(1.6)';">
+    <div>
+      <div style="font-size:11.5px;color:var(--label);margin-bottom:6px;">이 사진의 제품이 아래 품목이 맞나요?</div>
+      <div id="qcClfConfirmCodeText" style="font-size:14.5px;font-weight:800;color:var(--text);background:var(--input-bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="_qcClfConfirmCode(true)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;cursor:pointer;">맞습니다</button>
+        <button onclick="_qcClfConfirmCode(false)" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;">아니에요</button>
+      </div>
+      <div id="qcClfCodeSearchWrap" style="display:none;margin-top:10px;">
+        <input type="text" id="qcClfCodeSearchInput" oninput="_qcClfRenderCodeSearch()" placeholder="건명·단품코드 검색" style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12.5px;outline:none;margin-bottom:8px;">
+        <div id="qcClfCodeSearchResults" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);padding-top:12px;">
+      <div style="font-size:11.5px;color:var(--label);margin-bottom:6px;">CBM(가로x세로x높이, 중량)을 확인해주세요</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
+        <input type="number" id="qcClfCbmW" placeholder="가로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmD" placeholder="세로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmH" placeholder="높이" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmG" placeholder="중량" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
+      </div>
+      <button onclick="_qcClfSkipCbm()" style="width:100%;padding:8px;border-radius:9px;border:1px dashed var(--border);background:none;color:var(--label);font-size:11.5px;cursor:pointer;margin-bottom:4px;">CBM 모르겠음 — 건너뛰기</button>
+    </div>
+    <button onclick="_qcClfSaveConfirm()" style="padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">확인 완료</button>
+  </div>
+</div>
+
 <!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
 <div id="rpEditModal" onclick="if(event.target===this)closeRpEditModal()" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
   <div style="background:var(--panel);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
