@@ -2541,6 +2541,7 @@ function _fiCloseTopOverlay() {
   if (isOpen('fiRegisterModal')) { fiCloseRegister(); return true; }
   if (isOpen('fiDetailModal'))   { fiCloseDetail();   return true; }
   if (isOpen('fiProfileModal'))  { document.getElementById('fiProfileModal').style.display = 'none'; return true; }
+  if (isOpen('fiUsageGuideModal')) { fiCloseUsageGuide(); return true; }
   return false;
 }
 function _fiShowExitBackToast() {
