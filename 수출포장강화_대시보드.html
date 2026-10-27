@@ -8534,8 +8534,11 @@
             Object.keys(datasetMap).forEach(k => {
                 if (!k.includes('수출 현황')) return;
                 (datasetMap[k] || []).forEach(it => {
+                    // 바코드출력 칸이 "N"인 것만 — 공백(이 칸이 생기기 전부터 있던 옛날 행)은
+                    // 분류(수주)를 아예 거친 적이 없어서 제외한다(요청, 2026-10-27: "공백인건
+                    // 나오면 안돼").
                     const printed = (it.barcodePrinted || '').toString().trim().toUpperCase();
-                    if (printed === 'Y') return;
+                    if (printed !== 'N') return;
                     const key = _pkgNewKey(it);
                     if (!seen.has(key)) seen.set(key, it);
                 });
