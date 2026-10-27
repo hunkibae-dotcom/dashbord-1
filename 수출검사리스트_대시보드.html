@@ -6142,7 +6142,7 @@ function _qcClfCandidatePool() {
     const k = d.단품코드 + '|' + (d.색상 || '');
     if (seen.has(k)) return;
     seen.add(k);
-    out.push({ round: d.건명, code: d.단품코드, color: d.색상 || '', name: d.단품명칭 || '' });
+    out.push({ round: d.건명, code: d.단품코드, color: d.색상 || '', name: d.단품명칭 || '', qty: d.수량 || '' });
   });
   return out;
 }
