@@ -6102,6 +6102,8 @@ function openQcClassifier() {
   _qcClfRevokeUrls();
   _qcClfFiles = [];
   _qcClfResults = [];
+  _qcClfSortMode = 0;
+  document.getElementById('qcClfSortLabel').textContent = '정렬: 기본순서';
   document.getElementById('qcClfFileInput').value = '';
   document.getElementById('qcClfStepUpload').style.display = 'block';
   document.getElementById('qcClfStepProcessing').style.display = 'none';
