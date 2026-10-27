@@ -13861,29 +13861,53 @@ async function peExportOrderXlsx(ordNo, meta, items) {
 <!-- ── 신규 항목 상세보기 모달 ──────────────────────── -->
 <div id="pkgNewModal" onclick="if(event.target===this)closePkgNewModal()"
     style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
-    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:560px;max-width:94vw;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:620px;max-width:94vw;height:86vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-shrink:0;">
             <div style="font-size:16px;font-weight:800;color:#1e293b;">신규 추가 품목</div>
             <button onclick="closePkgNewModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div style="font-size:12px;color:#94a3b8;margin:6px 0 12px;">수출 현황 I열(비고)에 "신규"로 표시된 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9;">
-            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:700;color:#334155;">
-                <input type="checkbox" id="pkgNewSelectAll" onchange="pkgNewToggleAll(this.checked)"> 전체선택
-            </label>
-            <span id="pkgNewSelCount" style="color:#94a3b8;font-weight:600;">0건 선택</span>
+        <!-- 품질검사 쪽 "신규품목확인" 탭 구조를 본떠서(요청, 2026-10-27) 확인/미구성 품목/
+             유형 선택 3개 탭으로 나눴다 — 각각 기준이 달라서(비고="신규" / 상세스펙
+             제품종류·높이 누락 / 제품종류는 있지만 PE폼 유형 누락) 섞어 보여주면 헷갈린다. -->
+        <div style="display:flex;gap:4px;background:#f1f5f9;border-radius:10px;padding:3px;margin-bottom:12px;flex-shrink:0;">
+            <button class="pkgNewTabBtn" data-tab="confirm" onclick="pkgNewSwitchTab('confirm')" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-size:12.5px;font-weight:800;cursor:pointer;">확인 <span id="pkgNewTabCnt-confirm">0</span></button>
+            <button class="pkgNewTabBtn" data-tab="missing" onclick="pkgNewSwitchTab('missing')" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-size:12.5px;font-weight:800;cursor:pointer;">미구성 품목 <span id="pkgNewTabCnt-missing">0</span></button>
+            <button class="pkgNewTabBtn" data-tab="type" onclick="pkgNewSwitchTab('type')" style="flex:1;border:none;border-radius:8px;padding:8px 4px;font-size:12.5px;font-weight:800;cursor:pointer;">유형 선택 <span id="pkgNewTabCnt-type">0</span></button>
         </div>
-        <div id="pkgNewBody" style="overflow-y:auto;flex:1;padding:6px 2px;min-height:120px;"></div>
-        <div id="pkgNewStatus" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-top:4px;"></div>
-        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;">
-            <button onclick="pkgNewDeleteSelected()" id="pkgNewDeleteBtn" disabled
-                style="padding:9px 22px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
-                <i class="fa-solid fa-trash-can"></i> 삭제
-            </button>
-            <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
-                style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
-                <i class="fa-solid fa-check"></i> 확인
-            </button>
+
+        <!-- 탭1: 확인 (예전 신규추가품목 단일 목록 그대로) -->
+        <div id="pkgNewTab-confirm" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+            <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;flex-shrink:0;">수출 현황 I열(비고)에 "신규"로 표시된 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
+                <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-weight:700;color:#334155;">
+                    <input type="checkbox" id="pkgNewSelectAll" onchange="pkgNewToggleAll(this.checked)"> 전체선택
+                </label>
+                <span id="pkgNewSelCount" style="color:#94a3b8;font-weight:600;">0건 선택</span>
+            </div>
+            <div id="pkgNewBody" style="overflow-y:auto;flex:1;padding:6px 2px;min-height:0;"></div>
+            <div id="pkgNewStatus" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-top:4px;flex-shrink:0;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;flex-shrink:0;">
+                <button onclick="pkgNewDeleteSelected()" id="pkgNewDeleteBtn" disabled
+                    style="padding:9px 22px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                    <i class="fa-solid fa-trash-can"></i> 삭제
+                </button>
+                <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
+                    style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                    <i class="fa-solid fa-check"></i> 확인
+                </button>
+            </div>
+        </div>
+
+        <!-- 탭2: 미구성 품목 (상세스펙 기준 제품종류·PE폼 높이 누락) -->
+        <div id="pkgNewTab-missing" style="display:none;flex-direction:column;flex:1;min-height:0;">
+            <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;flex-shrink:0;">수출 현황·출고 완료의 제품코드 중 상세스펙 기준 제품종류 또는 PE폼 높이가 비어있는 품목입니다. 건명/제품코드를 누르면 복사되고, 행을 누르면 바로 채울 수 있습니다. 채워서 확인을 누르면 목록에서 사라집니다.</div>
+            <div id="pkgMissingSpecBody" style="overflow-y:auto;flex:1;min-height:0;padding:2px;"></div>
+        </div>
+
+        <!-- 탭3: 유형 선택 (제품종류·높이는 있지만 PE폼 유형이 비어있음) -->
+        <div id="pkgNewTab-type" style="display:none;flex-direction:column;flex:1;min-height:0;">
+            <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;flex-shrink:0;">제품종류·PE폼 높이는 정해졌지만 PE폼 유형(일자형/코너형 등)이 아직 없는 품목입니다. 건명/제품코드를 누르면 복사되고, 행을 누르면 바로 고를 수 있습니다.</div>
+            <div id="pkgMissingTypeBody" style="overflow-y:auto;flex:1;min-height:0;padding:2px;"></div>
         </div>
     </div>
 </div>
