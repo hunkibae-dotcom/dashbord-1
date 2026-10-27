@@ -11987,10 +11987,11 @@ function closePkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.add('hidden');
 }
 function peSwitchTab(name) {
-    ['dash', 'order', 'history', 'stock', 'master'].forEach(t => {
+    ['dash', 'order', 'history', 'stock', 'master', 'settings'].forEach(t => {
         document.getElementById('peTab-' + t).classList.toggle('hidden', t !== name);
     });
     document.querySelectorAll('.pe-side-nav-btn').forEach(b => b.classList.toggle('on', b.dataset.peTab === name));
+    if (name === 'settings') peLoadSettingsTab();
 }
 function peShowToast(msg) {
     const t = document.getElementById('peToast');
