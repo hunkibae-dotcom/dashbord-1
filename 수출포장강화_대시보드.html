@@ -8383,6 +8383,8 @@
             if (missingEl) missingEl.textContent = _pkgMissingSpecList().length;
             const typeEl = document.getElementById('pkgNewCardCnt-type');
             if (typeEl) typeEl.textContent = _pkgMissingTypeList().length;
+            const barcodeEl = document.getElementById('pkgNewCardCnt-barcode');
+            if (barcodeEl) barcodeEl.textContent = _pkgBarcodeList().length;
         }
 
         // 품질검사 "신규품목확인"처럼 탭으로 나눴다(요청, 2026-10-27) — 확인/미구성
