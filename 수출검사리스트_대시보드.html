@@ -1474,23 +1474,6 @@ try {
   </div>
 </div>
 
-<!-- 분류기 확인팝업: 사진 확대보기(별도 창) — 요청, 2026-10-27: "확인창에서 확대하면
-     입력하기 힘드니, 사진은 따로 보면서 코드·CBM은 동시에 입력". 확인팝업을 가리지 않도록
-     배경 없는 떠있는 창으로 열고, 휠로 확대/축소(클릭줌보다 훨씬 크게), 드래그로 사진 이동,
-     헤더 드래그로 창 위치 이동이 가능하다. -->
-<div id="qcClfPhotoViewer" style="display:none;position:fixed;z-index:230;top:8vh;right:4vw;width:min(92vw,460px);height:min(70vh,460px);background:var(--panel);border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.35);border:1px solid var(--border);flex-direction:column;overflow:hidden;">
-  <div id="qcClfPvHeader" onmousedown="_qcClfPvPanelMouseDown(event)" style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--input-bg);cursor:move;user-select:none;">
-    <span style="font-size:12px;font-weight:800;color:var(--text);"><i class="fa-solid fa-up-down-left-right"></i> 사진 확대보기 <span style="color:var(--label);font-weight:600;">· 휠로 확대, 드래그로 이동</span></span>
-    <button onclick="_qcClfClosePhotoViewer()" style="width:26px;height:26px;border-radius:7px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <div id="qcClfPvViewport" onwheel="_qcClfPvWheel(event)" onmousedown="_qcClfPvMouseDown(event)" style="flex:1;overflow:hidden;position:relative;background:#00000012;cursor:grab;touch-action:none;">
-    <img id="qcClfPvImg" src="" draggable="false" style="position:absolute;top:0;left:0;transform-origin:0 0;user-select:none;pointer-events:none;">
-  </div>
-  <div style="flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--border);">
-    <span id="qcClfPvZoomLabel" style="font-size:11px;color:var(--label);">100%</span>
-    <button onclick="_qcClfPvReset()" style="font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;">원래 크기</button>
-  </div>
-</div>
 
 <!-- ===== 보고서: CBM/특이사항 입력 모달 ===== -->
 <div id="rpEditModal" onclick="if(event.target===this)closeRpEditModal()" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
