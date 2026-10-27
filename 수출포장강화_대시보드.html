@@ -12372,6 +12372,19 @@ const PE_STOCK_EXPORT_COLS = [
     { label: '사업장', get: r => r.site || '' },
     { label: '비고', get: r => r.note || '' },
 ];
+// PDF는 현장에서 들고 다니며 직접 재고를 확인·기록하는 용도(요청, 2026-10-27)라
+// 엑셀과 칼럼 구성을 다르게 둔다 — 핵심 정보만 간추리고, 맨 끝에 현장에서 수량/소진
+// 등을 손으로 적을 "재고확인" 빈 칸을 추가한다.
+const PE_STOCK_EXPORT_PDF_COLS = [
+    { label: '발주일자', width: '11%', get: r => r.date || '' },
+    { label: '자재명', width: '21%', get: r => r.name || '' },
+    { label: '규격상세', width: '19%', get: r => r.spec || '' },
+    { label: '수량', width: '9%', get: r => peIsUsedUp(r.qty) ? '소진' : peStkQtyNum(r.qty).toLocaleString() },
+    { label: '단위', width: '7%', get: r => r.unit || '' },
+    { label: '유형', width: '10%', get: r => r.type || '' },
+    { label: '비고', width: '11%', get: r => r.note || '' },
+    { label: '재고확인', width: '12%', get: () => '' },
+];
 function peOpenExportModal() {
     document.getElementById('peExportStatus').textContent = '';
     document.getElementById('peExportCount').textContent = _peStockFiltered.length;
