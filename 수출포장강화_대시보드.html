@@ -13511,6 +13511,48 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- PE폼 재고현황 데이터 출력(요청, 2026-10-27: "재고소진 파악용으로 데이터 출력버튼이
+     필요한데... 수정/저장가능한엑셀파일로 출력이 되어야하며 pdf로도 출력가능해야해")
+     — 지금 화면에 걸린 필터(유형/검색/소진숨기기) 그대로 내보낸다. 엑셀/PDF 공용 렌더러
+     (_pkgRenderGenericXls/_pkgRenderGenericPrintPdf)를 그대로 재사용해서, 엑셀은 실제로
+     셀 단위로 수정·저장 가능한 .xlsx로 나온다. -->
+<div id="peExportModal" class="pe-scope" onclick="if(event.target===this)peCloseExportModal()" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid var(--pe-border);border-radius:18px;padding:26px 28px;width:400px;max-width:94vw;box-shadow:0 20px 60px rgba(16,20,30,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:15.5px;font-weight:800;color:var(--pe-ink);"><i class="fa-solid fa-file-export" style="color:var(--pe-brand);margin-right:6px;"></i>재고 데이터 출력</div>
+            <button onclick="peCloseExportModal()" style="background:var(--pe-bg);border:1px solid var(--pe-border);border-radius:8px;color:var(--pe-ink-sub);font-size:14px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="peExportFormatStep">
+            <div style="font-size:12.5px;color:var(--pe-ink-sub);margin:14px 0;">지금 조회된 재고 목록(<span id="peExportCount" style="font-weight:800;color:var(--pe-ink);"></span>건)을 어떤 형식으로 받으실까요?</div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="peRunExport('xlsx')" style="flex:1;padding:20px 8px;border:1.5px solid #bbf7d0;border-radius:14px;background:#f0fdf4;color:#15803d;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-excel" style="display:block;font-size:22px;margin-bottom:7px;"></i>엑셀(.xlsx)
+                    <div style="font-size:10px;font-weight:600;color:var(--pe-ink-sub);margin-top:4px;">수정·저장 가능</div>
+                </button>
+                <button onclick="peShowExportOrientStep()" style="flex:1;padding:20px 8px;border:1.5px solid #fecaca;border-radius:14px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:22px;margin-bottom:7px;"></i>PDF
+                    <div style="font-size:10px;font-weight:600;color:var(--pe-ink-sub);margin-top:4px;">바로 인쇄용</div>
+                </button>
+            </div>
+        </div>
+        <div id="peExportOrientStep" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;margin:14px 0;">
+                <button onclick="peBackToExportFormat()" style="background:var(--pe-bg);border:1px solid var(--pe-border);border-radius:8px;color:var(--pe-ink-sub);font-size:13px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div style="font-size:12.5px;color:var(--pe-ink-sub);">용지 방향을 선택해 주세요.</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button onclick="peRunExport('pdf','portrait')" style="flex:1;padding:20px 8px;border:1.5px solid #fecaca;border-radius:14px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:22px;margin-bottom:7px;"></i>세로
+                </button>
+                <button onclick="peRunExport('pdf','landscape')" style="flex:1;padding:20px 8px;border:1.5px solid #fecaca;border-radius:14px;background:#fef2f2;color:#b91c1c;font-weight:700;font-size:13.5px;cursor:pointer;text-align:center;">
+                    <i class="fa-solid fa-file-pdf" style="display:block;font-size:22px;margin-bottom:7px;transform:rotate(90deg);"></i>가로
+                </button>
+            </div>
+        </div>
+        <div id="peExportStatus" style="font-size:11.5px;color:var(--pe-ink-sub);font-weight:600;min-height:16px;margin-top:14px;text-align:center;"></div>
+    </div>
+</div>
+
 <!-- 발주 상세 -->
 <div id="peOrderDetailModal" class="pe-scope" onclick="if(event.target===this)peCloseOrderDetail()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
