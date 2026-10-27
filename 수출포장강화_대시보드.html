@@ -13975,11 +13975,11 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 <div class="items-head">
                     <div class="pe-panel-label" style="margin-bottom:0;">PE폼 재고</div>
                     <span class="count" id="peStockCount"></span>
-                    <button onclick="peOpenPurgeModal()" style="margin-left:auto;border:1.5px solid #fecaca;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#b91c1c;background:#fef2f2;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <button onclick="peOpenPurgeModal()" style="margin-left:auto;margin-right:10px;border:1.5px solid #fecaca;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#b91c1c;background:#fef2f2;cursor:pointer;display:flex;align-items:center;gap:6px;">
                         <i class="fa-solid fa-broom"></i> 소진제거
                     </button>
-                    <button onclick="peOpenExportModal()" style="border:none;border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#FF9F1C,#E8590C);cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(232,89,12,.3);">
-                        <i class="fa-solid fa-file-export"></i> 데이터 출력
+                    <button onclick="peOpenExportModal()" style="border:1px solid var(--pe-border);border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:700;color:var(--pe-ink);background:var(--pe-panel,#fff);cursor:pointer;display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-file-export" style="color:var(--pe-brand);"></i> 데이터 출력
                     </button>
                 </div>
                 <div class="master-filter-row">
