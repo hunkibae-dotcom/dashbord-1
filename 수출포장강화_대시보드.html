@@ -6421,6 +6421,20 @@
             const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
             sv('card1PendingQty',  pendingQty.toLocaleString());
             sv('card1PendingItems', pendingCount);
+
+            // 수출 현황 시트 기준: 미회수(진행="미입고" 건수), 상차준비(상차일이 실제로
+            // 입력된 건수) — 요청, 2026-10-27.
+            const exportSheetKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
+            const exportData = exportSheetKey ? (datasetMap[exportSheetKey] || []) : [];
+            _unreceivedDetailItems = [];
+            _loadReadyDetailItems = [];
+            exportData.forEach(item => {
+                const s = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
+                if (s.includes('미입고')) _unreceivedDetailItems.push(item);
+                if (item.date && item.date !== '-') _loadReadyDetailItems.push(item);
+            });
+            sv('card1UnreceivedCount', _unreceivedDetailItems.length.toLocaleString());
+            sv('card1LoadReadyCount', _loadReadyDetailItems.length.toLocaleString());
         }
 
         // ── 전달사항 카드 (슬라이드 + 납기/상차일 변경 감지) ──
