@@ -1449,11 +1449,14 @@ try {
     </div>
     <div style="border-top:1px solid var(--border);padding-top:16px;">
       <div style="font-size:13px;color:var(--label);margin-bottom:8px;">CBM(가로x세로x높이, 중량)을 확인해주세요</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
-        <input type="number" id="qcClfCbmW" placeholder="가로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmD" placeholder="세로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmH" placeholder="높이" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmG" placeholder="중량" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
+      <!-- number input은 그리드 칸(1fr)보다 커도 안 줄어드는 기본 최소너비가 있어서
+           (요청, 2026-10-27: "확인창이 작아서 CBM을 입력못하고 스크롤바가 생겼잖아"),
+           min-width:0으로 강제로 칸에 맞춰 줄어들게 하고 패딩/글자도 살짝 줄였다. -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
+        <input type="number" id="qcClfCbmW" placeholder="가로" style="box-sizing:border-box;width:100%;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;font-size:13px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmD" placeholder="세로" style="box-sizing:border-box;width:100%;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;font-size:13px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmH" placeholder="높이" style="box-sizing:border-box;width:100%;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;font-size:13px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmG" placeholder="중량" style="box-sizing:border-box;width:100%;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:10px 4px;font-size:13px;outline:none;text-align:center;">
       </div>
       <button onclick="_qcClfSkipCbm()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--label);font-size:12.5px;cursor:pointer;margin-bottom:4px;">CBM 모르겠음 — 건너뛰기</button>
     </div>
