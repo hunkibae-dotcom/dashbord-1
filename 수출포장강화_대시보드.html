@@ -14038,6 +14038,12 @@ async function peExportOrderXlsx(ordNo, meta, items) {
         <!-- 설정(요청, 2026-10-27: "연동 url입력하는거랑 데이터시트 바로가기버튼좀 넣어줘") -->
         <div id="peTab-settings" class="hidden">
             <div class="pe-panel" style="max-width:520px;">
+                <div class="pe-panel-label">사용 설명서</div>
+                <p style="font-size:12px;color:var(--pe-ink-sub);line-height:1.6;margin:4px 0 14px;">PE폼 대시보드·발주서·재고현황·품목마스터 사용법을 기능별로 찾아볼 수 있습니다.</p>
+                <button onclick="openPeUsageGuideModal()" class="pe-submit-btn" style="width:auto;padding:10px 20px;"><i class="fa-solid fa-circle-question"></i> 사용설명서 열기</button>
+
+                <div style="border-top:1px solid var(--pe-divider);margin:22px 0 18px;"></div>
+
                 <div class="pe-panel-label">연동 설정</div>
                 <p style="font-size:12px;color:var(--pe-ink-sub);line-height:1.6;margin:4px 0 14px;">PE폼 발주/재고 데이터를 가져오는 구글 앱스스크립트 웹앱 주소입니다. 비워두고 저장하면 기본 주소로 돌아갑니다.</p>
                 <label style="display:block;font-size:10.5px;font-weight:700;color:var(--pe-ink-sub);margin-bottom:6px;">연동 URL</label>
