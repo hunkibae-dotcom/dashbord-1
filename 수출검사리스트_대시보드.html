@@ -6314,10 +6314,12 @@ function _qcClfRenderResults() {
     const badgeBg = isInsp ? '#eff6ff' : '#f0fdf4';
     const badgeColor = isInsp ? '#0284c7' : '#16a34a';
     const needsReview = _qcClfNeedsReview(r);
-    // 보고서에 없는 코드는 "오인식 가능성이 큰, 말이 안 되는" 케이스라 일반 확인
-    // 필요와 다르게 명확히 알려준다(요청, 2026-10-27).
+    // 보고서에 없는 코드는 "오인식 가능성이 큰, 말이 안 되는" 케이스라 이유를 덧붙여
+    // 알려주되, "확인 필요" 큰 분류 자체는 그대로 유지해 정렬 버튼 문구와도 일치시킨다
+    // (요청, 2026-10-27: "확인필요에서 보고서에 없는 코드로 바꿨으면 정렬버튼 문구도
+    // 바꿔야지" — 분류 이름을 둘로 쪼개는 대신 "확인 필요" 하나로 통일해 해결).
     const reviewLabel = r.codeNotInReport
-      ? '<span style="font-size:10px;font-weight:800;color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i> 보고서에 없는 코드</span>'
+      ? '<span style="font-size:10px;font-weight:800;color:#dc2626;"><i class="fa-solid fa-triangle-exclamation"></i> 확인 필요 · 보고서에 없는 코드</span>'
       : '<span style="font-size:10px;font-weight:800;color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> 확인 필요</span>';
     return `<div style="display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--border);border-radius:12px;${needsReview ? 'background:#fffbeb;' : ''}">
       <img src="${r.url}" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;" onclick="_qcClfOpenConfirm(${r.idx})">
