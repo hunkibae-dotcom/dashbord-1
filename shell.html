@@ -2898,7 +2898,7 @@
     }
     function setSfDateField(field) {
         _sfDateField = field;
-        [['date','sfDateFieldDate'], ['dueDate','sfDateFieldDue'], ['regDate','sfDateFieldReg']].forEach(([v, id]) => {
+        [['date','sfDateFieldDate'], ['dueDate','sfDateFieldDue'], ['arriveDate','sfDateFieldArrive'], ['regDate','sfDateFieldReg']].forEach(([v, id]) => {
             const btn = document.getElementById(id);
             if (!btn) return;
             btn.style.background = v === field ? '#00B0FF' : 'transparent';
