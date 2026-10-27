@@ -8359,8 +8359,14 @@
         }
         function refreshPkgNewCard(rawData) {
             window._pkgNewList = (rawData || []).filter(_pkgIsNewItem);
-            const el = document.getElementById('pkgNewCount');
+            const el = document.getElementById('pkgNewCardCnt-confirm');
             if (el) el.textContent = window._pkgNewList.length;
+            // 미구성 품목/유형 선택은 상세스펙(_pkgServerSpecMap) 기준이라 신규 목록과
+            // 무관하게 매번 다시 센다 — 품질검사 KPI 카드의 등록/도면 배지와 같은 패턴.
+            const missingEl = document.getElementById('pkgNewCardCnt-missing');
+            if (missingEl) missingEl.textContent = _pkgMissingSpecList().length;
+            const typeEl = document.getElementById('pkgNewCardCnt-type');
+            if (typeEl) typeEl.textContent = _pkgMissingTypeList().length;
         }
 
         // 품질검사 "신규품목확인"처럼 탭으로 나눴다(요청, 2026-10-27) — 확인/미구성
