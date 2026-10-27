@@ -11899,10 +11899,10 @@ function peLoadSettingsTab() {
 }
 function peSaveGasUrl() {
     const v = (document.getElementById('peGasUrlInput').value || '').trim();
-    try {
-        if (v) safeLocalStorage.setItem('sheet_pub_url_pe', v);
-        else safeLocalStorage.removeItem('sheet_pub_url_pe');
-    } catch (e) {}
+    // safeLocalStorage엔 removeItem이 없어서(getItem/setItem만 있음), 빈 문자열을
+    // 저장하는 방식으로 "기본값 사용"을 표현한다 — peGasUrl()의 `|| PE_GAS_URL_DEFAULT`가
+    // 빈 문자열도 falsy로 보고 기본값으로 돌아가므로 그대로 동작한다.
+    try { safeLocalStorage.setItem('sheet_pub_url_pe', v); } catch (e) {}
     document.getElementById('peGasUrlStatus').textContent = '저장했습니다. 다시 불러오는 중...';
     peLoadAll();
     setTimeout(() => { document.getElementById('peGasUrlStatus').textContent = '저장 완료'; }, 400);
