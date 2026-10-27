@@ -459,11 +459,6 @@
         body.shell-mode #remainingStatusCard button,
         body.shell-mode #shippedStatusCard   button { font-size: 14px !important; padding: 6px 14px !important; }
 
-        /* 금일 작업계획 카드의 포장대기/미회수/상차준비 줄 — 호버 시 글자만 1px 커진다
-           (요청, 2026-10-27). Tailwind의 text-[13.5px]류 유틸리티 클래스와 CSS 우선순위가
-           꼬여 :hover 규칙만으로는 안 먹혀서(요청: "호버시... 반응없고"), 자바스크립트로
-           직접 font-size를 바꾼다 — _card1RowHover() 참고. */
-
         /* ── 카드3 수출일정 ── */
         body.shell-mode #strengthenedStatusCard p.font-semibold { font-size: 12px !important; color: #94A3B8 !important; }
         body.shell-mode #card4RoundName { font-size: 36px !important; line-height: 1.2 !important; }
