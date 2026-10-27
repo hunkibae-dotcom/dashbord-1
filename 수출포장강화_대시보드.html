@@ -12576,6 +12576,81 @@ function peBackToExportFormat() {
     document.getElementById('peExportOrientStep').style.display = 'none';
     document.getElementById('peExportFormatStep').style.display = 'block';
 }
+
+// ── 재고현황 "소진제거"(요청, 2026-10-27) ──────────────────────────
+let _peUsedUpSelectMode = false;
+let _peUsedUpSelected = new Set(); // 시트 실제 행 번호(r.row)
+function _peUsedUpList() { return peStockRows.filter(r => peIsUsedUp(r.qty)); }
+function peOpenPurgeModal() {
+    _peUsedUpSelectMode = false;
+    _peUsedUpSelected = new Set();
+    renderPeUsedUpList();
+    document.getElementById('peUsedUpModal').style.display = 'flex';
+}
+function peClosePurgeModal() { document.getElementById('peUsedUpModal').style.display = 'none'; }
+function renderPeUsedUpList() {
+    const list = _peUsedUpList();
+    document.getElementById('peUsedUpCount').textContent = list.length ? list.length + '건' : '';
+    const body = document.getElementById('peUsedUpBody');
+    if (!list.length) {
+        body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:var(--pe-label);">소진된 재고가 없습니다.</div>';
+    } else {
+        body.innerHTML = list.map(r => {
+            const checked = _peUsedUpSelected.has(r.row) ? 'checked' : '';
+            return `<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--pe-divider,#eef1f5);">
+                ${_peUsedUpSelectMode ? `<input type="checkbox" ${checked} onchange="_peUsedUpToggle(${r.row},this.checked)" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;">` : ''}
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:13px;font-weight:700;color:var(--pe-ink);">${r.name || '-'} <span style="color:var(--pe-ink-sub);font-weight:500;">${r.spec || ''}</span></span>
+                    <div style="font-size:11px;color:var(--pe-label);">${r.code || '-'} · ${r.color || '-'} · ${r.site || '-'} · 발주 ${r.ord || '-'} (${r.date || '-'})</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    document.getElementById('peUsedUpSelectBtn').textContent = _peUsedUpSelectMode ? '선택취소' : '선택';
+    document.getElementById('peUsedUpDeleteBtn').textContent = (_peUsedUpSelectMode && _peUsedUpSelected.size) ? `삭제(${_peUsedUpSelected.size})` : '삭제';
+}
+function peUsedUpToggleSelectMode() {
+    _peUsedUpSelectMode = !_peUsedUpSelectMode;
+    if (!_peUsedUpSelectMode) _peUsedUpSelected = new Set();
+    renderPeUsedUpList();
+}
+function _peUsedUpToggle(row, checked) {
+    if (checked) _peUsedUpSelected.add(row); else _peUsedUpSelected.delete(row);
+    renderPeUsedUpList();
+}
+// 실수로 누르는 걸 막기 위해(요청) 삭제 직전 항상 한 번 더 확인창을 띄운다.
+async function peUsedUpDelete() {
+    const list = _peUsedUpList();
+    if (!list.length) return;
+    const useSelection = _peUsedUpSelectMode && _peUsedUpSelected.size > 0;
+    const targetRows = useSelection ? list.filter(r => _peUsedUpSelected.has(r.row)).map(r => r.row) : list.map(r => r.row);
+    if (!targetRows.length) return;
+    const msg = useSelection
+        ? `선택한 ${targetRows.length}건을 구글시트에서 완전히 삭제합니다.\n정말로 지우시겠습니까?`
+        : `소진된 재고 ${targetRows.length}건을 전부 구글시트에서 완전히 삭제합니다.\n정말로 지우시겠습니까?`;
+    if (!confirm(msg)) return;
+    const btn = document.getElementById('peUsedUpDeleteBtn');
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = '삭제 중...';
+    try {
+        const res = await fetch(peGasUrl(), {
+            method: 'POST',
+            body: JSON.stringify({ action: 'deleteStockRows', rows: targetRows }),
+            signal: AbortSignal.timeout(30000)
+        }).then(r => r.json());
+        if (res.status !== 'success') throw new Error(res.message || '삭제 실패');
+        peShowToast('✓ ' + (res.deletedCount || 0) + '건 삭제했습니다.');
+        _peUsedUpSelected = new Set();
+        _peUsedUpSelectMode = false;
+        await peLoadAll();
+        peRenderStock();
+        renderPeUsedUpList();
+    } catch (e) {
+        alert('삭제 중 오류: ' + e.message);
+    } finally {
+        btn.disabled = false;
+    }
+}
 async function peRunExport(format, orientation) {
     const statusEl = document.getElementById('peExportStatus');
     const rows = _peStockFiltered;
