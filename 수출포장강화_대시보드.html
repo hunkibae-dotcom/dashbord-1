@@ -8400,9 +8400,12 @@
             _pkgNewSelected = new Set();
             _pkgMissingSpecEditCode = null;
             _pkgMissingTypeEditCode = null;
+            _pkgBarcodeSelectMode = false;
+            _pkgBarcodeSelected = new Set();
             renderPkgNewList();
             renderPkgMissingSpecList();
             renderPkgMissingTypeList();
+            renderPkgBarcodeList();
             pkgNewSwitchTab('confirm');
             document.getElementById('pkgNewModal').style.display = 'flex';
         }
