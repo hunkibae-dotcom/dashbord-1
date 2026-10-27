@@ -8533,6 +8533,9 @@
                     // 되어있는것만 포함하면돼") — 공백·Y·그 외 값은 전부 제외.
                     const printed = (it.barcodePrinted || '').toString().trim().toUpperCase();
                     if (printed !== 'N') return;
+                    // 진행상태가 "미입고"인 품목은 제외한다 — 아직 입고도 안 된 품목까지
+                    // 바코드부터 찍을 필요는 없다는 요청(2026-10-27). "일부입고"는 포함한다.
+                    if (it.status === '미입고') return;
                     const key = _pkgNewKey(it);
                     if (!seen.has(key)) seen.set(key, it);
                 });
