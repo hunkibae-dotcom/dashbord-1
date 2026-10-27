@@ -8561,8 +8561,10 @@
             }).join('');
         }
         function _pkgBarcodePickSort(key) {
-            if (_pkgBarcodeSortKey === key) _pkgBarcodeSortAsc = !_pkgBarcodeSortAsc;
-            else { _pkgBarcodeSortKey = key; _pkgBarcodeSortAsc = true; }
+            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
+            if (_pkgBarcodeSortKey !== key) { _pkgBarcodeSortKey = key; _pkgBarcodeSortAsc = true; }
+            else if (_pkgBarcodeSortAsc) { _pkgBarcodeSortAsc = false; }
+            else { _pkgBarcodeSortKey = null; _pkgBarcodeSortAsc = true; }
             renderPkgBarcodeList();
         }
         function _pkgBarcodeDisplayList() {
