@@ -1264,6 +1264,10 @@ try {
         <span><b id="rpSelCount" style="color:#6D5CE8;font-weight:800;">0</b>개 선택됨</span>
         <a onclick="clearAllReportChecked()" title="체크만 전부 해제(등록해둔 사진·입력값은 안 지워집니다)" style="cursor:pointer;color:var(--label);font-size:11px;text-decoration:underline;">전체해제</a>
       </div>
+      <button onclick="openQcClassifier()" id="qcClfOpenBtn" title="검사/포장 사진을 한꺼번에 올리면 자동으로 구분해줍니다(시안 — 실제 인식은 아직 연결 전)"
+        style="background:var(--panel);color:var(--text-sub);border:1.5px solid var(--border);border-radius:11px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-appearance:none;flex-shrink:0;">
+        <i class="fa-solid fa-wand-magic-sparkles" style="color:#6D5CE8;"></i> 분류기
+      </button>
       <button onclick="generateReportPptx()" id="rpGenBtn"
         style="background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;border:none;border-radius:11px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-appearance:none;flex-shrink:0;box-shadow:0 4px 12px rgba(109,92,222,.35);">
         <i class="fa-solid fa-file-powerpoint"></i> PPTX 생성
