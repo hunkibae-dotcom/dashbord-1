@@ -13430,6 +13430,9 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 <div class="items-head">
                     <div class="pe-panel-label" style="margin-bottom:0;">PE폼 재고</div>
                     <span class="count" id="peStockCount"></span>
+                    <button onclick="peOpenExportModal()" style="margin-left:auto;border:none;border-radius:8px;padding:7px 14px;font-size:12.5px;font-weight:700;color:#fff;background:#6D5CE8;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s;" onmouseover="this.style.background='#5A47D6'" onmouseout="this.style.background='#6D5CE8'">
+                        <i class="fa-solid fa-file-export"></i> 데이터 출력
+                    </button>
                 </div>
                 <div class="master-filter-row">
                     <button class="stock-type-chip on" onclick="peStockTypePick('', this)">전체 유형</button>
