@@ -6207,7 +6207,7 @@ function _qcClfOpenConfirm(idx) {
   if (!r) return;
   _qcClfConfirmIdx = idx;
   document.getElementById('qcClfConfirmImg').src = r.url;
-  document.getElementById('qcClfConfirmImg').style.transform = '';
+  _qcClfRenderTypeButtons();
   document.getElementById('qcClfConfirmCodeText').textContent = r.round + ' · ' + r.code + ' / ' + (r.color || '-');
   document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
   document.getElementById('qcClfCbmW').value = r.cbm.w || '';
@@ -6216,10 +6216,33 @@ function _qcClfOpenConfirm(idx) {
   document.getElementById('qcClfCbmG').value = r.cbm.g || '';
   document.getElementById('qcClassifierModal').style.display = 'none';
   document.getElementById('qcClfConfirmModal').style.display = 'flex';
+  _qcClfClosePhotoViewer();
 }
 function _qcClfCloseConfirm() {
   document.getElementById('qcClfConfirmModal').style.display = 'none';
   document.getElementById('qcClassifierModal').style.display = 'flex';
+  _qcClfClosePhotoViewer();
+}
+// 검사/포장 구분 — 자동 감지 결과가 기본 선택이지만 틀렸으면 바로 바꿀 수 있다
+// (요청, 2026-10-27: "제품코드입력 위에 추가, 감지한 기준이 기본 선택돼 있어야 함").
+function _qcClfSetType(type) {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  r.type = type;
+  _qcClfRenderTypeButtons();
+}
+function _qcClfRenderTypeButtons() {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  const isInsp = r.type === '검사';
+  const inspBtn = document.getElementById('qcClfTypeBtnInsp');
+  const pkgBtn = document.getElementById('qcClfTypeBtnPkg');
+  inspBtn.style.background = isInsp ? 'linear-gradient(135deg,#60a5fa,#0284c7)' : 'var(--input-bg)';
+  inspBtn.style.color = isInsp ? '#fff' : 'var(--text-sub)';
+  inspBtn.style.border = isInsp ? 'none' : '1.5px solid var(--border)';
+  pkgBtn.style.background = !isInsp ? 'linear-gradient(135deg,#4ade80,#16a34a)' : 'var(--input-bg)';
+  pkgBtn.style.color = !isInsp ? '#fff' : 'var(--text-sub)';
+  pkgBtn.style.border = !isInsp ? 'none' : '1.5px solid var(--border)';
 }
 function _qcClfConfirmCode(ok) {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
