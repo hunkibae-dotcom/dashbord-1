@@ -8602,7 +8602,6 @@
             const targets = useSelection ? all.filter(it => _pkgBarcodeSelected.has(_pkgNewKey(it))) : all;
             if (!targets.length) return;
             const btn = document.getElementById('pkgBarcodeConfirmBtn');
-            const btnOrigHtml = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
             const items = targets.map(it => ({ code: it.code, round: it.round, color: it.color }));
