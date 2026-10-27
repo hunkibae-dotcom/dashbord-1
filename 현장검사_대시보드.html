@@ -725,6 +725,29 @@ try {
     </div>
   </div>
 
+  <!-- 사용설명서(요청, 2026-10-27) — 전엔 품질검사 대시보드 가이드 안에 현장검사
+       항목이 끼워져 있었는데(품질검사 메뉴 하위에 현장검사가 있던 옛 F.WORK 구조의
+       흔적), 지금은 현장검사가 독립된 화면이라 그 내용을 여기 이 파일 자체의
+       설정 탭 안으로 옮겨왔다. 구성(카테고리 칩 + 검색 + 아코디언)은 포장강화
+       대시보드의 USAGE_GUIDE_PKG_WEB/_ugRender()와 같은 방식, 색은 이 파일의
+       var(--panel) 등 테마 변수로만 맞췄다. -->
+  <div id="fiUsageGuideModal" onclick="if(event.target===this)fiCloseUsageGuide()" style="display:none; position:fixed; inset:0; z-index:95; align-items:center; justify-content:center; background:rgba(15,23,42,.55);">
+    <div style="background:var(--panel); border:1px solid var(--border); border-radius:16px; width:420px; max-width:92vw; height:82vh; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="flex:0 0 auto; border-bottom:1px solid var(--border); padding:16px 16px 12px; display:flex; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:14.5px; font-weight:800; display:flex; align-items:center; gap:7px;"><i class="fa-solid fa-circle-question" style="color:#D97706;"></i>사용설명서</span>
+          <button onclick="fiCloseUsageGuide()" style="width:28px; height:28px; border-radius:8px; border:none; background:var(--input-bg); color:var(--text-sub); display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="position:relative;">
+          <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--label); font-size:11.5px;"></i>
+          <input id="fiUgSearchInput" oninput="_fiUgOnSearch(this.value)" placeholder="기능 이름으로 찾기" style="width:100%; box-sizing:border-box; background:var(--input-bg); border:1px solid var(--border); border-radius:10px; padding:9px 11px 9px 30px; font-size:12.5px; color:var(--text); outline:none;">
+        </div>
+        <div id="fiUgCatRow" style="display:flex; gap:6px; overflow-x:auto;"></div>
+      </div>
+      <div id="fiUgBody" style="flex:1 1 auto; min-height:0; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
   <!-- PC 대시보드 전용 설정(GAS 연동 주소) — 모바일 앱엔 #fiTab-settings가 이미 있지만
        PC 모드는 #fiApp을 통째로 숨기므로 이 칸이 없으면 PC 브라우저에서 GAS 주소를 넣을
        방법이 아예 없다. -->
