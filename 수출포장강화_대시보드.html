@@ -8511,8 +8511,10 @@
         let _pkgMissingSpecEditCode = null;
         function renderPkgMissingSpecList() {
             const body = document.getElementById('pkgMissingSpecBody');
-            const list = _pkgMissingSpecList();
-            document.getElementById('pkgNewTabCnt-missing').textContent = list.length;
+            const sortBtnsEl = document.getElementById('pkgMissingSpecSortBtns');
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgMissingSpecSortBtnsHtml();
+            document.getElementById('pkgNewTabCnt-missing').textContent = _pkgMissingSpecList().length;
+            const list = _pkgMissingSpecDisplayList();
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">미구성 품목이 없습니다.</div>';
                 return;
