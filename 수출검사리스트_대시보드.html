@@ -6081,95 +6081,116 @@ let _qcClfFiles = [];     // [{file, url}]
 let _qcClfResults = [];   // [{idx, file, url, type, code, color, round, cbm, codeConfirmed, cbmConfirmed}]
 let _qcClfConfirmIdx = null;
 
-// 확인팝업: 사진 확대보기(별도 창) 상태 — 휠로 확대/축소, 드래그로 사진 이동,
-// 헤더 드래그로 창 자체 이동(요청, 2026-10-27).
-let _qcClfPv = { scale: 1, baseScale: 1, x: 0, y: 0, dragging: false, lastX: 0, lastY: 0 };
-let _qcClfPvPanel = { dragging: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
-
+// 확인팝업: 사진을 "진짜 별도 창"으로 띄운다(요청, 2026-10-27: "내 PC 폴더에서 사진
+// 클릭할 때처럼 나오는 모습" — 윈도우 사진 뷰어 느낌의 완전히 분리된 창). 확인팝업이
+// 있는 원래 창은 그대로 떠 있으므로 사진을 보면서 코드·CBM을 동시에 입력할 수 있다.
+let _qcClfPvWin = null;
+function _qcClfClosePhotoViewer() {
+  if (_qcClfPvWin && !_qcClfPvWin.closed) _qcClfPvWin.close();
+  _qcClfPvWin = null;
+}
 function _qcClfOpenPhotoViewer() {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
   if (!r) return;
-  const img = document.getElementById('qcClfPvImg');
-  img.onload = _qcClfPvFit;
-  img.src = r.url;
-  document.getElementById('qcClfPhotoViewer').style.display = 'flex';
-  if (img.complete && img.naturalWidth) _qcClfPvFit();
+  _qcClfClosePhotoViewer();
+  const title = ((r.code || '사진') + (r.color ? ' ' + r.color : '')).trim();
+  const esc = (s) => (s || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const w = Math.min((window.screen && window.screen.availWidth) || 1100, 1100);
+  const h = Math.min((window.screen && window.screen.availHeight) || 800, 800);
+  const win = window.open('', '_blank', `width=${w},height=${h},menubar=no,toolbar=no,location=no,status=no`);
+  if (!win) { alert('팝업이 차단되었습니다. 브라우저의 팝업 차단을 해제해 주세요.'); return; }
+  _qcClfPvWin = win;
+  win.document.open();
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>
+<style>
+html,body{margin:0;height:100%;background:#1c1c1c;overflow:hidden;font-family:'Segoe UI',system-ui,sans-serif;}
+#hdr{position:fixed;top:0;left:0;right:0;height:42px;background:#2b2b2b;color:#eee;display:flex;align-items:center;justify-content:center;font-size:13px;border-bottom:1px solid #000;}
+#vp{position:absolute;top:42px;bottom:46px;left:0;right:0;overflow:hidden;cursor:grab;}
+#vp.dragging{cursor:grabbing;}
+#img{position:absolute;top:0;left:0;transform-origin:0 0;user-select:none;-webkit-user-drag:none;}
+#ftr{position:fixed;bottom:0;left:0;right:0;height:46px;background:#2b2b2b;display:flex;align-items:center;justify-content:center;gap:12px;color:#ccc;border-top:1px solid #000;}
+#ftr button{background:#3a3a3a;border:none;color:#eee;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;}
+#ftr button:hover{background:#4a4a4a;}
+#ftr .fitbtn{width:auto;border-radius:8px;padding:0 12px;font-size:12px;height:28px;}
+#zoomLabel{font-size:12px;min-width:40px;text-align:center;}
+</style></head>
+<body>
+<div id="hdr">${esc(title)}</div>
+<div id="vp"><img id="img" src="${esc(r.url)}" draggable="false"></div>
+<div id="ftr">
+  <button id="zoomOut">−</button>
+  <input type="range" id="zoomRange" min="10" max="400" value="100">
+  <span id="zoomLabel">100%</span>
+  <button id="zoomIn">+</button>
+  <button class="fitbtn" id="fitBtn">창에 맞춤</button>
+</div>
+<script>
+var img = document.getElementById('img');
+var vp = document.getElementById('vp');
+var range = document.getElementById('zoomRange');
+var label = document.getElementById('zoomLabel');
+var state = { base: 1, pct: 100, x: 0, y: 0, dragging: false, lastX: 0, lastY: 0 };
+function apply() {
+  var total = state.base * (state.pct / 100);
+  img.style.transform = 'translate(' + state.x + 'px,' + state.y + 'px) scale(' + total + ')';
+  label.textContent = Math.round(state.pct) + '%';
+  range.value = Math.min(400, Math.max(10, state.pct));
 }
-function _qcClfClosePhotoViewer() {
-  document.getElementById('qcClfPhotoViewer').style.display = 'none';
-}
-// 창을 처음 열 때 사진 전체가 뷰포트 안에 딱 맞게 보이도록 기준 배율(baseScale)을
-// 잡는다 — 이후 scale은 이 기준에서 몇 배 더 확대했는지를 나타낸다.
-function _qcClfPvFit() {
-  const vp = document.getElementById('qcClfPvViewport');
-  const img = document.getElementById('qcClfPvImg');
-  const iw = img.naturalWidth, ih = img.naturalHeight;
+function fit() {
+  var iw = img.naturalWidth, ih = img.naturalHeight;
   if (!iw || !ih) return;
-  const vw = vp.clientWidth, vh = vp.clientHeight;
-  img.style.width = iw + 'px';
-  img.style.height = ih + 'px';
-  _qcClfPv.baseScale = Math.min(vw / iw, vh / ih);
-  _qcClfPv.scale = 1;
-  _qcClfPv.x = (vw - iw * _qcClfPv.baseScale) / 2;
-  _qcClfPv.y = (vh - ih * _qcClfPv.baseScale) / 2;
-  _qcClfPvApply();
+  var vw = vp.clientWidth, vh = vp.clientHeight;
+  img.style.width = iw + 'px'; img.style.height = ih + 'px';
+  state.base = Math.min(vw / iw, vh / ih);
+  state.pct = 100;
+  state.x = (vw - iw * state.base) / 2;
+  state.y = (vh - ih * state.base) / 2;
+  apply();
 }
-function _qcClfPvApply() {
-  const total = _qcClfPv.baseScale * _qcClfPv.scale;
-  document.getElementById('qcClfPvImg').style.transform = `translate(${_qcClfPv.x}px,${_qcClfPv.y}px) scale(${total})`;
-  document.getElementById('qcClfPvZoomLabel').textContent = Math.round(_qcClfPv.scale * 100) + '%';
-}
-function _qcClfPvReset() { _qcClfPvFit(); }
-// 마우스 휠로 확대/축소 — 커서가 가리키는 지점을 기준으로 확대되도록 x,y를 보정한다
-// (요청, 2026-10-27: "클릭줌은 확대가 너무 적으니 마우스휠로 확대축소").
-function _qcClfPvWheel(e) {
+img.onload = fit;
+if (img.complete && img.naturalWidth) fit();
+window.addEventListener('resize', fit);
+vp.addEventListener('wheel', function (e) {
   e.preventDefault();
-  const rect = document.getElementById('qcClfPvViewport').getBoundingClientRect();
-  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
-  const oldScale = _qcClfPv.scale;
-  const newScale = Math.min(6, Math.max(1, oldScale * (e.deltaY < 0 ? 1.15 : (1 / 1.15))));
-  if (newScale === oldScale) return;
-  const ratio = newScale / oldScale;
-  _qcClfPv.x = cx - (cx - _qcClfPv.x) * ratio;
-  _qcClfPv.y = cy - (cy - _qcClfPv.y) * ratio;
-  _qcClfPv.scale = newScale;
-  _qcClfPvApply();
-}
-function _qcClfPvMouseDown(e) {
-  e.preventDefault();
-  _qcClfPv.dragging = true;
-  _qcClfPv.lastX = e.clientX; _qcClfPv.lastY = e.clientY;
-  document.getElementById('qcClfPvViewport').style.cursor = 'grabbing';
-}
-function _qcClfPvPanelMouseDown(e) {
-  const panel = document.getElementById('qcClfPhotoViewer');
-  const rect = panel.getBoundingClientRect();
-  _qcClfPvPanel.dragging = true;
-  _qcClfPvPanel.startX = e.clientX; _qcClfPvPanel.startY = e.clientY;
-  _qcClfPvPanel.startLeft = rect.left; _qcClfPvPanel.startTop = rect.top;
-  panel.style.right = 'auto';
-  panel.style.left = rect.left + 'px';
-  panel.style.top = rect.top + 'px';
-}
-document.addEventListener('mousemove', (e) => {
-  if (_qcClfPv.dragging) {
-    const dx = e.clientX - _qcClfPv.lastX, dy = e.clientY - _qcClfPv.lastY;
-    _qcClfPv.lastX = e.clientX; _qcClfPv.lastY = e.clientY;
-    _qcClfPv.x += dx; _qcClfPv.y += dy;
-    _qcClfPvApply();
-  }
-  if (_qcClfPvPanel.dragging) {
-    const panel = document.getElementById('qcClfPhotoViewer');
-    panel.style.left = (_qcClfPvPanel.startLeft + e.clientX - _qcClfPvPanel.startX) + 'px';
-    panel.style.top = (_qcClfPvPanel.startTop + e.clientY - _qcClfPvPanel.startY) + 'px';
-  }
+  var rect = vp.getBoundingClientRect();
+  var cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  var oldPct = state.pct;
+  var newPct = Math.min(400, Math.max(10, oldPct * (e.deltaY < 0 ? 1.15 : (1 / 1.15))));
+  if (newPct === oldPct) return;
+  var ratio = newPct / oldPct;
+  state.x = cx - (cx - state.x) * ratio;
+  state.y = cy - (cy - state.y) * ratio;
+  state.pct = newPct;
+  apply();
+}, { passive: false });
+vp.addEventListener('mousedown', function (e) {
+  state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
+  vp.classList.add('dragging');
 });
-document.addEventListener('mouseup', () => {
-  _qcClfPv.dragging = false;
-  _qcClfPvPanel.dragging = false;
-  const vp = document.getElementById('qcClfPvViewport');
-  if (vp) vp.style.cursor = 'grab';
+window.addEventListener('mousemove', function (e) {
+  if (!state.dragging) return;
+  state.x += e.clientX - state.lastX; state.y += e.clientY - state.lastY;
+  state.lastX = e.clientX; state.lastY = e.clientY;
+  apply();
 });
+window.addEventListener('mouseup', function () { state.dragging = false; vp.classList.remove('dragging'); });
+range.addEventListener('input', function () {
+  var rect = vp.getBoundingClientRect();
+  var cx = rect.width / 2, cy = rect.height / 2;
+  var oldPct = state.pct, newPct = Number(range.value);
+  var ratio = newPct / oldPct;
+  state.x = cx - (cx - state.x) * ratio;
+  state.y = cy - (cy - state.y) * ratio;
+  state.pct = newPct;
+  apply();
+});
+document.getElementById('zoomIn').onclick = function () { range.value = Math.min(400, state.pct + 20); range.dispatchEvent(new Event('input')); };
+document.getElementById('zoomOut').onclick = function () { range.value = Math.max(10, state.pct - 20); range.dispatchEvent(new Event('input')); };
+document.getElementById('fitBtn').onclick = fit;
+<\/script>
+</body></html>`);
+  win.document.close();
+}
 
 function openQcClassifier() {
   _qcClfRevokeUrls();
