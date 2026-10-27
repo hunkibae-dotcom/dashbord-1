@@ -8493,17 +8493,22 @@
         }
 
         // 탭2(미구성 품목): 제품코드만 정렬(기준이 코드 하나뿐).
+        let _pkgMissingSpecSortKey = null; // null | 'code'
         let _pkgMissingSpecSortAsc = true;
         function _pkgMissingSpecSortBtnsHtml() {
-            return _pkgModalSortBtnHtml(true, '제품코드', _pkgMissingSpecSortAsc ? '↑' : '↓', `_pkgMissingSpecPickSort()`);
+            const active = _pkgMissingSpecSortKey === 'code';
+            return _pkgModalSortBtnHtml(active, '제품코드', active ? (_pkgMissingSpecSortAsc ? '↑' : '↓') : '', `_pkgMissingSpecPickSort()`);
         }
         function _pkgMissingSpecPickSort() {
-            _pkgMissingSpecSortAsc = !_pkgMissingSpecSortAsc;
+            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
+            if (_pkgMissingSpecSortKey !== 'code') { _pkgMissingSpecSortKey = 'code'; _pkgMissingSpecSortAsc = true; }
+            else if (_pkgMissingSpecSortAsc) { _pkgMissingSpecSortAsc = false; }
+            else { _pkgMissingSpecSortKey = null; _pkgMissingSpecSortAsc = true; }
             renderPkgMissingSpecList();
         }
         function _pkgMissingSpecDisplayList() {
             const items = _pkgModalSearchFilter(_pkgMissingSpecList(), 'pkgMissingSpecSearchInput', ['code']);
-            return _pkgModalSortItems(items, 'code', _pkgMissingSpecSortAsc);
+            return _pkgModalSortItems(items, _pkgMissingSpecSortKey, _pkgMissingSpecSortAsc);
         }
 
         // 탭3(유형 선택): 건명/제품코드 정렬.
@@ -8515,8 +8520,10 @@
             }).join('');
         }
         function _pkgMissingTypePickSort(key) {
-            if (_pkgMissingTypeSortKey === key) _pkgMissingTypeSortAsc = !_pkgMissingTypeSortAsc;
-            else { _pkgMissingTypeSortKey = key; _pkgMissingTypeSortAsc = true; }
+            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
+            if (_pkgMissingTypeSortKey !== key) { _pkgMissingTypeSortKey = key; _pkgMissingTypeSortAsc = true; }
+            else if (_pkgMissingTypeSortAsc) { _pkgMissingTypeSortAsc = false; }
+            else { _pkgMissingTypeSortKey = null; _pkgMissingTypeSortAsc = true; }
             renderPkgMissingTypeList();
         }
         function _pkgMissingTypeDisplayList() {
