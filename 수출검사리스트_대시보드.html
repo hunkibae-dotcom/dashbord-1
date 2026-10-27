@@ -1434,7 +1434,7 @@ try {
       <span style="font-size:17px;font-weight:800;color:var(--text);">확인이 필요해요</span>
       <button onclick="_qcClfCloseConfirm()" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;font-size:14px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <img id="qcClfConfirmImg" src="" style="width:100%;max-height:420px;object-fit:contain;background:#0000000d;border-radius:14px;border:1px solid var(--border);cursor:zoom-in;transition:transform .2s;" onclick="this.style.transform = this.style.transform ? '' : 'scale(1.5)';">
+    <img id="qcClfConfirmImg" src="" title="눌러서 별도 창에서 확대해 보기" style="width:100%;max-height:420px;object-fit:contain;background:#0000000d;border-radius:14px;border:1px solid var(--border);cursor:zoom-in;" onclick="_qcClfOpenPhotoViewer()">
     <div>
       <div style="font-size:13px;color:var(--label);margin-bottom:8px;">이 사진의 제품이 아래 품목이 맞나요?</div>
       <div id="qcClfConfirmCodeText" style="font-size:17px;font-weight:800;color:var(--text);background:var(--input-bg);border-radius:12px;padding:13px 16px;margin-bottom:10px;"></div>
