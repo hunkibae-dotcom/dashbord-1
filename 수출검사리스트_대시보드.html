@@ -3315,13 +3315,16 @@ function renderTable(data) {
   const _rcEl = document.getElementById('tableRoundCount'); if (_rcEl) _rcEl.textContent = _rounds.size;
   const _tqEl = document.getElementById('tableTotalQty');   if (_tqEl) _tqEl.textContent = _qtySum.toLocaleString();
 
+  const scrollWrap = document.getElementById('qcTableScrollWrap');
   if (!data.length) {
     tbody.innerHTML = '';
-    noData.classList.remove('hidden');
+    if (scrollWrap) scrollWrap.style.display = 'none';
+    noData.style.display = 'flex';
     _tblRenderPagination(0, 0);
     return;
   }
-  noData.classList.add('hidden');
+  if (scrollWrap) scrollWrap.style.display = '';
+  noData.style.display = 'none';
 
   // 검사완료 누적 이력까지 합치면 수천 행이라 한 번에 다 그리면 무거워진다 —
   // 보고서 목록과 같은 방식으로 한 페이지에 50행만 실제로 DOM에 둔다.
