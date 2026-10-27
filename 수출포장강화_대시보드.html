@@ -8383,9 +8383,8 @@
                 const btn = document.querySelector('#pkgNewModal .pkgNewTabBtn[data-tab="' + t + '"]');
                 const on = t === tab;
                 if (btn) {
-                    btn.style.background = on ? '#fff' : 'transparent';
-                    btn.style.color = on ? '#0284c7' : '#64748b';
-                    btn.style.boxShadow = on ? '0 1px 3px rgba(0,0,0,.1)' : 'none';
+                    btn.style.color = on ? '#1e293b' : '#94a3b8';
+                    btn.style.borderBottom = on ? '2.5px solid #6D5CE8' : '2.5px solid transparent';
                 }
                 const panel = document.getElementById('pkgNewTab-' + t);
                 if (panel) panel.style.display = on ? 'flex' : 'none';
