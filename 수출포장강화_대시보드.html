@@ -8092,6 +8092,12 @@
                 _pkgServerSpecMap = map;
                 // 이미 열려있는 상세스펙 화면이 있으면 방금 받은 값으로 다시 채운다.
                 if (typeof _currentDetailProductCode !== 'undefined' && _currentDetailProductCode) loadPkgSpecOverride(_currentDetailProductCode);
+                // 상세스펙은 비동기로 늦게 도착하므로, 신규품목 카드의 미구성/유형 배지도
+                // 이 시점에 다시 세어준다(안 그러면 도착 전까지 전부 "미구성"으로 부풀어 보임).
+                const missingEl2 = document.getElementById('pkgNewCardCnt-missing');
+                if (missingEl2) missingEl2.textContent = _pkgMissingSpecList().length;
+                const typeEl2 = document.getElementById('pkgNewCardCnt-type');
+                if (typeEl2) typeEl2.textContent = _pkgMissingTypeList().length;
             } catch (e) { /* 실패해도 로컬(localStorage) 값으로 계속 동작한다 */ }
         }
         // 이 브라우저에 예전부터 쌓여있던 제품종류/PE폼높이/PE폼유형/규격을 구글시트
