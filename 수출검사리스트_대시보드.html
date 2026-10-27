@@ -1429,35 +1429,35 @@ try {
 
 <!-- 분류기: 코드/CBM 확인 팝업 -->
 <div id="qcClfConfirmModal" onclick="if(event.target===this)_qcClfCloseConfirm()" style="display:none;position:fixed;inset:0;z-index:209;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:16px;">
-  <div style="background:var(--panel);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:88vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+  <div style="background:var(--panel);border-radius:20px;padding:28px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
     <div style="display:flex;align-items:center;justify-content:space-between;">
-      <span style="font-size:14.5px;font-weight:800;color:var(--text);">확인이 필요해요</span>
-      <button onclick="_qcClfCloseConfirm()" style="width:28px;height:28px;border-radius:8px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      <span style="font-size:17px;font-weight:800;color:var(--text);">확인이 필요해요</span>
+      <button onclick="_qcClfCloseConfirm()" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--icon-bg);color:var(--text-sub);cursor:pointer;font-size:14px;"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <img id="qcClfConfirmImg" src="" style="width:100%;border-radius:12px;border:1px solid var(--border);cursor:zoom-in;transition:transform .2s;" onclick="this.style.transform = this.style.transform ? '' : 'scale(1.6)';">
+    <img id="qcClfConfirmImg" src="" style="width:100%;max-height:420px;object-fit:contain;background:#0000000d;border-radius:14px;border:1px solid var(--border);cursor:zoom-in;transition:transform .2s;" onclick="this.style.transform = this.style.transform ? '' : 'scale(1.5)';">
     <div>
-      <div style="font-size:11.5px;color:var(--label);margin-bottom:6px;">이 사진의 제품이 아래 품목이 맞나요?</div>
-      <div id="qcClfConfirmCodeText" style="font-size:14.5px;font-weight:800;color:var(--text);background:var(--input-bg);border-radius:10px;padding:10px 12px;margin-bottom:8px;"></div>
-      <div style="display:flex;gap:8px;">
-        <button onclick="_qcClfConfirmCode(true)" style="flex:1;padding:10px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;cursor:pointer;">맞습니다</button>
-        <button onclick="_qcClfConfirmCode(false)" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;cursor:pointer;">아니에요</button>
+      <div style="font-size:13px;color:var(--label);margin-bottom:8px;">이 사진의 제품이 아래 품목이 맞나요?</div>
+      <div id="qcClfConfirmCodeText" style="font-size:17px;font-weight:800;color:var(--text);background:var(--input-bg);border-radius:12px;padding:13px 16px;margin-bottom:10px;"></div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="_qcClfConfirmCode(true)" style="flex:1;padding:13px;border-radius:12px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:14.5px;cursor:pointer;">맞습니다</button>
+        <button onclick="_qcClfConfirmCode(false)" style="flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;font-size:14.5px;cursor:pointer;">아니에요</button>
       </div>
-      <div id="qcClfCodeSearchWrap" style="display:none;margin-top:10px;">
-        <input type="text" id="qcClfCodeSearchInput" oninput="_qcClfRenderCodeSearch()" placeholder="건명·단품코드 검색" style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:12.5px;outline:none;margin-bottom:8px;">
-        <div id="qcClfCodeSearchResults" style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;"></div>
+      <div id="qcClfCodeSearchWrap" style="display:none;margin-top:12px;">
+        <input type="text" id="qcClfCodeSearchInput" oninput="_qcClfRenderCodeSearch()" placeholder="건명·단품코드 검색" style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;font-size:14px;outline:none;margin-bottom:10px;">
+        <div id="qcClfCodeSearchResults" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
       </div>
     </div>
-    <div style="border-top:1px solid var(--border);padding-top:12px;">
-      <div style="font-size:11.5px;color:var(--label);margin-bottom:6px;">CBM(가로x세로x높이, 중량)을 확인해주세요</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px;">
-        <input type="number" id="qcClfCbmW" placeholder="가로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmD" placeholder="세로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmH" placeholder="높이" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
-        <input type="number" id="qcClfCbmG" placeholder="중량" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:9px;padding:8px;font-size:12px;outline:none;text-align:center;">
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <div style="font-size:13px;color:var(--label);margin-bottom:8px;">CBM(가로x세로x높이, 중량)을 확인해주세요</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
+        <input type="number" id="qcClfCbmW" placeholder="가로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmD" placeholder="세로" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmH" placeholder="높이" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
+        <input type="number" id="qcClfCbmG" placeholder="중량" style="box-sizing:border-box;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:11px;font-size:14px;outline:none;text-align:center;">
       </div>
-      <button onclick="_qcClfSkipCbm()" style="width:100%;padding:8px;border-radius:9px;border:1px dashed var(--border);background:none;color:var(--label);font-size:11.5px;cursor:pointer;margin-bottom:4px;">CBM 모르겠음 — 건너뛰기</button>
+      <button onclick="_qcClfSkipCbm()" style="width:100%;padding:10px;border-radius:10px;border:1px dashed var(--border);background:none;color:var(--label);font-size:12.5px;cursor:pointer;margin-bottom:4px;">CBM 모르겠음 — 건너뛰기</button>
     </div>
-    <button onclick="_qcClfSaveConfirm()" style="padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;cursor:pointer;">확인 완료</button>
+    <button onclick="_qcClfSaveConfirm()" style="padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B7CF0,#6D5CE8);color:#fff;font-weight:800;font-size:14.5px;cursor:pointer;">확인 완료</button>
   </div>
 </div>
 
