@@ -8641,7 +8641,7 @@
                     datasetMap[k] = (datasetMap[k] || []).filter(it => !deletedTuples.has((it.code || '').toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color)));
                 });
                 _pkgNewSelected = new Set();
-                const countEl = document.getElementById('pkgNewCount');
+                const countEl = document.getElementById('pkgNewCardCnt-confirm');
                 if (countEl) countEl.textContent = window._pkgNewList.length;
                 statusEl.style.color = '#16a34a';
                 statusEl.textContent = '✓ ' + (res.deletedCount || items.length) + '건 삭제했습니다.';
