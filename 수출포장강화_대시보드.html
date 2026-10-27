@@ -746,15 +746,15 @@
                              바꿨다 — Tailwind hover: 유틸리티도 테마 변수(darkBg)를 써서
                              변화가 잘 안 보였던 거라, 자바스크립트로 색을 직접 지정한다. -->
                         <div class="flex flex-col gap-2">
-                            <div onclick="filterByPendingStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.09)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
+                            <div onclick="filterByPendingStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">포장대기</span>
                                 <span class="card1-row-value text-[21.5px] font-bold text-accentOrange leading-none"><span id="card1PendingQty">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">BOX</span></span>
                             </div>
-                            <div onclick="filterByUnreceivedStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.09)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
+                            <div onclick="filterByUnreceivedStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">미회수</span>
                                 <span class="card1-row-value text-[21.5px] font-bold text-rose-400 leading-none"><span id="card1UnreceivedCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
                             </div>
-                            <div onclick="filterByLoadReadyStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.09)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
+                            <div onclick="filterByLoadReadyStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">상차준비</span>
                                 <span class="card1-row-value text-[21.5px] font-bold text-sky-400 leading-none"><span id="card1LoadReadyCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
                             </div>
