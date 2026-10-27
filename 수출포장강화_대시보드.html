@@ -11885,9 +11885,34 @@
 // 앱(PE폼발주_대시보드.html)의 PE_LOWSTOCK_BASELINE/_peSpecNums/_peNumsContain과
 // 완전히 같은 기준이어야 하므로, 둘 중 하나를 고치면 다른 쪽도 같이 고칠 것).
 // ═══════════════════════════════════════════════════════════════════════
+const PE_GAS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbyg-Vo-ArIJ7qc7OhvQynmI0XmhXqjXjsgPrDEcE1fwVK4XyDzhGIhcNrdiudo7qYQ/exec';
 function peGasUrl() {
-    return safeLocalStorage.getItem('sheet_pub_url_pe') ||
-        'https://script.google.com/macros/s/AKfycbyg-Vo-ArIJ7qc7OhvQynmI0XmhXqjXjsgPrDEcE1fwVK4XyDzhGIhcNrdiudo7qYQ/exec';
+    return safeLocalStorage.getItem('sheet_pub_url_pe') || PE_GAS_URL_DEFAULT;
+}
+// 설정 탭(요청, 2026-10-27: "연동 url입력하는거랑 데이터시트 바로가기버튼좀 넣어줘") —
+// 앱(PE폼발주_대시보드.html)과 같은 localStorage 키를 쓰므로, 한쪽에서 바꾸면 다른
+// 쪽도 다음에 열 때 그대로 이어받는다.
+function peLoadSettingsTab() {
+    const saved = safeLocalStorage.getItem('sheet_pub_url_pe') || '';
+    document.getElementById('peGasUrlInput').value = saved;
+    document.getElementById('peGasUrlStatus').textContent = saved ? '' : '지금은 기본 주소를 쓰고 있습니다.';
+}
+function peSaveGasUrl() {
+    const v = (document.getElementById('peGasUrlInput').value || '').trim();
+    try {
+        if (v) safeLocalStorage.setItem('sheet_pub_url_pe', v);
+        else safeLocalStorage.removeItem('sheet_pub_url_pe');
+    } catch (e) {}
+    document.getElementById('peGasUrlStatus').textContent = '저장했습니다. 다시 불러오는 중...';
+    peLoadAll();
+    setTimeout(() => { document.getElementById('peGasUrlStatus').textContent = '저장 완료'; }, 400);
+}
+function peResetGasUrl() {
+    document.getElementById('peGasUrlInput').value = '';
+    peSaveGasUrl();
+}
+function peOpenDataSheet() {
+    window.open('https://docs.google.com/spreadsheets/d/19y40Q2Dznx5E6Jzsh57u8YKECTGA9-seC86BZjZjWXk/edit?gid=1744450987#gid=1744450987', '_blank', 'noopener,noreferrer');
 }
 const PE_SHEET_LOG = 'PE폼 발주이력';
 const PE_SHEET_STK = 'PE폼 재고';
