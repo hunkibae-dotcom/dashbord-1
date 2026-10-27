@@ -13975,7 +13975,10 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 <div class="items-head">
                     <div class="pe-panel-label" style="margin-bottom:0;">PE폼 재고</div>
                     <span class="count" id="peStockCount"></span>
-                    <button onclick="peOpenPurgeModal()" style="margin-left:auto;margin-right:10px;border:1.5px solid #fecaca;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#b91c1c;background:#fef2f2;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <button onclick="peRefreshStock(this)" id="peStockRefreshBtn" title="새로고침" style="margin-left:auto;border:1px solid var(--pe-border);border-radius:9px;width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--pe-ink-sub);background:var(--pe-panel,#fff);cursor:pointer;">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button onclick="peOpenPurgeModal()" style="margin-left:10px;margin-right:10px;border:1.5px solid #fecaca;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:700;color:#b91c1c;background:#fef2f2;cursor:pointer;display:flex;align-items:center;gap:6px;">
                         <i class="fa-solid fa-broom"></i> 소진제거
                     </button>
                     <button onclick="peOpenExportModal()" style="border:1px solid var(--pe-border);border-radius:9px;padding:8px 16px;font-size:12.5px;font-weight:700;color:var(--pe-ink);background:var(--pe-panel,#fff);cursor:pointer;display:flex;align-items:center;gap:6px;">
