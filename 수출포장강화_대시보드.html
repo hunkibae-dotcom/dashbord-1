@@ -1981,9 +1981,11 @@
             }, 150);
         }
         _pkgAutoOpenView('openDefectAction', 'openPkgDefectActionView');
-        // (정정, 2026-10-21) PE폼은 더 이상 앱에서 이 ?openPeFoam=1 경유로 들어오지 않는다
-        // (앱은 기존 PE폼 전용 앱을 그대로 쓴다) — 이 대시보드 안의 PE폼 탭은 PC 웹에서
-        // 사이드바 버튼으로 직접 여는 용도만 남긴다.
+        // (재정정, 2026-10-27) PE폼 전용 앱(PE폼발주_대시보드.html)의 "웹으로 열기"가
+        // 엉뚱하게 그 앱 자신을 데스크톱 모드로 다시 띄우고 있었다 — 사용자 말대로
+        // "실제 웹대시보드의 PE폼"(이 대시보드 안의 PE폼 탭)을 가리켜야 하므로 다시
+        // ?openPeFoam=1 경유를 살린다.
+        _pkgAutoOpenView('openPeFoam', 'openPkgPeFoamView');
 
         window.addEventListener('DOMContentLoaded', () => {
             // 포장강화 앱(shell.html)의 "포장" 탭이 이 대시보드를 iframe으로 띄울 때는
