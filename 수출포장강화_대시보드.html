@@ -8586,8 +8586,10 @@
         const PKG_PE_TYPE_OPTIONS = ['일자형', '코너형', '패드형', '롤형'];
         function renderPkgMissingTypeList() {
             const body = document.getElementById('pkgMissingTypeBody');
-            const list = _pkgMissingTypeList();
-            document.getElementById('pkgNewTabCnt-type').textContent = list.length;
+            const sortBtnsEl = document.getElementById('pkgMissingTypeSortBtns');
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgMissingTypeSortBtnsHtml();
+            document.getElementById('pkgNewTabCnt-type').textContent = _pkgMissingTypeList().length;
+            const list = _pkgMissingTypeDisplayList();
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">유형을 고를 품목이 없습니다.</div>';
                 return;
