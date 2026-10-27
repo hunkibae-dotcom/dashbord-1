@@ -6055,6 +6055,210 @@ function _rpRenderAddItemResults() {
   }).join('');
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 보고서: 사진 분류기(요청, 2026-10-27) — 시안 단계
+// 검사사진(손글씨)/포장사진(바코드·인쇄 라벨)을 한꺼번에 올리면 자동으로 구분해서
+// 제품코드·색상·CBM을 읽어내는 기능. 실제 사진 속 글자를 읽는 부분은 Gemini API
+// (무료 등급) 연동이 필요해서 아직 안 붙였고, 지금은 화면 흐름만 확인하도록
+// _qcClfRunMockDetection()이 그럴듯한 가짜 결과를 만든다 — 나중에 이 함수 하나만
+// 실제 API 호출로 바꾸면 나머지(목록/확인 팝업/다운로드)는 그대로 쓸 수 있다.
+// ═══════════════════════════════════════════════════════════════
+let _qcClfFiles = [];     // [{file, url}]
+let _qcClfResults = [];   // [{idx, file, url, type, code, color, round, cbm, codeConfirmed, cbmConfirmed}]
+let _qcClfConfirmIdx = null;
+
+function openQcClassifier() {
+  _qcClfRevokeUrls();
+  _qcClfFiles = [];
+  _qcClfResults = [];
+  document.getElementById('qcClfFileInput').value = '';
+  document.getElementById('qcClfStepUpload').style.display = 'block';
+  document.getElementById('qcClfStepProcessing').style.display = 'none';
+  document.getElementById('qcClfStepResults').style.display = 'none';
+  document.getElementById('qcClassifierModal').style.display = 'flex';
+}
+function closeQcClassifier() {
+  document.getElementById('qcClassifierModal').style.display = 'none';
+}
+function _qcClfRevokeUrls() {
+  (_qcClfFiles || []).forEach(f => { try { URL.revokeObjectURL(f.url); } catch (e) {} });
+}
+function _qcClfReset() { openQcClassifier(); }
+
+function _qcClfFilesSelected(fileList) {
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+  _qcClfFiles = files.map(f => ({ file: f, url: URL.createObjectURL(f) }));
+  document.getElementById('qcClfStepUpload').style.display = 'none';
+  document.getElementById('qcClfStepProcessing').style.display = 'flex';
+  document.getElementById('qcClfProcessingLabel').textContent = '사진 ' + _qcClfFiles.length + '장 분석 중...';
+  setTimeout(_qcClfRunMockDetection, 1100);
+}
+
+// 보고서에 이미 올라와 있는 품목 중에서 코드/색상/건명을 가져와 "그럴듯한" 가짜
+// 인식 결과를 만드는 용도 — 실제 사진 내용과는 무관하다(시안이므로).
+function _qcClfCandidatePool() {
+  const pool = [...allData, ...archiveRows].filter(d => d && d.건명 && d.단품코드);
+  const seen = new Set();
+  const out = [];
+  pool.forEach(d => {
+    const k = d.단품코드 + '|' + (d.색상 || '');
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push({ round: d.건명, code: d.단품코드, color: d.색상 || '', name: d.단품명칭 || '' });
+  });
+  return out;
+}
+
+function _qcClfRunMockDetection() {
+  const pool = _qcClfCandidatePool();
+  _qcClfResults = _qcClfFiles.map((f, i) => {
+    const cand = pool.length ? pool[Math.floor(Math.random() * pool.length)] : { round: '-', code: '코드미상', color: '-' };
+    const type = (i % 2 === 0) ? '검사' : '포장';
+    // 시안이므로 임의로 70%는 "바로 확정", 30%는 확인이 필요한 것으로 만든다 —
+    // 실제로는 인식 신뢰도에 따라 이 값이 정해진다.
+    const confident = Math.random() > 0.3;
+    const cbm = {
+      w: Math.round(300 + Math.random() * 900),
+      d: Math.round(200 + Math.random() * 700),
+      h: Math.round(30 + Math.random() * 100),
+      g: (0.3 + Math.random() * 15).toFixed(1)
+    };
+    return {
+      idx: i, file: f.file, url: f.url,
+      type, code: cand.code, color: cand.color, round: cand.round, cbm,
+      codeConfirmed: confident, cbmConfirmed: confident
+    };
+  });
+  document.getElementById('qcClfStepProcessing').style.display = 'none';
+  document.getElementById('qcClfStepResults').style.display = 'flex';
+  _qcClfRenderResults();
+}
+
+function _qcClfRenderResults() {
+  const list = _qcClfResults;
+  document.getElementById('qcClfCount').textContent = list.length;
+  const needConfirm = list.filter(r => !r.codeConfirmed || !r.cbmConfirmed).length;
+  document.getElementById('qcClfNeedConfirm').textContent = needConfirm ? needConfirm + '건 확인 필요' : '전부 확인됨';
+  const body = document.getElementById('qcClfResultList');
+  if (!list.length) { body.innerHTML = ''; return; }
+  body.innerHTML = list.map(r => {
+    const isInsp = r.type === '검사';
+    const badgeBg = isInsp ? '#eff6ff' : '#f0fdf4';
+    const badgeColor = isInsp ? '#0284c7' : '#16a34a';
+    const needsReview = !r.codeConfirmed || !r.cbmConfirmed;
+    return `<div style="display:flex;gap:10px;align-items:center;padding:8px;border:1px solid var(--border);border-radius:12px;${needsReview ? 'background:#fffbeb;' : ''}">
+      <img src="${r.url}" style="width:52px;height:52px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer;" onclick="_qcClfOpenConfirm(${r.idx})">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap;">
+          <span style="font-size:10px;font-weight:800;padding:1.5px 7px;border-radius:6px;background:${badgeBg};color:${badgeColor};">${r.type}사진</span>
+          <span style="font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;border-bottom:1px dashed var(--border);" onclick="copyCellText('${_jsAttr(r.code)}', event)">${r.code}</span>
+          <span style="font-size:11.5px;color:var(--label);">${r.color || '-'}</span>
+          ${needsReview
+            ? '<span style="font-size:10px;font-weight:800;color:#b45309;"><i class="fa-solid fa-triangle-exclamation"></i> 확인 필요</span>'
+            : '<span style="font-size:10px;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check"></i> 자동 확정</span>'}
+        </div>
+        <div style="font-size:11px;color:var(--label);">CBM ${r.cbm.w || '-'}×${r.cbm.d || '-'}×${r.cbm.h || '-'} · ${r.cbm.g || '-'}kg</div>
+      </div>
+      <button onclick="_qcClfOpenConfirm(${r.idx})" style="flex-shrink:0;font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;">수정</button>
+    </div>`;
+  }).join('');
+}
+
+function _qcClfOpenConfirm(idx) {
+  const r = _qcClfResults.find(x => x.idx === idx);
+  if (!r) return;
+  _qcClfConfirmIdx = idx;
+  document.getElementById('qcClfConfirmImg').src = r.url;
+  document.getElementById('qcClfConfirmImg').style.transform = '';
+  document.getElementById('qcClfConfirmCodeText').textContent = r.round + ' · ' + r.code + ' / ' + (r.color || '-');
+  document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
+  document.getElementById('qcClfCbmW').value = r.cbm.w || '';
+  document.getElementById('qcClfCbmD').value = r.cbm.d || '';
+  document.getElementById('qcClfCbmH').value = r.cbm.h || '';
+  document.getElementById('qcClfCbmG').value = r.cbm.g || '';
+  document.getElementById('qcClassifierModal').style.display = 'none';
+  document.getElementById('qcClfConfirmModal').style.display = 'flex';
+}
+function _qcClfCloseConfirm() {
+  document.getElementById('qcClfConfirmModal').style.display = 'none';
+  document.getElementById('qcClassifierModal').style.display = 'flex';
+}
+function _qcClfConfirmCode(ok) {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  if (ok) {
+    r.codeConfirmed = true;
+    document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
+  } else {
+    document.getElementById('qcClfCodeSearchWrap').style.display = 'block';
+    document.getElementById('qcClfCodeSearchInput').value = '';
+    document.getElementById('qcClfCodeSearchInput').focus();
+    _qcClfRenderCodeSearch();
+  }
+}
+function _qcClfRenderCodeSearch() {
+  const q = (document.getElementById('qcClfCodeSearchInput').value || '').trim().toLowerCase();
+  const pool = _qcClfCandidatePool();
+  const results = (q ? pool.filter(p => (p.round || '').toLowerCase().includes(q) || (p.code || '').toLowerCase().includes(q)) : pool).slice(0, 30);
+  document.getElementById('qcClfCodeSearchResults').innerHTML = results.map(p =>
+    `<div onclick="_qcClfPickCode('${_jsAttr(p.code)}','${_jsAttr(p.color)}','${_jsAttr(p.round)}')" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">
+      <b>${p.code}</b> · ${p.color || '-'} <span style="color:var(--label);">${p.round}</span>
+    </div>`
+  ).join('') || '<div style="font-size:12px;color:var(--label);text-align:center;padding:10px;">검색 결과가 없습니다</div>';
+}
+function _qcClfPickCode(code, color, round) {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  r.code = code; r.color = color; r.round = round; r.codeConfirmed = true;
+  document.getElementById('qcClfConfirmCodeText').textContent = round + ' · ' + code + ' / ' + (color || '-');
+  document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
+}
+function _qcClfSkipCbm() {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  r.cbm = { w: '', d: '', h: '', g: '' };
+  r.cbmConfirmed = true;
+  ['qcClfCbmW', 'qcClfCbmD', 'qcClfCbmH', 'qcClfCbmG'].forEach(id => { document.getElementById(id).value = ''; });
+}
+function _qcClfSaveConfirm() {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  const w = document.getElementById('qcClfCbmW').value.trim();
+  const d = document.getElementById('qcClfCbmD').value.trim();
+  const h = document.getElementById('qcClfCbmH').value.trim();
+  const g = document.getElementById('qcClfCbmG').value.trim();
+  if (w || d || h || g) { r.cbm = { w, d, h, g }; r.cbmConfirmed = true; }
+  _qcClfCloseConfirm();
+  _qcClfRenderResults();
+}
+
+function _qcClfDownloadPhotos() {
+  _qcClfResults.forEach(r => {
+    const a = document.createElement('a');
+    a.href = r.url;
+    const ext = (r.file.name.split('.').pop() || 'jpg');
+    a.download = (r.code + ' ' + (r.color || '') + ' ' + r.type).trim() + '.' + ext;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
+function _qcClfDownloadCbm() {
+  const rows = [['제품코드', '색상', '건명', '사진유형', '가로', '세로', '높이', '중량']];
+  _qcClfResults.forEach(r => rows.push([r.code, r.color, r.round, r.type, r.cbm.w, r.cbm.d, r.cbm.h, r.cbm.g]));
+  const csv = rows.map(row => row.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'CBM_분류결과.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+function _qcClfApplyToReport() {
+  alert('시안 단계입니다 — 실제로 보고서 사진·CBM에 반영하는 연결은 다음 단계(실제 이미지 인식 연동)에서 작업합니다.');
+}
+
 // 헤더 클릭 일괄 토글 — 지금 필터/검색 조건에 맞는(화면에 보이는) 행 전체를 대상으로,
 // 하나라도 안 켜져있으면 전부 켜고, 이미 다 켜져있으면 전부 끈다(선택/작성완료/철물
 // 세 헤더 공통 로직). 페이지네이션과 무관하게 "조건에 맞는 전체"가 대상이다.
