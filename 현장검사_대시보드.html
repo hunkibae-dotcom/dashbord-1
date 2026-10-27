@@ -2491,6 +2491,98 @@ async function fiDeleteEntry() {
   }
 }
 
+// ── 사용설명서(요청, 2026-10-27) — 전엔 품질검사 대시보드의 가이드 안에 "현장검사"
+// 카테고리로 끼워져 있었다(옛 F.WORK 메뉴 구조가 품질검사>현장검사였던 흔적). 지금은
+// 현장검사가 독립된 화면이라 그 내용을 여기로 옮기고, 실제 화면과 안 맞던 부분(검색
+// 탭 등)도 지금 기준으로 다시 썼다. 포장강화 대시보드의 USAGE_GUIDE_PKG_WEB과 같은
+// 구조(cat/icon/name/when/body/steps/tip)·같은 렌더 방식(카테고리 칩+검색+아코디언)을
+// 그대로 따르되, 색은 이 파일의 테마 변수로만 맞춘다.
+const USAGE_GUIDE_FI = {
+  categories: ['홈', '부적합조회', '하자 등록·관리', 'PC 전용', '설정'],
+  features: [
+    { cat: '홈', icon: 'fa-solid fa-house', name: '홈 화면 KPI 카드',
+      when: '지금까지 등록된 부적합 현황을 숫자로 빠르게 보고 싶을 때 사용합니다.',
+      body: ['홈 화면 위쪽에 총 조회건수·미조치·조치 진행중·조치완료율 4개 카드가 있습니다.'],
+      steps: ['카드를 탭하면 그 조건(예: 미조치만)으로 걸러진 부적합조회 화면으로 바로 이동합니다.'] },
+    { cat: '부적합조회', icon: 'fa-solid fa-filter', name: '필터로 원하는 항목만 찾기',
+      when: '특정 상태·유형·기간·위치의 하자만 골라보고 싶을 때 사용합니다.',
+      body: ['필터 영역이 "상태" · "유형" · "상세 필터" 3개 구역으로 나뉘어 있습니다. 상태와 유형은 눌러서 바로 고르는 색깔 칩(알약 모양 버튼)이라 지금 뭘로 걸러져 있는지 한눈에 보입니다.'],
+      steps: ['상태 칩에서 미조치/조치중/조치완료 중 고릅니다(전체도 가능).', '유형 칩에서 외관/제품·코드일치/별도·조립철물/포장 중 고릅니다.', '상세 필터에서 날짜·발견위치·원인위치를 추가로 좁힐 수 있습니다.', '맨 아래 검색창에 단품코드나 부적합 내용을 입력해도 찾을 수 있습니다.', '"초기화"를 누르면 모든 필터가 한 번에 풀립니다.'] },
+    { cat: '하자 등록·관리', icon: 'fa-solid fa-circle-plus', name: '새 하자 등록',
+      when: '포장·검사 현장에서 하자를 발견했을 때 사용합니다.',
+      body: ['예전엔 하단 탭에 "검색" 화면이 따로 있었는데, 지금은 그 자리가 "하자등록" 버튼으로 바뀌어 눌렀을 때 곧바로 등록창이 열립니다.'],
+      steps: ['하단 탭바의 "하자등록"을 누릅니다.', '단품코드는 직접 입력하거나 코드 옆 바코드 아이콘으로 스캔할 수 있습니다.', '색상·발견수량·발견일자를 입력합니다.', '발생처(발견한 위치)와 원인처(발생한 것으로 보이는 위치)를 각각 사업장+위치로 고릅니다 — 목록에 없으면 "직접입력"으로 적을 수 있습니다.', '원인위치가 확실하지 않으면 "파악중"으로 두고, 확실하면 원인처가 "추측"인지 "확실"인지도 함께 고릅니다.', '하자유형을 중복 선택합니다.', '현장 사진을 여러 장 등록합니다.', '부적합 내용을 적고 "등록"을 누릅니다.'],
+      tip: 'F.WORK 홈 화면의 "바코드스캐너"로 코드를 먼저 찍고 들어오면, 그 코드가 채워진 새 하자 등록창이 바로 열립니다.' },
+    { cat: '하자 등록·관리', icon: 'fa-solid fa-pen-to-square', name: '등록된 하자 수정·삭제·상태 변경',
+      when: '조치가 진행돼 상태를 바꾸거나, 내용을 고치거나, 잘못 등록된 걸 지워야 할 때 사용합니다.',
+      steps: ['부적합조회 목록에서 항목을 눌러 상세창을 엽니다.', '상태(미조치/조치중/조치완료)를 바꿀 수 있습니다.', '내용·사진·유형도 수정할 수 있습니다.'],
+      tip: '삭제하면 시트에서도 완전히 지워지며 되돌릴 수 없습니다.' },
+    { cat: 'PC 전용', icon: 'fa-solid fa-desktop', name: 'PC 화면 전용 기능',
+      when: '사무실 PC에서 여러 건을 한꺼번에 다루거나 보고서를 만들어야 할 때 사용합니다.',
+      body: ['PC 브라우저로 열면 터치 기기 여부를 자동으로 판별해 모바일과 다른 전용 화면이 뜹니다.'],
+      steps: ['"☑ 선택"을 누르면 선택 모드가 켜져 여러 건을 체크할 수 있습니다.', '체크한 뒤 "📄 보고서 자동제작"을 누르면 선택한 항목들을 모아 제목이 자동으로 채워진 보고서 파일을 만들 수 있습니다(용지 방향도 고를 수 있습니다).', '"📄 시트에서 보기"로 원본 구글시트를 바로 열 수 있습니다.', 'KPI 카드를 눌러도 그 조건으로 바로 필터링됩니다.'] },
+    { cat: '설정', icon: 'fa-solid fa-gear', name: '설정 — 연동 주소·프로필·테마',
+      when: '구글시트 연동 주소를 처음 설정하거나 바꿔야 할 때, 표시 이름이나 다크모드를 바꾸고 싶을 때 사용합니다.',
+      steps: ['"현장검사 데이터시트 바로가기"로 원본 구글시트를 엽니다.', '"웹으로 열기"로 PC 대시보드를 새 탭에서 엽니다.', '"프로필 변경"에서 표시 이름을 바꿉니다.', '다크 모드 스위치로 테마를 바꿉니다(포장강화 앱과 테마가 함께 유지됩니다).', '"GAS 연동 주소"에 구글 앱스스크립트 배포 URL을 넣고 "저장하고 새로고침"을 누르면 연동됩니다 — 비워두면 기본 주소로 돌아갑니다.'] },
+  ]
+};
+let _fiUgState = { cat: null, openKey: null, q: '' };
+function fiOpenUsageGuide() {
+  _fiUgState = { cat: null, openKey: null, q: '' };
+  document.getElementById('fiUgSearchInput').value = '';
+  document.getElementById('fiUsageGuideModal').style.display = 'flex';
+  _fiUgRender();
+}
+function fiCloseUsageGuide() {
+  document.getElementById('fiUsageGuideModal').style.display = 'none';
+}
+function _fiUgPickCat(c) { _fiUgState.cat = (_fiUgState.cat === c) ? null : c; _fiUgRender(); }
+function _fiUgToggle(key) { _fiUgState.openKey = (_fiUgState.openKey === key) ? null : key; _fiUgRender(); }
+function _fiUgOnSearch(v) { _fiUgState.q = v; _fiUgRender(); }
+function _fiUgRender() {
+  const data = USAGE_GUIDE_FI;
+  const q = (_fiUgState.q || '').trim().toLowerCase();
+  let features = data.features;
+  if (_fiUgState.cat) features = features.filter(f => f.cat === _fiUgState.cat);
+  if (q) features = features.filter(f => f.name.toLowerCase().includes(q) || f.when.toLowerCase().includes(q));
+  document.getElementById('fiUgCatRow').innerHTML = data.categories.map(c => {
+    const n = data.features.filter(f => f.cat === c).length;
+    const on = _fiUgState.cat === c;
+    const style = on
+      ? 'border:1px solid #D97706; background:rgba(217,119,6,.12); color:#D97706;'
+      : 'border:1px solid var(--border); background:var(--input-bg); color:var(--text-sub);';
+    return '<button type="button" onclick="_fiUgPickCat(\'' + c + '\')" style="flex-shrink:0; padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:700; cursor:pointer; white-space:nowrap; ' + style + '">' + c + ' <span style="opacity:.7; font-size:10px;">' + n + '</span></button>';
+  }).join('');
+  let body = '';
+  if (!features.length) {
+    body = '<div style="text-align:center; padding:40px 0; color:var(--label); font-size:12.5px;"><i class="fa-solid fa-magnifying-glass" style="font-size:20px; margin-bottom:8px; display:block;"></i>일치하는 기능이 없습니다</div>';
+  } else {
+    let lastCat = null;
+    features.forEach(f => {
+      if (!_fiUgState.cat && !q && f.cat !== lastCat) {
+        body += '<div style="font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--label); margin:6px 2px 0;">' + f.cat + '</div>';
+        lastCat = f.cat;
+      }
+      const key = (f.cat + '|' + f.name).replace(/'/g, "\\'");
+      const open = _fiUgState.openKey === (f.cat + '|' + f.name);
+      body += '<div style="background:var(--input-bg); border:1px solid var(--border); border-radius:12px; overflow:hidden;">' +
+        '<div onclick="_fiUgToggle(\'' + key + '\')" style="display:flex; align-items:center; gap:10px; padding:11px; cursor:pointer;">' +
+          '<div style="width:30px; height:30px; border-radius:9px; background:rgba(217,119,6,.12); color:#D97706; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:12.5px;"><i class="' + f.icon + '"></i></div>' +
+          '<div style="flex:1; min-width:0;"><div style="font-size:13px; font-weight:700; color:var(--text);">' + f.name + '</div><div style="font-size:10.5px; color:var(--label); margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + f.when + '</div></div>' +
+          '<i class="fa-solid fa-chevron-down" style="color:var(--label); font-size:10.5px; flex-shrink:0; transition:transform .15s;' + (open ? 'transform:rotate(180deg);' : '') + '"></i>' +
+        '</div>' +
+        (open ? ('<div style="padding:0 13px 14px 53px; display:flex; flex-direction:column; gap:10px;">' +
+          '<div><div style="font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#D97706; margin-bottom:3px;">언제 사용하나요</div><p style="font-size:12px; line-height:1.55; color:var(--text-sub); margin:0;">' + f.when + '</p></div>' +
+          (f.body ? ('<div><div style="font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#D97706; margin-bottom:3px;">알아두면 좋은 점</div>' + f.body.map(p => '<p style="font-size:12px; line-height:1.55; color:var(--text-sub); margin:4px 0 0;">' + p + '</p>').join('') + '</div>') : '') +
+          (f.steps ? ('<div><div style="font-size:9.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:#D97706; margin-bottom:3px;">사용 방법</div><ol style="margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px;">' + f.steps.map((s, i) => '<li style="display:flex; gap:8px; font-size:12px; line-height:1.45; color:var(--text);"><span style="flex-shrink:0; width:16px; height:16px; border-radius:50%; background:var(--border); color:var(--text-sub); font-size:9px; font-weight:800; display:flex; align-items:center; justify-content:center; margin-top:2px;">' + (i + 1) + '</span><span>' + s + '</span></li>').join('') + '</ol></div>') : '') +
+          (f.tip ? ('<div style="margin-top:2px; border-radius:10px; padding:9px 10px; display:flex; gap:7px; background:' + (f.tip.includes('되돌릴 수 없') ? 'rgba(220,38,38,.1)' : 'rgba(217,119,6,.1)') + ';"><i class="fa-solid fa-circle-info" style="font-size:11px; margin-top:2px; flex-shrink:0; color:' + (f.tip.includes('되돌릴 수 없') ? '#DC2626' : '#D97706') + ';"></i><p style="font-size:11px; line-height:1.5; color:var(--text-sub); margin:0;">' + f.tip + '</p></div>') : '') +
+        '</div>') : '') +
+      '</div>';
+    });
+  }
+  document.getElementById('fiUgBody').innerHTML = body;
+}
+
 // ── 설정 ──
 function fiOpenWebDashboard() {
   if (/Android/i.test(navigator.userAgent) && window.Android) {
