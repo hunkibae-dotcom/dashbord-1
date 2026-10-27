@@ -6098,6 +6098,96 @@ let _qcClfFiles = [];     // [{file, url}]
 let _qcClfResults = [];   // [{idx, file, url, type, code, color, round, cbm, codeConfirmed, cbmConfirmed}]
 let _qcClfConfirmIdx = null;
 
+// 확인팝업: 사진 확대보기(별도 창) 상태 — 휠로 확대/축소, 드래그로 사진 이동,
+// 헤더 드래그로 창 자체 이동(요청, 2026-10-27).
+let _qcClfPv = { scale: 1, baseScale: 1, x: 0, y: 0, dragging: false, lastX: 0, lastY: 0 };
+let _qcClfPvPanel = { dragging: false, startX: 0, startY: 0, startLeft: 0, startTop: 0 };
+
+function _qcClfOpenPhotoViewer() {
+  const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
+  if (!r) return;
+  const img = document.getElementById('qcClfPvImg');
+  img.onload = _qcClfPvFit;
+  img.src = r.url;
+  document.getElementById('qcClfPhotoViewer').style.display = 'flex';
+  if (img.complete && img.naturalWidth) _qcClfPvFit();
+}
+function _qcClfClosePhotoViewer() {
+  document.getElementById('qcClfPhotoViewer').style.display = 'none';
+}
+// 창을 처음 열 때 사진 전체가 뷰포트 안에 딱 맞게 보이도록 기준 배율(baseScale)을
+// 잡는다 — 이후 scale은 이 기준에서 몇 배 더 확대했는지를 나타낸다.
+function _qcClfPvFit() {
+  const vp = document.getElementById('qcClfPvViewport');
+  const img = document.getElementById('qcClfPvImg');
+  const iw = img.naturalWidth, ih = img.naturalHeight;
+  if (!iw || !ih) return;
+  const vw = vp.clientWidth, vh = vp.clientHeight;
+  img.style.width = iw + 'px';
+  img.style.height = ih + 'px';
+  _qcClfPv.baseScale = Math.min(vw / iw, vh / ih);
+  _qcClfPv.scale = 1;
+  _qcClfPv.x = (vw - iw * _qcClfPv.baseScale) / 2;
+  _qcClfPv.y = (vh - ih * _qcClfPv.baseScale) / 2;
+  _qcClfPvApply();
+}
+function _qcClfPvApply() {
+  const total = _qcClfPv.baseScale * _qcClfPv.scale;
+  document.getElementById('qcClfPvImg').style.transform = `translate(${_qcClfPv.x}px,${_qcClfPv.y}px) scale(${total})`;
+  document.getElementById('qcClfPvZoomLabel').textContent = Math.round(_qcClfPv.scale * 100) + '%';
+}
+function _qcClfPvReset() { _qcClfPvFit(); }
+// 마우스 휠로 확대/축소 — 커서가 가리키는 지점을 기준으로 확대되도록 x,y를 보정한다
+// (요청, 2026-10-27: "클릭줌은 확대가 너무 적으니 마우스휠로 확대축소").
+function _qcClfPvWheel(e) {
+  e.preventDefault();
+  const rect = document.getElementById('qcClfPvViewport').getBoundingClientRect();
+  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  const oldScale = _qcClfPv.scale;
+  const newScale = Math.min(6, Math.max(1, oldScale * (e.deltaY < 0 ? 1.15 : (1 / 1.15))));
+  if (newScale === oldScale) return;
+  const ratio = newScale / oldScale;
+  _qcClfPv.x = cx - (cx - _qcClfPv.x) * ratio;
+  _qcClfPv.y = cy - (cy - _qcClfPv.y) * ratio;
+  _qcClfPv.scale = newScale;
+  _qcClfPvApply();
+}
+function _qcClfPvMouseDown(e) {
+  e.preventDefault();
+  _qcClfPv.dragging = true;
+  _qcClfPv.lastX = e.clientX; _qcClfPv.lastY = e.clientY;
+  document.getElementById('qcClfPvViewport').style.cursor = 'grabbing';
+}
+function _qcClfPvPanelMouseDown(e) {
+  const panel = document.getElementById('qcClfPhotoViewer');
+  const rect = panel.getBoundingClientRect();
+  _qcClfPvPanel.dragging = true;
+  _qcClfPvPanel.startX = e.clientX; _qcClfPvPanel.startY = e.clientY;
+  _qcClfPvPanel.startLeft = rect.left; _qcClfPvPanel.startTop = rect.top;
+  panel.style.right = 'auto';
+  panel.style.left = rect.left + 'px';
+  panel.style.top = rect.top + 'px';
+}
+document.addEventListener('mousemove', (e) => {
+  if (_qcClfPv.dragging) {
+    const dx = e.clientX - _qcClfPv.lastX, dy = e.clientY - _qcClfPv.lastY;
+    _qcClfPv.lastX = e.clientX; _qcClfPv.lastY = e.clientY;
+    _qcClfPv.x += dx; _qcClfPv.y += dy;
+    _qcClfPvApply();
+  }
+  if (_qcClfPvPanel.dragging) {
+    const panel = document.getElementById('qcClfPhotoViewer');
+    panel.style.left = (_qcClfPvPanel.startLeft + e.clientX - _qcClfPvPanel.startX) + 'px';
+    panel.style.top = (_qcClfPvPanel.startTop + e.clientY - _qcClfPvPanel.startY) + 'px';
+  }
+});
+document.addEventListener('mouseup', () => {
+  _qcClfPv.dragging = false;
+  _qcClfPvPanel.dragging = false;
+  const vp = document.getElementById('qcClfPvViewport');
+  if (vp) vp.style.cursor = 'grab';
+});
+
 function openQcClassifier() {
   _qcClfRevokeUrls();
   _qcClfFiles = [];
