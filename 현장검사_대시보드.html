@@ -2043,8 +2043,7 @@ function fiGoKpiFilter(status) {
   fiTypeFilter = '전체';
   document.getElementById('fiDateFilter').value = '';
   document.getElementById('fiSearchInput').value = '';
-  document.getElementById('fiTypeDropdownLabel').textContent = '전체';
-  document.getElementById('fiTypeDropdownLabel').style.color = 'var(--label)';
+  fiRenderTypeFilterTabs();
   fiStatusFilter = status;
   fiRenderStatusFilterTabs();
   fiGoTab('list');
@@ -2055,8 +2054,7 @@ function fiResetFilters() {
   document.getElementById('fiOccFilter').value = '전체';
   document.getElementById('fiCauseFilter').value = '전체';
   document.getElementById('fiSearchInput').value = '';
-  document.getElementById('fiTypeDropdownLabel').textContent = '전체';
-  document.getElementById('fiTypeDropdownLabel').style.color = 'var(--label)';
+  fiRenderTypeFilterTabs();
   fiRenderStatusFilterTabs();
   fiRenderList();
 }
