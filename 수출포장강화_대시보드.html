@@ -8378,7 +8378,7 @@
 
         // 품질검사 "신규품목확인"처럼 탭으로 나눴다(요청, 2026-10-27) — 확인/미구성
         // 품목/유형 선택. qcSwitchTab과 같은 패턴(버튼 active 토글 + 패널 표시 전환).
-        const PKG_NEW_TABS = ['confirm', 'missing', 'type'];
+        const PKG_NEW_TABS = ['confirm', 'missing', 'type', 'barcode'];
         function pkgNewSwitchTab(tab) {
             PKG_NEW_TABS.forEach(t => {
                 const btn = document.querySelector('#pkgNewModal .pkgNewTabBtn[data-tab="' + t + '"]');
