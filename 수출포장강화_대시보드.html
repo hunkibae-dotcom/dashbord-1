@@ -1224,8 +1224,10 @@
             <!-- DOM 유지용 hidden 입력 -->
             <input type="hidden" id="countryFilter" value="">
             <input type="hidden" id="tableInlineSearch" value="">
-            <!-- 테이블 -->
-            <div id="tableScrollWrap" class="mobile-table-wrap overflow-x-auto w-full" style="max-height:560px;overflow-y:auto;">
+            <!-- 테이블 — 결과가 적거나 없을 때 박스 자체가 줄어들어 보이는 문제(요청,
+                 2026-10-27) — max-height만 있으면 내용이 적을 때 높이가 줄어드니, 고정
+                 height로 바꿔서 결과 수와 무관하게 박스 크기가 항상 같게 유지되게 했다. -->
+            <div id="tableScrollWrap" class="mobile-table-wrap overflow-x-auto w-full" style="height:560px;overflow-y:auto;">
                 <table class="w-full text-left border-collapse" style="min-width:1080px;">
                     <thead>
                         <tr id="mainTableHeadRow" class="text-[12px] uppercase tracking-wider select-none" style="background:#fff;color:#94a3b8;border-bottom:2px solid #f1f5f9;white-space:nowrap;position:sticky;top:0;z-index:10;">
