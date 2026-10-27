@@ -8636,8 +8636,10 @@
 
         function renderPkgNewList() {
             const body = document.getElementById('pkgNewBody');
-            const list = window._pkgNewList || [];
-            document.getElementById('pkgNewTabCnt-confirm').textContent = list.length;
+            const sortBtnsEl = document.getElementById('pkgNewConfirmSortBtns');
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgNewConfirmSortBtnsHtml();
+            document.getElementById('pkgNewTabCnt-confirm').textContent = (window._pkgNewList || []).length;
+            const list = _pkgNewDisplayList();
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">신규 품목이 없습니다.</div>';
             } else {
