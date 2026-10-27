@@ -705,26 +705,26 @@
                                 <span id="card1TodayDateLabel" class="text-[13.5px] text-slate-400 font-semibold">-</span>
                             </div>
                         </div>
-                        <!-- 포장대기 한 줄 + 호버 상세 -->
-                        <div class="relative" onmouseenter="showPendingDetail()" onmouseleave="hidePendingDetail()">
-                            <div id="card1PendingBox" class="flex items-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2 border border-borderSlate/40 cursor-pointer" style="transform:scale(1);transition:transform 80ms ease-out;" onclick="filterByPendingStatus()" onmouseenter="this.style.transform='scale(1.015)'" onmouseleave="this.style.transform='scale(1)'">
+                        <!-- 포장대기 / 미회수 / 상차준비 — 각각 눌러서 제품검색에 해당 조건으로
+                             바로 조회한다(요청, 2026-10-27: 예전 호버 팝업 대신 3줄로 단순화). -->
+                        <div class="flex flex-col gap-1.5">
+                            <div onclick="filterByPendingStatus()" class="flex items-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2 border border-borderSlate/40 cursor-pointer hover:bg-darkBg/70 transition-colors">
                                 <span class="text-[13.5px] text-slate-500 font-semibold shrink-0">포장대기</span>
                                 <span class="text-slate-600 text-[13px]">—</span>
                                 <span id="card1PendingQty" class="text-[21.5px] font-bold text-accentOrange leading-none">-</span>
                                 <span class="text-[13.5px] text-slate-500 font-semibold">BOX</span>
-                                <span class="text-slate-600 text-[13px]">·</span>
-                                <span class="text-[13.5px] text-slate-500"><span id="card1PendingItems">-</span>건</span>
-                                <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 ml-auto"></i>
                             </div>
-                            <!-- 호버 상세 팝업 -->
-                            <div id="card1PendingDetail" class="absolute left-0 right-0 z-[100] mt-1.5 rounded-xl overflow-hidden" style="top:100%;background:#FFFFFF;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(148,163,184,0.35);box-shadow:0 8px 28px rgba(0,0,0,0.14),0 2px 8px rgba(0,0,0,0.08);max-height:0;opacity:0;transition:max-height 0.3s ease-out,opacity 0.15s ease;">
-                                <div class="flex items-center justify-between px-3 py-2">
-                                    <span class="text-[12px] font-semibold tracking-wide" style="color:rgba(71,85,105,0.7);">포장대기 상세 내역</span>
-                                    <span id="card1PendingDetailTotal" class="text-[12px] font-bold" style="color:#2563EB;"></span>
-                                </div>
-                                <div class="mx-3" style="height:1px;background:rgba(100,116,139,0.25);margin-bottom:0;"></div>
-                                <div id="card1PendingDetailBody" class="px-3 py-2 max-h-[220px] overflow-y-auto text-[12px]">
-                                </div>
+                            <div onclick="filterByUnreceivedStatus()" class="flex items-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2 border border-borderSlate/40 cursor-pointer hover:bg-darkBg/70 transition-colors">
+                                <span class="text-[13.5px] text-slate-500 font-semibold shrink-0">미회수</span>
+                                <span class="text-slate-600 text-[13px]">—</span>
+                                <span id="card1UnreceivedCount" class="text-[21.5px] font-bold text-rose-400 leading-none">-</span>
+                                <span class="text-[13.5px] text-slate-500 font-semibold">건</span>
+                            </div>
+                            <div onclick="filterByLoadReadyStatus()" class="flex items-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2 border border-borderSlate/40 cursor-pointer hover:bg-darkBg/70 transition-colors">
+                                <span class="text-[13.5px] text-slate-500 font-semibold shrink-0">상차준비</span>
+                                <span class="text-slate-600 text-[13px]">—</span>
+                                <span id="card1LoadReadyCount" class="text-[21.5px] font-bold text-sky-400 leading-none">-</span>
+                                <span class="text-[13.5px] text-slate-500 font-semibold">건</span>
                             </div>
                         </div>
                     </div>
