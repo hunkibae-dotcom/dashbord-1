@@ -13542,6 +13542,28 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             </div>
         </div>
 
+        <!-- 설정(요청, 2026-10-27: "연동 url입력하는거랑 데이터시트 바로가기버튼좀 넣어줘") -->
+        <div id="peTab-settings" class="hidden">
+            <div class="pe-panel" style="max-width:520px;">
+                <div class="pe-panel-label">연동 설정</div>
+                <p style="font-size:12px;color:var(--pe-ink-sub);line-height:1.6;margin:4px 0 14px;">PE폼 발주/재고 데이터를 가져오는 구글 앱스스크립트 웹앱 주소입니다. 비워두고 저장하면 기본 주소로 돌아갑니다.</p>
+                <label style="display:block;font-size:10.5px;font-weight:700;color:var(--pe-ink-sub);margin-bottom:6px;">연동 URL</label>
+                <input type="text" id="peGasUrlInput" placeholder="https://script.google.com/macros/s/.../exec"
+                    style="width:100%;padding:10px 12px;border:1px solid var(--pe-border);border-radius:9px;font-size:13px;color:var(--pe-ink);background:var(--pe-panel);outline:none;box-sizing:border-box;">
+                <div style="display:flex;gap:8px;margin-top:10px;">
+                    <button onclick="peSaveGasUrl()" class="pe-submit-btn" style="flex:1;"><i class="fa-solid fa-save"></i> 저장 및 다시 불러오기</button>
+                    <button onclick="peResetGasUrl()" style="flex-shrink:0;padding:0 16px;border-radius:9px;border:1.5px solid var(--pe-border);background:var(--pe-panel);color:var(--pe-ink-sub);font-weight:700;font-size:13px;cursor:pointer;">기본값</button>
+                </div>
+                <div id="peGasUrlStatus" style="font-size:11.5px;color:var(--pe-ink-sub);font-weight:600;min-height:16px;margin-top:10px;"></div>
+
+                <div style="border-top:1px solid var(--pe-divider);margin:22px 0 18px;"></div>
+
+                <div class="pe-panel-label">데이터시트</div>
+                <p style="font-size:12px;color:var(--pe-ink-sub);line-height:1.6;margin:4px 0 14px;">PE폼 발주이력·재고·품목마스터가 들어있는 구글 스프레드시트를 새 탭에서 엽니다.</p>
+                <button onclick="peOpenDataSheet()" class="pe-submit-btn" style="width:auto;padding:10px 20px;"><i class="fa-solid fa-table-cells"></i> 데이터시트 바로가기</button>
+            </div>
+        </div>
+
     </div>
     </main>
   </div>
