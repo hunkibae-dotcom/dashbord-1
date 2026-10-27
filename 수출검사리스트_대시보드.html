@@ -6147,14 +6147,29 @@ function _qcClfCandidatePool() {
   return out;
 }
 
+// "자동 확정"의 마지막 관문 — 글씨를 또렷하게 읽었어도(=신뢰도 높음) 그 코드·색상이
+// 실제 보고서 품목에 없다면 오인식일 가능성이 크므로 자동 확정하면 안 된다(요청,
+// 2026-10-27: "확정의 마무리 감지단계는 보고서에 해당 코드·색상이 있는가도 알아야함").
+function _qcClfCodeExistsInReport(code, color) {
+  return _qcClfCandidatePool().some(p => p.code === code && (p.color || '') === (color || ''));
+}
+
 function _qcClfRunMockDetection() {
   const pool = _qcClfCandidatePool();
   _qcClfResults = _qcClfFiles.map((f, i) => {
     const cand = pool.length ? pool[Math.floor(Math.random() * pool.length)] : { round: '-', code: '코드미상', color: '-' };
     const type = (i % 2 === 0) ? '검사' : '포장';
-    // 시안이므로 임의로 70%는 "바로 확정", 30%는 확인이 필요한 것으로 만든다 —
-    // 실제로는 인식 신뢰도에 따라 이 값이 정해진다.
+    // 시안이므로 임의로 70%는 AI 스스로 "글씨를 또렷하게 읽었다"(신뢰도 높음)고
+    // 판단한 것으로, 30%는 확인이 필요한 것으로 만든다 — 실제로는 인식 신뢰도에
+    // 따라 이 값이 정해진다.
     const confident = Math.random() > 0.3;
+    // 시안에서 10% 확률로 "또렷하게 읽긴 했지만 실제로는 보고서에 없는 코드를
+    // 잘못 읽은 경우"를 흉내내서, confident=true여도 보고서에 없으면 자동 확정되지
+    // 않는 걸 보여준다.
+    const misread = Math.random() < 0.1;
+    const code = misread ? cand.code + 'X' : cand.code;
+    const color = cand.color;
+    const existsInReport = _qcClfCodeExistsInReport(code, color);
     const cbm = {
       w: Math.round(300 + Math.random() * 900),
       d: Math.round(200 + Math.random() * 700),
@@ -6163,8 +6178,9 @@ function _qcClfRunMockDetection() {
     };
     return {
       idx: i, file: f.file, url: f.url,
-      type, code: cand.code, color: cand.color, round: cand.round, cbm,
-      codeConfirmed: confident, cbmConfirmed: confident
+      type, code, color, round: cand.round, cbm,
+      codeConfirmed: confident && existsInReport, codeNotInReport: !existsInReport,
+      cbmConfirmed: confident
     };
   });
   document.getElementById('qcClfStepProcessing').style.display = 'none';
