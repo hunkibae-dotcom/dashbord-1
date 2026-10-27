@@ -6240,7 +6240,8 @@ function _qcClfRenderCodeSearch() {
   const results = (q ? pool.filter(p => (p.round || '').toLowerCase().includes(q) || (p.code || '').toLowerCase().includes(q)) : pool).slice(0, 30);
   document.getElementById('qcClfCodeSearchResults').innerHTML = results.map(p =>
     `<div onclick="_qcClfPickCode('${_jsAttr(p.code)}','${_jsAttr(p.color)}','${_jsAttr(p.round)}')" style="padding:7px 9px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">
-      <b>${p.code}</b> · ${p.color || '-'} <span style="color:var(--label);">${p.round}</span>
+      <div><b>${p.code}</b> · ${p.color || '-'}</div>
+      <div style="color:var(--label);font-size:11px;margin-top:2px;">${p.round} · 수량 ${p.qty || '-'}</div>
     </div>`
   ).join('') || '<div style="font-size:12px;color:var(--label);text-align:center;padding:10px;">검색 결과가 없습니다</div>';
 }
