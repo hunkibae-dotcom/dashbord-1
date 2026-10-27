@@ -8670,14 +8670,14 @@
             _pkgNewUpdateSelUi();
         }
         function pkgNewToggleAll(checked) {
-            (window._pkgNewList || []).forEach(it => {
+            _pkgNewDisplayList().forEach(it => {
                 const k = _pkgNewKey(it);
                 if (checked) _pkgNewSelected.add(k); else _pkgNewSelected.delete(k);
             });
             renderPkgNewList();
         }
         function _pkgNewUpdateSelUi() {
-            const list = window._pkgNewList || [];
+            const list = _pkgNewDisplayList();
             document.getElementById('pkgNewSelCount').textContent = _pkgNewSelected.size + '건 선택';
             const allCb = document.getElementById('pkgNewSelectAll');
             if (allCb) allCb.checked = list.length > 0 && list.every(it => _pkgNewSelected.has(_pkgNewKey(it)));
