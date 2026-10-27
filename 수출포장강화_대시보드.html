@@ -8432,6 +8432,81 @@
         }
         function _pkgMissingRowId(prefix, code) { return prefix + '_' + code.replace(/[^A-Z0-9]/g, '_'); }
 
+        // ── 신규 추가 품목 모달 — 탭별 검색/정렬(요청, 2026-10-27, 품질검사
+        // 신규품목확인 모달과 같은 패턴). 검색은 선택 상태엔 영향 없이 "보이는 것"만
+        // 거르고, 전체선택/카운트는 지금 화면에 보이는(검색으로 걸러진) 목록 기준이다.
+        function _pkgModalSearchFilter(items, inputId, fields) {
+            const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
+            if (!q) return items;
+            return items.filter(it => fields.some(f => (it[f] || '').toString().toLowerCase().includes(q)));
+        }
+        function _pkgModalSortItems(items, field, asc) {
+            if (!field) return items;
+            return [...items].sort((a, b) => {
+                const av = (a[field] || '').toString(), bv = (b[field] || '').toString();
+                if (!av && !bv) return 0;
+                if (!av) return 1;
+                if (!bv) return -1;
+                return asc ? av.localeCompare(bv) : bv.localeCompare(av);
+            });
+        }
+        function _pkgModalSortBtnHtml(active, label, arrow, onclickFn) {
+            const style = active
+                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
+                : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
+            return `<button onclick="${onclickFn}" style="${style}">${label} ${arrow}</button>`;
+        }
+
+        // 탭1(확인): 건명/단품코드 정렬.
+        let _pkgNewConfirmSortKey = null, _pkgNewConfirmSortAsc = true;
+        function _pkgNewConfirmSortBtnsHtml() {
+            return [['round', '건명'], ['code', '단품코드']].map(([k, label]) => {
+                const active = _pkgNewConfirmSortKey === k;
+                return _pkgModalSortBtnHtml(active, label, active ? (_pkgNewConfirmSortAsc ? '↑' : '↓') : '', `_pkgNewConfirmPickSort('${k}')`);
+            }).join('');
+        }
+        function _pkgNewConfirmPickSort(key) {
+            if (_pkgNewConfirmSortKey === key) _pkgNewConfirmSortAsc = !_pkgNewConfirmSortAsc;
+            else { _pkgNewConfirmSortKey = key; _pkgNewConfirmSortAsc = true; }
+            renderPkgNewList();
+        }
+        function _pkgNewDisplayList() {
+            let items = _pkgModalSearchFilter(window._pkgNewList || [], 'pkgNewSearchInput', ['round', 'code']);
+            return _pkgModalSortItems(items, _pkgNewConfirmSortKey, _pkgNewConfirmSortAsc);
+        }
+
+        // 탭2(미구성 품목): 제품코드만 정렬(기준이 코드 하나뿐).
+        let _pkgMissingSpecSortAsc = true;
+        function _pkgMissingSpecSortBtnsHtml() {
+            return _pkgModalSortBtnHtml(true, '제품코드', _pkgMissingSpecSortAsc ? '↑' : '↓', `_pkgMissingSpecPickSort()`);
+        }
+        function _pkgMissingSpecPickSort() {
+            _pkgMissingSpecSortAsc = !_pkgMissingSpecSortAsc;
+            renderPkgMissingSpecList();
+        }
+        function _pkgMissingSpecDisplayList() {
+            const items = _pkgModalSearchFilter(_pkgMissingSpecList(), 'pkgMissingSpecSearchInput', ['code']);
+            return _pkgModalSortItems(items, 'code', _pkgMissingSpecSortAsc);
+        }
+
+        // 탭3(유형 선택): 건명/제품코드 정렬.
+        let _pkgMissingTypeSortKey = null, _pkgMissingTypeSortAsc = true;
+        function _pkgMissingTypeSortBtnsHtml() {
+            return [['round', '건명'], ['code', '제품코드']].map(([k, label]) => {
+                const active = _pkgMissingTypeSortKey === k;
+                return _pkgModalSortBtnHtml(active, label, active ? (_pkgMissingTypeSortAsc ? '↑' : '↓') : '', `_pkgMissingTypePickSort('${k}')`);
+            }).join('');
+        }
+        function _pkgMissingTypePickSort(key) {
+            if (_pkgMissingTypeSortKey === key) _pkgMissingTypeSortAsc = !_pkgMissingTypeSortAsc;
+            else { _pkgMissingTypeSortKey = key; _pkgMissingTypeSortAsc = true; }
+            renderPkgMissingTypeList();
+        }
+        function _pkgMissingTypeDisplayList() {
+            const items = _pkgModalSearchFilter(_pkgMissingTypeList(), 'pkgMissingTypeSearchInput', ['round', 'code']);
+            return _pkgModalSortItems(items, _pkgMissingTypeSortKey, _pkgMissingTypeSortAsc);
+        }
+
         // ── 탭2: 미구성 품목(제품종류/PE폼 높이 누락) ──────────────────────
         let _pkgMissingSpecEditCode = null;
         function renderPkgMissingSpecList() {
