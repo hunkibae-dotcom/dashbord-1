@@ -12779,6 +12779,22 @@ function peBackToExportFormat() {
     document.getElementById('peExportFormatStep').style.display = 'block';
 }
 
+// 재고현황 새로고침(요청, 2026-10-27) — 구글시트에서 PE폼 데이터 전체를 다시
+// 받아와서 지금 보이는 재고 목록을 갱신한다. 아이콘을 돌려서 "지금 받는 중"을 보여준다.
+async function peRefreshStock(btn) {
+    const icon = btn && btn.querySelector('i');
+    if (icon) icon.style.animation = 'spin .7s linear infinite';
+    try {
+        await peLoadAll();
+        peRenderStock();
+        peShowToast('새로고침 완료');
+    } catch (e) {
+        peShowToast('새로고침 실패');
+    } finally {
+        if (icon) icon.style.animation = '';
+    }
+}
+
 // ── 재고현황 "소진제거"(요청, 2026-10-27) ──────────────────────────
 let _peUsedUpSelectMode = false;
 let _peUsedUpSelected = new Set(); // 시트 실제 행 번호(r.row)
