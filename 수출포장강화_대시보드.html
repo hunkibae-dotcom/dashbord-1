@@ -694,7 +694,40 @@
         <div id="generalDashboardView" class="flex flex-col gap-4 lg:col-start-1 lg:col-span-4 lg:row-start-1">
             <div class="mobile-carousel-box">
             <div id="topCardGrid" class="md:grid md:grid-cols-4 gap-4">
-                    <!-- 카드1: 금일 작업 계획 -->
+                    <!-- 카드1: 신규품목(요청, 2026-10-27: 금일 작업계획과 자리를 맞바꿨다) —
+                         품질검사 KPI "신규품목" 카드와 같은 패턴. 탭별 건수(확인/미구성/유형/
+                         바코드)를 한 번에 보여주고, 카드 전체를 눌러서 연다. -->
+                    <div id="shippedStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-4 shadow-xl flex flex-col gap-2.5 cursor-pointer hover:border-accentOrange/40 hover:shadow-lg transition-all duration-150" onclick="openPkgNewModal()">
+                        <div class="flex items-center justify-between">
+                            <p class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-star text-accentOrange text-[15px]"></i>
+                                <span class="text-[17.5px] font-bold text-slate-200">신규품목</span>
+                            </p>
+                            <span class="text-[10px] text-slate-600 flex items-center gap-1">
+                                <i class="fa-solid fa-link text-[8px]"></i> 수출현황 시트 연동
+                            </span>
+                        </div>
+                        <div class="flex flex-col gap-2 flex-1">
+                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
+                                <span class="text-[14.5px] font-semibold text-slate-400">확인</span>
+                                <span class="text-[20px] font-extrabold text-sky-400"><span id="pkgNewCardCnt-confirm">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
+                            </div>
+                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
+                                <span class="text-[14.5px] font-semibold text-slate-400">미구성</span>
+                                <span class="text-[20px] font-extrabold text-red-400"><span id="pkgNewCardCnt-missing">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
+                            </div>
+                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
+                                <span class="text-[14.5px] font-semibold text-slate-400">유형</span>
+                                <span class="text-[20px] font-extrabold text-amber-400"><span id="pkgNewCardCnt-type">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
+                            </div>
+                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
+                                <span class="text-[14.5px] font-semibold text-slate-400">바코드</span>
+                                <span class="text-[20px] font-extrabold text-emerald-400"><span id="pkgNewCardCnt-barcode">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 카드2: 금일 작업 계획(요청, 2026-10-27: 신규품목과 자리를 맞바꿨다) -->
                     <div id="remainingStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-4 shadow-xl flex flex-col gap-3">
                         <!-- 헤더 (크게) -->
                         <div>
@@ -725,41 +758,6 @@
                                 <span class="text-slate-600 text-[13px]">—</span>
                                 <span id="card1LoadReadyCount" class="text-[21.5px] font-bold text-sky-400 leading-none">-</span>
                                 <span class="text-[13.5px] text-slate-500 font-semibold">건</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 카드2: 신규품목(요청, 2026-10-27: 이전엔 카드1 안의 작은 블록이었는데
-                         이전작업내용 카드가 INFORM 카드 슬라이드로 옮겨가면서 그 자리를 이어받아
-                         독립 카드가 됐다) -->
-                    <!-- 품질검사 KPI "신규품목" 카드와 같은 패턴(요청, 2026-10-27) — 탭별
-                         건수(확인/미구성/유형)를 한 번에 보여주고, 카드 전체를 눌러서 연다. -->
-                    <div id="shippedStatusCard" class="bg-panelBg border border-borderSlate rounded-3xl p-4 shadow-xl flex flex-col gap-2.5 cursor-pointer hover:border-accentOrange/40 hover:shadow-lg transition-all duration-150" onclick="openPkgNewModal()">
-                        <div class="flex items-center justify-between">
-                            <p class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-star text-accentOrange text-[15px]"></i>
-                                <span class="text-[17.5px] font-bold text-slate-200">신규품목</span>
-                            </p>
-                            <span class="text-[10px] text-slate-600 flex items-center gap-1">
-                                <i class="fa-solid fa-link text-[8px]"></i> 수출현황 시트 연동
-                            </span>
-                        </div>
-                        <div class="flex flex-col gap-2 flex-1">
-                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
-                                <span class="text-[14.5px] font-semibold text-slate-400">확인</span>
-                                <span class="text-[20px] font-extrabold text-sky-400"><span id="pkgNewCardCnt-confirm">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
-                            </div>
-                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
-                                <span class="text-[14.5px] font-semibold text-slate-400">미구성</span>
-                                <span class="text-[20px] font-extrabold text-red-400"><span id="pkgNewCardCnt-missing">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
-                            </div>
-                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
-                                <span class="text-[14.5px] font-semibold text-slate-400">유형</span>
-                                <span class="text-[20px] font-extrabold text-amber-400"><span id="pkgNewCardCnt-type">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
-                            </div>
-                            <div class="flex items-center justify-between bg-darkBg/50 rounded-xl px-3.5 py-2.5">
-                                <span class="text-[14.5px] font-semibold text-slate-400">바코드</span>
-                                <span class="text-[20px] font-extrabold text-emerald-400"><span id="pkgNewCardCnt-barcode">-</span> <span class="text-[12px] font-bold text-slate-500">건</span></span>
                             </div>
                         </div>
                     </div>
