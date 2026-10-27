@@ -2013,24 +2013,19 @@ function fiRenderRecent() {
     '</div>';
   }).join('') || '<div style="font-size:12px;color:var(--label);text-align:center;padding:20px 0;">등록된 항목이 없습니다</div>';
 }
-function fiToggleTypeDropdown() {
-  fiTypeDropdownOpen = !fiTypeDropdownOpen;
-  document.getElementById('fiTypeDropdownPanel').style.display = fiTypeDropdownOpen ? 'block' : 'none';
-  if (fiTypeDropdownOpen) {
-    const panel = document.getElementById('fiTypeDropdownPanel');
-    panel.innerHTML = ['전체'].concat(FI_TYPE_LIST).map(function (t) {
-      const active = t === fiTypeFilter;
-      const c = FI_TYPE_COLOR[t] || '#334155';
-      return '<div onclick="fiPickTypeFilter(\'' + t + '\')" style="padding:9px 12px;font-size:11.5px;font-weight:' + (active ? 800 : 600) + ';cursor:pointer;background:' + (active ? c + '14' : 'var(--panel)') + ';color:' + (active ? c : 'var(--text)') + ';border-bottom:1px solid var(--divider);">' + t + '</div>';
-    }).join('');
-  }
+// 유형 필터 — 드롭다운이라 눈에 잘 안 띄어서 헷갈린다는 지적(요청, 2026-10-27)으로,
+// 상태 필터와 똑같이 한눈에 보이는 칩 형태로 바꿨다. 유형이 4개뿐이라 칩으로도 안 좁다.
+function fiRenderTypeFilterTabs() {
+  const wrap = document.getElementById('fiTypeFilterTabs');
+  wrap.innerHTML = ['전체'].concat(FI_TYPE_LIST).map(function (t) {
+    const active = t === fiTypeFilter;
+    const c = FI_TYPE_COLOR[t] || '#334155';
+    return '<button onclick="fiPickTypeFilter(\'' + t + '\')" style="border:1.5px solid ' + (active ? c : 'var(--border)') + ';border-radius:999px;padding:6px 12px;font-size:11px;font-weight:' + (active ? 800 : 600) + ';cursor:pointer;background:' + (active ? c + '14' : 'var(--panel)') + ';color:' + (active ? c : 'var(--text-sub)') + ';white-space:nowrap;">' + t + '</button>';
+  }).join('');
 }
 function fiPickTypeFilter(t) {
   fiTypeFilter = t;
-  fiTypeDropdownOpen = false;
-  document.getElementById('fiTypeDropdownPanel').style.display = 'none';
-  document.getElementById('fiTypeDropdownLabel').textContent = t;
-  document.getElementById('fiTypeDropdownLabel').style.color = t === '전체' ? 'var(--label)' : (FI_TYPE_COLOR[t] || 'var(--text)');
+  fiRenderTypeFilterTabs();
   fiRenderList();
 }
 function fiRenderStatusFilterTabs() {
