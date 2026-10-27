@@ -8629,7 +8629,7 @@
                 alert('바코드 출력 처리 중 오류: ' + e.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = btnOrigHtml;
+                renderPkgBarcodeList();
             }
         }
 
