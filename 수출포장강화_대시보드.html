@@ -12412,7 +12412,7 @@ async function peRunExport(format, orientation) {
             peCloseExportModal();
         } else {
             statusEl.textContent = 'PDF 만드는 중...';
-            await _pkgRenderGenericPrintPdf({ title: 'PE폼 재고현황', columns: PE_STOCK_EXPORT_COLS, rows, filename: `PE폼_재고현황_${today}.pdf`, orientation: orientation || 'portrait', footer: true });
+            await _pkgRenderGenericPrintPdf({ title: 'PE폼 재고현황', columns: PE_STOCK_EXPORT_PDF_COLS, rows, filename: `PE폼_재고현황_${today}.pdf`, orientation: orientation || 'portrait', footer: true });
             peCloseExportModal();
         }
     } catch (e) {
