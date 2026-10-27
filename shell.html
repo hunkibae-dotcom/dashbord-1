@@ -680,10 +680,11 @@
                     <i class="fa-solid fa-xmark" style="font-size:11px;"></i>
                 </button>
             </div>
-            <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;">
-                <button id="sfDateFieldDue" onclick="setSfDateField('dueDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">납기일</button>
-                <button id="sfDateFieldDate" onclick="setSfDateField('date')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">상차일</button>
-                <button id="sfDateFieldReg" onclick="setSfDateField('regDate')" style="flex:1;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">포장일</button>
+            <div style="display:flex;gap:6px;background:var(--icon-bg);border-radius:12px;padding:3px;flex-wrap:wrap;">
+                <button id="sfDateFieldDue" onclick="setSfDateField('dueDate')" style="flex:1;min-width:0;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">납기일</button>
+                <button id="sfDateFieldDate" onclick="setSfDateField('date')" style="flex:1;min-width:0;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:#00B0FF;color:#0B0F19;">상차일</button>
+                <button id="sfDateFieldArrive" onclick="setSfDateField('arriveDate')" style="flex:1;min-width:0;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">입고일</button>
+                <button id="sfDateFieldReg" onclick="setSfDateField('regDate')" style="flex:1;min-width:0;padding:7px 0;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);">포장일</button>
             </div>
             <div>
                 <div style="font-size:11px;font-weight:600;color:var(--text-sub);margin-bottom:6px;">시작일</div>
