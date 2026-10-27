@@ -6084,6 +6084,15 @@ function _qcClfRevokeUrls() {
   (_qcClfFiles || []).forEach(f => { try { URL.revokeObjectURL(f.url); } catch (e) {} });
 }
 function _qcClfReset() { openQcClassifier(); }
+// "재분류"(요청, 2026-10-27) — 업로드했던 사진은 그대로 두고 분류 작업만 다시
+// 돌린다(처음부터 다시 올릴 필요 없음).
+function _qcClfReclassify() {
+  if (!_qcClfFiles.length) { openQcClassifier(); return; }
+  document.getElementById('qcClfStepResults').style.display = 'none';
+  document.getElementById('qcClfStepProcessing').style.display = 'flex';
+  document.getElementById('qcClfProcessingLabel').textContent = '사진 ' + _qcClfFiles.length + '장 재분류 중...';
+  setTimeout(_qcClfRunMockDetection, 1100);
+}
 
 function _qcClfFilesSelected(fileList) {
   const files = Array.from(fileList || []);
