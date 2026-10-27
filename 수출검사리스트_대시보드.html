@@ -1415,7 +1415,10 @@ try {
     <div id="qcClfStepResults" style="display:none;flex-direction:column;gap:10px;flex:1;min-height:0;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
         <span style="font-size:12px;color:var(--label);"><b id="qcClfCount" style="color:var(--text);">0</b>장 분석 완료 · <span id="qcClfNeedConfirm" style="color:#dc2626;font-weight:700;"></span></span>
-        <button onclick="_qcClfReclassify()" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;text-decoration:underline;"><i class="fa-solid fa-rotate"></i> 재분류</button>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+          <button onclick="_qcClfToggleSort()" id="qcClfSortBtn" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;white-space:nowrap;"><i class="fa-solid fa-arrow-down-wide-short"></i> <span id="qcClfSortLabel">정렬: 기본순서</span></button>
+          <button onclick="_qcClfReclassify()" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;text-decoration:underline;white-space:nowrap;"><i class="fa-solid fa-rotate"></i> 재분류</button>
+        </div>
       </div>
       <div id="qcClfResultList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:120px;"></div>
       <div style="display:flex;gap:8px;flex-shrink:0;border-top:1px solid var(--border);padding-top:12px;flex-wrap:wrap;">
