@@ -748,25 +748,20 @@
                         </div>
                         <!-- 포장대기 / 미회수 / 상차준비 — 각각 눌러서 제품검색에 해당 조건으로
                              바로 조회한다(요청, 2026-10-27: 예전 호버 팝업 대신 3줄로 단순화,
-                             이어서 테두리 제거 + 호버 시 글자 1px 확대 + 세로 중앙정렬 + 여백 조정). -->
+                             이어서 테두리 제거 + 호버 시 글자 1px 확대(JS로 처리, _card1RowHover)
+                             + 신규품목 카드처럼 라벨은 왼쪽/수량은 오른쪽 + 여백 조정). -->
                         <div class="flex flex-col gap-2">
-                            <div onclick="filterByPendingStatus()" class="card1-row flex items-center justify-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-darkBg/70">
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold shrink-0">포장대기</span>
-                                <span class="text-slate-600 text-[13px]">—</span>
-                                <span id="card1PendingQty" class="card1-row-value text-[21.5px] font-bold text-accentOrange leading-none">-</span>
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">BOX</span>
+                            <div onclick="filterByPendingStatus()" onmouseenter="_card1RowHover(this,true)" onmouseleave="_card1RowHover(this,false)" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer hover:bg-darkBg/70">
+                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">포장대기</span>
+                                <span class="card1-row-value text-[21.5px] font-bold text-accentOrange leading-none"><span id="card1PendingQty">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">BOX</span></span>
                             </div>
-                            <div onclick="filterByUnreceivedStatus()" class="card1-row flex items-center justify-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-darkBg/70">
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold shrink-0">미회수</span>
-                                <span class="text-slate-600 text-[13px]">—</span>
-                                <span id="card1UnreceivedCount" class="card1-row-value text-[21.5px] font-bold text-rose-400 leading-none">-</span>
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span>
+                            <div onclick="filterByUnreceivedStatus()" onmouseenter="_card1RowHover(this,true)" onmouseleave="_card1RowHover(this,false)" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer hover:bg-darkBg/70">
+                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">미회수</span>
+                                <span class="card1-row-value text-[21.5px] font-bold text-rose-400 leading-none"><span id="card1UnreceivedCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
                             </div>
-                            <div onclick="filterByLoadReadyStatus()" class="card1-row flex items-center justify-center gap-2 bg-darkBg/50 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-darkBg/70">
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold shrink-0">상차준비</span>
-                                <span class="text-slate-600 text-[13px]">—</span>
-                                <span id="card1LoadReadyCount" class="card1-row-value text-[21.5px] font-bold text-sky-400 leading-none">-</span>
-                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span>
+                            <div onclick="filterByLoadReadyStatus()" onmouseenter="_card1RowHover(this,true)" onmouseleave="_card1RowHover(this,false)" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer hover:bg-darkBg/70">
+                                <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">상차준비</span>
+                                <span class="card1-row-value text-[21.5px] font-bold text-sky-400 leading-none"><span id="card1LoadReadyCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
                             </div>
                         </div>
                     </div>
