@@ -9441,7 +9441,10 @@ function _qcModalSortBtnsHtml(tab) {
 function _qcModalPickSort(tab, key) {
   const st = _QC_MODAL_SORT_STATE[tab];
   if (!st) return;
-  if (st.key === key) st.set(key, !st.asc); else st.set(key, true);
+  // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
+  if (st.key !== key) st.set(key, true);
+  else if (st.asc) st.set(key, false);
+  else st.set(null, true);
   st.render();
 }
 
