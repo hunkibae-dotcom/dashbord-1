@@ -895,8 +895,37 @@
                                 <div style="margin-top:8px;margin-bottom:12px;font-size:9px;color:#94A3B8;line-height:1.4;">※ 회수품, 재포장품 외의 항목도 있어 실제 공간률과 차이가 있을 수 있으니 유의 바랍니다.</div>
                             </div>
                         </div>
-                        <!-- 슬라이드 5: 용역 현황 -->
+                        <!-- 슬라이드 5: 이전 작업내용 Log(요청, 2026-10-27: 원래 독립 카드였는데 그
+                             자리를 신규품목 카드에 내주고 INFORM 슬라이드로 옮겨왔다) -->
                         <div id="noticeSlide_4" class="hidden flex flex-col">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <span class="text-[13px] font-semibold flex items-center gap-1.5" style="color:#0F172A;line-height:1;">
+                                    <i class="fa-solid fa-clock-rotate-left text-[11px]" style="display:flex;align-items:center;"></i> 이전 작업내용 Log
+                                </span>
+                                <span id="prevDayLabel" class="text-[11px] text-slate-500 font-semibold">-</span>
+                            </div>
+                            <div class="bg-darkBg/40 rounded-xl px-3 py-2 border border-borderSlate/30 mb-1.5">
+                                <div class="text-[11px] text-slate-500 font-semibold mb-1 flex items-center gap-1">
+                                    <i class="fa-solid fa-users text-[10px]"></i> 작업 인원
+                                </div>
+                                <div id="prevDayWorkers" class="text-[12px] text-slate-400 leading-relaxed">-</div>
+                            </div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[12px] text-slate-500 font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-box-open text-[10px]"></i> 포장완료 내역
+                                </span>
+                                <div class="flex items-center gap-2">
+                                    <span id="prevDayItemCount" class="text-[12px] font-bold text-slate-700"></span>
+                                    <span id="prevDayBoxCount" class="text-[11px] font-semibold text-slate-700"></span>
+                                    <button id="prevDayAllBtn" onclick="filterByWorkLog(window._prevDayRoundsCache||[])" style="display:none;font-size:11px;font-weight:700;background:rgba(0,176,255,0.15);color:#00B0FF;padding:2px 8px;border-radius:12px;border:1px solid rgba(0,176,255,0.3);cursor:pointer;">전체보기 ›</button>
+                                </div>
+                            </div>
+                            <div id="prevDayItems" class="space-y-1 overflow-y-auto" style="max-height:120px;">
+                                <div class="text-[12px] text-slate-600 text-center py-3">내역 없음</div>
+                            </div>
+                        </div>
+                        <!-- 슬라이드 6: 용역 현황 -->
+                        <div id="noticeSlide_5" class="hidden flex flex-col">
                             <div class="flex items-center justify-between mb-1.5">
                                 <span class="text-[13px] font-semibold flex items-center gap-1.5" style="color:#0F172A;line-height:1;">
                                     <i class="fa-solid fa-people-group text-[11px]" style="display:flex;align-items:center;"></i> 용역 요청현황
