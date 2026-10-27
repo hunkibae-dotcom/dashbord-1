@@ -748,15 +748,24 @@
                         <div class="flex flex-col gap-2">
                             <div onclick="filterByPendingStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">포장대기</span>
-                                <span class="card1-row-value text-[21.5px] font-bold text-accentOrange leading-none"><span id="card1PendingQty">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">BOX</span></span>
+                                <span style="display:flex;align-items:baseline;gap:4px;">
+                                    <span id="card1PendingQty" class="text-[20px] font-extrabold text-accentOrange leading-none" style="min-width:32px;text-align:right;">-</span>
+                                    <span class="text-[12px] font-bold text-slate-500" style="min-width:26px;text-align:left;">BOX</span>
+                                </span>
                             </div>
                             <div onclick="filterByUnreceivedStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">미회수</span>
-                                <span class="card1-row-value text-[21.5px] font-bold text-rose-400 leading-none"><span id="card1UnreceivedCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
+                                <span style="display:flex;align-items:baseline;gap:4px;">
+                                    <span id="card1UnreceivedCount" class="text-[20px] font-extrabold text-rose-400 leading-none" style="min-width:32px;text-align:right;">-</span>
+                                    <span class="text-[12px] font-bold text-slate-500" style="min-width:26px;text-align:left;">건</span>
+                                </span>
                             </div>
                             <div onclick="filterByLoadReadyStatus()" onmouseenter="this.style.backgroundColor='rgba(148,163,184,.07)'" onmouseleave="this.style.backgroundColor=''" class="card1-row flex items-center justify-between gap-2 bg-darkBg/50 rounded-xl px-3.5 py-2.5 cursor-pointer" style="transition:background-color .25s ease;">
                                 <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">상차준비</span>
-                                <span class="card1-row-value text-[21.5px] font-bold text-sky-400 leading-none"><span id="card1LoadReadyCount">-</span> <span class="card1-row-label text-[13.5px] text-slate-500 font-semibold">건</span></span>
+                                <span style="display:flex;align-items:baseline;gap:4px;">
+                                    <span id="card1LoadReadyCount" class="text-[20px] font-extrabold text-sky-400 leading-none" style="min-width:32px;text-align:right;">-</span>
+                                    <span class="text-[12px] font-bold text-slate-500" style="min-width:26px;text-align:left;">건</span>
+                                </span>
                             </div>
                         </div>
                     </div>
