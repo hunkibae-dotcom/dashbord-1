@@ -13841,6 +13841,23 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- 재고현황 "소진제거"(요청, 2026-10-27) — 보관재고 중 수량이 "소진"인 행만 모아
+     보여주고, 선택해서(또는 아무것도 선택 안 하면 전부) 구글시트에서 지운다. -->
+<div id="peUsedUpModal" class="pe-scope" onclick="if(event.target===this)peClosePurgeModal()" style="display:none;position:fixed;inset:0;z-index:220;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid var(--pe-border);border-radius:18px;padding:22px 24px;width:480px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(16,20,30,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0;">
+            <div style="font-size:15.5px;font-weight:800;color:var(--pe-ink);"><i class="fa-solid fa-broom" style="color:var(--pe-brand);margin-right:6px;"></i>소진 재고 제거 <span id="peUsedUpCount" style="color:var(--pe-ink-sub);font-weight:700;font-size:12.5px;"></span></div>
+            <button onclick="peClosePurgeModal()" style="background:var(--pe-bg);border:1px solid var(--pe-border);border-radius:8px;color:var(--pe-ink-sub);font-size:14px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:12px;color:var(--pe-ink-sub);margin:8px 0 10px;flex-shrink:0;">보관재고 중 수량이 "소진"으로 남아있는 항목입니다. 선택을 누르면 체크해서 고를 수 있고, 아무것도 선택하지 않고 삭제를 누르면 전부 지웁니다.</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;flex-shrink:0;">
+            <button id="peUsedUpSelectBtn" onclick="peUsedUpToggleSelectMode()" style="flex-shrink:0;border:1px solid var(--pe-border);border-radius:9px;padding:7px 14px;font-size:12.5px;font-weight:700;color:var(--pe-ink-sub);background:var(--pe-bg);cursor:pointer;">선택</button>
+            <button id="peUsedUpDeleteBtn" onclick="peUsedUpDelete()" style="margin-left:auto;border:1.5px solid #dc2626;border-radius:9px;padding:7px 16px;font-size:12.5px;font-weight:700;color:#dc2626;background:#fff;cursor:pointer;">삭제</button>
+        </div>
+        <div id="peUsedUpBody" style="overflow-y:auto;flex:1;min-height:120px;border-top:1px solid var(--pe-divider,#eef1f5);"></div>
+    </div>
+</div>
+
 <!-- 발주 상세 -->
 <div id="peOrderDetailModal" class="pe-scope" onclick="if(event.target===this)peCloseOrderDetail()" style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:22px 24px;width:440px;max-width:94vw;max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
