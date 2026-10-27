@@ -8481,8 +8481,10 @@
             }).join('');
         }
         function _pkgNewConfirmPickSort(key) {
-            if (_pkgNewConfirmSortKey === key) _pkgNewConfirmSortAsc = !_pkgNewConfirmSortAsc;
-            else { _pkgNewConfirmSortKey = key; _pkgNewConfirmSortAsc = true; }
+            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
+            if (_pkgNewConfirmSortKey !== key) { _pkgNewConfirmSortKey = key; _pkgNewConfirmSortAsc = true; }
+            else if (_pkgNewConfirmSortAsc) { _pkgNewConfirmSortAsc = false; }
+            else { _pkgNewConfirmSortKey = null; _pkgNewConfirmSortAsc = true; }
             renderPkgNewList();
         }
         function _pkgNewDisplayList() {
