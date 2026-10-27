@@ -3558,10 +3558,19 @@ async function _tblApplyBulkEdit() {
   items.forEach(item => {
     const patch = {};
     if (status) { item.검사 = status; patch.검사 = status; }
-    if (dateVal) { item.검사일 = dateVal; patch.검사일 = dateVal; }
+    // 품목 수정창(saveMItemDetail)과 같은 규칙 — 검사완료로 바꾸면서 검사완료일을
+    // 따로 안 골랐으면(이번에 입력도 안 하고, 원래도 비어있으면) 오늘 날짜로
+    // 자동 입력한다(요청, 2026-10-27: "일괄 수정할때... 품목수정창처럼 금일
+    // 날짜로 적혀야 정상"). 품목마다 원래 검사일이 다를 수 있어 이 안에서 매번 계산.
+    let effectiveDate = dateVal;
+    if (status === '검사' && !dateVal && !item.검사일) {
+      const _today = new Date();
+      effectiveDate = _today.getFullYear() + '-' + String(_today.getMonth() + 1).padStart(2, '0') + '-' + String(_today.getDate()).padStart(2, '0');
+    }
+    if (effectiveDate) { item.검사일 = effectiveDate; patch.검사일 = effectiveDate; }
     _saveMiOverride(_miKey(item), patch);
     if (status) _postMiSync(item, { action: 'updateStatus', status: status });
-    if (dateVal) _postMiSync(item, { action: 'updateInspectDate', date: dateVal });
+    if (effectiveDate) _postMiSync(item, { action: 'updateInspectDate', date: effectiveDate });
     // 블로킹은 검사완료 이력(source==='archive')엔 칸 자체가 없어서 그 품목만 건너뛴다.
     if (blocking) {
       if (item.source === 'archive') { blockingSkipped++; }
