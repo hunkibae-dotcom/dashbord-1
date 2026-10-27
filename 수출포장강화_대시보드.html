@@ -6365,6 +6365,41 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        // 미회수 클릭 → "미입고"는 state.data에 이미 있는 정상 상태값이라, 기존 상태
+        // 필터 메커니즘(toggleStatusFilter)을 그대로 재사용한다(요청, 2026-10-27).
+        function filterByUnreceivedStatus() {
+            if (!_unreceivedDetailItems || !_unreceivedDetailItems.length) return;
+            toggleStatusFilter('미입고');
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        // 상차준비 클릭 → "상차일이 입력돼 있다"는 기존 상태 필터로는 못 거르는 조건이라,
+        // 포장대기와 같은 방식(미리 계산해둔 목록을 그대로 테이블에 꽂는다)으로 처리한다.
+        function filterByLoadReadyStatus() {
+            if (!_loadReadyDetailItems || !_loadReadyDetailItems.length) return;
+            activeStatusFilters = new Set(['전체']);
+            document.getElementById('statusFilterLabel')?.classList.add('hidden');
+            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고','재고활용'].forEach(s => {
+                const btn = document.getElementById('sf-' + s);
+                if (btn) btn.classList.remove('bg-slate-700/60');
+            });
+            cardRoundFilter = null;
+            _activeSourceFilter = 'all';
+            ['srcAll', 'srcActive', 'srcStock', 'srcPallet', 'srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            document.getElementById('srcAll')?.classList.add('active');
+            state.filteredData = _loadReadyDetailItems.slice();
+            sortData();
+            switchToGeneralDashboardView();
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            updateSortHeaders();
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function filterByCode(code) {
             document.getElementById('productCodeFilter').value = code;
             applyFilters();
