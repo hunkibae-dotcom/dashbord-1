@@ -6871,69 +6871,6 @@
             document.getElementById('noticeDetailModal').classList.add('hidden');
         }
 
-        function showPendingDetail() {
-            clearTimeout(_pendingDetailTimeout);
-            _populatePendingDetail();
-            const el = document.getElementById('card1PendingDetail');
-            if (el) {
-                el.style.maxHeight = '360px';
-                el.style.opacity = '1';
-            }
-        }
-
-        function hidePendingDetail() {
-            _pendingDetailTimeout = setTimeout(() => {
-                const el = document.getElementById('card1PendingDetail');
-                if (el) {
-                    el.style.transition = 'max-height 0.15s ease-in,opacity 0.1s ease';
-                    el.style.maxHeight = '0';
-                    el.style.opacity = '0';
-                }
-            }, 40);
-        }
-
-        function _populatePendingDetail() {
-            const body = document.getElementById('card1PendingDetailBody');
-            const totalEl = document.getElementById('card1PendingDetailTotal');
-            if (!body) return;
-            if (!_pendingDetailItems || !_pendingDetailItems.length) {
-                body.innerHTML = '<div class="text-slate-500 text-center py-3">포장대기 항목 없음</div>';
-                if (totalEl) totalEl.textContent = '';
-                return;
-            }
-            // 건명(round)별 그룹화
-            const groups = {};
-            _pendingDetailItems.forEach(item => {
-                const round = item.round || '미지정';
-                if (!groups[round]) groups[round] = [];
-                groups[round].push(item);
-            });
-            const totalQty = _pendingDetailItems.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
-            if (totalEl) totalEl.textContent = '총 ' + totalQty.toLocaleString() + ' BOX';
-            let html = '';
-            Object.entries(groups).forEach(([round, items]) => {
-                const groupQty = items.reduce((s, i) => s + (parseInt(i.qty) || 0), 0);
-                html += `<div class="mb-2.5">
-                    <div class="flex items-center justify-between mb-1 pb-0.5" style="border-bottom:1px solid rgba(100,116,139,0.25);">
-                        <span style="color:#0F172A;font-weight:700;font-size:11.5px;letter-spacing:0.03em;">${round}</span>
-                        <span style="color:#2563EB;font-weight:700;font-size:10px;">${groupQty.toLocaleString()} BOX</span>
-                    </div>`;
-                items.forEach(item => {
-                    const qty = parseInt(item.qty) || 0;
-                    const status = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
-                    const statusColor = status.includes('미확인') ? 'color:#DC2626' : 'color:#0EA5E9';
-                    html += `<div class="flex items-center gap-2 py-0.5">
-                        <span style="color:#1E293B;font-weight:500;flex:1;letter-spacing:0.01em;">${item.code || '-'}</span>
-                        <span style="color:#475569;">${item.color || '-'}</span>
-                        <span style="font-weight:400;font-size:10.5px;color:#2563EB;width:52px;text-align:right;">${qty.toLocaleString()} BOX</span>
-                        <span style="font-size:10.5px;width:44px;text-align:right;${statusColor}">${status || '-'}</span>
-                    </div>`;
-                });
-                html += '</div>';
-            });
-            body.innerHTML = html;
-        }
-
         // 용역 요청현황 시트 파싱 헬퍼(특정 날짜만)
         function _parseWorkLogForDate(rows, targetDate) {
             if (!rows || rows.length < 2) return [];
