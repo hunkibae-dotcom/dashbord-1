@@ -2548,6 +2548,7 @@ history.pushState({ fiBase: true }, '', location.href);
 document.getElementById('fiGasUrlInput').value = fiGasUrl();
 document.getElementById('fiRegDate').value = fiTodayStr();
 fiRenderStatusFilterTabs();
+fiRenderTypeFilterTabs();
 fiGoTab('home');
 if (fiIsPc()) {
   document.getElementById('fiApp').style.display = 'none';
