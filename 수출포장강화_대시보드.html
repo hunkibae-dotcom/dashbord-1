@@ -3313,18 +3313,31 @@
             applyFilters();
         }
 
+        // 다른 문서(엑셀·워드 등)에서 복사해 붙여넣은 검색어에 눈엔 똑같아 보이지만 실제로는
+        // 다른 문자가 섞여 들어오는 경우가 있다 — 특히 하이픈("FAM-57")이 워드 자동고침 등으로
+        // en dash/non-breaking hyphen 같은 비슷한 문자로 바뀌어 붙여넣어지면, 시트에 실제로
+        // 저장된 진짜 하이픈(U+002D)과 글자가 달라서 분명히 맞는 글자인데 검색이 안 된다(요청,
+        // 2026-10-29, 품질검사 제품검색에서 먼저 발견됨). 전각 문자·줄바꿈 없는 공백은 NFKC
+        // 정규화로, 각종 대시류는 따로 일반 하이픈으로, 폭이 없는 글자(zero-width)는 제거한다.
+        function _normSearchText(s) {
+            return (s || '')
+                .normalize('NFKC')
+                .replace(/[‐-―−]/g, '-')
+                .replace(/[​-‍﻿]/g, '')
+                .trim();
+        }
         function applyFilters() {
             try {
                 _pendingFilterActive = false; // 정상 필터 경로가 한 번이라도 돌면 포장대기 특수 보기는 해제
                 _pkgCurrentPage = 0; // 필터가 바뀌면 결과 자체가 달라지므로 1페이지로 되돌린다.
                 _updateCardRoundFilterChip();
-                const roundQuery = (document.getElementById('roundFilter')?.value || '').toLowerCase().trim();
-                const productCodeQuery = (document.getElementById('productCodeFilter')?.value || '').toLowerCase().trim();
-                const colorQuery = (document.getElementById('colorFilter')?.value || '').toLowerCase().trim();
+                const roundQuery = _normSearchText(document.getElementById('roundFilter')?.value || '').toLowerCase();
+                const productCodeQuery = _normSearchText(document.getElementById('productCodeFilter')?.value || '').toLowerCase();
+                const colorQuery = _normSearchText(document.getElementById('colorFilter')?.value || '').toLowerCase();
                 const startDate = document.getElementById('startDateFilter').value;
                 const endDate = document.getElementById('endDateFilter').value;
-                const palletQuery = (document.getElementById('palletFilter')?.value || '').toLowerCase().trim();
-                const noteQuery = (document.getElementById('noteFilter')?.value || '').toLowerCase().trim();
+                const palletQuery = _normSearchText(document.getElementById('palletFilter')?.value || '').toLowerCase();
+                const noteQuery = _normSearchText(document.getElementById('noteFilter')?.value || '').toLowerCase();
                 const inlineQuery = '';
 
                 const _pfMap = {};
