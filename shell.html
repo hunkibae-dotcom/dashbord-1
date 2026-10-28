@@ -198,6 +198,59 @@
     }
     </script>
 
+    <!-- 신규품목 확인 — 앱 홈화면 재구성(요청, 2026-10-28: "신규품목확인 카드도 앱에
+         넣어줘")으로 추가. 역시 PC 웹 대시보드 화면(수출포장강화_대시보드.html)을
+         그대로 iframe으로 띄운다(불량조치/PE폼과 같은 방식). -->
+    <div id="pkgNewItemsOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;">
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);">
+            <button onclick="closePkgNewItemsOverlay()" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--input-bg,#f1f5f9);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span style="font-size:14.5px;font-weight:800;color:var(--text);">신규품목 확인</span>
+        </div>
+        <iframe id="pkgNewItemsFrame" src="" style="flex:1;width:100%;border:none;"></iframe>
+    </div>
+    <script>
+    let _pkgNewItemsFrameLoaded = false;
+    function openPkgNewItemsOverlay() {
+        const f = document.getElementById('pkgNewItemsFrame');
+        if (!_pkgNewItemsFrameLoaded) { f.src = '수출포장강화_대시보드.html?forceDesktop=1&openNewItems=1'; _pkgNewItemsFrameLoaded = true; }
+        document.getElementById('pkgNewItemsOverlay').style.display = 'flex';
+    }
+    function closePkgNewItemsOverlay() {
+        document.getElementById('pkgNewItemsOverlay').style.display = 'none';
+    }
+    </script>
+
+    <!-- 미회수/상차준비(요청, 2026-10-28) — 금일 작업계획 슬라이드에서 누르면, 역시 PC
+         웹 대시보드의 제품검색을 그 조건으로 미리 걸어서 iframe으로 띄운다. 두 기능이
+         구조가 완전히 같아서(조건만 다름) 창 하나를 같이 쓴다. -->
+    <div id="pkgMgmtFilterOverlay" style="display:none;position:fixed;inset:0;z-index:300;background:var(--bg);flex-direction:column;">
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);">
+            <button onclick="closePkgMgmtFilterOverlay()" style="width:32px;height:32px;border-radius:9px;border:none;background:var(--input-bg,#f1f5f9);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span id="pkgMgmtFilterTitle" style="font-size:14.5px;font-weight:800;color:var(--text);">목록</span>
+        </div>
+        <iframe id="pkgMgmtFilterFrame" src="" style="flex:1;width:100%;border:none;"></iframe>
+    </div>
+    <script>
+    let _pkgMgmtFilterParam = null;
+    function openPkgMgmtFilterOverlay(param, title) {
+        const f = document.getElementById('pkgMgmtFilterFrame');
+        // 조건(param)이 바뀌면 새로 불러오고, 같은 조건으로 또 열 땐 다시 안 불러온다.
+        if (_pkgMgmtFilterParam !== param) {
+            f.src = '수출포장강화_대시보드.html?forceDesktop=1&' + param + '=1';
+            _pkgMgmtFilterParam = param;
+        }
+        document.getElementById('pkgMgmtFilterTitle').textContent = title;
+        document.getElementById('pkgMgmtFilterOverlay').style.display = 'flex';
+    }
+    function closePkgMgmtFilterOverlay() {
+        document.getElementById('pkgMgmtFilterOverlay').style.display = 'none';
+    }
+    </script>
+
     <!-- ── 접속현황(현재 이 대시보드를 보고 있는 사람) — 포장강화 PC 웹 대시보드와 같은
          기능/저장키를 그대로 가져옴. 지금까지 앱(이 shell.html)에는 아예 없어서 "사용중인
          접속자 표시가 안 보인다"던 원인이었다. ── -->
