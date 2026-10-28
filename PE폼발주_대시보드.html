@@ -532,11 +532,10 @@ async function loadAll(force) {
   document.getElementById('orderList').innerHTML = '<div class="center-loading"><i class="fa-solid fa-spinner fa-spin"></i>불러오는 중...</div>';
   try {
     let json;
-    let fromCache = false;
     if (!force) {
       try {
         const raw = sessionStorage.getItem(PE_DATA_CACHE_KEY);
-        if (raw) { json = JSON.parse(raw); fromCache = true; }
+        if (raw) json = JSON.parse(raw);
       } catch (e) {}
     }
     if (!json) {
