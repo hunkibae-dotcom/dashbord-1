@@ -448,62 +448,47 @@
                     </div>
                 </div>
 
-                <!-- Slide 1: 이전 작업 LOG -->
-                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;overflow:hidden;">
+                <!-- Slide 3: 납기일·상차일 변경내역(원래 INFORM 안에 있던 걸 독립 페이지로
+                     뺐다 — renderInform()은 그대로 두고 #informChanges 위치만 옮겼다.) -->
+                <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;overflow-y:auto;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                        <div class="label">이전 작업 내용 Log</div>
-                        <span style="font-size:9px;background:var(--icon-bg);color:var(--text-sub);padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid var(--border);">최근 완료</span>
+                        <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;">
+                            <i class="fa-solid fa-calendar-xmark" style="color:#7C3AED;font-size:11px;"></i> 납기일·상차일 변경
+                        </div>
+                        <span id="informChangeBadge" style="display:none;font-size:9px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:1px 6px;border-radius:10px;"></span>
                     </div>
-                    <div id="workLogList" class="no-scrollbar" style="max-height:152px;overflow-y:auto;display:flex;flex-direction:column;">
-                        <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:16px 0;">불러오는 중...</div>
+                    <div id="informChanges" class="no-scrollbar" style="max-height:170px;overflow-y:auto;">
+                        <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">불러오는 중...</div>
                     </div>
                 </div>
 
-                <!-- Slide 2: INFORM -->
+                <!-- Slide 4: 파렛트 현황(마찬가지로 INFORM에서 독립) -->
                 <div style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;overflow-y:auto;">
-                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
-                        <i class="fa-solid fa-bell" style="color:#FF9100;font-size:10px;"></i>
-                        <div class="label">공지 / INFORM</div>
-                    </div>
-                    <!-- 납기일·상차일 변경 내역 -->
-                    <div style="margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                            <div style="font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px;">
-                                <i class="fa-solid fa-calendar-xmark" style="color:#7C3AED;font-size:10px;"></i> 납기일·상차일 변경
-                            </div>
-                            <span id="informChangeBadge" style="display:none;font-size:9px;font-weight:700;color:#FF9100;background:rgba(255,145,0,.15);padding:1px 6px;border-radius:10px;"></span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                        <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;">
+                            <i class="fa-solid fa-pallet" style="color:#38BDF8;font-size:11px;"></i> 충주공장 파렛트 현황
                         </div>
-                        <div id="informChanges" class="no-scrollbar" style="max-height:110px;overflow-y:auto;">
-                            <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">불러오는 중...</div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span id="informPalletBadge" style="display:none;font-size:9px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.12);padding:1px 6px;border-radius:10px;"></span>
+                            <button id="pkgReorderPalletsBtn" onclick="event.stopPropagation();pkgRunReorderPallets()" title="적재정렬"
+                                style="width:18px;height:18px;border-radius:6px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
+                                <i class="fa-solid fa-arrow-up-short-wide" style="font-size:9px;"></i>
+                            </button>
                         </div>
                     </div>
-                    <div style="height:1px;background:var(--divider);margin:0 0 12px;"></div>
-                    <!-- 파렛트 현황 -->
-                    <div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                            <div style="font-size:11px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:5px;">
-                                <i class="fa-solid fa-pallet" style="color:#38BDF8;font-size:10px;"></i> 충주공장 파렛트 현황
-                            </div>
-                            <div style="display:flex;align-items:center;gap:6px;">
-                                <span id="informPalletBadge" style="display:none;font-size:9px;font-weight:700;color:#38BDF8;background:rgba(56,189,248,.12);padding:1px 6px;border-radius:10px;"></span>
-                                <button id="pkgReorderPalletsBtn" onclick="event.stopPropagation();pkgRunReorderPallets()" title="적재정렬"
-                                    style="width:18px;height:18px;border-radius:6px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;-webkit-appearance:none;">
-                                    <i class="fa-solid fa-arrow-up-short-wide" style="font-size:9px;"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="informPallets" class="no-scrollbar" style="max-height:120px;overflow-y:auto;">
-                            <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">불러오는 중...</div>
-                        </div>
+                    <div id="informPallets" class="no-scrollbar" style="max-height:170px;overflow-y:auto;">
+                        <div style="font-size:11px;color:var(--text-sub);text-align:center;padding:8px 0;">불러오는 중...</div>
                     </div>
                 </div>
             </div>
 
-            <!-- 슬라이드 인디케이터 -->
-            <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:7px;align-items:center;z-index:2;">
+            <!-- 슬라이드 인디케이터(5페이지로 확장, 요청 2026-10-28) -->
+            <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;align-items:center;z-index:2;">
                 <div id="slideDot0" onclick="goSlide(0)" style="height:7px;border-radius:4px;cursor:pointer;transition:all .3s;background:#00B0FF;width:26px;"></div>
                 <div id="slideDot1" onclick="goSlide(1)" style="height:7px;border-radius:4px;cursor:pointer;transition:all .3s;background:var(--border);width:9px;"></div>
                 <div id="slideDot2" onclick="goSlide(2)" style="height:7px;border-radius:4px;cursor:pointer;transition:all .3s;background:var(--border);width:9px;"></div>
+                <div id="slideDot3" onclick="goSlide(3)" style="height:7px;border-radius:4px;cursor:pointer;transition:all .3s;background:var(--border);width:9px;"></div>
+                <div id="slideDot4" onclick="goSlide(4)" style="height:7px;border-radius:4px;cursor:pointer;transition:all .3s;background:var(--border);width:9px;"></div>
                 <button id="slidePlayBtn" onclick="toggleSlidePlay()" style="-webkit-appearance:none;appearance:none;background:none;border:none;cursor:pointer;color:var(--label);font-size:14px;padding:8px;margin-left:2px;line-height:1;display:flex;align-items:center;opacity:.85;">
                     <i class="fa-solid fa-pause"></i>
                 </button>
