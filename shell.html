@@ -5557,13 +5557,15 @@
             ['ieColor','ieCountry','ieQty','ieCodeType','ieType'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
             });
-            _ieOrigRegDate = ''; _ieOrigShipDate = ''; _ieOrigDueDate = '';
+            _ieOrigRegDate = ''; _ieOrigShipDate = ''; _ieOrigDueDate = ''; _ieOrigArriveDate = '';
             const ieRegDateInp = document.getElementById('ieRegDate');
             if (ieRegDateInp) ieRegDateInp.value = '';
             const ieShipDateInp = document.getElementById('ieShipDate');
             if (ieShipDateInp) ieShipDateInp.value = '';
             const ieDueDateInp = document.getElementById('ieDueDate');
             if (ieDueDateInp) ieDueDateInp.value = '';
+            const ieArriveDateInp = document.getElementById('ieArriveDate');
+            if (ieArriveDateInp) ieArriveDateInp.value = '';
             _ieOrigStatus = ''; _ieOrigW = ''; _ieOrigD = ''; _ieOrigH = ''; _ieOrigG = '';
             _ieOrigMemo = '';
             _ieOrigPeType = ''; _ieOrigPeSpec = '';
