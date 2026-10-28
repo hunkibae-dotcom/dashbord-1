@@ -1566,6 +1566,28 @@
         document.getElementById('kpiWorkers').textContent = w;
     }
 
+    // "금일 작업계획" 슬라이드(요청, 2026-10-28) — 포장대기는 위 KPI와 같은 계산을
+    // 재사용하고, 미회수(수출현황 기준 미입고 건수)·상차준비(상차일은 있는데 아직
+    // "상차 준비완료" 체크가 안 된 건수, PC 대시보드의 updateCard1Stats와 같은 기준)만
+    // 새로 센다. PC 쪽 로직과 기준을 반드시 맞춰야 할 값이라 주석에 그 기준을 적어둔다.
+    function renderMgmtMiniCounts() {
+        const pending = stockData.filter(d => {
+            const s = d.status.replace(/\s+/g,'').toLowerCase();
+            return s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고');
+        });
+        const unreceived = allData.filter(d => d.source === 'standard' && d.status.replace(/\s+/g,'').includes('미입고'));
+        const loadReady = allData.filter(d => {
+            if (d.source !== 'standard') return false;
+            if (!d.date || d.date === '-') return false;
+            const marked = (d.memo || '').split('/').map(s => s.trim()).includes('상차 준비완료');
+            return !marked;
+        });
+        const sv = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        sv('mgmtPendingQty', pending.reduce((s,d)=>s+d.qty,0).toLocaleString() || '0');
+        sv('mgmtUnreceivedCnt', unreceived.length.toLocaleString());
+        sv('mgmtLoadReadyCnt', loadReady.length.toLocaleString());
+    }
+
     let _schPrimaryRound = '';
     let _schNearestField = 'date';   // 'date'(상차일) 우선, 상차일이 하나도 없을 때만 'dueDate'(납기일)로 대체
     let _schNearestDate = '';        // 위 필드 기준 가장 가까운 날짜(정규화된 문자열) — 건명+날짜 조합키용
