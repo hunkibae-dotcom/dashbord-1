@@ -6636,9 +6636,8 @@ function _qcClfOpenConfirm(idx) {
   if (!r) return;
   _qcClfConfirmIdx = idx;
   document.getElementById('qcClfConfirmImg').src = r.url;
-  _qcClfRenderTypeButtons();
   document.getElementById('qcClfConfirmCodeText').textContent = r.round + ' · ' + r.code + ' / ' + (r.color || '-');
-  document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
+  _qcClfRenderTypeButtons(); // 검사사진이면 여기서 검색창을 바로 띄운다
   document.getElementById('qcClfCbmW').value = r.cbm.w || '';
   document.getElementById('qcClfCbmD').value = r.cbm.d || '';
   document.getElementById('qcClfCbmH').value = r.cbm.h || '';
