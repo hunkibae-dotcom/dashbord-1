@@ -6675,6 +6675,26 @@ function _qcClfRenderTypeButtons() {
   // 분류했으면 CBM 입력창은 없애도 된다"). 유형을 바꾸면 바로 다시 반영된다.
   const cbmSection = document.getElementById('qcClfCbmSection');
   if (cbmSection) cbmSection.style.display = isInsp ? 'block' : 'none';
+  // 검사사진은 이제 OCR 자체를 안 돌려서 "맞나요?"로 물어볼 추측이 없다(요청, 2026-10-29:
+  // "검사사진은 검색해서 보고서기준으로 찾는것처럼 찾아서 확정") — 맞습니다/아니에요 대신
+  // 바로 검색창을 띄운다. 유형을 포장으로 바꾸면 다시 맞습니다/아니에요로 돌아간다.
+  const yesNoPrompt = document.getElementById('qcClfYesNoPrompt');
+  const yesNoWrap = document.getElementById('qcClfYesNoWrap');
+  const searchPrompt = document.getElementById('qcClfSearchPrompt');
+  const searchWrap = document.getElementById('qcClfCodeSearchWrap');
+  if (isInsp) {
+    if (yesNoPrompt) yesNoPrompt.style.display = 'none';
+    if (yesNoWrap) yesNoWrap.style.display = 'none';
+    if (searchPrompt) searchPrompt.style.display = 'block';
+    if (searchWrap) searchWrap.style.display = 'block';
+    document.getElementById('qcClfCodeSearchInput').value = '';
+    _qcClfRenderCodeSearch();
+  } else {
+    if (yesNoPrompt) yesNoPrompt.style.display = 'block';
+    if (yesNoWrap) yesNoWrap.style.display = 'flex';
+    if (searchPrompt) searchPrompt.style.display = 'none';
+    if (searchWrap) searchWrap.style.display = 'none';
+  }
 }
 function _qcClfConfirmCode(ok) {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
