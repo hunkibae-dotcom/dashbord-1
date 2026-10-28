@@ -5852,6 +5852,10 @@
                     arr.forEach(it => { if (_ieMatch(it)) it.pallet = changed.pallet; });
                 });
             }
+            // 품목 수정 저장 후엔 캐시를 지워서(요청, 2026-10-29) 다음 재진입에서 서버의
+            // 최신 값을 다시 받아오게 한다 — 안 그러면 캐시가 "네트워크 재조회 생략" 방식으로
+            // 바뀐 뒤라, 방금 고친 내용이 다음 재진입에서 옛 캐시로 되돌아간 것처럼 보인다.
+            _invalidateDataCache();
             if (fb) { fb.textContent = '✓ 저장 완료'; fb.style.color = '#00E676'; }
             setTimeout(() => {
                 closeItemEdit();
