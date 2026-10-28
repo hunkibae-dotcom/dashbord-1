@@ -10581,6 +10581,81 @@ let _spuMismatchItems = null;
 // 없이 사라지는 셈이었다. 이제 바로 열지 않고 큐에 쌓아뒀다가, 한 번에 하나씩만
 // 열고 그 모달을 닫아야(반영完료 또는 취소) 다음 공장 것이 이어서 뜨게 한다.
 let _spuMismatchQueue = []; // [{factory, pending}, ...] — 아직 안 보여준 것들
+// 확인품목(요청, 2026-10-29) — 공정진행정보 파일의 건명/전달사항에 품질검사 관련
+// 단어가 있는 품목. [{code, round, color, qty, factory, reason}]
+let _spuProcessCheckItems = [];
+let _spuProcessCheckSelected = new Set(); // key = factory|code|round|color
+function _spuProcessCheckKey(it) { return it.factory + '|' + it.code + '|' + it.round + '|' + (it.color || ''); }
+function _spuOpenProcessCheckModal() {
+  _spuProcessCheckSelected = new Set();
+  const body = document.getElementById('spuProcessCheckBody');
+  body.innerHTML = _spuProcessCheckItems.map(it => {
+    const key = _spuProcessCheckKey(it);
+    return `<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border:1px solid #e2e8f0;border-radius:10px;">
+      <input type="checkbox" onchange="_spuProcessCheckToggleOne('${_jsAttr(key)}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+        <span style="font-size:13px;font-weight:700;color:#1e293b;">${it.round || '-'} <span style="font-size:10px;font-weight:700;color:#94a3b8;">(${it.factory === 'cj1' ? '충주1' : '충주2'})</span></span>
+        <div style="font-size:11px;color:#64748b;display:flex;gap:8px;flex-wrap:wrap;">
+          <span style="font-family:ui-monospace,monospace;">${it.code}</span>
+          <span>${it.color || '-'} · ${it.qty || 0}EA</span>
+          <span style="color:#b45309;">${it.reason || ''}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:#94a3b8;">확인품목이 없습니다.</div>';
+  _spuProcessCheckUpdateSelUi();
+  document.getElementById('spuProcessCheckModal').style.display = 'flex';
+}
+function _spuCloseProcessCheckModal() {
+  document.getElementById('spuProcessCheckModal').style.display = 'none';
+}
+function _spuProcessCheckToggleOne(key, checked) {
+  if (checked) _spuProcessCheckSelected.add(key); else _spuProcessCheckSelected.delete(key);
+  _spuProcessCheckUpdateSelUi();
+}
+function _spuProcessCheckToggleAll() {
+  const allSelected = _spuProcessCheckItems.length > 0 && _spuProcessCheckItems.every(it => _spuProcessCheckSelected.has(_spuProcessCheckKey(it)));
+  _spuProcessCheckSelected.clear();
+  if (!allSelected) _spuProcessCheckItems.forEach(it => _spuProcessCheckSelected.add(_spuProcessCheckKey(it)));
+  document.querySelectorAll('#spuProcessCheckBody input[type=checkbox]').forEach((cb, idx) => {
+    cb.checked = _spuProcessCheckSelected.has(_spuProcessCheckKey(_spuProcessCheckItems[idx]));
+  });
+  _spuProcessCheckUpdateSelUi();
+}
+function _spuProcessCheckUpdateSelUi() {
+  document.getElementById('spuProcessCheckSelCount').textContent = _spuProcessCheckSelected.size + '건 선택';
+  const btn = document.getElementById('spuProcessCheckRegisterBtn');
+  btn.disabled = _spuProcessCheckSelected.size === 0;
+  btn.style.opacity = _spuProcessCheckSelected.size === 0 ? '.4' : '1';
+}
+async function _spuProcessCheckRegisterNew() {
+  const items = _spuProcessCheckItems.filter(it => _spuProcessCheckSelected.has(_spuProcessCheckKey(it)));
+  if (!items.length) return;
+  const btn = document.getElementById('spuProcessCheckRegisterBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '처리 중...';
+  const byFactory = { cj1: [], cj2: [] };
+  items.forEach(it => { byFactory[it.factory].push({ code: it.code, round: it.round, color: it.color, qty: it.qty }); });
+  const results = [];
+  for (const factory of ['cj1', 'cj2']) {
+    if (!byFactory[factory].length) continue;
+    try {
+      const url = _gasUrlForFactory(factory);
+      const res = await fetch(url, { method: 'POST', body: JSON.stringify({ action: 'qcMarkProcessCheckAsNew', items: byFactory[factory] }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+      if (res.status !== 'success') throw new Error(res.message || '처리 실패');
+      results.push((factory === 'cj1' ? '충주1' : '충주2') + ' ' + byFactory[factory].length + '건 신규등록 완료');
+    } catch (e) {
+      results.push((factory === 'cj1' ? '충주1' : '충주2') + ' 처리 실패: ' + ((e && e.message) || e));
+    }
+  }
+  alert(results.join('\n'));
+  const doneKeys = new Set(items.map(_spuProcessCheckKey));
+  _spuProcessCheckItems = _spuProcessCheckItems.filter(it => !doneKeys.has(_spuProcessCheckKey(it)));
+  _spuProcessCheckSelected = new Set();
+  loadData();
+  btn.innerHTML = orig;
+  if (_spuProcessCheckItems.length) _spuOpenProcessCheckModal(); else _spuCloseProcessCheckModal();
+}
 
 function openSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'flex'; }
 function closeSpuChoiceModal() { document.getElementById('spuChoiceModal').style.display = 'none'; }
