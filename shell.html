@@ -1603,6 +1603,7 @@
         if (productType) payload.productType = productType;
         if (boxHeight) payload.boxHeight = boxHeight;
         _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code: code }, productType ? { productType } : {}, boxHeight ? { boxHeight } : {});
+        _pkgNiPersistSpecCache();
         try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
         pkgNiRenderAll();
     }
