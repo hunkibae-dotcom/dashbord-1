@@ -8459,7 +8459,15 @@
                 (datasetMap[k] || []).forEach(it => {
                     const code = (it.code || '').toString().trim().toUpperCase();
                     if (!code || seen.has(code)) return;
-                    seen.set(code, { code: code, round: it.round || '' });
+                    // 색상·수량·진행상태·CBM도 같이 들고 다닌다(요청, 2026-10-28: "유형
+                    // 선택에서 제품유형과 cbm값도, 진행상태도 표시해줘") — 코드당 처음 만난
+                    // 행 하나만 대표로 쓰는 기존 방식은 그대로이고(건명도 이미 그래왔음),
+                    // CBM은 그 대표 행 자신의 실제 값만 쓴다(다른 차수 평균 금지 원칙).
+                    seen.set(code, {
+                        code: code, round: it.round || '', color: it.color || '',
+                        qty: it.qty, status: it.status || '', statusLabel: it.statusLabel || it.status || '',
+                        specW: it.specW, specD: it.specD, specH: it.specH, specG: it.specG
+                    });
                 });
             });
             return Array.from(seen.values());
