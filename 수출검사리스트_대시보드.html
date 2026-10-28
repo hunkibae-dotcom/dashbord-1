@@ -6196,10 +6196,11 @@ async function _qcClfDetectOne(file) {
   return json.result || {};
 }
 
-// 사진을 한 장씩 순서대로 처리하면 느릴 수밖에 없어서(요청, 2026-10-28: "5초 내로
-// 처리했으면 좋겠는데 너무 느리다"), 몇 장씩 동시에 보낸다. 무료 등급 호출 제한을
-// 고려해 한 번에 4장까지만 묶는다.
-const _QC_CLF_CONCURRENCY = 4;
+// 처음엔 4장씩 동시에 보냈었는데(요청, 2026-10-28: "5초 내로 처리했으면 좋겠는데
+// 너무 느리다"), Gemini 무료 등급이 짧은 시간에 여러 건이 몰리면 바로 429(요청 과다)로
+// 거절해서 오히려 전부 실패했다(요청, 2026-10-28: "429도 뜨고... 아예 인식을 못해").
+// 빠른 것보다 확실히 끝나는 게 우선이라 한 번에 1장씩만 순서대로 보낸다.
+const _QC_CLF_CONCURRENCY = 1;
 async function _qcClfRunDetection() {
   const label = document.getElementById('qcClfProcessingLabel');
   const files = _qcClfFiles;
