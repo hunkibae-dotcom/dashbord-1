@@ -398,12 +398,18 @@
             <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
-                <!-- Slide 0: 신규품목 확인 -->
-                <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;">
-                    <i class="fa-solid fa-star" style="font-size:28px;color:#FF9100;opacity:.85;"></i>
+                <!-- Slide 0: 신규품목 확인 — 각 탭 건수도 표시(요청, 2026-10-29: "각 단계별
+                     수량 표시가 안되어있어"). pkgNiUpdateHomeCounts()가 채운다. -->
+                <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:14px 16px 28px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;">
+                    <i class="fa-solid fa-star" style="font-size:24px;color:#FF9100;opacity:.85;"></i>
                     <div class="label" style="font-size:14px;">신규품목 확인</div>
-                    <div style="font-size:11px;color:var(--text-sub);">확인 · 미구성 품목 · 유형 선택 · 바코드</div>
-                    <div style="font-size:10.5px;color:var(--label);display:flex;align-items:center;gap:4px;margin-top:4px;">눌러서 열기 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i></div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(0,176,255,.12);color:#00B0FF;">확인 <span id="pkgNiHomeCnt-confirm">-</span></span>
+                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(220,38,38,.12);color:#F87171;">미구성 <span id="pkgNiHomeCnt-missing">-</span></span>
+                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(217,119,6,.12);color:#FBBF24;">유형 <span id="pkgNiHomeCnt-type">-</span></span>
+                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(22,163,74,.12);color:#4ADE80;">바코드 <span id="pkgNiHomeCnt-barcode">-</span></span>
+                    </div>
+                    <div style="font-size:10.5px;color:var(--label);display:flex;align-items:center;gap:4px;margin-top:2px;">눌러서 열기 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i></div>
                 </div>
 
                 <!-- Slide 1: 금일 작업계획 -->
