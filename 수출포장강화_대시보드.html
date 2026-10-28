@@ -8580,7 +8580,7 @@
         // 탭3(유형 선택): 건명/제품코드/제품유형/CBM/진행상태 정렬(요청, 2026-10-28로
         // 제품유형·CBM·진행상태 표시와 함께 정렬 버튼도 각각 추가).
         let _pkgMissingTypeSortKey = null, _pkgMissingTypeSortAsc = true;
-        const PKG_MISSING_TYPE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['country', '사업장'], ['productType', '제품유형'], ['_cbm', 'CBM'], ['statusLabel', '진행상태']];
+        const PKG_MISSING_TYPE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['productType', '제품유형'], ['_cbm', 'CBM'], ['statusLabel', '진행상태']];
         function _pkgMissingTypeSortBtnsHtml() {
             return PKG_MISSING_TYPE_SORT_DEFS.map(([k, label]) => {
                 const active = _pkgMissingTypeSortKey === k;
