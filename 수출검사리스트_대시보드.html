@@ -11026,6 +11026,11 @@ async function _spuRunImport() {
       } else {
         const grid = job.grid || await new Promise((resolve, reject) => _spuReadFileAsGrid(job.file, (err, g) => err ? reject(err) : resolve(g)));
         rows = _spuExtractProcessRows(grid);
+        // 확인품목(요청, 2026-10-29) — 실제 반영 성공 여부와 무관하게, 공정진행정보
+        // 파일 자체에 품질검사 관련 단어가 있는 품목은 전부 모아서 완료 결과창에 보여준다.
+        rows.filter(r => r.needsCheck).forEach(r => {
+          _spuProcessCheckItems.push({ code: r.itemCode, round: r.roundName, color: r.color, qty: r.qty, factory: job.factory, reason: r.needsCheckReason });
+        });
       }
       const url = _gasUrlForFactory(job.factory);
       const action = job.type === 'sales' ? 'importSalesOrders' : job.type === 'blocking' ? 'importBlocking' : 'importProcessProgress';
