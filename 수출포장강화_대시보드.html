@@ -8477,10 +8477,12 @@
             });
             return Array.from(seen.values());
         }
+        // PE폼 높이는 미구성 기준에서 뺐다(요청, 2026-10-29: "미구성 품목에서는 표시기준
+        // 중 PE폼 높이는 기준에서 빼줘") — 제품종류만 비어있으면 미구성으로 본다.
         function _pkgMissingSpecList() {
             return _pkgActiveCodeRounds().filter(it => {
                 const spec = _pkgServerSpecMap[it.code] || {};
-                return !spec.productType || !spec.boxHeight;
+                return !spec.productType;
             });
         }
         function _pkgMissingTypeList() {
