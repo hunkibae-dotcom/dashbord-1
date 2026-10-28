@@ -1409,8 +1409,9 @@
     function _pkgNiConfirmList() { return allData.filter(d => d.source === 'standard' && (d.memo||'').trim() === '신규'); }
     // 미구성/유형선택 공통 기반: 수출 현황+출고 완료, 코드 단위로 중복 제거.
     function _pkgNiBaseCodeList() { return _pkgNiDedupByCode(allData.filter(d => d.source === 'standard' || d.source === 'shipped')); }
+    // PE폼 높이는 미구성 기준에서 뺐다(요청, 2026-10-29) — 제품종류만 비어있으면 미구성.
     function _pkgNiMissingList() {
-        return _pkgNiBaseCodeList().filter(d => { const s = _pkgNiSpecMap[d.code] || {}; return !s.productType || !s.boxHeight; });
+        return _pkgNiBaseCodeList().filter(d => { const s = _pkgNiSpecMap[d.code] || {}; return !s.productType; });
     }
     // 유형 선택: PE폼 유형이 없는 코드 — 진행이 "재고활용"인 품목은 제외(요청, 2026-10-28 #2:
     // "유형선택에서 진행이 재고활용인 품목은 제외해줘").
