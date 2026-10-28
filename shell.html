@@ -5537,12 +5537,15 @@
             _ieOrigRegDate = item.regDate && item.regDate !== '-' ? _nd(item.regDate) : '';
             _ieOrigShipDate = item.date && item.date !== '-' ? _nd(item.date) : '';
             _ieOrigDueDate = item.dueDate && item.dueDate !== '-' ? _nd(item.dueDate) : '';
+            _ieOrigArriveDate = item.arriveDate && item.arriveDate !== '-' ? _nd(item.arriveDate) : '';
             const ieRegDateInp = document.getElementById('ieRegDate');
             if (ieRegDateInp) ieRegDateInp.value = _ieOrigRegDate;
             const ieShipDateInp = document.getElementById('ieShipDate');
             if (ieShipDateInp) ieShipDateInp.value = _ieOrigShipDate;
             const ieDueDateInp = document.getElementById('ieDueDate');
             if (ieDueDateInp) ieDueDateInp.value = _ieOrigDueDate;
+            const ieArriveDateInp = document.getElementById('ieArriveDate');
+            if (ieArriveDateInp) ieArriveDateInp.value = _ieOrigArriveDate;
             _ieOrigStatus = item.status || '';
             _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigD = (item.specD||'').toString().replace(/[^0-9.]/g,'');
