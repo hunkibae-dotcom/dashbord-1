@@ -6205,10 +6205,14 @@ async function _qcClfDetectOne(file) {
   const url = _rpAllFactoryUrls()[0];
   if (!url) throw new Error('구글시트 연동 주소가 설정되지 않았습니다');
   const base64 = await _qcClfFileToBase64(file);
+  // 서버가 429를 만나면 최대 30초 가까이(5+10+15초) 쉬었다 재시도하는데, 여기 제한시간이
+  // 그보다 짧으면 서버 응답이 오기도 전에 연결을 끊어버린다(요청, 2026-10-29: "signal
+  // timed out" — 재시도 로직만 늘리고 이 값은 안 늘려서 생긴 버그). 재시도+실제 호출
+  // 시간을 넉넉히 감안해 2분으로 늘린다.
   const res = await fetch(url, {
     method: 'POST',
     body: JSON.stringify({ action: 'classifyPhoto', imageBase64: base64, mimeType: 'image/jpeg' }),
-    signal: AbortSignal.timeout(45000)
+    signal: AbortSignal.timeout(120000)
   });
   const json = await res.json();
   if (json.status !== 'success') throw new Error(json.message || '인식 실패');
