@@ -6419,7 +6419,9 @@ function _qcClfRenderResults() {
           <span style="font-size:10px;font-weight:800;padding:1.5px 7px;border-radius:6px;background:${badgeBg};color:${badgeColor};">${r.type}사진</span>
           <span style="font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;border-bottom:1px dashed var(--border);" onclick="copyCellText('${_jsAttr(r.code)}', event)">${r.code}</span>
           <span style="font-size:11.5px;color:var(--label);">${r.color || '-'}</span>
-          ${needsReview ? reviewLabel : '<span style="font-size:10px;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check"></i> 자동 확정</span>'}
+          ${needsReview ? reviewLabel : (r.manualReview
+            ? '<span style="font-size:10px;font-weight:700;color:#0284c7;"><i class="fa-solid fa-check"></i> 수동 확정</span>'
+            : '<span style="font-size:10px;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check"></i> 자동 확정</span>')}
         </div>
         <div style="font-size:11px;color:var(--label);">CBM ${r.cbm.w || '-'}×${r.cbm.d || '-'}×${r.cbm.h || '-'} · ${r.cbm.g || '-'}kg</div>
         ${r.detectError ? `<div style="font-size:10.5px;color:#dc2626;margin-top:2px;word-break:break-all;">${errAttr}</div>` : ''}
