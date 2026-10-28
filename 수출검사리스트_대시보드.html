@@ -10341,7 +10341,7 @@ function qcNotifyRender() {
   }
   _qcNotifyUpdateSelUi();
   const cnt = document.getElementById('qtabCnt-notify');
-  if (cnt) cnt.textContent = allData.filter(d => d.변경태그 && d.변경태그.length).length;
+  if (cnt) cnt.textContent = _qcNotifyItems().length;
 }
 function qcNotifyToggleOne(key, checked) {
   if (checked) _qcNotifySelected.add(key); else _qcNotifySelected.delete(key);
