@@ -6207,12 +6207,17 @@ function _qcClfCodeExistsInReport(code, color) {
 // 손글씨(검사사진) 인식률은 인쇄 글자(포장사진)보다 훨씬 낮을 수밖에 없어서, OCR
 // 확신도가 낮으면 confidence:'low'로 돌려 기존 "확인 필요" 흐름이 그대로 걸러준다.
 // ═══════════════════════════════════════════════════════════════
+// 인식(타입판정+OCR)은 원본 해상도 그대로 쓴다(요청, 2026-10-29: "인식/감지/분류
+// 할때는 사진을 원본크기로 보면서 해야 잘될거같다") — 예전엔 _rpCompressImage로
+// 1280px/저화질(0.72)로 줄인 사본을 인식에 썼는데, 특히 손글씨(검사사진)는 그 정도만
+// 줄여도 획이 뭉개져서 인식률이 떨어졌다. 화면 썸네일(_qcClfFiles의 url)은 원본 File을
+// 그대로 쓰고 있어 이 함수와 무관 — 여기서 읽은 원본은 인식에만 쓰인다.
 function _qcClfFileToBase64(file) {
   return new Promise((resolve, reject) => {
-    _rpCompressImage(file, (rec) => {
-      if (!rec || !rec.dataUrl) { reject(new Error('사진을 줄이지 못했습니다')); return; }
-      resolve(rec.dataUrl);
-    });
+    const reader = new FileReader();
+    reader.onload = (e) => { if (e.target.result) resolve(e.target.result); else reject(new Error('사진을 읽지 못했습니다')); };
+    reader.onerror = () => reject(new Error('사진을 읽지 못했습니다'));
+    reader.readAsDataURL(file);
   });
 }
 
