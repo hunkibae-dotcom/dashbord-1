@@ -7576,10 +7576,10 @@ function runProductSearch() {
   try {
     const pool = [...allData, ...archiveRows];
     const results = pool.filter(d => {
-      if (code && !(d.단품코드||'').toLowerCase().includes(code)) return false;
-      if (name && !(d.건명||'').toLowerCase().includes(name)) return false;
-      if (color && !(d.색상 || '').toLowerCase().includes(color)) return false;
-      if (packer && !(d.포장처 || '').toLowerCase().includes(packer)) return false;
+      if (code && !_normSearchText(d.단품코드||'').toLowerCase().includes(code)) return false;
+      if (name && !_normSearchText(d.건명||'').toLowerCase().includes(name)) return false;
+      if (color && !_normSearchText(d.색상 || '').toLowerCase().includes(color)) return false;
+      if (packer && !_normSearchText(d.포장처 || '').toLowerCase().includes(packer)) return false;
       if (factory && d.공장 !== factory) return false;
       // 진행중(검사항목 리스트, source==='active') / 출고완료(검사완료 리스트, source==='archive')를
       // 시트 기준으로 먼저 나누고, 그 안에서 세부 검사상태(d.검사)로 한 번 더 좁힌다.
