@@ -4476,7 +4476,7 @@ async function _retryLoadAfterWarning() {
   if (mBtn) mBtn.disabled = true;
   if (mIcon) mIcon.classList.add('fa-spin');
   try {
-    await loadData();
+    await loadData(true);
   } finally {
     // 성공해서 배너 자체가 사라졌으면(loadErrors 비어짐) 이 버튼도 이미 DOM에서 없어진
     // 상태라 다시 건드릴 필요 없다 — 계속 실패해서 배너가 남아있을 때만 원래대로 되돌린다.
