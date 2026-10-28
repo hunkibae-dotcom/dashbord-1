@@ -6196,40 +6196,55 @@ async function _qcClfDetectOne(file) {
   return json.result || {};
 }
 
+// 사진을 한 장씩 순서대로 처리하면 느릴 수밖에 없어서(요청, 2026-10-28: "5초 내로
+// 처리했으면 좋겠는데 너무 느리다"), 몇 장씩 동시에 보낸다. 무료 등급 호출 제한을
+// 고려해 한 번에 4장까지만 묶는다.
+const _QC_CLF_CONCURRENCY = 4;
 async function _qcClfRunDetection() {
   const label = document.getElementById('qcClfProcessingLabel');
-  _qcClfResults = [];
-  for (let i = 0; i < _qcClfFiles.length; i++) {
-    const f = _qcClfFiles[i];
-    if (label) label.textContent = '사진 분석 중... (' + (i + 1) + '/' + _qcClfFiles.length + ')';
-    let detected = null, errorMsg = '';
-    try {
-      detected = await _qcClfDetectOne(f.file);
-    } catch (e) {
-      errorMsg = e && e.message ? e.message : String(e);
+  const files = _qcClfFiles;
+  _qcClfResults = new Array(files.length);
+  let doneCount = 0;
+  const updateLabel = () => { if (label) label.textContent = '사진 분석 중... (' + doneCount + '/' + files.length + ')'; };
+  updateLabel();
+  let nextIdx = 0;
+  async function worker() {
+    while (nextIdx < files.length) {
+      const i = nextIdx++;
+      const f = files[i];
+      let detected = null, errorMsg = '';
+      try {
+        detected = await _qcClfDetectOne(f.file);
+      } catch (e) {
+        errorMsg = e && e.message ? e.message : String(e);
+      }
+      const type = detected && detected.type === '포장' ? '포장' : '검사';
+      const code = (detected && detected.code) || '';
+      const color = (detected && detected.color) || '';
+      const cbm = {
+        w: (detected && detected.cbm_w) || '',
+        d: (detected && detected.cbm_d) || '',
+        h: (detected && detected.cbm_h) || '',
+        g: (detected && detected.cbm_g) || ''
+      };
+      const match = _qcClfFindReportMatch(code, color);
+      // 인식 자체가 실패했거나(네트워크/서버 오류) AI 스스로 "확신 없음"이라고 답했으면
+      // 당연히 확인이 필요하다. 확신이 있어도 보고서에 없는 코드면 오인식 가능성이 크므로
+      // 역시 확인이 필요하다(요청, 2026-10-27).
+      const confident = !errorMsg && !!detected && detected.confidence === 'high';
+      _qcClfResults[i] = {
+        idx: i, file: f.file, url: f.url,
+        type, code: code || '코드미상', color, round: match ? match.round : '-', cbm,
+        codeConfirmed: confident && !!match, codeNotInReport: !!code && !match,
+        cbmConfirmed: confident,
+        detectError: errorMsg
+      };
+      doneCount++;
+      updateLabel();
     }
-    const type = detected && detected.type === '포장' ? '포장' : '검사';
-    const code = (detected && detected.code) || '';
-    const color = (detected && detected.color) || '';
-    const cbm = {
-      w: (detected && detected.cbm_w) || '',
-      d: (detected && detected.cbm_d) || '',
-      h: (detected && detected.cbm_h) || '',
-      g: (detected && detected.cbm_g) || ''
-    };
-    const match = _qcClfFindReportMatch(code, color);
-    // 인식 자체가 실패했거나(네트워크/서버 오류) AI 스스로 "확신 없음"이라고 답했으면
-    // 당연히 확인이 필요하다. 확신이 있어도 보고서에 없는 코드면 오인식 가능성이 크므로
-    // 역시 확인이 필요하다(요청, 2026-10-27).
-    const confident = !errorMsg && !!detected && detected.confidence === 'high';
-    _qcClfResults.push({
-      idx: i, file: f.file, url: f.url,
-      type, code: code || '코드미상', color, round: match ? match.round : '-', cbm,
-      codeConfirmed: confident && !!match, codeNotInReport: !!code && !match,
-      cbmConfirmed: confident,
-      detectError: errorMsg
-    });
   }
+  const workerCount = Math.min(_QC_CLF_CONCURRENCY, files.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
   document.getElementById('qcClfStepProcessing').style.display = 'none';
   document.getElementById('qcClfStepResults').style.display = 'flex';
   _qcClfRenderResults();
