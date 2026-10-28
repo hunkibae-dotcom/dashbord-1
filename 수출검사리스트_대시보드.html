@@ -10963,13 +10963,23 @@ function _spuExtractProcessRows(grid) {
     const color = (row[10] || '').toString().trim();
     if (!itemCode || !color) continue;
     const rateRaw = row[26];
+    const roundName = (row[17] || '').toString().trim();
+    // S열(전달사항) — 건명 또는 전달사항에 품질검사 관련 단어가 있으면 "확인품목"으로
+    // 따로 모아 보여준다(요청, 2026-10-29: "r열의 건명에 품질검사, 또는 품평이라는
+    // 단어가 들어가 있거나 s열의 전달사항 칼럼에 품질검사, 품평, 외관검사...").
+    const note = (row[18] || '').toString().trim();
+    const roundHit = /품질검사|품평/.test(roundName);
+    const noteHit = /품질검사|품평|외관검사/.test(note);
     rows.push({
       itemCode: itemCode,
       color: color,
       qty: Number(row[11]) || 0,
       packDate: _spuDateStr(row[14]),
-      roundName: (row[17] || '').toString().trim(),
-      progressRate: (rateRaw === '' || rateRaw == null || isNaN(Number(rateRaw))) ? null : Number(rateRaw)
+      roundName: roundName,
+      progressRate: (rateRaw === '' || rateRaw == null || isNaN(Number(rateRaw))) ? null : Number(rateRaw),
+      note: note,
+      needsCheck: roundHit || noteHit,
+      needsCheckReason: roundHit ? ('건명: ' + roundName) : ('전달사항: ' + note)
     });
   }
   return rows;
