@@ -3180,7 +3180,18 @@
             }
 
             const multiDir = dir === 'asc' ? 1 : -1;
-            
+
+            // 상차준비완료/미완료 정렬(요청, 2026-10-28) — 실제 시트 칼럼이 아니라
+            // 비고에 "상차 준비완료" 문구가 있는지로 판단하는 가상 칼럼이라 따로 처리한다.
+            if (key === '_shipReady') {
+                state.filteredData.sort((a, b) => {
+                    const rA = _pkgNoteHasShipReady(a.note) ? 1 : 0;
+                    const rB = _pkgNoteHasShipReady(b.note) ? 1 : 0;
+                    return (rA - rB) * multiDir;
+                });
+                return;
+            }
+
             state.filteredData.sort((a, b) => {
                 let valA = a[key];
                 let valB = b[key];
