@@ -5781,6 +5781,9 @@
             if (changed.dueDate !== undefined) {
                 allData.forEach(it => { if (_ieMatch(it)) it.dueDate = changed.dueDate; });
             }
+            if (changed.arriveDate !== undefined) {
+                allData.forEach(it => { if (_ieMatch(it)) it.arriveDate = changed.arriveDate; });
+            }
             if (changed.memo !== undefined) {
                 allData.forEach(it => { if (_ieMatch(it)) it.memo = changed.memo; });
             }
