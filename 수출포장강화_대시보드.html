@@ -8467,9 +8467,13 @@
             });
         }
         function _pkgMissingTypeList() {
+            // 예전엔 제품종류·PE폼 높이까지 이미 채워져 있어야만 후보로 쳐서, PE폼 유형이
+            // 아예 없는(종류·높이도 안 적힌) 품목이 이 탭에 안 보였다(요청, 2026-10-28:
+            // "유형선택에 PE폼 유형 없는 항목들이 안 나오는데 수정좀") — PE폼 유형 자체가
+            // 비어있으면 종류·높이 여부와 상관없이 후보에 넣는다.
             return _pkgActiveCodeRounds().filter(it => {
                 const spec = _pkgServerSpecMap[it.code] || {};
-                return spec.productType && spec.boxHeight && !spec.peType;
+                return !spec.peType;
             });
         }
         function _pkgMissingRowId(prefix, code) { return prefix + '_' + code.replace(/[^A-Z0-9]/g, '_'); }
