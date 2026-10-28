@@ -110,6 +110,30 @@
             margin-top: 2px;
         }
 
+        /* ── Prep(데이터 준비) — 테마(라이트/다크)를 그대로 따른다(스플래시 로고 박스만
+           브랜드 고정색을 유지, 그 아래 상태 글자·막대는 var(--sub)/var(--accent)로 테마 반영) ── */
+        #prep {
+            position: fixed; inset: 0; z-index: 290;
+            display: none; align-items: center; justify-content: center;
+            flex-direction: column; gap: 22px;
+            background: var(--bg);
+            opacity: 0; transition: opacity 0.4s ease;
+        }
+        #prep.show { opacity: 1; }
+        .prep-status {
+            font-size: 12.5px; font-weight: 700; color: var(--sub);
+            letter-spacing: 0.02em; margin-top: -8px;
+        }
+        .prep-bar {
+            width: 140px; height: 4px; border-radius: 4px; overflow: hidden;
+            background: var(--border);
+        }
+        .prep-bar-fill {
+            height: 100%; width: 6%; border-radius: 4px;
+            background: var(--accent);
+            transition: width 0.4s ease;
+        }
+
         /* ════════════════════════════
            HOME
         ════════════════════════════ */
@@ -214,6 +238,8 @@
         .feat-ico svg { width: 42px; height: 42px; }
         .fi-blue  { background: linear-gradient(135deg, #0055FF, #00B0FF); }
         .fi-green { background: linear-gradient(135deg, #00A878, #00E676); }
+        .fi-red   { background: linear-gradient(135deg, #DC2626, #FB7185); }
+        .fi-orange{ background: linear-gradient(135deg, #E8590C, #FF9F1C); }
         .fi-amber { background: linear-gradient(135deg, #E8590C, #FF9F1C); }
         .fi-red   { background: linear-gradient(135deg, #DC2626, #FB7185); }
 
@@ -562,6 +588,25 @@
     </div>
 </div>
 
+<!-- ══════════════ PREP(데이터 준비) ══════════════
+     요청, 2026-10-29: "초기화면 이후로 로딩중표시를 따로 만들어서 해당 모든 시트들이
+     데이터가 연동될때까지 로딩중표시를 미리 해두는거지 ... 불러오기중처럼 만들지말고
+     F.WORK스타일에맞게(라이트/다크모드에맞게)" — 스플래시가 끝난 뒤에도 포장강화/
+     품질검사/현장검사/PE폼 데이터가 아직 다 안 모였으면 각 대시보드의 "불러오는 중"
+     스피너(다 제각각) 대신, 테마(라이트/다크)를 그대로 따르는 이 화면 하나로 가린다.
+     실제 데이터는 각 시트 페이지로 넘어갈 때 그 페이지가 세션 캐시(sessionStorage)에서
+     그대로 집어 쓴다 — 이 화면은 그 캐시를 미리 채워두는 역할만 한다. -->
+<div id="prep">
+    <div class="spl-wrap">
+        <div class="spl-box"><span class="spl-f">F</span></div>
+        <div>
+            <div class="spl-name">F<em class="spl-name-dot">.</em>WORK</div>
+        </div>
+    </div>
+    <div class="prep-status" id="prepStatus">데이터 준비 중</div>
+    <div class="prep-bar"><div class="prep-bar-fill" id="prepBarFill"></div></div>
+</div>
+
 <!-- ══════════════ HOME ══════════════ -->
 <div id="home">
     <div class="h-hdr">
@@ -606,6 +651,40 @@
             <div class="feat-txt">
                 <div class="feat-name">포장강화</div>
                 <div class="feat-desc">수출포장 강화 현황 관리<br>파렛트 · 작업계획 · 출고 현황</div>
+            </div>
+            <div class="feat-arr">›</div>
+        </div>
+
+        <!-- 현장검사 (요청, 2026-10-27: 품질검사 하위 메뉴였던 걸 F.WORK 메인의 독립
+             카테고리로 되돌림 — 품질검사/포장강화/현장검사/PE폼 순서) -->
+        <div class="feat" onclick="openSub('fieldinspect')" role="button">
+            <div class="feat-ico fi-red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/>
+                    <path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/>
+                    <circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/>
+                </svg>
+            </div>
+            <div class="feat-txt">
+                <div class="feat-name">현장검사</div>
+                <div class="feat-desc">현장 하자·부적합 조회 및 조치 관리</div>
+            </div>
+            <div class="feat-arr">›</div>
+        </div>
+
+        <!-- PE폼 (요청, 2026-10-27: 포장강화 하위 메뉴였던 걸 F.WORK 메인의 독립
+             카테고리로 되돌림) -->
+        <div class="feat" onclick="openSub('pe')" role="button">
+            <div class="feat-ico fi-orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                    <rect x="8.5" y="3" width="7" height="4" rx="1"/>
+                    <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
+                </svg>
+            </div>
+            <div class="feat-txt">
+                <div class="feat-name">PE폼</div>
+                <div class="feat-desc">PE폼 발주서·발주이력·재고 관리</div>
             </div>
             <div class="feat-arr">›</div>
         </div>
@@ -671,41 +750,6 @@
             <div class="mi-txt">
                 <div class="mi-title">대시보드</div>
                 <div class="mi-desc">실시간 현황 모니터링</div>
-            </div>
-            <div class="mi-arr">›</div>
-        </div>
-
-        <!-- PE폼 — 포장강화 카테고리에서만 보임(요청: F.WORK > PE폼 단독 메뉴였던 걸
-             F.WORK > 포장강화 > 대시보드 아래로 편입). 포장강화 대시보드 안에 새로 생긴
-             PE폼 탭(#pkgPeFoamView)을 자동으로 연다 — 현장검사와 같은 방식. -->
-        <div class="mitem" id="peFoamMenuItem" onclick="goPeFoam()">
-            <div class="mi-ico" style="background:rgba(232,89,12,.12);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#E8590C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
-                    <rect x="8.5" y="3" width="7" height="4" rx="1"/>
-                    <line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/>
-                </svg>
-            </div>
-            <div class="mi-txt">
-                <div class="mi-title">PE폼</div>
-                <div class="mi-desc">PE폼 발주서·발주이력·재고 관리</div>
-            </div>
-            <div class="mi-arr">›</div>
-        </div>
-
-        <!-- 현장검사 — 품질검사 카테고리에서만 보임(요청, 2026-10-19: F.WORK > 현장검사
-             단독 메뉴였던 걸 F.WORK > 품질검사 > 현장검사로 편입) -->
-        <div class="mitem" id="fieldInspectMenuItem" onclick="goFieldInspect()">
-            <div class="mi-ico" style="background:rgba(220,38,38,.12);">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9 3h4a1 1 0 0 1 1 1v1h2a2 2 0 0 1 2 2v3"/>
-                    <path d="M9 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h7"/>
-                    <circle cx="16" cy="16" r="3.5"/><line x1="18.5" y1="18.5" x2="21" y2="21"/>
-                </svg>
-            </div>
-            <div class="mi-txt">
-                <div class="mi-title">현장검사</div>
-                <div class="mi-desc">현장 하자·부적합 조회 및 조치 관리</div>
             </div>
             <div class="mi-arr">›</div>
         </div>
@@ -799,9 +843,81 @@ window.addEventListener('pageshow', function(e){
 });
 
 /* ── Splash ── */
+// 앱 시작 직후, 사람이 아직 보고 있는 스플래시 화면과 동시에 4개 대시보드(포장강화/
+// 품질검사/현장검사/PE폼)의 데이터를 미리 받아 각 페이지가 그대로 쓰는 세션 캐시
+// (sessionStorage)에 채워둔다(요청, 2026-10-29). 실제 파싱(특히 품질검사의 복잡한
+// 규칙)은 중복 구현하지 않고, 그 페이지가 나중에 열릴 때 자기 코드로 직접 하게 하고
+// 여기선 "원본만 미리 받아다 둔다"는 역할만 한다. 현장검사는 연동 주소를 등록 안 한
+// 기기도 많아서, 등록돼 있을 때만 포함시킨다.
+function _fworkPrefetchAll() {
+    var PKG_GAS_URL = localStorage.getItem('sheet_pub_url') ||
+        'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
+    var QC_GAS_CJ1 = localStorage.getItem('sheet_pub_url_cj1') ||
+        'https://script.google.com/macros/s/AKfycbwYdh83ZiA0PeJKuFacq7ZOJEBwsg1J-6B1PP0-vUGrI76kYNVypaKRJpcP0zY5mqNL/exec';
+    var QC_GAS_CJ2 = localStorage.getItem('sheet_pub_url_cj2') ||
+        'https://script.google.com/macros/s/AKfycbxedh1oqiQsvdbYl7ccKaamWhiDvsCYklEDSYHW7YPyw34t5ASYjH9yOSt1SpH1A0X_/exec';
+    var PE_GAS_URL = localStorage.getItem('sheet_pub_url_pe') ||
+        'https://script.google.com/macros/s/AKfycbyg-Vo-ArIJ7qc7OhvQynmI0XmhXqjXjsgPrDEcE1fwVK4XyDzhGIhcNrdiudo7qYQ/exec';
+    var FI_GAS_URL = localStorage.getItem('fi_gas_url') || '';
+
+    var total = FI_GAS_URL ? 4 : 3;
+    var done = 0;
+    function bump(label) {
+        done++;
+        var fill = document.getElementById('prepBarFill');
+        var status = document.getElementById('prepStatus');
+        if (fill) fill.style.width = Math.max(6, Math.round(done / total * 100)) + '%';
+        if (status) status.textContent = '데이터 준비 중 (' + done + '/' + total + ')';
+    }
+
+    var tasks = [];
+
+    // 포장강화 — shell.html(_saveDataCache)이 기대하는 모양 그대로 저장.
+    tasks.push(
+        fetch(PKG_GAS_URL, { signal: AbortSignal.timeout(15000) }).then(function(r){ return r.json(); })
+            .then(function(json){
+                try { sessionStorage.setItem('shell_data_v1', JSON.stringify({ ts: Date.now(), d: json })); } catch(e){}
+            }).catch(function(){}).finally(function(){ bump('pack'); })
+    );
+
+    // 품질검사 — 원본 행만 저장해두면 그 페이지가 열릴 때 자기 parseRows()로 직접 푼다
+    // (분류 규칙이 복잡해서 여기서 똑같이 다시 구현하면 둘이 어긋날 위험이 있다).
+    tasks.push(
+        Promise.all([
+            fetch(QC_GAS_CJ1 + '?action=getActive&t=' + Date.now(), { signal: AbortSignal.timeout(15000) }).then(function(r){ return r.json(); }).then(function(j){ return j.rows || []; }).catch(function(){ return null; }),
+            fetch(QC_GAS_CJ2 + '?action=getActive&t=' + Date.now(), { signal: AbortSignal.timeout(15000) }).then(function(r){ return r.json(); }).then(function(j){ return j.rows || []; }).catch(function(){ return null; })
+        ]).then(function(res){
+            if (res[0] !== null || res[1] !== null) {
+                try { sessionStorage.setItem('qc_prefetch_raw_v1', JSON.stringify({ cj1: res[0] || [], cj2: res[1] || [] })); } catch(e){}
+            }
+        }).finally(function(){ bump('quality'); })
+    );
+
+    // PE폼 — loadAll()이 기대하는 모양(원본 json) 그대로 저장.
+    tasks.push(
+        fetch(PE_GAS_URL, { signal: AbortSignal.timeout(15000) }).then(function(r){ return r.json(); })
+            .then(function(json){
+                try { sessionStorage.setItem('pe_data_cache_v1', JSON.stringify(json)); } catch(e){}
+            }).catch(function(){}).finally(function(){ bump('pe'); })
+    );
+
+    // 현장검사 — 연동 주소가 등록된 기기에서만.
+    if (FI_GAS_URL) {
+        tasks.push(
+            fetch(FI_GAS_URL + '?' + new URLSearchParams({ action: 'list' }), { signal: AbortSignal.timeout(15000) }).then(function(r){ return r.json(); })
+                .then(function(json){
+                    if (json.status === 'success') { try { sessionStorage.setItem('fi_list_cache_v1', JSON.stringify(json.items || [])); } catch(e){} }
+                }).catch(function(){}).finally(function(){ bump('fieldinspect'); })
+        );
+    }
+
+    return Promise.all(tasks);
+}
+
 (function(){
     var splash = document.getElementById('splash');
     var home   = document.getElementById('home');
+    var prep   = document.getElementById('prep');
     var skip   = sessionStorage.getItem('fwork_splash');
 
     if(skip){
@@ -810,11 +926,28 @@ window.addEventListener('pageshow', function(e){
         return;
     }
     sessionStorage.setItem('fwork_splash','1');
+
+    var prefetchDone = false;
+    var prefetchPromise = _fworkPrefetchAll().then(function(){ prefetchDone = true; });
+
     setTimeout(function(){
         splash.classList.add('hide');
         setTimeout(function(){
             splash.style.display = 'none';
-            home.classList.add('show');
+            if (prefetchDone) {
+                home.classList.add('show');
+                return;
+            }
+            // 아직 다 안 모였으면 "불러오는 중" 식 스피너 대신 이 화면으로 이어서 가린다.
+            prep.style.display = 'flex';
+            requestAnimationFrame(function(){ prep.classList.add('show'); });
+            prefetchPromise.then(function(){
+                prep.classList.remove('show');
+                setTimeout(function(){
+                    prep.style.display = 'none';
+                    home.classList.add('show');
+                }, 400);
+            });
         }, 650);
     }, 2300);
 })();
@@ -869,31 +1002,12 @@ function openSub(type){
        숨긴다 — 현장검사는 2026-10-19부터 새 하자 등록에 스캔 기능이 생겨서 더 이상 숨기지 않음 */
     var scanItem = document.getElementById('scanMenuItem');
     if (scanItem) scanItem.style.display = (type === 'pe') ? 'none' : '';
-    /* 현장검사는 더 이상 F.WORK 홈의 독립 카테고리가 아니라 품질검사 하위 메뉴다
-       (요청, 2026-10-19) — 품질검사 카테고리를 열었을 때만 보인다. */
-    var fieldInspectItem = document.getElementById('fieldInspectMenuItem');
-    if (fieldInspectItem) fieldInspectItem.style.display = (type === 'quality') ? '' : 'none';
-    /* PE폼은 더 이상 F.WORK 홈의 독립 카테고리가 아니라 포장강화 하위 메뉴다
-       (요청) — 포장강화 카테고리를 열었을 때만 보인다. */
-    var peFoamItem = document.getElementById('peFoamMenuItem');
-    if (peFoamItem) peFoamItem.style.display = (type === 'pack') ? '' : 'none';
 }
 
-function goFieldInspect(){
-    /* 품질검사 대시보드 "안에서" 현장검사를 여는 것과 똑같은 화면이 나와야 하므로
-       (요청, 2026-10-19), 현장검사 대시보드로 바로 가지 않고 품질검사 대시보드로
-       가서 그 안의 iframe 오버레이가 자동으로 열리게 한다. */
-    _navigate(MENUS.quality.dashboard + '?openFieldInspect=1');
-}
-
-function goPeFoam(){
-    /* (정정, 2026-10-21) 메뉴 "위치"만 포장강화 하위로 옮긴 것이고, 실제로 열리는 화면은
-       포장강화 대시보드 안의 새 PE폼 탭이 아니라 기존에 쓰던 PE폼 전용 앱
-       (PE폼발주_대시보드.html) 그대로다 — 포장강화 대시보드 안의 PE폼 탭은 PC 웹에서
-       그 대시보드에 직접 들어갔을 때만 쓰는 용도(요청으로 혼동 바로잡음). */
-    var th = document.documentElement.getAttribute('data-theme') || 'dark';
-    _navigate(MENUS.pe.dashboard + '?shell=1&theme=' + th + '&v=' + Date.now());
-}
+/* goFieldInspect()/goPeFoam() — 현장검사/PE폼이 품질검사/포장강화 하위 메뉴였을 때
+   쓰던 전용 이동 함수였는데, F.WORK 메인의 독립 카테고리로 되돌리면서(요청,
+   2026-10-27) 더 이상 안 쓴다 — 이제 다른 카테고리와 똑같이 openSub('fieldinspect')
+   / openSub('pe') → goDashboard()(MENUS[type].dashboard로 바로 이동)로 통일된다. */
 
 function closeSub(){
     document.getElementById('sub').classList.remove('open');
