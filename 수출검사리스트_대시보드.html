@@ -2374,8 +2374,44 @@ async function loadData(force = false) {
     renderQualityCharts();
   }
 
+  // results([cj1 rows, cj2 rows])를 받아 allData로 반영하는 공통 마무리 — 실제 네트워크로
+  // 받아왔을 때와, F.WORK 초기화면이 미리 받아둔 원본을 그대로 넘겨줄 때(QC_PREFETCH_RAW_KEY)
+  // 둘 다 같은 경로를 탄다.
+  function _qcFinishActiveLoad(results) {
+    // 자동 새로고침(5분 간격) 중 구글시트/GAS 쪽이 예외를 던지지 않고도 그 공장만 0건을
+    // 돌려주는 경우가 있다(배포 교체 직후 등) — 방금 전까지 데이터가 있던 공장이 이번만
+    // 갑자기 0건이면 네트워크 오류와 똑같이 의심해서, 그 공장은 이전 화면을 그대로 두고
+    // 경고 배너로 알린다. 그래야 "작업하다 갑자기 전부 0개로 바뀐다"처럼 안 보인다.
+    results.forEach((rows, i) => {
+      const f = FACTORIES[i];
+      if (rows.length === 0 && _lastFactoryRows[f.key] && _lastFactoryRows[f.key].length > 0) {
+        loadErrors.push(`${f.label} 검사항목 리스트가 이번엔 0건으로 응답해서 이전 데이터를 유지했어요 (일시적 오류로 보임)`);
+        results[i] = _lastFactoryRows[f.key];
+      } else if (rows.length > 0) {
+        _lastFactoryRows[f.key] = rows;
+      }
+    });
+    allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
+    applyMiOverrides(allData);
+    _rpInvalidateKeyIndex();
+    applyFilters();
+    renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
+    _hideQcInitLoadingOverlay(); // 진행중 리스트(실제로 조작하는 대상)가 준비되는 시점 = 눌러도 되는 시점
+    _saveActiveCache(allData);
+  }
+
   // 진행중 리스트 — 세션 캐시가 있으면 그대로 쓰고 네트워크 자체를 생략한다.
   const activeCached = !force && _loadActiveCache();
+  // F.WORK 초기화면이 앱 시작 직후 미리 받아둔 원본(요청, 2026-10-29: "초기화면 이후로
+  // 로딩중표시를 따로 만들어서 모든 시트들이 연동될 때까지 미리 해두는거지") — 있으면 그걸
+  // parseRows로 직접 풀어서 쓰고, 네트워크를 타지 않는다. 한 번 쓰면 바로 지워 1회용으로 둔다.
+  let qcPrefetchRaw = null;
+  if (!force && !activeCached) {
+    try {
+      const raw = sessionStorage.getItem('qc_prefetch_raw_v1');
+      if (raw) { qcPrefetchRaw = JSON.parse(raw); sessionStorage.removeItem('qc_prefetch_raw_v1'); }
+    } catch (e) {}
+  }
   let activePromise;
   if (activeCached) {
     allData = activeCached;
@@ -2385,31 +2421,15 @@ async function loadData(force = false) {
     renderQualityCharts();
     _hideQcInitLoadingOverlay();
     activePromise = Promise.resolve();
+  } else if (qcPrefetchRaw) {
+    activePromise = Promise.resolve().then(() => {
+      const results = FACTORIES.map(f => parseRows(qcPrefetchRaw[f.key] || [], f));
+      _qcFinishActiveLoad(results);
+    });
   } else {
     activePromise = Promise.all(
       FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
-    ).then(results => {
-      // 자동 새로고침(5분 간격) 중 구글시트/GAS 쪽이 예외를 던지지 않고도 그 공장만 0건을
-      // 돌려주는 경우가 있다(배포 교체 직후 등) — 방금 전까지 데이터가 있던 공장이 이번만
-      // 갑자기 0건이면 네트워크 오류와 똑같이 의심해서, 그 공장은 이전 화면을 그대로 두고
-      // 경고 배너로 알린다. 그래야 "작업하다 갑자기 전부 0개로 바뀐다"처럼 안 보인다.
-      results.forEach((rows, i) => {
-        const f = FACTORIES[i];
-        if (rows.length === 0 && _lastFactoryRows[f.key] && _lastFactoryRows[f.key].length > 0) {
-          loadErrors.push(`${f.label} 검사항목 리스트가 이번엔 0건으로 응답해서 이전 데이터를 유지했어요 (일시적 오류로 보임)`);
-          results[i] = _lastFactoryRows[f.key];
-        } else if (rows.length > 0) {
-          _lastFactoryRows[f.key] = rows;
-        }
-      });
-      allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
-      applyMiOverrides(allData);
-      _rpInvalidateKeyIndex();
-      applyFilters();
-      renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
-      _hideQcInitLoadingOverlay(); // 진행중 리스트(실제로 조작하는 대상)가 준비되는 시점 = 눌러도 되는 시점
-      _saveActiveCache(allData);
-    });
+    ).then(results => _qcFinishActiveLoad(results));
   }
 
   const archivePromise = Promise.all(
