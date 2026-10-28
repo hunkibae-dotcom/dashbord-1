@@ -1589,6 +1589,25 @@ try {
   </div>
 </div>
 
+<!-- ===== 공정진행정보 분류 "확인품목"(요청, 2026-10-29) — 건명/전달사항에 품질검사
+     관련 단어가 있는 품목을 완료 결과창에서 따로 보여주고, 선택해서 신규등록할 수
+     있게 한다. ===== -->
+<div id="spuProcessCheckModal" onclick="if(event.target===this)_spuCloseProcessCheckModal()" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.5);align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:640px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:16px;font-weight:800;color:#1e293b;">확인품목</div>
+      <button onclick="_spuCloseProcessCheckModal()" style="width:30px;height:30px;border:none;background:#f1f5f9;border-radius:8px;cursor:pointer;color:#64748b;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">건명 또는 전달사항에 품질검사·품평·외관검사 단어가 들어있는 품목입니다. 필요하면 선택해서 신규로 등록하세요.</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <button onclick="_spuProcessCheckToggleAll()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;color:#475569;background:#f8fafc;cursor:pointer;">전체선택</button>
+      <span id="spuProcessCheckSelCount" style="margin-left:auto;font-size:11.5px;color:#64748b;">0건 선택</span>
+    </div>
+    <div id="spuProcessCheckBody" style="flex:1;overflow-y:auto;min-height:120px;display:flex;flex-direction:column;gap:6px;"></div>
+    <button onclick="_spuProcessCheckRegisterNew()" id="spuProcessCheckRegisterBtn" disabled style="margin-top:14px;padding:12px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;cursor:pointer;opacity:.4;">신규등록</button>
+  </div>
+</div>
+
 <!-- ===== 수주/공정 업데이트: 공정진행정보 차수 확인(애매한 매칭만) ===== -->
 <div id="spuMismatchModal" onclick="if(event.target===this)closeSpuMismatchModal()" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:18px;padding:20px;width:100%;max-width:640px;margin:16px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.2);">
