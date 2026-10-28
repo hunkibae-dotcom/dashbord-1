@@ -1745,6 +1745,14 @@
     function _saveDataCache(json) {
         try { sessionStorage.setItem(_DATA_CACHE_KEY, JSON.stringify({ ts: Date.now(), d: json })); } catch(e) {}
     }
+    // 캐시를 "네트워크 재조회 자체를 생략"하도록 바꾼 뒤로는, 저장(서버 반영) 후 allData를
+    // 화면에서만 바로 고쳐주는 기존 방식들(예: 확인/삭제/바코드 처리, 품목 수정)이 캐시에
+    // 반영 안 된 옛 사본을 계속 들고 있게 된다 — 그 상태로 재진입하면 방금 한 수정이
+    // 사라져 보인다. 저장이 성공할 때마다 캐시를 지워서, 다음 재진입에서만큼은 서버의
+    // 최신 값으로 다시 받아오게 한다(그 전까지의 평범한 재진입은 여전히 캐시를 그대로 씀).
+    function _invalidateDataCache() {
+        try { sessionStorage.removeItem(_DATA_CACHE_KEY); } catch(e) {}
+    }
     function _loadDataCache() {
         try {
             const raw = sessionStorage.getItem(_DATA_CACHE_KEY);
