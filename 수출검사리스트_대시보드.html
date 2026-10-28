@@ -10986,7 +10986,7 @@ async function _spuProcessCheckRegisterNew() {
   const doneKeys = new Set(items.map(_spuProcessCheckKey));
   _spuProcessCheckItems = _spuProcessCheckItems.filter(it => !doneKeys.has(_spuProcessCheckKey(it)));
   _spuProcessCheckSelected = new Set();
-  loadData();
+  loadData(true);
   btn.innerHTML = orig;
   if (_spuProcessCheckItems.length) _spuOpenProcessCheckModal(); else _spuCloseProcessCheckModal();
 }
