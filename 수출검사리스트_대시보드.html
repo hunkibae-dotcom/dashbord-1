@@ -11053,7 +11053,6 @@ function _spuProcessCheckToggleAll() {
 }
 function _spuProcessCheckUpdateSelUi() {
   document.getElementById('spuProcessCheckSelCount').textContent = _spuProcessCheckSelected.size + '건 선택';
-  [_document.getElementById ? null : null]; // no-op (가독용 자리 비움 방지)
   ['spuProcessCheckRegisterBtn', 'spuProcessCheckDismissBtn'].forEach(id => {
     const btn = document.getElementById(id);
     if (!btn) return;
