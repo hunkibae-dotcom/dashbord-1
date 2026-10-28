@@ -6213,28 +6213,28 @@ function _qcClfFileToBase64(file) {
   });
 }
 
-// 포장사진(골판지 박스 — 갈색, 청록색 바코드 라벨)과 검사사진(밝은 색 패널·바닥)은
-// 전체적인 색 분포가 뚜렷이 다르다는 점만 이용하는 단순 휴리스틱이다 — AI처럼 내용을
-// "이해"하는 게 아니라 그냥 색 비율만 보는 것이라 완벽하진 않지만, 외부 호출 없이
-// 바로 동작한다.
+// 갈색 비율로 "골판지 박스"를 가려내려 했는데, 나무 패널(연한 베이지/갈색)도 색이
+// 비슷해서 검사사진을 포장사진으로 잘못 판정하는 일이 많았다(버그 수정, 2026-10-29:
+// "심지어 포장사진 구별도 못하네" — 사용자 확인: "포장사진에는 분명하게 바코드가
+// 붙어있다"). 그래서 갈색 판정은 아예 빼고, 포장사진에 항상 붙어있는 청록색 바코드
+// 라벨이 보이는지만으로 판단한다 — 더 작은 특징이라 샘플 해상도를 좀 더 올렸다.
 function _qcClfDetectTypeFromImage(img) {
-  const w = 60, h = 60;
+  const w = 100, h = 100;
   const canvas = document.createElement('canvas');
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(img, 0, 0, w, h);
-  let tealCount = 0, brownCount = 0, n = 0;
+  let tealCount = 0, n = 0;
   try {
     const data = ctx.getImageData(0, 0, w, h).data;
     for (let i = 0; i < data.length; i += 4) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
       n++;
       if (g > 100 && b > 100 && r < 120 && (g - r) > 30) tealCount++; // 바코드 라벨의 청록색
-      if (r > 100 && r < 210 && (r - b) > 25 && (r - g) > 10) brownCount++; // 골판지 박스의 갈색
     }
   } catch (e) { return '검사'; } // 캔버스 픽셀을 못 읽으면(드문 보안 제약) 그냥 검사사진으로 둔다
   if (!n) return '검사';
-  return (tealCount / n > 0.01 || brownCount / n > 0.15) ? '포장' : '검사';
+  return (tealCount / n > 0.004) ? '포장' : '검사';
 }
 
 function _qcClfLoadImage(dataUrl) {
