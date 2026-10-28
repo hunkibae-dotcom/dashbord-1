@@ -6725,7 +6725,10 @@ function _qcClfPickCode(code, color, round) {
   if (!r) return;
   r.code = code; r.color = color; r.round = round; r.codeConfirmed = true;
   document.getElementById('qcClfConfirmCodeText').textContent = round + ' · ' + code + ' / ' + (color || '-');
-  document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
+  // 검사사진은 검색창이 "아니에요"로만 열리는 포장사진과 달리 기본으로 계속 떠있는
+  // 화면이라(요청, 2026-10-29), 고른 뒤에도 그대로 둬서 잘못 골랐으면 바로 다시 고를
+  // 수 있게 한다. 포장사진(아니에요로 연 경우)은 기존처럼 고르면 검색창을 닫는다.
+  if (r.type !== '검사') document.getElementById('qcClfCodeSearchWrap').style.display = 'none';
 }
 function _qcClfSkipCbm() {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
