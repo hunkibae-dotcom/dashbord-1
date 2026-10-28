@@ -7621,6 +7621,10 @@
             { label: '세로', width: '5.75%', align: 'right', get: () => '' },
             { label: '높이', width: '5.75%', align: 'right', get: () => '' },
             { label: '중량', width: '5.75%', align: 'right', get: () => '' },
+            // 요청, 2026-10-28: 엑셀엔 입고일 칼럼을 넣되, PDF는 칼럼 대신 제목에
+            // "O월.O일 입고 포장항목출력"으로 표기한다 — excelOnly 칼럼은 PDF 쪽에서
+            // 걸러낸다(pkgRunExport의 format==='xls' 분기 참고).
+            { label: '입고일', width: '6%', align: 'center', excelOnly: true, get: item => _pkgPrintMonthDay(item.arriveDate) },
         ];
         // 상차항목 출력(수출 현황 기준) — 납기일/상차 확정일을 추가하면서 칼럼이 늘어난
         // 만큼, 기존 5칸의 과하게 넓던 폭을 줄여서 7칸이 고르게 들어가게 했다.
