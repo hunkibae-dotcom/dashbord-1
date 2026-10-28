@@ -2005,6 +2005,11 @@
             }, 150);
         }
         _pkgAutoOpenView('openDefectAction', 'openPkgDefectActionView');
+        // 앱(shell.html) 홈화면 재구성(요청, 2026-10-28) — 신규품목확인/미회수/상차준비도
+        // 같은 방식으로 이 PC 화면을 iframe으로 띄워서 그대로 재사용한다.
+        _pkgAutoOpenView('openNewItems', 'openPkgNewModal');
+        _pkgAutoOpenView('openUnreceived', 'filterByUnreceivedStatus');
+        _pkgAutoOpenView('openLoadReady', 'filterByLoadReadyStatus');
         // (재정정, 2026-10-27) PE폼 전용 앱(PE폼발주_대시보드.html)의 "웹으로 열기"가
         // 엉뚱하게 그 앱 자신을 데스크톱 모드로 다시 띄우고 있었다 — 사용자 말대로
         // "실제 웹대시보드의 PE폼"(이 대시보드 안의 PE폼 탭)을 가리켜야 하므로 다시
