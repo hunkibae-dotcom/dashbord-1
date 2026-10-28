@@ -6481,11 +6481,20 @@ function _qcClfSkipCbm() {
 function _qcClfSaveConfirm() {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
   if (!r) return;
-  const w = document.getElementById('qcClfCbmW').value.trim();
-  const d = document.getElementById('qcClfCbmD').value.trim();
-  const h = document.getElementById('qcClfCbmH').value.trim();
-  const g = document.getElementById('qcClfCbmG').value.trim();
-  if (w || d || h || g) { r.cbm = { w, d, h, g }; r.cbmConfirmed = true; }
+  // "확인 완료"를 눌렀다는 것 자체가 사람이 다 보고 확정했다는 뜻이라, CBM 칸이
+  // 비어있어도(포장사진은 애초에 칸 자체가 없음) 확인된 걸로 쳐야 한다(버그 수정,
+  // 2026-10-29: "수정해서 확정 지었다고 해봤는데 그대로 확인필요가 떠있다" — 전엔
+  // CBM 네 칸이 전부 비어있으면 cbmConfirmed가 안 켜져서 이런 일이 생겼다).
+  if (r.type === '포장') {
+    r.cbm = { w: '', d: '', h: '', g: '' };
+  } else {
+    const w = document.getElementById('qcClfCbmW').value.trim();
+    const d = document.getElementById('qcClfCbmD').value.trim();
+    const h = document.getElementById('qcClfCbmH').value.trim();
+    const g = document.getElementById('qcClfCbmG').value.trim();
+    r.cbm = { w, d, h, g };
+  }
+  r.cbmConfirmed = true;
   _qcClfCloseConfirm();
   _qcClfRenderResults();
 }
