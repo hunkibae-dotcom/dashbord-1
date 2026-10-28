@@ -7525,11 +7525,24 @@ function resetProductSearchFilters() {
 }
 
 const _PS_NODATA_DEFAULT_HTML = '<i class="fa-solid fa-magnifying-glass" style="font-size:30px;display:block;margin-bottom:12px;color:var(--border);"></i><div style="font-size:13px;font-weight:500;">단품코드, 건명, 날짜, 공장으로 검색해 보세요.</div>';
+// 다른 문서(엑셀·워드 등)에서 복사해 붙여넣은 검색어에 눈엔 똑같아 보이지만 실제로는
+// 다른 문자가 섞여 들어오는 경우가 있다 — 특히 하이픈("FAM-57")이 워드 자동고침 등으로
+// en dash/non-breaking hyphen 같은 비슷한 문자로 바뀌어 붙여넣어지면, 시트에 실제로
+// 저장된 진짜 하이픈(U+002D)과 글자가 달라서 분명히 맞는 글자인데 검색이 안 된다(요청,
+// 2026-10-29). 전각 문자·줄바꿈 없는 공백은 NFKC 정규화로, 각종 대시류는 따로 일반
+// 하이픈으로, 폭이 없는 글자(zero-width)는 아예 제거해서 비교한다.
+function _normSearchText(s) {
+  return (s || '')
+    .normalize('NFKC')
+    .replace(/[‐-―−]/g, '-')
+    .replace(/[​-‍﻿]/g, '')
+    .trim();
+}
 function runProductSearch() {
-  const code = document.getElementById('psCode').value.trim().toLowerCase();
-  const name = document.getElementById('psName').value.trim().toLowerCase();
-  const color = document.getElementById('psColor').value.trim().toLowerCase();
-  const packer = document.getElementById('psPacker').value.trim().toLowerCase();
+  const code = _normSearchText(document.getElementById('psCode').value).toLowerCase();
+  const name = _normSearchText(document.getElementById('psName').value).toLowerCase();
+  const color = _normSearchText(document.getElementById('psColor').value).toLowerCase();
+  const packer = _normSearchText(document.getElementById('psPacker').value).toLowerCase();
   const fromStr = document.getElementById('psFrom').value;
   const toStr = document.getElementById('psTo').value;
   const factory = document.getElementById('psFactory').value;
