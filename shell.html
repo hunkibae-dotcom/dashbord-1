@@ -1568,6 +1568,7 @@
             if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '삭제 실패');
             const doneTuples = new Set(items.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + ((it.color&&it.color!=='-')?it.color:'')));
             allData = allData.filter(d2 => !doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:'')) || d2.source !== 'standard');
+            _invalidateDataCache();
             _pkgNiSelConfirm.clear();
             pkgNiRenderAll();
         } catch (e) {
