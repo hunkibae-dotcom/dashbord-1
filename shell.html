@@ -1372,6 +1372,301 @@
         }
     }
 
+    // ══════════ 신규품목 확인(네이티브, 요청 2026-10-28) ══════════
+    // 판정 기준은 PC 웹 대시보드(수출포장강화_대시보드.html)의 _pkgIsNewItem/
+    // _pkgMissingSpecList/_pkgMissingTypeList/_pkgBarcodeList와 반드시 같아야 한다 —
+    // 어긋나면 두 화면에 보이는 건수가 달라진다.
+    let _pkgNiSpecMap = {};
+    let _pkgNiActiveTab = 'confirm';
+    let _pkgNiSelConfirm = new Set(), _pkgNiSelBarcode = new Set();
+    let _pkgNiTypeSortKey = null, _pkgNiTypeSortAsc = true;
+    const PKG_NI_TYPE_SORT_DEFS = [['round','건명'], ['code','제품코드'], ['dueDate','납기일'], ['date','상차일'], ['arriveDate','입고일']];
+
+    async function _pkgNiFetchSpecMap() {
+        try {
+            const res = await fetch(GAS_URL + '?' + new URLSearchParams({ action: 'getProductAttrs' }), { signal: AbortSignal.timeout(20000) }).then(r => r.json());
+            if (res.result !== 'success' || !res.items) return;
+            const map = {};
+            res.items.forEach(it => { map[it.code] = it; });
+            _pkgNiSpecMap = map;
+            if (document.getElementById('pkgNewItemsOverlay').style.display === 'flex') pkgNiRenderAll();
+        } catch (e) {}
+    }
+    function _pkgNiKey(it) { return (it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + ((it.color && it.color!=='-') ? it.color : ''); }
+    function _pkgNiDedupByCode(list) {
+        const seen = new Map();
+        list.forEach(d => { if (!seen.has(d.code)) seen.set(d.code, d); });
+        return Array.from(seen.values());
+    }
+    // 확인: 수출 현황(source==='standard')에서 비고가 정확히 "신규"인 행만(코드 중복 제거 안 함).
+    function _pkgNiConfirmList() { return allData.filter(d => d.source === 'standard' && (d.memo||'').trim() === '신규'); }
+    // 미구성/유형선택 공통 기반: 수출 현황+출고 완료, 코드 단위로 중복 제거.
+    function _pkgNiBaseCodeList() { return _pkgNiDedupByCode(allData.filter(d => d.source === 'standard' || d.source === 'shipped')); }
+    function _pkgNiMissingList() {
+        return _pkgNiBaseCodeList().filter(d => { const s = _pkgNiSpecMap[d.code] || {}; return !s.productType || !s.boxHeight; });
+    }
+    // 유형 선택: PE폼 유형이 없는 코드 — 진행이 "재고활용"인 품목은 제외(요청, 2026-10-28 #2:
+    // "유형선택에서 진행이 재고활용인 품목은 제외해줘").
+    function _pkgNiTypeList() {
+        return _pkgNiBaseCodeList().filter(d => {
+            const s = _pkgNiSpecMap[d.code] || {};
+            if (s.peType) return false;
+            if ((d.status||'').replace(/\s+/g,'') === '재고활용') return false;
+            return true;
+        });
+    }
+    // 바코드: 수출 현황에서 바코드출력이 정확히 "N"이고, 미입고가 아닌 것(코드 중복 제거).
+    function _pkgNiBarcodeList() {
+        return _pkgNiDedupByCode(allData.filter(d => d.source === 'standard' && (d.barcodePrinted||'').toUpperCase() === 'N' && d.status !== '미입고'));
+    }
+
+    function openPkgNewItemsOverlay() {
+        pkgNiSwitchTab('confirm');
+        pkgNiRenderAll();
+        document.getElementById('pkgNewItemsOverlay').style.display = 'flex';
+    }
+    function closePkgNewItemsOverlay() {
+        document.getElementById('pkgNewItemsOverlay').style.display = 'none';
+    }
+    function pkgNiSwitchTab(tab) {
+        _pkgNiActiveTab = tab;
+        ['confirm','missing','type','barcode'].forEach(t => {
+            const panel = document.getElementById('pkgNiTab-' + t);
+            if (panel) panel.style.display = (t === tab) ? 'flex' : 'none';
+            const btn = document.querySelector('.pkgNiTabBtn[data-tab="' + t + '"]');
+            if (btn) {
+                btn.style.color = (t === tab) ? 'var(--text)' : 'var(--text-sub)';
+                btn.style.borderBottomColor = (t === tab) ? '#00B0FF' : 'transparent';
+            }
+        });
+    }
+    function pkgNiRenderAll() {
+        document.getElementById('pkgNiCnt-confirm').textContent = _pkgNiConfirmList().length;
+        document.getElementById('pkgNiCnt-missing').textContent = _pkgNiMissingList().length;
+        document.getElementById('pkgNiCnt-type').textContent = _pkgNiTypeList().length;
+        document.getElementById('pkgNiCnt-barcode').textContent = _pkgNiBarcodeList().length;
+        pkgNiRenderConfirm(); pkgNiRenderMissing(); pkgNiRenderType(); pkgNiRenderBarcode();
+    }
+
+    function _pkgNiRowMeta(it, extra) {
+        const parts = [`<span style="font-family:ui-monospace,monospace;">${it.code||'-'}</span>`, `<span>${(it.color&&it.color!=='-')?it.color:'-'} · ${it.qty||0}EA</span>`];
+        if (extra) parts.push(...extra);
+        return parts.join('');
+    }
+
+    // ── 탭1: 확인 ──
+    function pkgNiRenderConfirm() {
+        const list = _pkgNiConfirmList();
+        const body = document.getElementById('pkgNiBody-confirm');
+        if (!list.length) { body.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:var(--text-sub);">확인할 신규 품목이 없습니다.</div>'; }
+        else {
+            body.innerHTML = list.map(it => {
+                const key = _pkgNiKey(it);
+                const checked = _pkgNiSelConfirm.has(key) ? 'checked' : '';
+                return `<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border:1px solid var(--border);border-radius:10px;">
+                    <input type="checkbox" ${checked} onchange="pkgNiToggleOne('confirm','${key}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                        <span style="font-size:13px;font-weight:700;color:var(--text);">${it.round||'-'}</span>
+                        <div style="font-size:11px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;">${_pkgNiRowMeta(it)}</div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        _pkgNiUpdateSelUi('confirm');
+    }
+    function pkgNiToggleOne(tab, key, checked) {
+        const set = tab === 'confirm' ? _pkgNiSelConfirm : _pkgNiSelBarcode;
+        if (checked) set.add(key); else set.delete(key);
+        _pkgNiUpdateSelUi(tab);
+    }
+    function pkgNiToggleSelectAll(tab) {
+        const list = tab === 'confirm' ? _pkgNiConfirmList() : _pkgNiBarcodeList();
+        const set = tab === 'confirm' ? _pkgNiSelConfirm : _pkgNiSelBarcode;
+        const allSelected = list.length > 0 && list.every(it => set.has(_pkgNiKey(it)));
+        set.clear();
+        if (!allSelected) list.forEach(it => set.add(_pkgNiKey(it)));
+        if (tab === 'confirm') pkgNiRenderConfirm(); else pkgNiRenderBarcode();
+    }
+    function _pkgNiUpdateSelUi(tab) {
+        const set = tab === 'confirm' ? _pkgNiSelConfirm : _pkgNiSelBarcode;
+        const el = document.getElementById('pkgNiSel-' + tab);
+        if (el) el.textContent = set.size + '건 선택';
+        if (tab === 'confirm') {
+            const cBtn = document.getElementById('pkgNiConfirmBtn'), dBtn = document.getElementById('pkgNiDeleteBtn');
+            [cBtn, dBtn].forEach(b => { if (b) { b.disabled = set.size === 0; b.style.opacity = set.size === 0 ? '.4' : '1'; } });
+        } else {
+            const bBtn = document.getElementById('pkgNiBarcodeBtn');
+            if (bBtn) { bBtn.disabled = set.size === 0; bBtn.style.opacity = set.size === 0 ? '.4' : '1'; }
+        }
+    }
+    async function pkgNiConfirmNew() {
+        const list = _pkgNiConfirmList().filter(it => _pkgNiSelConfirm.has(_pkgNiKey(it)));
+        if (!list.length) return;
+        const btn = document.getElementById('pkgNiConfirmBtn');
+        const orig = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '처리 중...';
+        const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
+        const d = new Date();
+        const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+        try {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgConfirmNewItems', items: items, date: dateStr }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+            if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '확인 처리 실패');
+            const doneTuples = new Set(items.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + ((it.color&&it.color!=='-')?it.color:'')));
+            allData.forEach(d2 => { if (doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:''))) d2.memo = ''; });
+            _pkgNiSelConfirm.clear();
+            pkgNiRenderAll();
+        } catch (e) {
+            alert('확인 처리 실패: ' + ((e && e.message) || e));
+        } finally {
+            btn.innerHTML = orig; _pkgNiUpdateSelUi('confirm');
+        }
+    }
+    async function pkgNiDeleteNew() {
+        const list = _pkgNiConfirmList().filter(it => _pkgNiSelConfirm.has(_pkgNiKey(it)));
+        if (!list.length) return;
+        if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?')) return;
+        const btn = document.getElementById('pkgNiDeleteBtn');
+        const orig = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '삭제 중...';
+        const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
+        try {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgDeleteNewItems', items: items }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+            if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '삭제 실패');
+            const doneTuples = new Set(items.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + ((it.color&&it.color!=='-')?it.color:'')));
+            allData = allData.filter(d2 => !doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:'')) || d2.source !== 'standard');
+            _pkgNiSelConfirm.clear();
+            pkgNiRenderAll();
+        } catch (e) {
+            alert('삭제 실패: ' + ((e && e.message) || e));
+        } finally {
+            btn.innerHTML = orig; _pkgNiUpdateSelUi('confirm');
+        }
+    }
+
+    // ── 탭2: 미구성 품목 ──
+    function pkgNiRenderMissing() {
+        const list = _pkgNiMissingList();
+        const body = document.getElementById('pkgNiBody-missing');
+        if (!list.length) { body.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:var(--text-sub);">미구성 품목이 없습니다.</div>'; return; }
+        body.innerHTML = list.map(it => {
+            const s = _pkgNiSpecMap[it.code] || {};
+            const rid = 'pkgNiMs_' + it.code.replace(/[^A-Z0-9]/g,'_');
+            return `<div style="padding:9px 8px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:6px;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);">${it.round||'-'} <span style="font-family:ui-monospace,monospace;font-weight:600;color:var(--text-sub);font-size:11.5px;">${it.code}</span></div>
+                <div style="display:flex;gap:6px;">
+                    <input id="${rid}_pt" type="text" placeholder="제품종류" value="${s.productType||''}" style="flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
+                    <input id="${rid}_bh" type="text" placeholder="PE폼 높이" value="${s.boxHeight||''}" style="width:90px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
+                    <button onclick="pkgNiSaveMissingSpec('${it.code}')" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;-webkit-appearance:none;">저장</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    async function pkgNiSaveMissingSpec(code) {
+        const rid = 'pkgNiMs_' + code.replace(/[^A-Z0-9]/g,'_');
+        const productType = (document.getElementById(rid + '_pt').value || '').trim();
+        const boxHeight = (document.getElementById(rid + '_bh').value || '').trim();
+        if (!productType && !boxHeight) return;
+        const payload = { action: 'updateProductSpec', code: code };
+        if (productType) payload.productType = productType;
+        if (boxHeight) payload.boxHeight = boxHeight;
+        _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code: code }, productType ? { productType } : {}, boxHeight ? { boxHeight } : {});
+        try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
+        pkgNiRenderAll();
+    }
+
+    // ── 탭3: 유형 선택 ──
+    function _pkgNiTypeDisplayList() {
+        const list = _pkgNiTypeList();
+        if (!_pkgNiTypeSortKey) return list;
+        const field = _pkgNiTypeSortKey;
+        return [...list].sort((a,b) => {
+            const av = (a[field]||'').toString(), bv = (b[field]||'').toString();
+            if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
+            return _pkgNiTypeSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+    }
+    function pkgNiTypeSortBtnsHtml() {
+        return PKG_NI_TYPE_SORT_DEFS.map(([k,label]) => {
+            const active = _pkgNiTypeSortKey === k;
+            const arrow = active ? (_pkgNiTypeSortAsc ? '↑' : '↓') : '';
+            const style = active
+                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
+                : 'border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);';
+            return `<button onclick="pkgNiTypePickSort('${k}')" style="${style}-webkit-appearance:none;">${label} ${arrow}</button>`;
+        }).join('');
+    }
+    function pkgNiTypePickSort(key) {
+        if (_pkgNiTypeSortKey !== key) { _pkgNiTypeSortKey = key; _pkgNiTypeSortAsc = true; }
+        else if (_pkgNiTypeSortAsc) { _pkgNiTypeSortAsc = false; }
+        else { _pkgNiTypeSortKey = null; _pkgNiTypeSortAsc = true; }
+        pkgNiRenderType();
+    }
+    function pkgNiRenderType() {
+        const sortEl = document.getElementById('pkgNiSortBtns-type');
+        if (sortEl) sortEl.innerHTML = pkgNiTypeSortBtnsHtml();
+        const list = _pkgNiTypeDisplayList();
+        const body = document.getElementById('pkgNiBody-type');
+        if (!list.length) { body.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:var(--text-sub);">유형을 고를 품목이 없습니다.</div>'; return; }
+        body.innerHTML = list.map(it => {
+            // 납기/상차/입고일 표시(요청, 2026-10-28 #3).
+            const dates = `<span>납기 ${it.dueDate||'-'}</span><span>상차 ${it.date||'-'}</span><span>입고 ${it.arriveDate||'-'}</span>`;
+            return `<div style="padding:9px 8px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:6px;">
+                <div style="font-size:13px;font-weight:700;color:var(--text);">${it.round||'-'} <span style="font-family:ui-monospace,monospace;font-weight:600;color:var(--text-sub);font-size:11.5px;">${it.code}</span></div>
+                <div style="font-size:10.5px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;">${dates}</div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                    ${PKG_PE_TYPE_OPTIONS_NI.map(t => `<button onclick="pkgNiSaveType('${it.code}','${t}')" style="flex:1;min-width:60px;padding:7px 4px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-weight:700;font-size:11.5px;cursor:pointer;-webkit-appearance:none;">${t}</button>`).join('')}
+                </div>
+            </div>`;
+        }).join('');
+    }
+    const PKG_PE_TYPE_OPTIONS_NI = ['일자형','코너형','패드형','롤형'];
+    async function pkgNiSaveType(code, type) {
+        _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code, peType: type });
+        try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: code, peType: type }), signal: AbortSignal.timeout(20000) }); } catch (e) {}
+        pkgNiRenderAll();
+    }
+
+    // ── 탭4: 바코드 ──
+    function pkgNiRenderBarcode() {
+        const list = _pkgNiBarcodeList();
+        const body = document.getElementById('pkgNiBody-barcode');
+        if (!list.length) { body.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:var(--text-sub);">바코드 출력 대상이 없습니다.</div>'; }
+        else {
+            body.innerHTML = list.map(it => {
+                const key = _pkgNiKey(it);
+                const checked = _pkgNiSelBarcode.has(key) ? 'checked' : '';
+                return `<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border:1px solid var(--border);border-radius:10px;">
+                    <input type="checkbox" ${checked} onchange="pkgNiToggleOne('barcode','${key}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                        <span style="font-size:13px;font-weight:700;color:var(--text);">${it.round||'-'}</span>
+                        <div style="font-size:11px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;">${_pkgNiRowMeta(it)}<span>납기 ${it.dueDate||'-'}</span><span>상차 ${it.date||'-'}</span></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        _pkgNiUpdateSelUi('barcode');
+    }
+    async function pkgNiMarkBarcode() {
+        const list = _pkgNiBarcodeList().filter(it => _pkgNiSelBarcode.has(_pkgNiKey(it)));
+        if (!list.length) return;
+        const btn = document.getElementById('pkgNiBarcodeBtn');
+        const orig = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '처리 중...';
+        const items = list.map(it => ({ code: it.code, round: it.round, color: it.color }));
+        try {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgMarkBarcodePrinted', items: items }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+            if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '처리 실패');
+            const doneCodes = new Set(items.map(it => (it.code||'').toUpperCase()));
+            allData.forEach(d2 => { if (doneCodes.has((d2.code||'').toUpperCase())) d2.barcodePrinted = 'Y'; });
+            _pkgNiSelBarcode.clear();
+            pkgNiRenderAll();
+        } catch (e) {
+            alert('처리 실패: ' + ((e && e.message) || e));
+        } finally {
+            btn.innerHTML = orig; _pkgNiUpdateSelUi('barcode');
+        }
+    }
+
     // ── 테마 ─────────────────────────────────────────────
     function applyTheme(dark) {
         document.documentElement.classList.toggle('dark', dark);
