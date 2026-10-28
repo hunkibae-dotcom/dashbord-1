@@ -6434,11 +6434,18 @@ function _qcClfFuzzyMatchCode(rawText, regexCode) {
   return { code: best, color: colorPick };
 }
 
+// 검사사진(손글씨)은 Tesseract로는 근본적으로 못 읽는다는 게 여러 번의 실제 사진
+// 테스트로 확인됐다(요청, 2026-10-29: "제품코드나 색상,cbm을 인식하는건 없애버리고
+// 그냥 검사사진은 지금 검색해서 보고서기준으로 찾는것처럼 찾아서 확정을지을게") — 더 이상
+// 검사사진에는 OCR 자체를 돌리지 않는다(느리기만 하고 거의 항상 실패였음). 포장사진
+// (인쇄 라벨)만 기존처럼 OCR로 코드/색상/CBM을 읽는다. 검사사진은 항상 "코드미상"으로
+// 돌아가고, 확인창에서 사람이 보고서 목록을 직접 검색해서 고른다.
 async function _qcClfDetectOne(file) {
   const dataUrl = await _qcClfFileToBase64(file);
   const img = await _qcClfLoadImage(dataUrl);
   const type = _qcClfDetectTypeFromImage(img);
   const result = { type: type, code: '', color: '', cbm_w: '', cbm_d: '', cbm_h: '', cbm_g: '', confidence: 'low', ocrNote: '' };
+  if (type !== '포장') return result;
   try {
     const worker = await _qcClfGetOcrWorker();
     // 사진 타입에 맞는 페이지 분할 모드로 바꾼 뒤 읽는다(요청, 2026-10-29).
@@ -6474,8 +6481,7 @@ async function _qcClfDetectOne(file) {
     if (cbmMatch) { result.cbm_w = cbmMatch[1]; result.cbm_d = cbmMatch[2]; result.cbm_h = cbmMatch[3]; }
     const gMatch = rawText.match(/(\d+(?:\.\d+)?)\s*KG/);
     if (gMatch) result.cbm_g = gMatch[1];
-    // 실제 보고서에 있는 진짜 코드 목록과 대조해 OCR 오인식을 바로잡는다 — 정규식이
-    // 코드를 못 찾았어도(손글씨 등) 여기서 다시 한번 시도한다.
+    // 실제 보고서에 있는 진짜 코드 목록과 대조해 OCR 오인식을 바로잡는다.
     const fuzzy = _qcClfFuzzyMatchCode(rawText, result.code);
     if (fuzzy) {
       result.code = fuzzy.code;
