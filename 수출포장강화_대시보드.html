@@ -4394,9 +4394,13 @@
             pageData.forEach((item, _pageIdx) => {
                 const _rowIdx = _pkgPageStart + _pageIdx;
                 const tr = document.createElement('tr');
-                tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;';
-                tr.onmouseenter = function(){ this.style.background='#f8fafc'; };
-                tr.onmouseleave = function(){ this.style.background=''; };
+                // 상차 준비완료 행 강조(요청, 2026-10-28) — 연한 파스텔 노란색(25% 투명도).
+                // 마우스오버 시 색이 사라지지 않도록 hover 핸들러도 이 색을 기준으로 되돌린다.
+                const _isShipReadyRow = _pkgNoteHasShipReady(item.note);
+                const _shipReadyBg = 'rgba(250,204,21,.25)';
+                tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;' + (_isShipReadyRow ? `background:${_shipReadyBg};` : '');
+                tr.onmouseenter = function(){ this.style.background = _isShipReadyRow ? _shipReadyBg : '#f8fafc'; };
+                tr.onmouseleave = function(){ this.style.background = _isShipReadyRow ? _shipReadyBg : ''; };
                 const _pkgKey = 'pkg_' + _rowIdx;
                 window._pkgRowMap[_pkgKey] = item;
                 if (_pkgMultiSelectMode) {
