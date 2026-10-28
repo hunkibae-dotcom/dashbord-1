@@ -3248,6 +3248,10 @@
                 tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updateRegDate', code: item.code, round: item.round, color: item.color, regDate: regDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
                 item.regDate = regDate;
             }
+            if (arriveDate) {
+                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updateArriveDate', code: item.code, round: item.round, color: item.color, arriveDate: arriveDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
+                item.arriveDate = arriveDate;
+            }
             if (sendPallet) {
                 tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updatePallet', code: item.code, round: item.round, color: item.color, pallet: sendPallet }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
                 item.pallet = sendPallet;
