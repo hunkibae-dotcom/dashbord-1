@@ -214,7 +214,11 @@
     let _pkgNewItemsFrameLoaded = false;
     function openPkgNewItemsOverlay() {
         const f = document.getElementById('pkgNewItemsFrame');
-        if (!_pkgNewItemsFrameLoaded) { f.src = '수출포장강화_대시보드.html?forceDesktop=1&openNewItems=1'; _pkgNewItemsFrameLoaded = true; }
+        // 불량조치/PE폼과 달리 이 모달은 원래 폰 폭에 맞게 줄어들도록(max-width:94vw)
+        // 만들어져 있어서, forceDesktop=1로 PC 폭(1280px)을 강제하면 오히려 PC 웹처럼
+        // 축소되어 보인다(요청, 2026-10-28: "웹으로 넘어가지는 느낌"). 그래서 이것만
+        // forceDesktop 없이 폰 폭 그대로 띄운다.
+        if (!_pkgNewItemsFrameLoaded) { f.src = '수출포장강화_대시보드.html?openNewItems=1'; _pkgNewItemsFrameLoaded = true; }
         document.getElementById('pkgNewItemsOverlay').style.display = 'flex';
     }
     function closePkgNewItemsOverlay() {
