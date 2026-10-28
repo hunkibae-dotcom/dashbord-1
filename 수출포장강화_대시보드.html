@@ -7557,7 +7557,9 @@
                     pkgCloseExportChoiceModal();
                 } else {
                     statusEl.textContent = 'PDF 만드는 중...';
-                    await _pkgRenderGenericPrintPdf(Object.assign({ title: meta.title, columns: meta.columns, rows: meta.rows, filename: meta.filenameBase + '.pdf', showPalletTotal: meta.showPalletTotal, orientation: orientation || 'portrait' }, meta.pdfOpts || {}));
+                    // excelOnly 칼럼(예: 포장항목 출력의 입고일)은 PDF엔 안 넣는다 — 대신
+                    // 제목(pdfTitle)에 반영되어 있다(요청, 2026-10-28).
+                    await _pkgRenderGenericPrintPdf(Object.assign({ title: meta.pdfTitle || meta.title, columns: meta.columns.filter(c => !c.excelOnly), rows: meta.rows, filename: meta.filenameBase + '.pdf', showPalletTotal: meta.showPalletTotal, orientation: orientation || 'portrait' }, meta.pdfOpts || {}));
                     pkgCloseExportChoiceModal();
                 }
             } catch (e) {
