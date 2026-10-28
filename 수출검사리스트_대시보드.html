@@ -2332,8 +2332,26 @@ function _saveArchiveCache(totals, rows) {
   } catch (e) { /* 용량 초과 등은 무시 — 캐시는 있으면 좋고 없어도 그만이라 fallback은 그냥 매번 새로 받아오는 기존 동작 */ }
 }
 
+// 진행중 리스트 세션 캐시(요청, 2026-10-29: "F.WORK 앱을 아예 종료하지않는이상 데이터는
+// 유지가되었으면 좋겠어") — 뒤로가기→F.WORK 초기화면→재진입을 반복해도 이 캐시가 있으면
+// 네트워크를 다시 타지 않는다. sessionStorage라 앱이 실제로 종료될 때만 비워진다.
+// 상태 변경 등 로컬 수정은 _saveMiOverride(localStorage, applyMiOverrides가 항상 다시
+// 입혀줌)로 따로 관리되니, 이 캐시가 약간 오래된 원본이어도 최신 수정 자체는 안 날아간다.
+const QC_ACTIVE_CACHE_KEY = 'qc_active_cache_v1';
+function _loadActiveCache() {
+  try {
+    const raw = sessionStorage.getItem(QC_ACTIVE_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+function _saveActiveCache(rows) {
+  try { sessionStorage.setItem(QC_ACTIVE_CACHE_KEY, JSON.stringify(rows)); } catch (e) {}
+}
+
 // ===== FETCH =====
-async function loadData() {
+// force=true면 캐시를 건너뛰고 실제로 다시 받아온다 — 서버에 뭔가 반영한 직후의 호출부들과
+// 5분 자동 새로고침(아래 setInterval)은 항상 force=true로 부른다.
+async function loadData(force = false) {
   setConnStatus('loading');
   const btn = document.getElementById('syncBtn');
   const icon = document.getElementById('syncIcon');
@@ -2356,30 +2374,43 @@ async function loadData() {
     renderQualityCharts();
   }
 
-  // 진행중 리스트(작고 빠름)와 누적 이력(크고 느림)을 서로 기다리지 않고 각자 도착하는 대로 반영
-  const activePromise = Promise.all(
-    FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
-  ).then(results => {
-    // 자동 새로고침(5분 간격) 중 구글시트/GAS 쪽이 예외를 던지지 않고도 그 공장만 0건을
-    // 돌려주는 경우가 있다(배포 교체 직후 등) — 방금 전까지 데이터가 있던 공장이 이번만
-    // 갑자기 0건이면 네트워크 오류와 똑같이 의심해서, 그 공장은 이전 화면을 그대로 두고
-    // 경고 배너로 알린다. 그래야 "작업하다 갑자기 전부 0개로 바뀐다"처럼 안 보인다.
-    results.forEach((rows, i) => {
-      const f = FACTORIES[i];
-      if (rows.length === 0 && _lastFactoryRows[f.key] && _lastFactoryRows[f.key].length > 0) {
-        loadErrors.push(`${f.label} 검사항목 리스트가 이번엔 0건으로 응답해서 이전 데이터를 유지했어요 (일시적 오류로 보임)`);
-        results[i] = _lastFactoryRows[f.key];
-      } else if (rows.length > 0) {
-        _lastFactoryRows[f.key] = rows;
-      }
-    });
-    allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
+  // 진행중 리스트 — 세션 캐시가 있으면 그대로 쓰고 네트워크 자체를 생략한다.
+  const activeCached = !force && _loadActiveCache();
+  let activePromise;
+  if (activeCached) {
+    allData = activeCached;
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
     applyFilters();
-    renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
-    _hideQcInitLoadingOverlay(); // 진행중 리스트(실제로 조작하는 대상)가 준비되는 시점 = 눌러도 되는 시점
-  });
+    renderQualityCharts();
+    _hideQcInitLoadingOverlay();
+    activePromise = Promise.resolve();
+  } else {
+    activePromise = Promise.all(
+      FACTORIES.map(f => fetchFactory(f).catch(e => { loadErrors.push(`${f.label} 검사항목 리스트: ${e.message}`); return []; }))
+    ).then(results => {
+      // 자동 새로고침(5분 간격) 중 구글시트/GAS 쪽이 예외를 던지지 않고도 그 공장만 0건을
+      // 돌려주는 경우가 있다(배포 교체 직후 등) — 방금 전까지 데이터가 있던 공장이 이번만
+      // 갑자기 0건이면 네트워크 오류와 똑같이 의심해서, 그 공장은 이전 화면을 그대로 두고
+      // 경고 배너로 알린다. 그래야 "작업하다 갑자기 전부 0개로 바뀐다"처럼 안 보인다.
+      results.forEach((rows, i) => {
+        const f = FACTORIES[i];
+        if (rows.length === 0 && _lastFactoryRows[f.key] && _lastFactoryRows[f.key].length > 0) {
+          loadErrors.push(`${f.label} 검사항목 리스트가 이번엔 0건으로 응답해서 이전 데이터를 유지했어요 (일시적 오류로 보임)`);
+          results[i] = _lastFactoryRows[f.key];
+        } else if (rows.length > 0) {
+          _lastFactoryRows[f.key] = rows;
+        }
+      });
+      allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
+      applyMiOverrides(allData);
+      _rpInvalidateKeyIndex();
+      applyFilters();
+      renderQualityCharts(); // 누적 차트는 allData(오늘 검사분)도 포함하므로 도착 시점에 다시 반영
+      _hideQcInitLoadingOverlay(); // 진행중 리스트(실제로 조작하는 대상)가 준비되는 시점 = 눌러도 되는 시점
+      _saveActiveCache(allData);
+    });
+  }
 
   const archivePromise = Promise.all(
     ARCHIVES.map(f => fetchArchiveData(f).catch(e => { loadErrors.push(`${f.label} 검사완료 리스트(누적 이력): ${e.message}`); return null; }))
