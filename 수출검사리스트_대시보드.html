@@ -10646,7 +10646,7 @@ async function qcSortInspectList(targetFacs) {
     statusEl.style.color = '#16a34a';
     statusEl.textContent = '✓ ' + msgs.join(' / ');
     // 정렬로 "신규↓" 구분선 아래 구성이 실제로 바뀌었으니 최신 상태를 다시 받아온다.
-    await loadData();
+    await loadData(true);
     qcNewRenderList();
   } catch (e) {
     statusEl.style.color = '#dc2626';
