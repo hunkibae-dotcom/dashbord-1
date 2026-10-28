@@ -1395,6 +1395,7 @@
             const map = {};
             res.items.forEach(it => { map[it.code] = it; });
             _pkgNiSpecMap = map;
+            pkgNiUpdateHomeCounts();
             if (document.getElementById('pkgNewItemsOverlay').style.display === 'flex') pkgNiRenderAll();
         } catch (e) {}
     }
