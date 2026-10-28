@@ -1446,11 +1446,21 @@
             }
         });
     }
+    // 홈 화면 슬라이드 카드의 탭별 건수(요청, 2026-10-29: "각 단계별 수량 표시가
+    // 안되어있어") — 오버레이를 열기 전에도 보이도록 renderAll()에서 따로 호출한다.
+    function pkgNiUpdateHomeCounts() {
+        const sv = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+        sv('pkgNiHomeCnt-confirm', _pkgNiConfirmList().length);
+        sv('pkgNiHomeCnt-missing', _pkgNiMissingList().length);
+        sv('pkgNiHomeCnt-type', _pkgNiTypeList().length);
+        sv('pkgNiHomeCnt-barcode', _pkgNiBarcodeList().length);
+    }
     function pkgNiRenderAll() {
         document.getElementById('pkgNiCnt-confirm').textContent = _pkgNiConfirmList().length;
         document.getElementById('pkgNiCnt-missing').textContent = _pkgNiMissingList().length;
         document.getElementById('pkgNiCnt-type').textContent = _pkgNiTypeList().length;
         document.getElementById('pkgNiCnt-barcode').textContent = _pkgNiBarcodeList().length;
+        pkgNiUpdateHomeCounts();
         pkgNiRenderConfirm(); pkgNiRenderMissing(); pkgNiRenderType(); pkgNiRenderBarcode();
     }
 
