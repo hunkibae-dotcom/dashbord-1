@@ -10221,8 +10221,10 @@ const QC_TAG_LABELS = { new: '신규', due: '납기변경', pack: '포장변경'
 const QC_TAG_CLS = { new: 'bg-amber-50 text-amber-700', due: 'bg-violet-50 text-violet-700', pack: 'bg-sky-50 text-sky-700', bom: 'bg-rose-50 text-rose-700' };
 let _qcNotifyFac = 'all';
 let _qcNotifySelected = new Set();
+// "신규"(new)는 "등록" 탭에서 이미 보이므로 "확인" 탭에서는 뺀다(요청, 2026-10-29:
+// "신규품목확인의 확인단계에서 신규는 제외해줘 어차피 등록에서 볼수있으니까").
 function _qcNotifyItems() {
-  const items = allData.filter(d => d.변경태그 && d.변경태그.length);
+  const items = allData.filter(d => d.변경태그 && d.변경태그.some(t => t !== 'new'));
   return _qcNotifyFac === 'all' ? items : items.filter(d => d.공장 === _qcNotifyFac);
 }
 function _qcNotifyRenderChips() {
