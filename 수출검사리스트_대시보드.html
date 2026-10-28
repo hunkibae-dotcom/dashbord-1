@@ -6298,6 +6298,7 @@ function _qcClfRenderResults() {
           ${needsReview ? reviewLabel : '<span style="font-size:10px;font-weight:700;color:#16a34a;"><i class="fa-solid fa-check"></i> 자동 확정</span>'}
         </div>
         <div style="font-size:11px;color:var(--label);">CBM ${r.cbm.w || '-'}×${r.cbm.d || '-'}×${r.cbm.h || '-'} · ${r.cbm.g || '-'}kg</div>
+        ${r.detectError ? `<div style="font-size:10.5px;color:#dc2626;margin-top:2px;word-break:break-all;">${errAttr}</div>` : ''}
       </div>
       <button onclick="_qcClfOpenConfirm(${r.idx})" style="flex-shrink:0;font-size:11px;font-weight:700;color:#6D5CE8;background:none;border:none;cursor:pointer;">수정</button>
     </div>`;
