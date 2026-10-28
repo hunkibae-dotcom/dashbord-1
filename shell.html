@@ -1546,6 +1546,7 @@
             if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '확인 처리 실패');
             const doneTuples = new Set(items.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + ((it.color&&it.color!=='-')?it.color:'')));
             allData.forEach(d2 => { if (doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:''))) d2.memo = ''; });
+            _invalidateDataCache();
             _pkgNiSelConfirm.clear();
             pkgNiRenderAll();
         } catch (e) {
