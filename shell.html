@@ -2142,7 +2142,10 @@
     }
 
     function renderWorkLog() {
+        // "이전 작업 LOG" 슬라이드를 5페이지 재구성(요청, 2026-10-28)하면서 뺐다 —
+        // #workLogList가 이제 없으니 조용히 빠져나간다(다른 곳에서 호출해도 에러 없게).
         const list = document.getElementById('workLogList');
+        if (!list) return;
         const lastDate = _lastWorkDate();
 
         if (lastDate && rawWorkLogRows && rawWorkLogRows.length > 1) {
