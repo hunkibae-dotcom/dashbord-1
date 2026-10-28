@@ -8580,7 +8580,7 @@
         // 탭3(유형 선택): 건명/제품코드/제품유형/CBM/진행상태 정렬(요청, 2026-10-28로
         // 제품유형·CBM·진행상태 표시와 함께 정렬 버튼도 각각 추가).
         let _pkgMissingTypeSortKey = null, _pkgMissingTypeSortAsc = true;
-        const PKG_MISSING_TYPE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['productType', '제품유형'], ['_cbm', 'CBM'], ['statusLabel', '진행상태']];
+        const PKG_MISSING_TYPE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['country', '사업장'], ['productType', '제품유형'], ['_cbm', 'CBM'], ['statusLabel', '진행상태']];
         function _pkgMissingTypeSortBtnsHtml() {
             return PKG_MISSING_TYPE_SORT_DEFS.map(([k, label]) => {
                 const active = _pkgMissingTypeSortKey === k;
@@ -8839,6 +8839,7 @@
                             <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
                             <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
                                 <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.code)}', event)">${it.code}</span>
+                                ${it.country ? `<span style="font-size:10px;font-weight:800;color:#0284c7;background:#0284c71a;border-radius:6px;padding:1.5px 7px;">${it.country}</span>` : ''}
                                 <span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${it.productType || '제품유형 미입력'}</span>
                                 <span>높이 ${it.boxHeight || '-'}</span>
                                 <span>CBM ${it._cbmDisplay}</span>
