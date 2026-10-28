@@ -10898,14 +10898,13 @@ function _spuProcessCheckToggleOne(key, checked) {
   if (checked) _spuProcessCheckSelected.add(key); else _spuProcessCheckSelected.delete(key);
   _spuProcessCheckUpdateSelUi();
 }
+// 검색으로 걸러진 목록 기준으로 전체선택/해제한다 — 검색 전에 고른 선택은 그대로 둔다.
 function _spuProcessCheckToggleAll() {
-  const allSelected = _spuProcessCheckItems.length > 0 && _spuProcessCheckItems.every(it => _spuProcessCheckSelected.has(_spuProcessCheckKey(it)));
-  _spuProcessCheckSelected.clear();
-  if (!allSelected) _spuProcessCheckItems.forEach(it => _spuProcessCheckSelected.add(_spuProcessCheckKey(it)));
-  document.querySelectorAll('#spuProcessCheckBody input[type=checkbox]').forEach((cb, idx) => {
-    cb.checked = _spuProcessCheckSelected.has(_spuProcessCheckKey(_spuProcessCheckItems[idx]));
-  });
-  _spuProcessCheckUpdateSelUi();
+  const list = _spuProcessCheckDisplayList();
+  const allSelected = list.length > 0 && list.every(it => _spuProcessCheckSelected.has(_spuProcessCheckKey(it)));
+  if (allSelected) list.forEach(it => _spuProcessCheckSelected.delete(_spuProcessCheckKey(it)));
+  else list.forEach(it => _spuProcessCheckSelected.add(_spuProcessCheckKey(it)));
+  _spuProcessCheckRenderBody();
 }
 function _spuProcessCheckUpdateSelUi() {
   document.getElementById('spuProcessCheckSelCount').textContent = _spuProcessCheckSelected.size + '건 선택';
