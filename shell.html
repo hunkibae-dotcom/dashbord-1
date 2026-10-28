@@ -3259,6 +3259,7 @@
         });
         try {
             await Promise.all(tasks);
+            _invalidateDataCache(); // 방금 고친 내용이 다음 재진입에서 옛 캐시로 되돌아가지 않게
             resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다.`;
         } catch (e) {
             resultEl.textContent = '일부 반영 중 오류가 발생했습니다 — 새로고침 후 확인해주세요.';
