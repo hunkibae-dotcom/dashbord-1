@@ -6038,7 +6038,7 @@
           <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">일정</span>
           <span id="ieScheduleToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
         </div>
-        <div id="ieScheduleViewWrap" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+        <div id="ieScheduleViewWrap" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;">
           <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
             <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">납기일</div>
             <div id="ieDueDateView" style="font-size:12.5px;font-weight:800;color:#F59E0B;">-</div>
@@ -6051,8 +6051,12 @@
             <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">포장일</div>
             <div id="ieRegDateView" style="font-size:12.5px;font-weight:800;color:#00B0FF;">-</div>
           </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">입고일</div>
+            <div id="ieArriveDateView" style="font-size:12.5px;font-weight:800;color:#7C3AED;">-</div>
+          </div>
         </div>
-        <div id="ieScheduleEditWrap" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:7px;">
+        <div id="ieScheduleEditWrap" style="display:none;grid-template-columns:1fr 1fr 1fr 1fr;gap:7px;">
           <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
             <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">납기일</div>
             <input id="ieDueDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
@@ -6064,6 +6068,10 @@
           <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
             <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">포장일</div>
             <input id="ieRegDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
+          </div>
+          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
+            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:5px;">입고일</div>
+            <input id="ieArriveDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
           </div>
         </div>
         <div id="ieScheduleHint" style="display:none;font-size:10.5px;color:var(--label);margin-top:8px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
