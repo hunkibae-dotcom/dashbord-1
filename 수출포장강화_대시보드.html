@@ -9016,6 +9016,22 @@
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '입고일 반영 실패');
                 }
 
+                // 상차 준비완료 일괄 체크(요청, 2026-10-28) — 상태변경으로 "수출 현황"
+                // 행이 지워지기 전에 먼저 반영한다. 품목마다 기존 비고 내용은 그대로
+                // 두고 "상차 준비완료" 문구만 추가한다(_pkgNoteWithShipReady).
+                if (shipReadyChecked) {
+                    const noteItems = _pkgBulkItems.map(it => {
+                        const rowItem = (window._pkgRowMap && window._pkgRowMap[it.key]) || {};
+                        return { code: it.code, round: it.round, color: it.color, note: _pkgNoteWithShipReady((rowItem.note || '').toString().trim(), true) };
+                    });
+                    const res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgUpdateNoteBatch', items: noteItems }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '상차 준비완료 반영 실패');
+                }
+
                 if (_pkgBulkStatus) {
                     const isIncoming = (_pkgBulkStatus === '입고' || _pkgBulkStatus === '일부입고');
                     const action = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
