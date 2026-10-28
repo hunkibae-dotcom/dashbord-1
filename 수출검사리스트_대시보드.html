@@ -6283,14 +6283,13 @@ function _qcClfGetOcrWorker() {
 // FDD0016JNN)이라 이 패턴으로 OCR 결과에서 찾는다. CBM은 "600 x 500 x 400" / "10.5Kg"
 // 형태를 정규식으로 찾는다 — 전부 추측이라 틀릴 수 있으니, 찾았어도 OCR 자체 확신도가
 // 낮으면 confidence:'low'로 둬서 사람이 다시 확인하게 한다.
-// OCR은 픽셀 수에 비례해서 느려진다 — 화면/업로드용 1280px 사진을 그대로 넣으면
-// 포장사진처럼 글자가 크고 또렷해서 사실 그렇게까지 큰 사진이 필요 없는 경우에도
-// 매번 느리다(요청, 2026-10-29: "포장사진 정도는 바로바로 빠르게 인식해야 정상").
-// OCR에 넣을 사본만 따로 900px로 한 번 더 줄인다(화면에 보이는 사진 자체는 그대로).
-function _qcClfOcrInput(img, maxDim) {
-  const scale = Math.min(1, maxDim / Math.max(img.naturalWidth || 1, img.naturalHeight || 1));
-  const w = Math.max(1, Math.round((img.naturalWidth || 1) * scale));
-  const h = Math.max(1, Math.round((img.naturalHeight || 1) * scale));
+// 예전엔 속도를 위해 OCR용 사본을 900px로 한 번 더 줄였는데, 손글씨(검사사진) 인식률이
+// 너무 안 좋다는 피드백으로(요청, 2026-10-29: "인식할때는 사진을 원본크기로 보면서
+// 해야 잘될거같다") 더 이상 줄이지 않고 원본 해상도를 그대로 OCR에 넣는다 — 사진이
+// 크면 그만큼 느려지지만, 지금은 정확도가 우선이다.
+function _qcClfOcrInput(img) {
+  const w = img.naturalWidth || 1;
+  const h = img.naturalHeight || 1;
   const canvas = document.createElement('canvas');
   canvas.width = w; canvas.height = h;
   const ctx = canvas.getContext('2d');
