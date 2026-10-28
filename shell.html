@@ -1716,8 +1716,14 @@
     }
 
     // ── 데이터 캐시 (sessionStorage: 앱 종료 전까지 유지) ──
+    // 예전엔 5분 TTL을 두고 캐시를 적용한 뒤에도 매번 다시 네트워크로 새로고침을 했는데,
+    // 그래서 포장강화/품질검사 등을 쓰다가 뒤로가기→F.WORK 초기화면→다시 들어가기만
+    // 해도 매번 "불러오는 중"이 다시 뜨는 문제가 있었다(요청, 2026-10-29: "F.WORK 앱을
+    // 아예 종료하지않는이상 데이터는 유지가되었으면 좋겠어"). 이제 캐시가 있으면 TTL과
+    // 무관하게 그대로 쓰고 네트워크 재조회 자체를 생략한다 — sessionStorage는 앱이 실제로
+    // 종료될 때(프로세스 종료)만 비워지므로, 이 요청사항과 정확히 같은 수명이다. 최신
+    // 데이터가 필요하면 새로고침 버튼(loadData(true))으로 직접 받으면 된다.
     const _DATA_CACHE_KEY = 'shell_data_v1';
-    const _DATA_CACHE_TTL = 5 * 60 * 1000; // 5분
 
     function _saveDataCache(json) {
         try { sessionStorage.setItem(_DATA_CACHE_KEY, JSON.stringify({ ts: Date.now(), d: json })); } catch(e) {}
@@ -1727,7 +1733,6 @@
             const raw = sessionStorage.getItem(_DATA_CACHE_KEY);
             if (!raw) return null;
             const c = JSON.parse(raw);
-            if (Date.now() - c.ts > _DATA_CACHE_TTL) return null;
             return c.d;
         } catch(e) { return null; }
     }
