@@ -6305,6 +6305,12 @@ async function _qcClfDetectOne(file) {
       // Tesseract가 이 글자를 실제로 얼마나 확신했는지(단어 단위 confidence, 0~100) 확인.
       const hitWord = (data.words || []).find(w => (w.text || '').toUpperCase().replace(/[^A-Z0-9]/g, '').includes(result.code.slice(0, Math.min(5, result.code.length))));
       result.confidence = (hitWord && hitWord.confidence >= 75) ? 'high' : 'low';
+      // 색상(요청, 2026-10-29: "바코드 왼쪽 하단쯤에 색상 써있잖아") — 바코드 라벨은
+      // "WW  ZCWX2309001(C26923)"처럼 제품코드 바로 앞에 짧은 영문 색상코드가 붙어
+      // 나온다. 코드 바로 앞 글자에서 그 패턴을 찾는다.
+      const beforeText = rawText.slice(Math.max(0, codeMatch.index - 12), codeMatch.index);
+      const colorMatch = beforeText.match(/\b([A-Z]{2,4})\s*$/);
+      if (colorMatch) result.color = colorMatch[1];
     } else {
       const cleaned = rawText.replace(/\s+/g, ' ').trim();
       result.ocrNote = cleaned ? ('OCR이 읽은 글자: "' + cleaned.slice(0, 60) + '"') : 'OCR이 글자를 전혀 못 읽음';
