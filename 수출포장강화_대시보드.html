@@ -7532,7 +7532,11 @@
                 // 포장항목 출력 — 전엔 실재고(충주공장 재고) 매칭 품목만 자동으로 걸러냈는데,
                 // 화면에서 이미 필터링해서 출력하는 경우와 겹쳐 혼란스럽다는 요청으로 없앴다.
                 // 기본출력과 같은 rows(baseItems)를 그대로 쓰고, 칼럼 구성(포장 작업용)만 다르다.
-                return { title: '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_포장항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10, headerFontSize: 10.5 } };
+                // PDF 제목(요청, 2026-10-28) — 입고일 칼럼을 PDF엔 안 넣는 대신, 출력
+                // 대상의 입고일(첫 번째로 찾은 값)을 제목에 "O월.O일 입고"로 붙인다.
+                const _packArriveDate = baseItems.map(it => it.arriveDate).find(d => d && d !== '-');
+                const _packArriveLabel = _packArriveDate ? _pkgPrintMonthDay(_packArriveDate) : '';
+                return { title: '포장항목 출력', pdfTitle: (_packArriveLabel ? _packArriveLabel + ' 입고 ' : '') + '포장항목 출력', columns: PKG_PRINT_PACK_COLS, rows: baseItems, filenameBase: _pkgExportFname('수출포장강화_포장항목출력', baseItems), emptyMsg: '출력할 품목이 없습니다.', pdfOpts: { footer: true, fontSize: 10, headerFontSize: 10.5 } };
             }
             if (kind === 'ship') {
                 // 상차항목 출력 — 마찬가지로 "아직 출고 안 된 품목만" 자동 필터를 없앴다.
