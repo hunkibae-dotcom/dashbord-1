@@ -6435,6 +6435,10 @@ function _qcClfRenderTypeButtons() {
   pkgBtn.style.background = !isInsp ? 'linear-gradient(135deg,#4ade80,#16a34a)' : 'var(--input-bg)';
   pkgBtn.style.color = !isInsp ? '#fff' : 'var(--text-sub)';
   pkgBtn.style.border = !isInsp ? 'none' : '1.5px solid var(--border)';
+  // 포장사진은 CBM을 적을 게 없어서 칸 자체를 숨긴다(요청, 2026-10-29: "포장사진으로
+  // 분류했으면 CBM 입력창은 없애도 된다"). 유형을 바꾸면 바로 다시 반영된다.
+  const cbmSection = document.getElementById('qcClfCbmSection');
+  if (cbmSection) cbmSection.style.display = isInsp ? 'block' : 'none';
 }
 function _qcClfConfirmCode(ok) {
   const r = _qcClfResults.find(x => x.idx === _qcClfConfirmIdx);
