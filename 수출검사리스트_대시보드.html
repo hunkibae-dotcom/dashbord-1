@@ -6265,18 +6265,25 @@ function _qcClfGetOcrWorker() {
       //    가능성 자체를 없앤다.
       // 2) 영어 사전 교정(dawg)을 꺼서 "모르는 단어니까 아는 영단어로 고쳐버리는" 동작을
       //    막는다 — 제품코드는 애초에 영단어가 아니라서 사전 교정이 오히려 해가 된다.
-      // 3) 페이지 분할 모드를 "흩어진 글자 찾기"(11)로 바꿔서, 박스 사진처럼 큰 글자
-      //    라벨 하나+바코드 라벨 하나가 따로 떨어져 있는 레이아웃을 더 잘 찾는다.
+      // 페이지 분할 모드(pageseg_mode)는 사진 타입마다 다르게 쓴다(_qcClfSetPageSegForType) —
+      // 포장사진(바코드 라벨 하나만 따로 찍힘)과 검사사진(부품규격표·도면처럼 사진 전체가
+      // 하나의 문서인 경우가 많음, 요청 2026-10-29)은 레이아웃이 완전히 달라서 하나로
+      // 통일하면 한쪽이 희생된다.
       await worker.setParameters({
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
         load_system_dawg: '0',
-        load_freq_dawg: '0',
-        tessedit_pageseg_mode: '11'
+        load_freq_dawg: '0'
       });
       return worker;
     });
   }
   return _qcClfOcrWorkerPromise;
+}
+// 포장사진은 바코드 라벨 하나가 사진 속에 따로 떨어져 있는 "흩어진 글자"(11) 레이아웃이지만,
+// 검사사진은 부품규격표·도면처럼 사진 전체가 하나의 문서인 경우가 많다 — 이때는 "한 덩어리
+// 블록"(6)으로 보고 읽는 쪽이 사람 눈처럼 전체 구조를 더 잘 읽는다.
+async function _qcClfSetPageSegForType(worker, type) {
+  await worker.setParameters({ tessedit_pageseg_mode: type === '포장' ? '11' : '6' });
 }
 
 // 제품코드는 "영문 2~8자 + 숫자 4~10자(+영문 0~4자)" 꼴(예: MCIFAD260055, ZCWX2601011,
