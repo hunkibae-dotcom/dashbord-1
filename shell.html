@@ -1429,11 +1429,13 @@
         return _pkgNiBaseCodeList().filter(d => { const s = _pkgNiSpecMap[d.code] || {}; return !s.productType; });
     }
     // 유형 선택: PE폼 유형이 없는 코드 — 진행이 "재고활용"인 품목은 제외(요청, 2026-10-28 #2:
-    // "유형선택에서 진행이 재고활용인 품목은 제외해줘").
+    // "유형선택에서 진행이 재고활용인 품목은 제외해줘"). 건명이 공백인 품목도 제외(요청,
+    // 2026-10-29: "건명이 공백이거나 진행칼럼이 재고활용인 항목은 제외해줘").
     function _pkgNiTypeList() {
         return _pkgNiBaseCodeList().filter(d => {
             const s = _pkgNiSpecMap[d.code] || {};
             if (s.peType) return false;
+            if (!(d.round||'').trim() || d.round === '-') return false;
             if ((d.status||'').replace(/\s+/g,'') === '재고활용') return false;
             return true;
         });
