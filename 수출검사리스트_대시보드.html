@@ -6352,6 +6352,10 @@ async function _qcClfRunDetection() {
         h: (detected && detected.cbm_h) || '',
         g: (detected && detected.cbm_g) || ''
       };
+      // OCR이 코드를 못 찾았을 때 "왜"를 그냥 삼키고 "코드미상"만 보여주면 원인을 알 길이
+      // 없다(요청, 2026-10-29: "어떻게 한 사진도 인식을 못하냐" — ocrNote를 만들어놓고
+      // 실제로 화면에 연결을 안 해서 생긴 문제). 실제로 읽은 글자를 그대로 보여준다.
+      if (!errorMsg && !code && detected && detected.ocrNote) errorMsg = detected.ocrNote;
       const match = _qcClfFindReportMatch(code, color);
       // 인식 자체가 실패했거나(네트워크/서버 오류) AI 스스로 "확신 없음"이라고 답했으면
       // 당연히 확인이 필요하다. 확신이 있어도 보고서에 없는 코드면 오인식 가능성이 크므로
