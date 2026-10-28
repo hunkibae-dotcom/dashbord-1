@@ -10828,24 +10828,67 @@ let _spuMismatchQueue = []; // [{factory, pending}, ...] — 아직 안 보여�
 let _spuProcessCheckItems = [];
 let _spuProcessCheckSelected = new Set(); // key = factory|code|round|color
 function _spuProcessCheckKey(it) { return it.factory + '|' + it.code + '|' + it.round + '|' + (it.color || ''); }
-function _spuOpenProcessCheckModal() {
-  _spuProcessCheckSelected = new Set();
+// 정렬(건명/포장일, 요청 2026-10-29) + 검색 — 품질검사 신규품목확인/미구성 품목과 같은 패턴.
+let _spuProcessCheckSortKey = null, _spuProcessCheckSortAsc = true;
+const SPU_PROCESS_CHECK_SORT_DEFS = [['round', '건명'], ['packDate', '포장일']];
+function _spuProcessCheckSortBtnsHtml() {
+  return SPU_PROCESS_CHECK_SORT_DEFS.map(([k, label]) => {
+    const active = _spuProcessCheckSortKey === k;
+    const arrow = active ? (_spuProcessCheckSortAsc ? '↑' : '↓') : '';
+    const style = active
+      ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
+      : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
+    return `<button onclick="_spuProcessCheckPickSort('${k}')" style="${style}">${label} ${arrow}</button>`;
+  }).join('');
+}
+function _spuProcessCheckPickSort(key) {
+  if (_spuProcessCheckSortKey !== key) { _spuProcessCheckSortKey = key; _spuProcessCheckSortAsc = true; }
+  else if (_spuProcessCheckSortAsc) { _spuProcessCheckSortAsc = false; }
+  else { _spuProcessCheckSortKey = null; _spuProcessCheckSortAsc = true; }
+  _spuProcessCheckRenderBody();
+}
+function _spuProcessCheckDisplayList() {
+  const q = (document.getElementById('spuProcessCheckSearchInput').value || '').trim().toLowerCase();
+  let list = !q ? _spuProcessCheckItems.slice() : _spuProcessCheckItems.filter(it =>
+    (it.round || '').toLowerCase().includes(q) || (it.code || '').toLowerCase().includes(q));
+  if (_spuProcessCheckSortKey) {
+    const field = _spuProcessCheckSortKey;
+    list.sort((a, b) => {
+      const av = (a[field] || '').toString(), bv = (b[field] || '').toString();
+      if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
+      return _spuProcessCheckSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    });
+  }
+  return list;
+}
+function _spuProcessCheckRenderBody() {
+  const sortEl = document.getElementById('spuProcessCheckSortBtns');
+  if (sortEl) sortEl.innerHTML = _spuProcessCheckSortBtnsHtml();
+  const list = _spuProcessCheckDisplayList();
   const body = document.getElementById('spuProcessCheckBody');
-  body.innerHTML = _spuProcessCheckItems.map(it => {
+  body.innerHTML = list.map(it => {
     const key = _spuProcessCheckKey(it);
+    const checked = _spuProcessCheckSelected.has(key) ? 'checked' : '';
     return `<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border:1px solid #e2e8f0;border-radius:10px;">
-      <input type="checkbox" onchange="_spuProcessCheckToggleOne('${_jsAttr(key)}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
+      <input type="checkbox" ${checked} onchange="_spuProcessCheckToggleOne('${_jsAttr(key)}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
         <span style="font-size:13px;font-weight:700;color:#1e293b;">${it.round || '-'} <span style="font-size:10px;font-weight:700;color:#94a3b8;">(${it.factory === 'cj1' ? '충주1' : '충주2'})</span></span>
         <div style="font-size:11px;color:#64748b;display:flex;gap:8px;flex-wrap:wrap;">
           <span style="font-family:ui-monospace,monospace;">${it.code}</span>
           <span>${it.color || '-'} · ${it.qty || 0}EA</span>
+          <span>포장일 ${it.packDate || '-'}</span>
           <span style="color:#b45309;">${it.reason || ''}</span>
         </div>
       </div>
     </div>`;
   }).join('') || '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:#94a3b8;">확인품목이 없습니다.</div>';
   _spuProcessCheckUpdateSelUi();
+}
+function _spuOpenProcessCheckModal() {
+  _spuProcessCheckSelected = new Set();
+  _spuProcessCheckSortKey = null; _spuProcessCheckSortAsc = true;
+  document.getElementById('spuProcessCheckSearchInput').value = '';
+  _spuProcessCheckRenderBody();
   document.getElementById('spuProcessCheckModal').style.display = 'flex';
 }
 function _spuCloseProcessCheckModal() {
