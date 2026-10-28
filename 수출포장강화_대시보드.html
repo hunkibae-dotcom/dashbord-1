@@ -8483,10 +8483,25 @@
             // 아예 없는(종류·높이도 안 적힌) 품목이 이 탭에 안 보였다(요청, 2026-10-28:
             // "유형선택에 PE폼 유형 없는 항목들이 안 나오는데 수정좀") — PE폼 유형 자체가
             // 비어있으면 종류·높이 여부와 상관없이 후보에 넣는다.
-            return _pkgActiveCodeRounds().filter(it => {
-                const spec = _pkgServerSpecMap[it.code] || {};
-                return !spec.peType;
-            });
+            const pnum = v => { const n = parseFloat((v || '').toString().replace(/[^0-9.]/g, '')); return isNaN(n) ? null : n; };
+            return _pkgActiveCodeRounds()
+                .filter(it => {
+                    const spec = _pkgServerSpecMap[it.code] || {};
+                    return !spec.peType;
+                })
+                .map(it => {
+                    const spec = _pkgServerSpecMap[it.code] || {};
+                    // CBM도 품목 수정창과 같은 원칙 — 다른 차수 평균이 아니라 이 대표 행
+                    // 자신의 실제 가로/세로/높이만 쓰고, 하나라도 없으면 그냥 '-'.
+                    const w = pnum(it.specW), d = pnum(it.specD), h = pnum(it.specH);
+                    const cbm = (w && d && h) ? (w * d * h) / 1e9 : null;
+                    return Object.assign({}, it, {
+                        productType: spec.productType || '',
+                        boxHeight: spec.boxHeight || '',
+                        _cbm: cbm,
+                        _cbmDisplay: cbm != null ? cbm.toFixed(4) : '-'
+                    });
+                });
         }
         function _pkgMissingRowId(prefix, code) { return prefix + '_' + code.replace(/[^A-Z0-9]/g, '_'); }
 
