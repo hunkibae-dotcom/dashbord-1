@@ -3170,6 +3170,7 @@
         _sfBulkStatus = null;
         document.getElementById('sfBulkCount').textContent = _sfSelected.size + '개 품목 선택됨';
         document.getElementById('sfBulkRegDate').value = '';
+        document.getElementById('sfBulkArriveDate').value = '';
         document.getElementById('sfBulkPallet').value = '';
         document.getElementById('sfBulkResult').textContent = '';
         _sfRenderBulkStatusBtns();
@@ -3207,10 +3208,11 @@
     async function _sfApplyBulkEdit() {
         const status = _sfBulkStatus;
         const regDate = (document.getElementById('sfBulkRegDate').value || '').trim();
+        const arriveDate = (document.getElementById('sfBulkArriveDate').value || '').trim();
         const palletRaw = (document.getElementById('sfBulkPallet').value || '').trim();
         const resultEl = document.getElementById('sfBulkResult');
-        if (!status && !regDate && !palletRaw) {
-            resultEl.textContent = '진행상태·포장완료일·적재번호 중 하나는 선택해주세요.';
+        if (!status && !regDate && !arriveDate && !palletRaw) {
+            resultEl.textContent = '진행상태·포장완료일·입고일·적재번호 중 하나는 선택해주세요.';
             return;
         }
         const items = (window._srLastDeduped || []).filter(d => _sfSelected.has(_sfItemKey(d)));
