@@ -1797,7 +1797,13 @@
     async function loadData(force = false) {
         if (!force) {
             const cached = _loadDataCache();
-            if (cached) _applyJson(cached);
+            if (cached) {
+                // 캐시가 있으면 여기서 끝 — 예전엔 캐시를 적용해도 바로 이어서 네트워크로
+                // 다시 불러왔는데, 그게 "재진입할 때마다 다시 불러오기" 체감의 원인이었다.
+                _applyJson(cached);
+                setStatus('ok');
+                return;
+            }
         }
         setStatus('loading');
         try {
