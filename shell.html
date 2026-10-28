@@ -5490,7 +5490,7 @@
     }
     function _ieSyncScheduleView() {
         const dv = (viewId, inpId) => { const el = document.getElementById(viewId); if (el) el.textContent = _ieDisplayDate(document.getElementById(inpId)?.value); };
-        dv('ieDueDateView', 'ieDueDate'); dv('ieShipDateView', 'ieShipDate'); dv('ieRegDateView', 'ieRegDate');
+        dv('ieDueDateView', 'ieDueDate'); dv('ieShipDateView', 'ieShipDate'); dv('ieRegDateView', 'ieRegDate'); dv('ieArriveDateView', 'ieArriveDate');
         // 진행상태 알약 옆의 "변경" 날짜 — 실제로 추적하는 "상태 변경 시각"은 없어서,
         // 지금 상태와 가장 직접적으로 연결된 실제 필드(포장일)를 그대로 보여준다(시안의
         // 캡션 자리, 값은 지어내지 않고 실제 포장일을 씀).
