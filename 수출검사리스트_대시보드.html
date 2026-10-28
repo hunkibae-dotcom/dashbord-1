@@ -11053,9 +11053,24 @@ function _spuProcessCheckToggleAll() {
 }
 function _spuProcessCheckUpdateSelUi() {
   document.getElementById('spuProcessCheckSelCount').textContent = _spuProcessCheckSelected.size + '건 선택';
-  const btn = document.getElementById('spuProcessCheckRegisterBtn');
-  btn.disabled = _spuProcessCheckSelected.size === 0;
-  btn.style.opacity = _spuProcessCheckSelected.size === 0 ? '.4' : '1';
+  [_document.getElementById ? null : null]; // no-op (가독용 자리 비움 방지)
+  ['spuProcessCheckRegisterBtn', 'spuProcessCheckDismissBtn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.disabled = _spuProcessCheckSelected.size === 0;
+    btn.style.opacity = _spuProcessCheckSelected.size === 0 ? '.4' : '1';
+  });
+}
+// 삭제(요청, 2026-10-29) — 시트를 건드리지 않고, 이 완료 결과창의 확인품목 목록에서만
+// 선택한 항목을 빼서 다시 안 보이게 한다("필요 없는 항목이라 지워버리고 싶다"는 뜻이지,
+// 검사항목 리스트 자체에서 행을 삭제하는 게 아니다 — 애초에 공정진행정보 안내일 뿐
+// 시트에 실제로 존재하는 행이 아닌 경우도 많다).
+function _spuProcessCheckDismiss() {
+  const keys = new Set([..._spuProcessCheckSelected]);
+  if (!keys.size) return;
+  _spuProcessCheckItems = _spuProcessCheckItems.filter(it => !keys.has(_spuProcessCheckKey(it)));
+  _spuProcessCheckSelected = new Set();
+  if (_spuProcessCheckItems.length) _spuProcessCheckRenderBody(); else _spuCloseProcessCheckModal();
 }
 async function _spuProcessCheckRegisterNew() {
   const items = _spuProcessCheckItems.filter(it => _spuProcessCheckSelected.has(_spuProcessCheckKey(it)));
