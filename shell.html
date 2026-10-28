@@ -1662,6 +1662,7 @@
     const PKG_PE_TYPE_OPTIONS_NI = ['일자형','코너형','패드형','롤형'];
     async function pkgNiSaveType(code, type) {
         _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code, peType: type });
+        _pkgNiPersistSpecCache();
         try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: code, peType: type }), signal: AbortSignal.timeout(20000) }); } catch (e) {}
         pkgNiRenderAll();
     }
