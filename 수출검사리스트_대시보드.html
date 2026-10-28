@@ -6380,7 +6380,7 @@ async function _qcClfDetectOne(file) {
   const result = { type: type, code: '', color: '', cbm_w: '', cbm_d: '', cbm_h: '', cbm_g: '', confidence: 'low', ocrNote: '' };
   try {
     const worker = await _qcClfGetOcrWorker();
-    const { data } = await worker.recognize(_qcClfOcrInput(img, 900));
+    const { data } = await worker.recognize(_qcClfOcrInput(img));
     // 글자를 하나도 못 찾았을 때 왜 못 찾았는지 바로 보이게(요청, 2026-10-29: "대놓고
     // 크게 써있는데 왜 인식을 못하냐" — 전엔 실패 이유를 그냥 통째로 삼켜서 원인을
     // 알 방법이 없었다). OCR이 실제로 읽어낸 글자를 코드 옆에 그대로 보여준다.
