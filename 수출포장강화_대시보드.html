@@ -10366,6 +10366,18 @@
             window.addEventListener('touchend', onPointerUp);
         })();
 
+        // 상차 준비완료(요청, 2026-10-28) — 비고란은 자유 텍스트라 다른 메모와 섞여
+        // 있을 수 있어서, "상차 준비완료" 문구만 따로 떼어 토글한다(" / "로 구분해
+        // 이어붙임). 체크박스 초기 상태도 이 문구가 들어있는지로 판단한다.
+        const PKG_SHIP_READY_TEXT = '상차 준비완료';
+        function _pkgNoteHasShipReady(note) {
+            return (note || '').toString().split('/').map(s => s.trim()).includes(PKG_SHIP_READY_TEXT);
+        }
+        function _pkgNoteWithShipReady(note, checked) {
+            const parts = (note || '').toString().split('/').map(s => s.trim()).filter(s => s && s !== PKG_SHIP_READY_TEXT);
+            if (checked) parts.push(PKG_SHIP_READY_TEXT);
+            return parts.join(' / ');
+        }
         function openPkgItemDetail(key) {
             const item = window._pkgRowMap && window._pkgRowMap[key];
             if (!item) return;
