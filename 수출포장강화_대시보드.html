@@ -3389,13 +3389,13 @@
                     }
 
                     // 건명/국가 통합 검색 — round 포함 OR 건명 앞부분(국가코드) 포함
-                    const roundStr = (item.round || '').toLowerCase();
-                    const countryStr = (item.round || '').split('-')[0].trim().toLowerCase();
+                    const roundStr = _normSearchText(item.round || '').toLowerCase();
+                    const countryStr = roundStr.split('-')[0].trim();
                     const matchesRound = !roundQuery || roundStr.includes(roundQuery) || countryStr.includes(roundQuery);
 
-                    const matchesCode = !productCodeQuery || (item.code || '').toLowerCase().includes(productCodeQuery);
-                    const matchesColor = !colorQuery || (item.color || '').toLowerCase().includes(colorQuery);
-                    const matchesNote = !noteQuery || (item.note || '').toLowerCase().includes(noteQuery);
+                    const matchesCode = !productCodeQuery || _normSearchText(item.code || '').toLowerCase().includes(productCodeQuery);
+                    const matchesColor = !colorQuery || _normSearchText(item.color || '').toLowerCase().includes(colorQuery);
+                    const matchesNote = !noteQuery || _normSearchText(item.note || '').toLowerCase().includes(noteQuery);
                     const matchesStatus = activeStatusFilters.has('전체') || activeStatusFilters.has(item.status) || activeStatusFilters.has(item.statusLabel);
                     let matchesPallet = true;
                     if (palletQuery) {
