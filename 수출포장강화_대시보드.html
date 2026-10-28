@@ -10434,6 +10434,7 @@
 
             _pkgOrigNote = (item.note || '').toString();
             document.getElementById('pkgNote').value = _pkgOrigNote;
+            document.getElementById('pkgShipReadyChk').checked = _pkgNoteHasShipReady(_pkgOrigNote);
 
             _pkgDefectPhotos = _pkgParseDefectPhotos(item.defectPhotos);
             _pkgDefectRemovedFileIds = [];
