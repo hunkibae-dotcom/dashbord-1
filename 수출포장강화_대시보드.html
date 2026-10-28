@@ -13577,6 +13577,11 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <button onclick="openPkgSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.25);color:#0284c7;border-radius:8px;height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
                         <i class="fa-solid fa-ruler-combined"></i> 상세스펙
                     </button>
+                    <!-- 상차 준비완료(요청, 2026-10-28) — 체크 후 저장하면 시트 비고란에
+                         "상차 준비완료" 문구가 자동으로 기입/제거된다(_pkgNoteWithShipReady). -->
+                    <label title="상차 준비완료" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);color:#16a34a;border-radius:8px;height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
+                        <input type="checkbox" id="pkgShipReadyChk" style="width:13px;height:13px;accent-color:#16a34a;cursor:pointer;margin:0;"> 상차 준비완료
+                    </label>
                     <button onclick="closePkgItemDetail()" style="width:26px;height:26px;border-radius:8px;border:none;background:#f8fafc;color:#64748b;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             </div>
