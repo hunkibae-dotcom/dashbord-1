@@ -1497,7 +1497,7 @@ async function manualRefresh() {
   const icon = document.getElementById('syncIcon');
   icon.classList.add('fa-spin');
   try {
-    await loadAll();
+    await loadAll(true);
     showToast('새로고침 완료');
   } finally {
     icon.classList.remove('fa-spin');
