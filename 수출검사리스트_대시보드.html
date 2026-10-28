@@ -6166,12 +6166,16 @@ function _qcClfCodeExistsInReport(code, color) {
   return !!_qcClfFindReportMatch(code, color);
 }
 
+// 원본 폰 사진(보통 수 MB)을 그대로 base64로 보내면 "Failed to fetch"가 났다(요청,
+// 2026-10-28) — 다른 사진 업로드(_rpCompressImage)처럼 긴 변 1280px로 줄이고 JPEG로
+// 재인코딩해서 보낸다. 글씨/바코드 식별엔 1280px면 충분하고, 전송량이 훨씬 줄어
+// 속도도 빨라진다.
 function _qcClfFileToBase64(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).replace(/^data:[^;]+;base64,/, ''));
-    reader.onerror = () => reject(reader.error || new Error('파일을 읽지 못했습니다'));
-    reader.readAsDataURL(file);
+    _rpCompressImage(file, (rec) => {
+      if (!rec || !rec.dataUrl) { reject(new Error('사진을 줄이지 못했습니다')); return; }
+      resolve(rec.dataUrl.replace(/^data:[^;]+;base64,/, ''));
+    });
   });
 }
 
@@ -6184,7 +6188,7 @@ async function _qcClfDetectOne(file) {
   const base64 = await _qcClfFileToBase64(file);
   const res = await fetch(url, {
     method: 'POST',
-    body: JSON.stringify({ action: 'classifyPhoto', imageBase64: base64, mimeType: file.type || 'image/jpeg' }),
+    body: JSON.stringify({ action: 'classifyPhoto', imageBase64: base64, mimeType: 'image/jpeg' }),
     signal: AbortSignal.timeout(45000)
   });
   const json = await res.json();
