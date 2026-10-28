@@ -1338,7 +1338,7 @@ function fiRefresh() {
     void el.offsetWidth; // 강제 리플로우 — 연속 클릭해도 애니메이션이 처음부터 다시 돌게
     el.classList.add('fi-refresh-spin');
   });
-  fiFetchList();
+  fiFetchList(true);
 }
 
 // 발견위치/원인위치 필터 옵션(요청, 2026-10-23) — 사업장이 아니라 실제 등록된 위치
