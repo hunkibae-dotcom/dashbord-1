@@ -1422,6 +1422,9 @@ try {
         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
           <button onclick="_qcClfToggleSort()" id="qcClfSortBtn" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;white-space:nowrap;"><i class="fa-solid fa-arrow-down-wide-short"></i> <span id="qcClfSortLabel">정렬: 기본순서</span></button>
           <button onclick="_qcClfReclassify()" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;text-decoration:underline;white-space:nowrap;"><i class="fa-solid fa-rotate"></i> 재분류</button>
+          <!-- 재업로드(요청, 2026-10-29) — "재분류"는 올려둔 사진 그대로 다시 분석만
+               하고, 이건 사진 자체를 새로 올리고 싶을 때 처음(업로드 단계)으로 되돌아간다. -->
+          <button onclick="_qcClfReset()" style="font-size:11.5px;color:var(--label);background:none;border:none;cursor:pointer;text-decoration:underline;white-space:nowrap;"><i class="fa-solid fa-upload"></i> 재업로드</button>
         </div>
       </div>
       <div id="qcClfResultList" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:120px;"></div>
