@@ -6387,6 +6387,8 @@ async function _qcClfDetectOne(file) {
   const result = { type: type, code: '', color: '', cbm_w: '', cbm_d: '', cbm_h: '', cbm_g: '', confidence: 'low', ocrNote: '' };
   try {
     const worker = await _qcClfGetOcrWorker();
+    // 사진 타입에 맞는 페이지 분할 모드로 바꾼 뒤 읽는다(요청, 2026-10-29).
+    await _qcClfSetPageSegForType(worker, type);
     const { data } = await worker.recognize(_qcClfOcrInput(img));
     // 글자를 하나도 못 찾았을 때 왜 못 찾았는지 바로 보이게(요청, 2026-10-29: "대놓고
     // 크게 써있는데 왜 인식을 못하냐" — 전엔 실패 이유를 그냥 통째로 삼켜서 원인을
@@ -6398,12 +6400,18 @@ async function _qcClfDetectOne(file) {
       // Tesseract가 이 글자를 실제로 얼마나 확신했는지(단어 단위 confidence, 0~100) 확인.
       const hitWord = (data.words || []).find(w => (w.text || '').toUpperCase().replace(/[^A-Z0-9]/g, '').includes(result.code.slice(0, Math.min(5, result.code.length))));
       result.confidence = (hitWord && hitWord.confidence >= 75) ? 'high' : 'low';
-      // 색상(요청, 2026-10-29: "바코드 왼쪽 하단쯤에 색상 써있잖아") — 바코드 라벨은
-      // "WW  ZCWX2309001(C26923)"처럼 제품코드 바로 앞에 짧은 영문 색상코드가 붙어
-      // 나온다. 코드 바로 앞 글자에서 그 패턴을 찾는다.
+      // 색상 — 두 가지 표기 방식을 다 본다(요청, 2026-10-29 참고사진):
+      // 1) 바코드 라벨: "WW  ZCWX2309001(C26923)"처럼 코드 "앞"에 짧은 색상코드.
+      // 2) 부품규격표 손글씨: "FDD0016JNN - CC"처럼 코드 "뒤"에 "-색상코드".
       const beforeText = rawText.slice(Math.max(0, codeMatch.index - 12), codeMatch.index);
       const colorMatch = beforeText.match(/\b([A-Z]{2,4})\s*$/);
-      if (colorMatch) result.color = colorMatch[1];
+      if (colorMatch) {
+        result.color = colorMatch[1];
+      } else {
+        const afterText = rawText.slice(codeMatch.index + codeMatch[0].length, codeMatch.index + codeMatch[0].length + 8);
+        const afterColorMatch = afterText.match(/^\s*[-–—]\s*([A-Z]{2,4})\b/);
+        if (afterColorMatch) result.color = afterColorMatch[1];
+      }
     } else {
       const cleaned = rawText.replace(/\s+/g, ' ').trim();
       result.ocrNote = cleaned ? ('OCR이 읽은 글자: "' + cleaned.slice(0, 60) + '"') : 'OCR이 글자를 전혀 못 읽음';
