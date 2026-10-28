@@ -5720,6 +5720,14 @@
             );
             changed.regDate = newRegDate;
         }
+        // 입고일(요청, 2026-10-29) — PC 웹 품목 수정창과 같은 액션(updateArriveDate)을 그대로 쓴다.
+        if (newArriveDate !== _ieOrigArriveDate) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateArriveDate', code:_ieCode, round:_ieRound, color:_ieColor, arriveDate:newArriveDate }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.arriveDate = newArriveDate;
+        }
         const specChanged = newW !== _ieOrigW || newD !== _ieOrigD || newH !== _ieOrigH || newG !== _ieOrigG;
         if (specChanged) {
             tasks.push(
