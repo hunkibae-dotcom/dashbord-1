@@ -357,12 +357,42 @@
             </div>
         </div>
 
-        <!-- Row 2: 슬라이드 카드 (수출일정 / 이전 작업 LOG / INFORM) -->
+        <!-- Row 2: 슬라이드 카드(요청, 2026-10-28로 3페이지→5페이지 재구성 — 신규품목확인/
+             금일작업계획/수출일정/납기상차일변경내역/파렛트현황. "이전 작업 LOG"는 목록에
+             없어서 뺐다. 신규품목확인·금일작업계획의 미회수/상차준비는 PC 화면을 iframe으로
+             그대로 재사용한다(openPkgNewItemsOverlay/openPkgMgmtFilterOverlay).) -->
         <div id="scheduleCard" class="card" style="position:relative;overflow:hidden;padding:0;height:240px;">
             <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
-                <!-- Slide 0: 수출 일정 -->
+                <!-- Slide 0: 신규품목 확인 -->
+                <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:16px 16px 32px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center;">
+                    <i class="fa-solid fa-star" style="font-size:28px;color:#FF9100;opacity:.85;"></i>
+                    <div class="label" style="font-size:14px;">신규품목 확인</div>
+                    <div style="font-size:11px;color:var(--text-sub);">확인 · 미구성 품목 · 유형 선택 · 바코드</div>
+                    <div style="font-size:10.5px;color:var(--label);display:flex;align-items:center;gap:4px;margin-top:4px;">눌러서 열기 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i></div>
+                </div>
+
+                <!-- Slide 1: 금일 작업계획 -->
+                <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;overflow:hidden;">
+                    <div class="label" style="margin-bottom:9px;">금일 작업계획</div>
+                    <div style="display:flex;flex-direction:column;gap:7px;">
+                        <div onclick="event.stopPropagation();openPendingSearch()" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">포장대기</span>
+                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtPendingQty" style="font-size:16px;font-weight:800;color:#FF9100;">—</span><span style="font-size:10px;color:var(--label);">BOX</span></span>
+                        </div>
+                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openUnreceived','미회수')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">미회수</span>
+                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtUnreceivedCnt" style="font-size:16px;font-weight:800;color:#F43F5E;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
+                        </div>
+                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openLoadReady','상차준비')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">상차준비</span>
+                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtLoadReadyCnt" style="font-size:16px;font-weight:800;color:#38BDF8;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide 2: 수출 일정 -->
                 <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;position:relative;overflow:hidden;">
                     <span style="position:absolute;right:12px;top:10px;font-size:40px;opacity:.07;pointer-events:none;color:#00E676;"><i class="fa-solid fa-ship"></i></span>
                     <button onclick="event.stopPropagation();openScheduleCalendar()" style="position:absolute;right:10px;top:8px;z-index:2;width:28px;height:28px;border-radius:9px;border:none;background:rgba(0,230,118,.12);color:#00E676;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
