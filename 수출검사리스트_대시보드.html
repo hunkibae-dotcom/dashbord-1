@@ -1454,9 +1454,12 @@ try {
       </div>
     </div>
     <div>
-      <div style="font-size:13px;color:var(--label);margin-bottom:8px;">이 사진의 제품이 아래 품목이 맞나요?</div>
+      <div id="qcClfYesNoPrompt" style="font-size:13px;color:var(--label);margin-bottom:8px;">이 사진의 제품이 아래 품목이 맞나요?</div>
+      <!-- 검사사진은 이제 OCR을 아예 안 돌려서 "맞나요?"로 물어볼 추측 자체가 없다
+           (요청, 2026-10-29) — 대신 "건명·단품코드를 검색해서 선택해주세요" 안내로 바뀐다. -->
+      <div id="qcClfSearchPrompt" style="display:none;font-size:13px;color:var(--label);margin-bottom:8px;">건명·단품코드를 검색해서 선택해주세요</div>
       <div id="qcClfConfirmCodeText" style="font-size:17px;font-weight:800;color:var(--text);background:var(--input-bg);border-radius:12px;padding:13px 16px;margin-bottom:10px;"></div>
-      <div style="display:flex;gap:10px;">
+      <div id="qcClfYesNoWrap" style="display:flex;gap:10px;">
         <button onclick="_qcClfConfirmCode(true)" style="flex:1;padding:13px;border-radius:12px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:14.5px;cursor:pointer;">맞습니다</button>
         <button onclick="_qcClfConfirmCode(false)" style="flex:1;padding:13px;border-radius:12px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text-sub);font-weight:700;font-size:14.5px;cursor:pointer;">아니에요</button>
       </div>
