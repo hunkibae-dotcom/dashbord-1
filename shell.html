@@ -3866,12 +3866,14 @@
     }
 
     // ── 슬라이드 카드 ─────────────────────────────────────
+    // 5페이지로 재구성(요청, 2026-10-28) — 하드코딩된 3 대신 상수로 뺐다.
+    const SLIDE_COUNT = 5;
     let _slideIdx = 0, _slideTimer = null, _slideTouchX = 0, _slideAutoPlay = true;
     function goSlide(idx) {
-        _slideIdx = Math.max(0, Math.min(idx, 2));
+        _slideIdx = Math.max(0, Math.min(idx, SLIDE_COUNT - 1));
         const track = document.getElementById('slideTrack');
         if (track) track.style.transform = 'translateX(-'+(_slideIdx*100)+'%)';
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < SLIDE_COUNT; i++) {
             const d = document.getElementById('slideDot'+i);
             if (!d) continue;
             if (i === _slideIdx) { d.style.background='#00B0FF'; d.style.width='26px'; }
@@ -3888,7 +3890,7 @@
     }
     function _startSlideTimer() {
         if (_slideTimer) clearInterval(_slideTimer);
-        _slideTimer = setInterval(() => { if (_slideAutoPlay) goSlide((_slideIdx+1)%3); }, 5000);
+        _slideTimer = setInterval(() => { if (_slideAutoPlay) goSlide((_slideIdx+1)%SLIDE_COUNT); }, 5000);
     }
     function toggleSlidePlay() {
         _slideAutoPlay = !_slideAutoPlay;
