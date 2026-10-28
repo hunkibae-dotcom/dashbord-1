@@ -1594,7 +1594,9 @@
 
     // ── 탭3: 유형 선택 ──
     function _pkgNiTypeDisplayList() {
-        const list = _pkgNiTypeList();
+        // 제품종류(요청, 2026-10-29: "사업장 말고 제품종류를 넣어달라는거였어") — 상세스펙에
+        // 코드별로 적어둔 productType을 표시/정렬용으로 같이 들고 다닌다.
+        const list = _pkgNiTypeList().map(it => Object.assign({}, it, { productType: (_pkgNiSpecMap[it.code] || {}).productType || '' }));
         if (!_pkgNiTypeSortKey) return list;
         const field = _pkgNiTypeSortKey;
         return [...list].sort((a,b) => {
