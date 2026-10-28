@@ -8964,8 +8964,9 @@
             const arriveDate = (document.getElementById('pkgBulkArriveDate').value || '').trim();
             const palletRaw = (document.getElementById('pkgBulkPallet').value || '').trim();
             const peTypeRaw = (document.getElementById('pkgBulkPeType').value || '').trim();
-            if (!_pkgBulkStatus && !shipDate && !dueDate && !arriveDate && !palletRaw && !peTypeRaw) {
-                fb.textContent = '진행상태·납기일·상차일·입고일·적재번호·PE폼 유형 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
+            const shipReadyChecked = document.getElementById('pkgBulkShipReadyChk').checked;
+            if (!_pkgBulkStatus && !shipDate && !dueDate && !arriveDate && !palletRaw && !peTypeRaw && !shipReadyChecked) {
+                fb.textContent = '진행상태·납기일·상차일·입고일·적재번호·PE폼 유형·상차 준비완료 중 하나는 바꿔야 합니다.'; fb.style.color = '#dc2626';
                 return;
             }
 
