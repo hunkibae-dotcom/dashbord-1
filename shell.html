@@ -1701,6 +1701,7 @@
             if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '처리 실패');
             const doneCodes = new Set(items.map(it => (it.code||'').toUpperCase()));
             allData.forEach(d2 => { if (doneCodes.has((d2.code||'').toUpperCase())) d2.barcodePrinted = 'Y'; });
+            _invalidateDataCache();
             _pkgNiSelBarcode.clear();
             pkgNiRenderAll();
         } catch (e) {
