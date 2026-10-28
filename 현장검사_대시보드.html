@@ -1293,18 +1293,30 @@ function fiGoTab(tab) {
 }
 
 // ── GAS 호출 ──
-async function fiFetchList() {
+// 세션 캐시(요청, 2026-10-29: "F.WORK 앱을 아예 종료하지않는이상 데이터는 유지가되었으면
+// 좋겠어") — 뒤로가기→F.WORK 초기화면→재진입을 반복해도 캐시가 있으면 네트워크를 다시
+// 안 탄다. sessionStorage라 앱이 실제로 종료될 때만 비워진다. force=true면 건너뛰고
+// 실제로 다시 받아온다 — 새로고침 버튼과 등록/수정/삭제 직후 호출부가 그렇게 쓴다.
+const FI_LIST_CACHE_KEY = 'fi_list_cache_v1';
+async function fiFetchList(force) {
   const url = fiGasUrl();
   if (!url) {
     document.getElementById('fiHomeEmptyNote').style.display = 'block';
     document.getElementById('fiHomeEmptyNote').textContent = '설정 탭에서 GAS 연동 주소를 먼저 등록해주세요.';
     return;
   }
+  if (!force) {
+    try {
+      const raw = sessionStorage.getItem(FI_LIST_CACHE_KEY);
+      if (raw) { fiAllData = JSON.parse(raw); fiRenderAll(); return; }
+    } catch (e) {}
+  }
   try {
     const res = await fetch(url + '?' + new URLSearchParams({ action: 'list' }), { signal: AbortSignal.timeout(20000) });
     const json = await res.json();
     if (json.status !== 'success') throw new Error(json.message || '조회 실패');
     fiAllData = json.items || [];
+    try { sessionStorage.setItem(FI_LIST_CACHE_KEY, JSON.stringify(fiAllData)); } catch (e) {}
     fiRenderAll();
   } catch (e) {
     // 전엔 이 에러가 #fiHomeEmptyNote(모바일 홈탭 안)에만 떠서, PC 화면(#fiApp이
