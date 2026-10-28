@@ -523,11 +523,27 @@ function fi(headers, ...aliases) {
   return -1;
 }
 
-async function loadAll() {
+// 세션 캐시(요청, 2026-10-29: "F.WORK 앱을 아예 종료하지않는이상 데이터는 유지가되었으면
+// 좋겠어") — 뒤로가기→F.WORK 초기화면→재진입을 반복해도 캐시가 있으면 네트워크를 다시
+// 안 탄다. sessionStorage라 앱이 실제로 종료될 때만 비워진다. force=true면 건너뛰고
+// 실제로 다시 받아온다 — 새로고침 버튼과 발주/소요 등록·상태변경 직후 호출부가 그렇게 쓴다.
+const PE_DATA_CACHE_KEY = 'pe_data_cache_v1';
+async function loadAll(force) {
   document.getElementById('orderList').innerHTML = '<div class="center-loading"><i class="fa-solid fa-spinner fa-spin"></i>불러오는 중...</div>';
   try {
-    const res = await fetch(GAS_URL_PE, { signal: AbortSignal.timeout(15000) });
-    const json = await res.json();
+    let json;
+    let fromCache = false;
+    if (!force) {
+      try {
+        const raw = sessionStorage.getItem(PE_DATA_CACHE_KEY);
+        if (raw) { json = JSON.parse(raw); fromCache = true; }
+      } catch (e) {}
+    }
+    if (!json) {
+      const res = await fetch(GAS_URL_PE, { signal: AbortSignal.timeout(15000) });
+      json = await res.json();
+      try { sessionStorage.setItem(PE_DATA_CACHE_KEY, JSON.stringify(json)); } catch (e) {}
+    }
 
     // ── 발주이력 ──
     const logTable = json[SHEET_LOG] || [];
