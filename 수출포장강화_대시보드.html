@@ -3404,7 +3404,7 @@
                         // 쓰고, 없는 시트(수출 현황/출고 완료) 항목만 기존 code+차수 조회값으로.
                         const _pv = item.pallet !== undefined ? item.pallet
                             : (_isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || ''));
-                        matchesPallet = _pv.toLowerCase().includes(palletQuery);
+                        matchesPallet = _normSearchText(_pv).toLowerCase().includes(palletQuery);
                     }
 
                     // 소스 필터 — 실재고/적재 탭은 이미 _baseList가 충주공장 재고 행만으로
