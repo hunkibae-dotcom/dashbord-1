@@ -9118,6 +9118,8 @@
                                     <span>${it.color || '-'} · ${it.qty || 0}EA</span>
                                     ${it.country ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef3c7;color:#b45309;">${it.country}</span>` : ''}
                                     ${productType ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${productType}</span>` : ''}
+                                    ${it.dueDate ? `<span>납기 ${it.dueDate}</span>` : ''}
+                                    ${shipDateShown ? `<span>상차 ${shipDateShown}</span>` : ''}
                                     <span>등록 ${it.regDate || it.date || '-'}</span>
                                 </div>
                             </div>
