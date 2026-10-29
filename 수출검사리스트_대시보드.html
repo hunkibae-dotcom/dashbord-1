@@ -10736,6 +10736,12 @@ function _qcCloseSortMenu() {
 }
 function qcRunSort(fac) {
   document.getElementById('qcSortMenu').classList.add('hidden');
+  // 포장강화 대시보드의 "수출현황 정렬" 버튼과 같은 형식의 확인 문구(요청, 2026-10-29).
+  // 실제 정렬 기준(_충주1검사리스트정렬_실행 등, GAS Main 스크립트)은 납기일이 있는
+  // 품목을 우선 그룹으로 모으고, 그 안에서는 포장일이 있으면 포장일 빠른 순으로
+  // 매긴다 — 두 날짜 중 더 자주 실제 정렬 순서를 가르는 쪽이 포장일이라 "포장일
+  // 우선"으로 안내한다.
+  if (!confirm('대시보드와 시트를 날짜별로 정렬합니다 (포장일 우선)\n계속할까요?')) return;
   qcSortInspectList(fac === 'all' ? ['cj1', 'cj2'] : [fac]);
 }
 async function qcSortInspectList(targetFacs) {
