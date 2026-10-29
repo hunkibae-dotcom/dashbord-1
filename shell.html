@@ -1679,6 +1679,7 @@
         // 필터가 남아있으면 다음에 열었을 때 품목이 안 보여서 헷갈릴 수 있다.
         _pkgNiColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} };
         _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        _pkgNiDateFilterOpen = { confirm: false, missing: false, type: false, barcode: false };
         _pkgNiDateFilter = {
             confirm: { field: null, from: '', to: '' },
             missing: { field: null, from: '', to: '' },
