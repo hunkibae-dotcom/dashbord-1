@@ -3517,12 +3517,12 @@
                 if (def && !def.match(d)) return false;
             }
             if (_sfDivFilter && d.div !== _sfDivFilter) return false;
-            if (round   && !(d.round   ||'').toLowerCase().includes(round))   return false;
-            if (code    && !(d.code    ||'').toLowerCase().includes(code))    return false;
-            if (color   && !(d.color   ||'').toLowerCase().includes(color))   return false;
-            if (country && !((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
+            if (round   && !_normSearchText(d.round   ||'').toLowerCase().includes(round))   return false;
+            if (code    && !_normSearchText(d.code    ||'').toLowerCase().includes(code))    return false;
+            if (color   && !_normSearchText(d.color   ||'').toLowerCase().includes(color))   return false;
+            if (country && !_normSearchText((d.div||'')+(d.country||'')).toLowerCase().includes(country)) return false;
             if (pallet) {
-                const p = d.pallet || '';
+                const p = _normSearchText(d.pallet || '');
                 if (p !== palNorm && p.replace(/^적재\s*/,'') !== pallet) return false;
             }
             if (dateFrom || dateTo) {
