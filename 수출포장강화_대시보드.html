@@ -4398,10 +4398,12 @@
             pageData.forEach((item, _pageIdx) => {
                 const _rowIdx = _pkgPageStart + _pageIdx;
                 const tr = document.createElement('tr');
-                // 상차 준비완료 행 강조(요청, 2026-10-28) — 연한 파스텔 노란색(25% 투명도).
-                // 마우스오버 시 색이 사라지지 않도록 hover 핸들러도 이 색을 기준으로 되돌린다.
+                // 상차 준비완료 행 강조(요청, 2026-10-28, 투명도 30%로 조정 2026-10-29) —
+                // 상차준비 칼럼 자체를 없앤 대신(그 자리는 "포장일" 칼럼으로 교체) 행
+                // 배경색만으로 상차준비 여부를 보여준다. 마우스오버 시 색이 사라지지
+                // 않도록 hover 핸들러도 이 색을 기준으로 되돌린다.
                 const _isShipReadyRow = _pkgNoteHasShipReady(item.note);
-                const _shipReadyBg = 'rgba(250,204,21,.25)';
+                const _shipReadyBg = 'rgba(250,204,21,.30)';
                 tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;' + (_isShipReadyRow ? `background:${_shipReadyBg};` : '');
                 tr.onmouseenter = function(){ this.style.background = _isShipReadyRow ? _shipReadyBg : '#f8fafc'; };
                 tr.onmouseleave = function(){ this.style.background = _isShipReadyRow ? _shipReadyBg : ''; };
