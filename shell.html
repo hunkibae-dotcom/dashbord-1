@@ -239,28 +239,22 @@
 
             <!-- 탭2: 미구성 품목(제품종류·PE폼높이 누락) -->
             <div id="pkgNiTab-missing" style="display:none;flex-direction:column;flex:1;min-height:0;">
+                <div id="pkgNiSortBtns-missing" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;flex-shrink:0;"></div>
+                <div id="pkgNiDateFilterRow-missing" style="flex-shrink:0;"></div>
                 <div id="pkgNiBody-missing" class="no-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
             </div>
 
             <!-- 탭3: 유형 선택(PE폼 유형 누락, 재고활용 제외 — 요청 2026-10-28) -->
             <div id="pkgNiTab-type" style="display:none;flex-direction:column;flex:1;min-height:0;">
                 <div id="pkgNiSortBtns-type" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;flex-shrink:0;"></div>
-                <!-- 납기/상차/입고 날짜 필터(요청, 2026-10-29) -->
-                <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;flex-shrink:0;">
-                    <div style="display:flex;gap:3px;background:var(--panel);border-radius:9px;padding:3px;">
-                        <button id="pniDfDue" onclick="_pkgNiTypeSetDateField('dueDate')" style="padding:4px 9px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);-webkit-appearance:none;">납기일</button>
-                        <button id="pniDfDate" onclick="_pkgNiTypeSetDateField('date')" style="padding:4px 9px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);-webkit-appearance:none;">상차일</button>
-                        <button id="pniDfArrive" onclick="_pkgNiTypeSetDateField('arriveDate')" style="padding:4px 9px;border-radius:7px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--text-sub);-webkit-appearance:none;">입고일</button>
-                    </div>
-                    <input type="date" id="pkgNiTypeDateFrom" oninput="pkgNiRenderType()" style="border:1px solid var(--border);border-radius:8px;padding:4px 7px;font-size:11px;color:var(--text);background:var(--input-bg,#fff);outline:none;">
-                    <span style="color:var(--text-sub);font-size:11px;">~</span>
-                    <input type="date" id="pkgNiTypeDateTo" oninput="pkgNiRenderType()" style="border:1px solid var(--border);border-radius:8px;padding:4px 7px;font-size:11px;color:var(--text);background:var(--input-bg,#fff);outline:none;">
-                </div>
+                <div id="pkgNiDateFilterRow-type" style="flex-shrink:0;"></div>
                 <div id="pkgNiBody-type" class="no-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
             </div>
 
             <!-- 탭4: 바코드(바코드출력="N") -->
             <div id="pkgNiTab-barcode" style="display:none;flex-direction:column;flex:1;min-height:0;">
+                <div id="pkgNiSortBtns-barcode" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;flex-shrink:0;"></div>
+                <div id="pkgNiDateFilterRow-barcode" style="flex-shrink:0;"></div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;">
                     <button onclick="pkgNiToggleSelectAll('barcode')" style="border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:700;color:var(--text-sub);background:var(--icon-bg);cursor:pointer;-webkit-appearance:none;">전체선택</button>
                     <span id="pkgNiSel-barcode" style="margin-left:auto;font-size:11px;color:var(--text-sub);">0건 선택</span>
