@@ -10962,16 +10962,18 @@ async function _qcNewCopyRows(rowsHtmlCells, plainText, e, label) {
   }
   copyCellText(plainText, e);
 }
-function qcNewCopyRow(code, color, name, qty, e) {
-  _qcNewCopyRows(_qcNewRowHtmlCells(code, color, name, qty), _qcNewRowText(code, color, name, qty), e, '1건 복사됨 (표에 붙여넣기 가능)');
+function qcNewCopyRow(key, e) {
+  const d = _qcNewItems().find(it => _qcNewKey(it) === key);
+  if (!d) return;
+  _qcNewCopyRows(_qcNewRowHtmlCells(d), _qcNewRowText(d), e, '1건 복사됨 (표에 붙여넣기 가능)');
 }
 // 체크된 만큼 여러 줄을 한 번에 복사 — 문서 표에 붙여넣으면 선택한 품목 수만큼
 // 아래로 여러 행이 한 번에 채워진다.
 function qcNewCopySelected(e) {
   const selected = _qcNewItems().filter(d => _qcNewSelected.has(_qcNewKey(d)));
   if (!selected.length) return;
-  const htmlRows = selected.map(d => _qcNewRowHtmlCells(d.단품코드, d.색상, d.단품명칭, d.수량)).join('');
-  const plainText = selected.map(d => _qcNewRowText(d.단품코드, d.색상, d.단품명칭, d.수량)).join('\n');
+  const htmlRows = selected.map(d => _qcNewRowHtmlCells(d)).join('');
+  const plainText = selected.map(d => _qcNewRowText(d)).join('\n');
   _qcNewCopyRows(htmlRows, plainText, e, selected.length + '건 복사됨 (표에 붙여넣기 가능)');
 }
 
