@@ -1948,7 +1948,7 @@ try {
           <div class="flex gap-1.5" id="qcNewSortBtns"></div>
           <div class="relative ml-auto" style="width:130px;">
             <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:10px;color:#94a3b8;"></i>
-            <input type="text" id="qcNewSearchInput" oninput="qcNewRenderList()" placeholder="건명/코드 검색" class="w-full border border-slate-200 rounded-full outline-none focus:border-accent-500" style="padding:5px 10px 5px 24px;font-size:11px;box-sizing:border-box;">
+            <input type="text" id="qcNewSearchInput" oninput="this.value=this.value.toUpperCase();qcNewRenderList()" placeholder="건명/코드 검색" class="w-full border border-slate-200 rounded-full outline-none focus:border-accent-500" style="padding:5px 10px 5px 24px;font-size:11px;box-sizing:border-box;">
           </div>
         </div>
         <div id="qcNewDateFilterRow"></div>
