@@ -10729,7 +10729,7 @@ function qcDrawingToggleAll(checked) {
   qcDrawingRender();
 }
 function _qcDrawingUpdateSelUi() {
-  const items = _qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing');
+  const items = _qcModalApplyColFilters(_qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing'), 'drawing');
   document.getElementById('qcDrawingSelCount').textContent = _qcDrawingSelected.size + '건 선택';
   const allCb = document.getElementById('qcDrawingSelectAll');
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcDrawingSelected.has(_qcNewKey(d)));
