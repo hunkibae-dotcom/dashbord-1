@@ -8817,8 +8817,7 @@
             return _pkgModalSortItems(items, _pkgBarcodeSortKey, _pkgBarcodeSortAsc);
         }
         // 바코드 표 다운로드(요청, 2026-10-28) — 지금 화면에 보이는(검색/정렬 반영) 목록
-        // 그대로 엑셀로 받는다. 정렬 기준으로 이미 골라둔 칼럼(PKG_BARCODE_SORT_DEFS)과
-        // 색상·수량을 더해 바코드 작업할 때 바로 필요한 정보만 담았다.
+        // 그대로 엑셀로 받는다. 색상·수량을 더해 바코드 작업할 때 바로 필요한 정보만 담았다.
         const PKG_BARCODE_EXPORT_COLS = [
             { label: '건명', get: item => item.round || '' },
             { label: '제품코드', get: item => item.code || '' },
@@ -8827,7 +8826,7 @@
             { label: '납기일', get: item => shortDate(item.dueDate) },
             { label: '상차일', get: item => shortDate(item.date) },
             { label: '입고일', get: item => shortDate(item.arriveDate) },
-            { label: '입고상태', get: item => item.statusLabel || item.status || '' },
+            { label: '진행상태', get: item => item.statusLabel || item.status || '' },
         ];
         function pkgBarcodeDownload() {
             const list = _pkgBarcodeDisplayList();
