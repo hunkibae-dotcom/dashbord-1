@@ -1904,34 +1904,6 @@
         pkgNiRenderAll();
     }
 
-    // 납기/상차/입고 날짜 필터(요청, 2026-10-29) — 기준만 고르고 범위를 안 넣으면
-    // 아직 아무것도 거르지 않는다(포장강화 PC 웹과 같은 패턴).
-    let _pkgNiTypeDateField = null; // null | 'dueDate' | 'date' | 'arriveDate'
-    function _pkgNiTypeSetDateField(field) {
-        _pkgNiTypeDateField = (_pkgNiTypeDateField === field) ? null : field;
-        const map = { dueDate: 'pniDfDue', date: 'pniDfDate', arriveDate: 'pniDfArrive' };
-        Object.keys(map).forEach(f => {
-            const btn = document.getElementById(map[f]);
-            if (!btn) return;
-            const on = _pkgNiTypeDateField === f;
-            btn.style.background = on ? '#0284c7' : 'transparent';
-            btn.style.color = on ? '#fff' : 'var(--text-sub)';
-        });
-        pkgNiRenderType();
-    }
-    function _pkgNiTypeApplyDateFilter(list) {
-        if (!_pkgNiTypeDateField) return list;
-        const from = document.getElementById('pkgNiTypeDateFrom')?.value || '';
-        const to = document.getElementById('pkgNiTypeDateTo')?.value || '';
-        if (!from && !to) return list;
-        return list.filter(it => {
-            const v = it[_pkgNiTypeDateField];
-            if (!v || v === '-' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
-            if (from && v < from) return false;
-            if (to && v > to) return false;
-            return true;
-        });
-    }
     // 유형 선택 탭의 "상세스펙" 인라인 저장(요청, 2026-10-29) — pkgNiSaveMissingSpec과
     // 같은 서버 액션(updateProductSpec)을 쓴다. id 접두사만 다르다(pkgNiTs_).
     async function _pkgNiSaveTypeSpec(code) {
