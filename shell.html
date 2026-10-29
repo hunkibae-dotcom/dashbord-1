@@ -1921,35 +1921,6 @@
         pkgNiRenderAll();
     }
     // ── 탭3: 유형 선택 ──
-    function _pkgNiTypeDisplayList() {
-        // 제품종류(요청, 2026-10-29: "사업장 말고 제품종류를 넣어달라는거였어") — 상세스펙에
-        // 코드별로 적어둔 productType을 표시/정렬용으로 같이 들고 다닌다.
-        let list = _pkgNiTypeList().map(it => Object.assign({}, it, { productType: (_pkgNiSpecMap[it.code] || {}).productType || '' }));
-        list = _pkgNiTypeApplyDateFilter(list);
-        if (!_pkgNiTypeSortKey) return list;
-        const field = _pkgNiTypeSortKey;
-        return [...list].sort((a,b) => {
-            const av = (a[field]||'').toString(), bv = (b[field]||'').toString();
-            if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
-            return _pkgNiTypeSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-        });
-    }
-    function pkgNiTypeSortBtnsHtml() {
-        return PKG_NI_TYPE_SORT_DEFS.map(([k,label]) => {
-            const active = _pkgNiTypeSortKey === k;
-            const arrow = active ? (_pkgNiTypeSortAsc ? '↑' : '↓') : '';
-            const style = active
-                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
-                : 'border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);';
-            return `<button onclick="pkgNiTypePickSort('${k}')" style="${style}-webkit-appearance:none;">${label} ${arrow}</button>`;
-        }).join('');
-    }
-    function pkgNiTypePickSort(key) {
-        if (_pkgNiTypeSortKey !== key) { _pkgNiTypeSortKey = key; _pkgNiTypeSortAsc = true; }
-        else if (_pkgNiTypeSortAsc) { _pkgNiTypeSortAsc = false; }
-        else { _pkgNiTypeSortKey = null; _pkgNiTypeSortAsc = true; }
-        pkgNiRenderType();
-    }
     // 건명 옆 "상세스펙" 버튼(요청, 2026-10-29: "바로가서 제품유형좀 수정하게") — 앱에는
     // 포장강화 PC 웹 같은 별도 사이드바 패널이 없어서, 미구성 품목 탭과 같은 방식(인라인
     // 펼침 + 제품종류/PE폼높이 입력 + 저장)으로 그 자리에서 바로 고치게 한다.
