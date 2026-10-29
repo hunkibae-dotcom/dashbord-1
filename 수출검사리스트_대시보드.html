@@ -6495,7 +6495,11 @@ async function _qcClfDetectOne(file) {
     // 글자를 하나도 못 찾았을 때 왜 못 찾았는지 바로 보이게(요청, 2026-10-29: "대놓고
     // 크게 써있는데 왜 인식을 못하냐" — 전엔 실패 이유를 그냥 통째로 삼켜서 원인을
     // 알 방법이 없었다). OCR이 실제로 읽어낸 글자를 코드 옆에 그대로 보여준다.
-    const rawText = (data.text || '').toUpperCase();
+    // 품질표시(Pass) 스티커에 항상 찍혀있는 "FURSYS GROUP"/"PASSED" 문구가 코드와 같이
+    // 읽혀서 실패 메시지에 섞여 나왔다(요청, 2026-10-29: "FURSYSGROUP 이게 품질표시
+    // 스티커에 써있는 문구거든") — 코드와 무관한 고정 문구라 코드/색상/CBM을 찾기 전에
+    // 미리 지운다.
+    const rawText = (data.text || '').toUpperCase().replace(/FURSYS\s*GROUP/g, ' ').replace(/\bPASSED\b/g, ' ');
     const codeMatch = rawText.match(/\b[A-Z]{2,8}\d{4,10}[A-Z]{0,4}\b/);
     if (codeMatch) {
       result.code = codeMatch[0];
