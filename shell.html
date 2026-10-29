@@ -1502,6 +1502,35 @@
     }
 
     // ── 탭1: 확인 ──
+    // 건명/단품코드/제품구분 정렬(요청, 2026-10-29: "제품구분별 정렬버튼도 추가로해주고").
+    const PKG_NI_CONFIRM_SORT_DEFS = [['round','건명'], ['code','단품코드'], ['country','제품구분']];
+    let _pkgNiConfirmSortKey = null, _pkgNiConfirmSortAsc = true;
+    function pkgNiConfirmSortBtnsHtml() {
+        return PKG_NI_CONFIRM_SORT_DEFS.map(([k,label]) => {
+            const active = _pkgNiConfirmSortKey === k;
+            const arrow = active ? (_pkgNiConfirmSortAsc ? '↑' : '↓') : '';
+            const style = active
+                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
+                : 'border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);';
+            return `<button onclick="pkgNiConfirmPickSort('${k}')" style="${style}-webkit-appearance:none;">${label} ${arrow}</button>`;
+        }).join('');
+    }
+    function pkgNiConfirmPickSort(key) {
+        if (_pkgNiConfirmSortKey !== key) { _pkgNiConfirmSortKey = key; _pkgNiConfirmSortAsc = true; }
+        else if (_pkgNiConfirmSortAsc) { _pkgNiConfirmSortAsc = false; }
+        else { _pkgNiConfirmSortKey = null; _pkgNiConfirmSortAsc = true; }
+        pkgNiRenderConfirm();
+    }
+    function _pkgNiConfirmDisplayList() {
+        const list = _pkgNiConfirmList();
+        if (!_pkgNiConfirmSortKey) return list;
+        const field = _pkgNiConfirmSortKey;
+        return [...list].sort((a,b) => {
+            const av = (a[field]||'').toString(), bv = (b[field]||'').toString();
+            if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
+            return _pkgNiConfirmSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+    }
     let _pkgNiShipDateEditKey = null;
     function pkgNiToggleShipDateEdit(key) {
         _pkgNiShipDateEditKey = (_pkgNiShipDateEditKey === key) ? null : key;
