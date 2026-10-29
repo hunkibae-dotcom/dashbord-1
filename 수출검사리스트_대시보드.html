@@ -10596,11 +10596,11 @@ function qcDrawingToggleOne(key, checked) {
   _qcDrawingUpdateSelUi();
 }
 function qcDrawingToggleAll(checked) {
-  _qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput').forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
+  _qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing').forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
   qcDrawingRender();
 }
 function _qcDrawingUpdateSelUi() {
-  const items = _qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput');
+  const items = _qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing');
   document.getElementById('qcDrawingSelCount').textContent = _qcDrawingSelected.size + '건 선택';
   const allCb = document.getElementById('qcDrawingSelectAll');
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcDrawingSelected.has(_qcNewKey(d)));
