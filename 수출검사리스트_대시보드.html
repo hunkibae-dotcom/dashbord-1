@@ -10850,6 +10850,11 @@ function qcNewRenderList() {
       const facLabel = d.공장 === 'cj1' ? '충주1' : '충주2';
       const facCls = d.공장 === 'cj1' ? 'bg-sky-50 text-sky-600' : 'bg-orange-50 text-orange-600';
       const newTag = (d.비고 || '').includes('차수') ? '신규 차수 추가됨' : '신규';
+      // 건명 왼쪽에 (국가명) 표시(요청, 2026-10-29) — 건명 맨 앞 거래처 코드로 국가를
+      // 추정하는 기존 보고서용 매핑(_rpCountryLabel)을 그대로 재사용. 매핑에 없는
+      // 코드는 국가명 없이 기존 그대로 건명만 보여준다.
+      const countryLabel = _rpCountryLabel(d.건명);
+      const roundDisplay = countryLabel ? `(${countryLabel}) ${d.건명}` : d.건명;
       return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
         <span class="mt-1 w-[18px] h-[18px] rounded-full bg-slate-100 text-slate-400 text-[10px] font-extrabold flex items-center justify-center shrink-0">${idx + 1}</span>
         <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcNewToggleOne('${_jsAttr(key)}', this.checked)">
@@ -10857,7 +10862,7 @@ function qcNewRenderList() {
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">${newTag}</span>
-            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
+            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${roundDisplay}</span>
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
             <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
