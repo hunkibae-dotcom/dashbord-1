@@ -10475,6 +10475,12 @@ function _qcDrawingRenderChips() {
   document.querySelectorAll('#qcDrawingFacChips .chip-fac').forEach(b => b.classList.toggle('on', b.dataset.fac === _qcDrawingFac));
 }
 function qcDrawingSetFac(fac) { _qcDrawingFac = fac; _qcDrawingRenderChips(); qcDrawingRender(); }
+const QC_DRAWING_INSPECT_CLS = {
+  '검사': 'bg-emerald-50 text-emerald-600', '미검사': 'bg-slate-100 text-slate-500',
+  '재투입': 'bg-violet-50 text-violet-600', '양지': 'bg-amber-50 text-amber-600',
+  '포장대기': 'bg-sky-50 text-sky-600', '미투입': 'bg-slate-100 text-slate-400',
+  '취소': 'bg-slate-200 text-slate-400'
+};
 function qcDrawingRender() {
   const body = document.getElementById('qcDrawingBody');
   const sortBtnsEl = document.getElementById('qcDrawingSortBtns');
