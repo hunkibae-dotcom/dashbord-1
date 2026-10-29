@@ -1922,10 +1922,15 @@
         let _packingDateQtyMap = {};
         let _packingCatDateQtyMap = {}; // { 제품구분: { 'YYYY-MM-DD': qty } } — 호버 상세용
         let _packingLabelMeta = [];
-        // 정렬 상태 저장 변수 정의 (기본값 설정)
+        // 정렬 상태 저장 변수 정의 (기본값 설정) — 예전엔 포장일(regDate) 내림차순을
+        // 기본값으로 썼는데, 포장일은 아직 포장 전인 신규 품목엔 빈 값이라 오히려 방금
+        // 들어온 신규 건이 맨 아래로 밀려났다(요청, 2026-10-29: "제품검색에서 보이는
+        // 리스트의 기본세팅은 실제 시트의 순서대로가면돼"). 시트에 새 행이 맨 위로
+        // 들어오는 구조라, 정렬을 아예 안 걸면(direction:'none') 시트 순서 그대로
+        // 보여줘서 최신 건이 자연스럽게 위에 온다.
         let sortConfig = {
-            key: 'regDate',
-            direction: 'desc'
+            key: null,
+            direction: 'none'
         };
 
         // 상세 뷰 정렬 상태 저장 변수 정의
