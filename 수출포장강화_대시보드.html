@@ -8548,99 +8548,234 @@
                 return asc ? av.localeCompare(bv) : bv.localeCompare(av);
             });
         }
-        function _pkgModalSortBtnHtml(active, label, arrow, onclickFn) {
-            const style = active
-                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
-                : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
-            return `<button onclick="${onclickFn}" style="${style}">${label} ${arrow}</button>`;
-        }
-
-        // 탭1(확인): 건명/단품코드 정렬.
+        // ══════════════════════════════════════════════════════════════════
+        // 신규품목확인 모달 공통: 구글시트 칼럼 필터처럼(요청, 2026-10-29) 정렬(오름/
+        // 내림)과 값별 체크박스 필터를 드롭다운 하나로 합쳤다 — 품질검사 대시보드의
+        // 같은 패턴(_qcColFilter*)을 포장강화 탭 구조에 맞게 그대로 가져왔다. 탭
+        // (confirm/missing/type/barcode) × 칼럼마다 독립된 상태를 쓰고, 다른 칼럼에
+        // 이미 필터가 걸려있으면 그 조건까지 반영한 후보값만 체크리스트에 보여준다.
+        // ══════════════════════════════════════════════════════════════════
         let _pkgNewConfirmSortKey = null, _pkgNewConfirmSortAsc = true;
-        function _pkgNewConfirmSortBtnsHtml() {
-            return [['round', '건명'], ['code', '단품코드'], ['country', '제품구분']].map(([k, label]) => {
-                const active = _pkgNewConfirmSortKey === k;
-                return _pkgModalSortBtnHtml(active, label, active ? (_pkgNewConfirmSortAsc ? '↑' : '↓') : '', `_pkgNewConfirmPickSort('${k}')`);
-            }).join('');
-        }
-        function _pkgNewConfirmPickSort(key) {
-            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
-            if (_pkgNewConfirmSortKey !== key) { _pkgNewConfirmSortKey = key; _pkgNewConfirmSortAsc = true; }
-            else if (_pkgNewConfirmSortAsc) { _pkgNewConfirmSortAsc = false; }
-            else { _pkgNewConfirmSortKey = null; _pkgNewConfirmSortAsc = true; }
-            renderPkgNewList();
-        }
-        function _pkgNewDisplayList() {
-            let items = _pkgModalSearchFilter(window._pkgNewList || [], 'pkgNewSearchInput', ['round', 'code']);
-            return _pkgModalSortItems(items, _pkgNewConfirmSortKey, _pkgNewConfirmSortAsc);
-        }
-
-        // 탭2(미구성 품목): 제품코드만 정렬(기준이 코드 하나뿐).
-        let _pkgMissingSpecSortKey = null; // null | 'code'
-        let _pkgMissingSpecSortAsc = true;
-        function _pkgMissingSpecSortBtnsHtml() {
-            const active = _pkgMissingSpecSortKey === 'code';
-            return _pkgModalSortBtnHtml(active, '제품코드', active ? (_pkgMissingSpecSortAsc ? '↑' : '↓') : '', `_pkgMissingSpecPickSort()`);
-        }
-        function _pkgMissingSpecPickSort() {
-            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
-            if (_pkgMissingSpecSortKey !== 'code') { _pkgMissingSpecSortKey = 'code'; _pkgMissingSpecSortAsc = true; }
-            else if (_pkgMissingSpecSortAsc) { _pkgMissingSpecSortAsc = false; }
-            else { _pkgMissingSpecSortKey = null; _pkgMissingSpecSortAsc = true; }
-            renderPkgMissingSpecList();
-        }
-        function _pkgMissingSpecDisplayList() {
-            const items = _pkgModalSearchFilter(_pkgMissingSpecList(), 'pkgMissingSpecSearchInput', ['code']);
-            return _pkgModalSortItems(items, _pkgMissingSpecSortKey, _pkgMissingSpecSortAsc);
-        }
-
-        // 탭3(유형 선택): 건명/제품코드/제품유형/CBM/진행상태 정렬(요청, 2026-10-28로
-        // 제품유형·CBM·진행상태 표시와 함께 정렬 버튼도 각각 추가).
+        let _pkgMissingSpecSortKey = null, _pkgMissingSpecSortAsc = true;
         let _pkgMissingTypeSortKey = null, _pkgMissingTypeSortAsc = true;
-        const PKG_MISSING_TYPE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['productType', '제품유형'], ['_cbm', 'CBM'], ['statusLabel', '진행상태']];
-        function _pkgMissingTypeSortBtnsHtml() {
-            return PKG_MISSING_TYPE_SORT_DEFS.map(([k, label]) => {
-                const active = _pkgMissingTypeSortKey === k;
-                return _pkgModalSortBtnHtml(active, label, active ? (_pkgMissingTypeSortAsc ? '↑' : '↓') : '', `_pkgMissingTypePickSort('${k}')`);
-            }).join('');
-        }
-        function _pkgMissingTypePickSort(key) {
-            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
-            if (_pkgMissingTypeSortKey !== key) { _pkgMissingTypeSortKey = key; _pkgMissingTypeSortAsc = true; }
-            else if (_pkgMissingTypeSortAsc) { _pkgMissingTypeSortAsc = false; }
-            else { _pkgMissingTypeSortKey = null; _pkgMissingTypeSortAsc = true; }
-            renderPkgMissingTypeList();
-        }
-        // 납기/상차/입고 날짜 필터(요청, 2026-10-29: "납기/상차/입고날짜정하는 필터버튼도
-        // 만들어줘") — 기준 칼럼을 고르고(다시 누르면 해제), 범위를 넣으면 좁혀진다.
-        // 기준만 고르고 범위를 안 넣으면 아직 아무것도 거르지 않는다.
-        let _pkgMissingTypeDateField = null; // null | 'dueDate' | 'date' | 'arriveDate'
-        function _pkgMissingTypeSetDateField(field) {
-            _pkgMissingTypeDateField = (_pkgMissingTypeDateField === field) ? null : field;
-            const map = { dueDate: 'pmtDfDue', date: 'pmtDfDate', arriveDate: 'pmtDfArrive' };
-            Object.keys(map).forEach(f => {
-                const btn = document.getElementById(map[f]);
-                if (!btn) return;
-                const on = _pkgMissingTypeDateField === f;
-                btn.style.background = on ? '#fff' : 'transparent';
-                btn.style.color = on ? '#1e293b' : '#64748b';
-                btn.style.boxShadow = on ? '0 1px 2px rgba(0,0,0,.08)' : 'none';
+        let _pkgBarcodeSelectMode = false;
+        let _pkgBarcodeSelected = new Set(); // key = CODE|round|color (_pkgNewKey와 동일 형식)
+        let _pkgBarcodeSortKey = null, _pkgBarcodeSortAsc = true;
+        const PKG_MODAL_SORT_STATE = {
+            confirm: { get key() { return _pkgNewConfirmSortKey; }, get asc() { return _pkgNewConfirmSortAsc; }, set(k, a) { _pkgNewConfirmSortKey = k; _pkgNewConfirmSortAsc = a; } },
+            missing: { get key() { return _pkgMissingSpecSortKey; }, get asc() { return _pkgMissingSpecSortAsc; }, set(k, a) { _pkgMissingSpecSortKey = k; _pkgMissingSpecSortAsc = a; } },
+            type:    { get key() { return _pkgMissingTypeSortKey; }, get asc() { return _pkgMissingTypeSortAsc; }, set(k, a) { _pkgMissingTypeSortKey = k; _pkgMissingTypeSortAsc = a; } },
+            barcode: { get key() { return _pkgBarcodeSortKey; }, get asc() { return _pkgBarcodeSortAsc; }, set(k, a) { _pkgBarcodeSortKey = k; _pkgBarcodeSortAsc = a; } }
+        };
+        const PKG_MODAL_FIELD_DEFS = {
+            confirm: [['round', '건명'], ['code', '단품코드'], ['country', '제품구분']],
+            missing: [['round', '건명'], ['code', '제품코드']],
+            type:    [['round', '건명'], ['code', '제품코드'], ['productType', '제품유형'], ['statusLabel', '진행상태']],
+            barcode: [['round', '건명'], ['code', '제품코드'], ['statusLabel', '진행상태']]
+        };
+        const PKG_MODAL_BASE_ITEMS = {
+            confirm: () => window._pkgNewList || [],
+            missing: () => _pkgMissingSpecList(),
+            type:    () => _pkgMissingTypeList(),
+            barcode: () => _pkgBarcodeList()
+        };
+        const PKG_MODAL_RENDER = {
+            confirm: () => renderPkgNewList(),
+            missing: () => renderPkgMissingSpecList(),
+            type:    () => renderPkgMissingTypeList(),
+            barcode: () => renderPkgBarcodeList()
+        };
+        let _pkgModalColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} }; // 탭별 { field: Set|null }
+        let _pkgColFilterOpenKey = null; // "tab|field" 또는 null(닫힘) — 한 번에 하나만 열림
+        let _pkgColFilterDraft = null;   // 드롭다운이 열려있는 동안의 체크 상태(확인 전까진 미반영)
+        let _pkgColFilterSearch = '';
+        function _pkgModalItemsExceptField(tab, exceptField) {
+            let items = PKG_MODAL_BASE_ITEMS[tab]();
+            const filters = _pkgModalColFilters[tab];
+            Object.keys(filters).forEach(f => {
+                if (f === exceptField || !filters[f]) return;
+                items = items.filter(d => filters[f].has((d[f] || '').toString()));
             });
-            renderPkgMissingTypeList();
+            return items;
         }
-        function _pkgMissingTypeApplyDateFilter(items) {
-            if (!_pkgMissingTypeDateField) return items;
-            const from = document.getElementById('pkgMissingTypeDateFrom')?.value || '';
-            const to = document.getElementById('pkgMissingTypeDateTo')?.value || '';
+        function _pkgModalApplyColFilters(items, tab) {
+            const filters = _pkgModalColFilters[tab];
+            return items.filter(d => Object.keys(filters).every(f => {
+                if (!filters[f]) return true;
+                return filters[f].has((d[f] || '').toString());
+            }));
+        }
+        function _pkgColFilterAllValues(tab, field) {
+            const items = _pkgModalItemsExceptField(tab, field);
+            const set = new Set();
+            items.forEach(d => { const v = (d[field] || '').toString().trim(); if (v) set.add(v); });
+            return Array.from(set).sort((a, b) => a.localeCompare(b, 'ko'));
+        }
+        function _pkgColFilterToggleOpen(tab, field) {
+            const key = tab + '|' + field;
+            if (_pkgColFilterOpenKey === key) { _pkgColFilterOpenKey = null; _pkgColFilterDraft = null; }
+            else {
+                _pkgColFilterOpenKey = key;
+                _pkgColFilterSearch = '';
+                const existing = _pkgModalColFilters[tab][field];
+                _pkgColFilterDraft = existing ? new Set(existing) : new Set(_pkgColFilterAllValues(tab, field));
+            }
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgColFilterSortPick(tab, field, dir) {
+            PKG_MODAL_SORT_STATE[tab].set(field, dir === 'asc');
+            _pkgColFilterOpenKey = null; _pkgColFilterDraft = null;
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgColFilterToggleVal(val) {
+            if (!_pkgColFilterDraft) return;
+            if (_pkgColFilterDraft.has(val)) _pkgColFilterDraft.delete(val); else _pkgColFilterDraft.add(val);
+            _pkgColFilterRerenderPanel();
+        }
+        function _pkgColFilterSelectAll(tab, field) {
+            _pkgColFilterDraft = new Set(_pkgColFilterAllValues(tab, field));
+            _pkgColFilterRerenderPanel();
+        }
+        function _pkgColFilterClearAll() {
+            _pkgColFilterDraft = new Set();
+            _pkgColFilterRerenderPanel();
+        }
+        function _pkgColFilterSetSearch(v) {
+            _pkgColFilterSearch = v;
+            _pkgColFilterRerenderPanel();
+        }
+        function _pkgColFilterRerenderPanel() {
+            if (!_pkgColFilterOpenKey) return;
+            const [tab, field] = _pkgColFilterOpenKey.split('|');
+            const el = document.getElementById('pkgColFilterPanel_' + tab + '_' + field);
+            if (el) el.outerHTML = _pkgColFilterPanelHtml(tab, field);
+        }
+        function _pkgColFilterApply(tab, field) {
+            const allValues = _pkgColFilterAllValues(tab, field);
+            _pkgModalColFilters[tab][field] = (_pkgColFilterDraft.size >= allValues.length) ? null : new Set(_pkgColFilterDraft);
+            _pkgColFilterOpenKey = null; _pkgColFilterDraft = null;
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgColFilterCancel(tab) {
+            _pkgColFilterOpenKey = null; _pkgColFilterDraft = null;
+            PKG_MODAL_RENDER[tab]();
+        }
+        // 패널 바깥을 클릭하면 닫힌다(버튼·패널 클릭은 stopPropagation으로 막아둠).
+        document.addEventListener('click', function() {
+            if (!_pkgColFilterOpenKey) return;
+            const tab = _pkgColFilterOpenKey.split('|')[0];
+            _pkgColFilterOpenKey = null; _pkgColFilterDraft = null;
+            if (PKG_MODAL_RENDER[tab]) PKG_MODAL_RENDER[tab]();
+        });
+        function _pkgColFilterBtnHtml(tab, field, label) {
+            const st = PKG_MODAL_SORT_STATE[tab];
+            const sortActive = st.key === field;
+            const filterActive = !!_pkgModalColFilters[tab][field];
+            const isOpen = _pkgColFilterOpenKey === (tab + '|' + field);
+            const arrow = sortActive ? (st.asc ? ' ↑' : ' ↓') : '';
+            const dot = filterActive ? '<span style="width:5px;height:5px;border-radius:50%;background:#facc15;display:inline-block;margin-left:2px;"></span>' : '';
+            const style = (sortActive || filterActive)
+                ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;display:inline-flex;align-items:center;gap:3px;'
+                : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;display:inline-flex;align-items:center;gap:3px;';
+            return `<span style="position:relative;display:inline-block;">
+                <button type="button" onclick="event.stopPropagation();_pkgColFilterToggleOpen('${tab}','${field}')" style="${style}"><i class="fa-solid fa-filter" style="font-size:8px;"></i>${label}${arrow}${dot}</button>
+                ${isOpen ? _pkgColFilterPanelHtml(tab, field) : ''}
+            </span>`;
+        }
+        function _pkgColFilterPanelHtml(tab, field) {
+            const allValues = _pkgColFilterAllValues(tab, field);
+            const q = _pkgColFilterSearch.toLowerCase();
+            const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
+            const draft = _pkgColFilterDraft || new Set(allValues);
+            const checklistHtml = shown.map(v => {
+                const checked = draft.has(v) ? 'checked' : '';
+                return `<label style="display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:12px;color:#334155;cursor:pointer;">
+                    <input type="checkbox" ${checked} onchange="_pkgColFilterToggleVal('${_jsAttr(v)}')" style="cursor:pointer;flex-shrink:0;">
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v}</span>
+                </label>`;
+            }).join('') || '<div style="padding:10px;text-align:center;color:#94a3b8;font-size:11.5px;">값이 없습니다</div>';
+            return `<div id="pkgColFilterPanel_${tab}_${field}" onclick="event.stopPropagation();" style="position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:200px;z-index:50;overflow:hidden;">
+                <div onclick="_pkgColFilterSortPick('${tab}','${field}','asc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 오름차순</div>
+                <div onclick="_pkgColFilterSortPick('${tab}','${field}','desc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 내림차순</div>
+                <div style="padding:8px 12px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#0284c7;font-weight:700;margin-bottom:6px;">
+                        <span style="cursor:pointer;" onclick="_pkgColFilterSelectAll('${tab}','${field}')">${allValues.length}개 모두 선택</span>
+                        <span style="cursor:pointer;color:#94a3b8;" onclick="_pkgColFilterClearAll()">지우기</span>
+                    </div>
+                    <input type="text" value="${_jsAttr(_pkgColFilterSearch)}" oninput="_pkgColFilterSetSearch(this.value)" placeholder="검색" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;margin-bottom:6px;">
+                    <div style="max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;">${checklistHtml}</div>
+                </div>
+                <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid #f1f5f9;">
+                    <button onclick="_pkgColFilterCancel('${tab}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:11.5px;font-weight:700;cursor:pointer;">취소</button>
+                    <button onclick="_pkgColFilterApply('${tab}','${field}')" style="flex:1;padding:6px;border-radius:6px;border:none;background:#16a34a;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;">확인</button>
+                </div>
+            </div>`;
+        }
+        function _pkgModalFieldBtnsHtml(tab) {
+            return PKG_MODAL_FIELD_DEFS[tab].map(([k, label]) => _pkgColFilterBtnHtml(tab, k, label)).join('');
+        }
+
+        // ─── 날짜 기간 필터(상차일/납기일/입고일/포장완료일) ───────────────────
+        // 포장강화 제품검색 상단의 날짜필터(wdfDate/wdfDue/wdfArrive/wdfReg,
+        // setWebDateField)와 완전히 같은 기준·순서로 통일했다(요청, 2026-10-29:
+        // "내가 말한 제품검색창의 필터창과 똑같이 수정해줘"). 탭마다 독립된 상태.
+        const PKG_MODAL_DATE_FIELD_DEFS = [['date', '상차일'], ['dueDate', '납기일'], ['arriveDate', '입고일'], ['regDate', '포장완료일']];
+        let _pkgModalDateFilter = {
+            confirm: { field: null, from: '', to: '' },
+            missing: { field: null, from: '', to: '' },
+            type:    { field: null, from: '', to: '' },
+            barcode: { field: null, from: '', to: '' }
+        };
+        function _pkgModalSetDateField(tab, field) {
+            const f = _pkgModalDateFilter[tab];
+            f.field = (f.field === field) ? null : field;
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgModalSetDateRange(tab, which, value) {
+            _pkgModalDateFilter[tab][which] = value;
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgModalApplyDateFilter(items, tab) {
+            const f = _pkgModalDateFilter[tab];
+            if (!f || !f.field) return items;
+            const from = f.from, to = f.to;
             if (!from && !to) return items;
             return items.filter(it => {
-                const v = it[_pkgMissingTypeDateField];
+                const v = it[f.field];
                 if (!v || v === '-' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
                 if (from && v < from) return false;
                 if (to && v > to) return false;
                 return true;
             });
         }
+        function _pkgModalDateFilterRowHtml(tab) {
+            const f = _pkgModalDateFilter[tab];
+            const chips = PKG_MODAL_DATE_FIELD_DEFS.map(([k, label]) => {
+                const on = f.field === k;
+                return `<button onclick="_pkgModalSetDateField('${tab}','${k}')" style="padding:4px 9px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:${on ? '#fff' : 'transparent'};color:${on ? '#1e293b' : '#64748b'};${on ? 'box-shadow:0 1px 2px rgba(0,0,0,.08);' : ''}">${label}</button>`;
+            }).join('');
+            return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+                <div style="display:flex;gap:3px;background:#f8fafc;border-radius:8px;padding:3px;">${chips}</div>
+                <input type="date" value="${f.from}" onchange="_pkgModalSetDateRange('${tab}','from',this.value)" style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:11.5px;color:#334155;background:#fff;outline:none;">
+                <span style="color:#94a3b8;font-size:11px;">~</span>
+                <input type="date" value="${f.to}" onchange="_pkgModalSetDateRange('${tab}','to',this.value)" style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:11.5px;color:#334155;background:#fff;outline:none;">
+            </div>`;
+        }
+
+        function _pkgNewDisplayList() {
+            let items = _pkgModalSearchFilter(window._pkgNewList || [], 'pkgNewSearchInput', ['round', 'code']);
+            items = _pkgModalApplyColFilters(items, 'confirm');
+            items = _pkgModalApplyDateFilter(items, 'confirm');
+            return _pkgModalSortItems(items, _pkgNewConfirmSortKey, _pkgNewConfirmSortAsc);
+        }
+
+        function _pkgMissingSpecDisplayList() {
+            let items = _pkgModalSearchFilter(_pkgMissingSpecList(), 'pkgMissingSpecSearchInput', ['round', 'code']);
+            items = _pkgModalApplyColFilters(items, 'missing');
+            items = _pkgModalApplyDateFilter(items, 'missing');
+            return _pkgModalSortItems(items, _pkgMissingSpecSortKey, _pkgMissingSpecSortAsc);
+        }
+
         // 건명 옆 "상세스펙" 버튼(요청, 2026-10-29) — 신규품목확인 창을 닫고 사이드바
         // 상세스펙 패널로 바로 넘어가 제품유형을 고칠 수 있게 한다.
         function _pkgMissingTypeOpenSpec(code) {
@@ -8648,18 +8783,15 @@
             switchToProductDetailView(code);
         }
         function _pkgMissingTypeDisplayList() {
-            const searched = _pkgModalSearchFilter(_pkgMissingTypeList(), 'pkgMissingTypeSearchInput', ['round', 'code']);
-            const items = _pkgMissingTypeApplyDateFilter(searched);
+            let items = _pkgModalSearchFilter(_pkgMissingTypeList(), 'pkgMissingTypeSearchInput', ['round', 'code']);
+            items = _pkgModalApplyColFilters(items, 'type');
+            items = _pkgModalApplyDateFilter(items, 'type');
             return _pkgModalSortItems(items, _pkgMissingTypeSortKey, _pkgMissingTypeSortAsc);
         }
 
         // ── 탭4: 바코드(수출 현황 K열 "바코드출력"이 "Y"가 아닌 품목) ──────
         // 다른 탭과 달리 한 번에 여러 건을 처리하는 일이 많아서, "선택" 다중선택
         // 모드 + 체크박스 + 하단 확인 버튼 구조를 썼다(요청, 2026-10-27).
-        let _pkgBarcodeSelectMode = false;
-        let _pkgBarcodeSelected = new Set(); // key = CODE|round|color (_pkgNewKey와 동일 형식)
-        let _pkgBarcodeSortKey = null, _pkgBarcodeSortAsc = true;
-        const PKG_BARCODE_SORT_DEFS = [['round', '건명'], ['code', '제품코드'], ['dueDate', '납기일'], ['date', '상차일'], ['arriveDate', '입고일'], ['status', '입고상태']];
         function _pkgBarcodeList() {
             const seen = new Map();
             Object.keys(datasetMap).forEach(k => {
@@ -8678,23 +8810,11 @@
             });
             return Array.from(seen.values());
         }
-        function _pkgBarcodeSortBtnsHtml() {
-            return PKG_BARCODE_SORT_DEFS.map(([k, label]) => {
-                const active = _pkgBarcodeSortKey === k;
-                return _pkgModalSortBtnHtml(active, label, active ? (_pkgBarcodeSortAsc ? '↑' : '↓') : '', `_pkgBarcodePickSort('${k}')`);
-            }).join('');
-        }
-        function _pkgBarcodePickSort(key) {
-            // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
-            if (_pkgBarcodeSortKey !== key) { _pkgBarcodeSortKey = key; _pkgBarcodeSortAsc = true; }
-            else if (_pkgBarcodeSortAsc) { _pkgBarcodeSortAsc = false; }
-            else { _pkgBarcodeSortKey = null; _pkgBarcodeSortAsc = true; }
-            renderPkgBarcodeList();
-        }
         function _pkgBarcodeDisplayList() {
-            const items = _pkgModalSearchFilter(_pkgBarcodeList(), 'pkgBarcodeSearchInput', ['round', 'code']);
-            const field = _pkgBarcodeSortKey === 'status' ? 'statusLabel' : _pkgBarcodeSortKey;
-            return _pkgModalSortItems(items, field, _pkgBarcodeSortAsc);
+            let items = _pkgModalSearchFilter(_pkgBarcodeList(), 'pkgBarcodeSearchInput', ['round', 'code']);
+            items = _pkgModalApplyColFilters(items, 'barcode');
+            items = _pkgModalApplyDateFilter(items, 'barcode');
+            return _pkgModalSortItems(items, _pkgBarcodeSortKey, _pkgBarcodeSortAsc);
         }
         // 바코드 표 다운로드(요청, 2026-10-28) — 지금 화면에 보이는(검색/정렬 반영) 목록
         // 그대로 엑셀로 받는다. 정렬 기준으로 이미 골라둔 칼럼(PKG_BARCODE_SORT_DEFS)과
