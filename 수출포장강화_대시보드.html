@@ -14800,15 +14800,21 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             </div>
             <div id="pkgNewBody" style="overflow-y:auto;flex:1;padding:6px 2px;min-height:0;"></div>
             <div id="pkgNewStatus" style="font-size:12px;font-weight:700;text-align:center;min-height:16px;margin-top:4px;flex-shrink:0;"></div>
-            <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;flex-shrink:0;">
-                <button onclick="pkgNewDeleteSelected()" id="pkgNewDeleteBtn" disabled
-                    style="padding:9px 22px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
-                    <i class="fa-solid fa-trash-can"></i> 삭제
+            <div style="display:flex;gap:10px;justify-content:space-between;border-top:1px solid #f1f5f9;padding-top:14px;margin-top:4px;flex-shrink:0;">
+                <button onclick="pkgRunSortExportSheet()" id="pkgSortExportBtn" title="수출 현황을 상차일 우선으로 날짜순 정렬합니다(구글시트 관리메뉴의 '수출현황 리스트정렬'과 동일)"
+                    style="padding:9px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <i class="fa-solid fa-arrow-down-wide-short"></i> 수출현황 정렬
                 </button>
-                <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
-                    style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
-                    <i class="fa-solid fa-check"></i> 확인
-                </button>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="pkgNewDeleteSelected()" id="pkgNewDeleteBtn" disabled
+                        style="padding:9px 22px;border-radius:8px;border:1.5px solid #dc2626;background:#fff;color:#dc2626;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                        <i class="fa-solid fa-trash-can"></i> 삭제
+                    </button>
+                    <button onclick="pkgNewConfirmSelected()" id="pkgNewConfirmBtn" disabled
+                        style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.4;">
+                        <i class="fa-solid fa-check"></i> 확인
+                    </button>
+                </div>
             </div>
         </div>
 
