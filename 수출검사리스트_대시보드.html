@@ -6506,17 +6506,43 @@ async function _qcClfDetectOne(file) {
       // Tesseract가 이 글자를 실제로 얼마나 확신했는지(단어 단위 confidence, 0~100) 확인.
       const hitWord = (data.words || []).find(w => (w.text || '').toUpperCase().replace(/[^A-Z0-9]/g, '').includes(result.code.slice(0, Math.min(5, result.code.length))));
       result.confidence = (hitWord && hitWord.confidence >= 75) ? 'high' : 'low';
-      // 색상 — 두 가지 표기 방식을 다 본다(요청, 2026-10-29 참고사진):
-      // 1) 바코드 라벨: "WW  ZCWX2309001(C26923)"처럼 코드 "앞"에 짧은 색상코드.
-      // 2) 부품규격표 손글씨: "FDD0016JNN - CC"처럼 코드 "뒤"에 "-색상코드".
-      const beforeText = rawText.slice(Math.max(0, codeMatch.index - 12), codeMatch.index);
-      const colorMatch = beforeText.match(/\b([A-Z]{2,4})\s*$/);
-      if (colorMatch) {
-        result.color = colorMatch[1];
-      } else {
-        const afterText = rawText.slice(codeMatch.index + codeMatch[0].length, codeMatch.index + codeMatch[0].length + 8);
-        const afterColorMatch = afterText.match(/^\s*[-–—]\s*([A-Z]{2,4})\b/);
-        if (afterColorMatch) result.color = afterColorMatch[1];
+      // 색상 — 바코드 라벨은 "WW  ZCWX2309001(C26923)"처럼 코드 왼쪽에 짧은 색상코드가
+      // 떨어져서 찍혀있다(요청, 2026-10-29 참고사진: 실제 사진에 동그라미로 표시받음).
+      // Pass 스티커·박스 겉면 인쇄글자 등 다른 글자 블록이 섞여 있으면, 글자를 한 줄로
+      // 이어붙인 rawText에서 코드 "앞쪽 몇 글자"만 보는 방식은 그 사이에 다른 블록
+      // 글자가 끼어들어 틀리기 쉽다 — 그래서 먼저 Tesseract가 주는 단어별 실제 위치
+      // (bbox)를 이용해 "코드와 세로로 같은 줄에 있으면서 코드 바로 왼쪽에 있는 단어"를
+      // 찾는다. 위치 정보가 없거나 못 찾으면 기존 텍스트 방식(앞/뒤 슬라이스)으로 대신한다.
+      if (hitWord && hitWord.bbox && Array.isArray(data.words)) {
+        const hb = hitWord.bbox;
+        const hLineH = (hb.y1 - hb.y0) || 1;
+        let best = null, bestDist = Infinity;
+        data.words.forEach(w => {
+          if (w === hitWord || !w.bbox) return;
+          const wb = w.bbox;
+          if (wb.x1 > hb.x0) return; // 코드보다 오른쪽/겹치는 단어는 제외
+          const overlap = Math.min(hb.y1, wb.y1) - Math.max(hb.y0, wb.y0);
+          if (overlap < hLineH * 0.4) return; // 세로로 충분히 안 겹치면 다른 줄로 본다
+          const dist = hb.x0 - wb.x1;
+          if (dist < bestDist) { bestDist = dist; best = w; }
+        });
+        if (best) {
+          const cleanedWord = (best.text || '').toUpperCase().replace(/[^A-Z]/g, '');
+          if (/^[A-Z]{2,4}$/.test(cleanedWord)) result.color = cleanedWord;
+        }
+      }
+      if (!result.color) {
+        // 두 가지 표기 방식을 다 본다: 1) 바코드 라벨류(코드 "앞"에 색상), 2) 부품규격표
+        // 손글씨 "FDD0016JNN - CC"처럼 코드 "뒤"에 "-색상코드".
+        const beforeText = rawText.slice(Math.max(0, codeMatch.index - 12), codeMatch.index);
+        const colorMatch = beforeText.match(/\b([A-Z]{2,4})\s*$/);
+        if (colorMatch) {
+          result.color = colorMatch[1];
+        } else {
+          const afterText = rawText.slice(codeMatch.index + codeMatch[0].length, codeMatch.index + codeMatch[0].length + 8);
+          const afterColorMatch = afterText.match(/^\s*[-–—]\s*([A-Z]{2,4})\b/);
+          if (afterColorMatch) result.color = afterColorMatch[1];
+        }
       }
     } else {
       const cleaned = rawText.replace(/\s+/g, ' ').trim();
