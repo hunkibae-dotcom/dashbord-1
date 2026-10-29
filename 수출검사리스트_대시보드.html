@@ -10328,8 +10328,14 @@ function _qcModalToggleDateFilter(tab) {
 }
 function _qcModalSetDateField(tab, field) {
   const f = _qcModalDateFilter[tab];
-  f.field = (f.field === field) ? null : field;
-  _QC_MODAL_SORT_STATE[tab].render();
+  const st = _QC_MODAL_SORT_STATE[tab];
+  // 한 번 누르면 그 날짜기준으로 선택 + 오름차순 정렬, 또 누르면 내림차순, 또 누르면
+  // 선택 해제(요청, 2026-10-29: "한번클릭 시 오름차정렬 또클릭 시 내림차, 또클릭시
+  // 선택해제") — 필터 기준 선택과 정렬을 같은 클릭 하나로 합쳤다.
+  if (f.field !== field) { f.field = field; st.set(field, true); }
+  else if (st.key === field && st.asc) { st.set(field, false); }
+  else { f.field = null; st.set(null, true); }
+  st.render();
 }
 function _qcModalSetDateRange(tab, which, value) {
   _qcModalDateFilter[tab][which] = value;
