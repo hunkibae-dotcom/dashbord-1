@@ -8455,6 +8455,17 @@
             _pkgMissingTypeEditCode = null;
             _pkgBarcodeSelectMode = false;
             _pkgBarcodeSelected = new Set();
+            // 칼럼 필터/날짜 필터도 검색칸처럼 모달을 새로 열 때마다 초기화한다(요청,
+            // 2026-10-29 신설) — 지난번 필터가 남아있으면 다음에 열었을 때 품목이
+            // 안 보여서 헷갈릴 수 있다.
+            _pkgModalColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} };
+            _pkgColFilterOpenKey = null; _pkgColFilterDraft = null;
+            _pkgModalDateFilter = {
+                confirm: { field: null, from: '', to: '' },
+                missing: { field: null, from: '', to: '' },
+                type:    { field: null, from: '', to: '' },
+                barcode: { field: null, from: '', to: '' }
+            };
             renderPkgNewList();
             renderPkgMissingSpecList();
             renderPkgMissingTypeList();
