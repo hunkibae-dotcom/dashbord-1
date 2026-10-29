@@ -11258,7 +11258,8 @@ function qcMrHandlePaste(e, id, startField) {
       if (fieldIdx >= MR_FIELD_ORDER.length) return; // 네 칸을 넘어가는 값은 무시
       const field = MR_FIELD_ORDER[fieldIdx];
       if (field === 'name' && !val) return; // 빈 단품명칭을 붙여넣은 건 "안 붙여넣음"과 동일 취급
-      row.querySelector(MR_FIELD_SEL[field]).value = field === 'code' ? val.toUpperCase() : val;
+      // 건명/색상/단품명칭/단품코드 전부 영어는 대문자로 강제(요청, 2026-10-29) — 수량만 예외.
+      row.querySelector(MR_FIELD_SEL[field]).value = field === 'qty' ? val : val.toUpperCase();
       if (field === 'name') namePasted = true;
     });
     if (!namePasted) qcMrOnCodeInput(row.dataset.id); // 단품명칭을 안 붙여넣었으면 이력에서 자동완성 시도
