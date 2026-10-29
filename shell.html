@@ -1639,7 +1639,13 @@
     }
     function _pkgNiSetDateField(tab, field) {
         const f = _pkgNiDateFilter[tab];
-        f.field = (f.field === field) ? null : field;
+        const st = _pkgNiSortState[tab];
+        // 한 번 누르면 그 날짜기준으로 선택 + 오름차순 정렬, 또 누르면 내림차순, 또
+        // 누르면 선택 해제(요청, 2026-10-29: "한번클릭 시 오름차정렬 또클릭 시 내림차,
+        // 또클릭시 선택해제") — 필터 기준 선택과 정렬을 같은 클릭 하나로 합쳤다.
+        if (f.field !== field) { f.field = field; st.key = field; st.asc = true; }
+        else if (st.key === field && st.asc) { st.asc = false; }
+        else { f.field = null; st.key = null; st.asc = true; }
         PKG_NI_RENDER[tab]();
     }
     function _pkgNiSetDateRange(tab, which, value) {
