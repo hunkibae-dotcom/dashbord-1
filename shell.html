@@ -1659,6 +1659,7 @@
         });
     }
     function _pkgNiDateFilterRowHtml(tab) {
+        if (!_pkgNiDateFilterOpen[tab]) return '';
         const f = _pkgNiDateFilter[tab];
         const chips = PKG_NI_DATE_FIELD_DEFS.map(([k,label]) => {
             const on = f.field === k;
