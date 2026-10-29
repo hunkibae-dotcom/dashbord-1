@@ -10468,12 +10468,12 @@ function qcNotifyToggleOne(key, checked) {
   _qcNotifyUpdateSelUi();
 }
 function qcNotifyToggleAll(checked) {
-  // 검색 중이면 "전체선택"도 지금 화면에 보이는(검색된) 품목만 대상으로 한다.
-  _qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNotifySelected.add(k); else _qcNotifySelected.delete(k); });
+  // 검색/날짜 필터 중이면 "전체선택"도 지금 화면에 보이는 품목만 대상으로 한다.
+  _qcModalApplyDateFilter(_qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput'), 'notify').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNotifySelected.add(k); else _qcNotifySelected.delete(k); });
   qcNotifyRender();
 }
 function _qcNotifyUpdateSelUi() {
-  const items = _qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput');
+  const items = _qcModalApplyDateFilter(_qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput'), 'notify');
   document.getElementById('qcNotifySelCount').textContent = _qcNotifySelected.size + '건 선택';
   const allCb = document.getElementById('qcNotifySelectAll');
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcNotifySelected.has(_qcNewKey(d)));
