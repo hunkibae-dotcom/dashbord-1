@@ -10870,7 +10870,7 @@ function qcNewRenderList() {
             <span>납기 ${d.납기일 || '—'} · 포장 ${d.포장일 || '—'}</span>
           </div>
         </div>
-        <button onclick="qcNewCopyRow('${_jsAttr(d.단품코드)}','${_jsAttr(d.색상 || '')}','${_jsAttr(d.단품명칭 || '')}','${_jsAttr(String(d.수량 != null ? d.수량 : ''))}', event)" title="단품코드 / 색상 / 단품명칭 / 수량 복사 — 시트에 그대로 붙여넣기" class="shrink-0 w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600">
+        <button onclick="qcNewCopyRow('${_jsAttr(key)}', event)" title="프로젝트 / 단품코드 / 색상 / 단품명칭 / 수량 / 공장 / 포장일 / 출고일 / 검사자 복사 — 표에 그대로 붙여넣기" class="shrink-0 w-7 h-7 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-600">
           <i class="fa-regular fa-copy text-[12px]"></i>
         </button>
       </div>`;
