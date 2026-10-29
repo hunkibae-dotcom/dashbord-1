@@ -9634,6 +9634,33 @@
             }
         }
 
+        // "신규품목확인 > 확인" 탭 좌하단 버튼 — 수출 현황 시트 자체를 상차일 우선(그다음
+        // 납기일)으로 재정렬한다. 구글시트에서만 작업하는 관리자를 위해 시트 관리메뉴에도
+        // 같은 이름으로 똑같은 로직(수출현황리스트정렬)을 넣어뒀다(요청, 2026-10-29).
+        async function pkgRunSortExportSheet() {
+            if (!confirm('대시보드와 시트를 날짜별로 정렬합니다 (상차일 우선)\n계속할까요?')) return;
+            const btn = document.getElementById('pkgSortExportBtn');
+            const origHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 정렬 중...';
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgSortExportSheet' }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '정렬 중 오류가 발생했습니다.');
+                alert('✔ 정렬 완료 (총 ' + (res.sortedCount || 0) + '건)');
+                await syncWithGoogleSheets(false);
+                renderPkgNewList();
+            } catch (e) {
+                alert('정렬 실패: ' + ((e && e.message) || e));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+        }
+
         // 선택된 파일 하나를 분류(수주)/분류(입고) 액션으로 보내고 결과 한 줄을 돌려준다.
         // 여러 파일 처리(_pkgRunClassifyUpload)와 재사용하기 위해 따로 뺐다.
         async function _pkgRunOneClassifyFile(entry) {
