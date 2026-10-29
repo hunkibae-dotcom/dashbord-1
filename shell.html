@@ -866,7 +866,7 @@
                     <div style="font-size:10px;color:var(--text-sub);margin-bottom:3px;">제품코드 · 입력하는 대로 바로 결과가 나와요</div>
                     <input id="spec_code" type="text" placeholder="제품코드 입력 (예: CAC2083SN)"
                         style="width:100%;box-sizing:border-box;background:transparent;color:var(--text);border:none;padding:0;font-size:15px;font-weight:800;font-family:ui-monospace,monospace;outline:none;"
-                        oninput="runSpecSearchDebounced()">
+                        oninput="this.value=this.value.toUpperCase();runSpecSearchDebounced()">
                 </div>
                 <button onclick="_openScanSmart()" title="바코드 스캔" style="flex-shrink:0;width:36px;height:36px;border-radius:10px;border:1px solid rgba(2,132,199,.25);background:rgba(2,132,199,.08);color:#0284C7;display:flex;align-items:center;justify-content:center;cursor:pointer;">
                     <i class="fa-solid fa-barcode" style="font-size:13px;"></i>
