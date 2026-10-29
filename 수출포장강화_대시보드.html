@@ -8559,7 +8559,7 @@
         // 탭1(확인): 건명/단품코드 정렬.
         let _pkgNewConfirmSortKey = null, _pkgNewConfirmSortAsc = true;
         function _pkgNewConfirmSortBtnsHtml() {
-            return [['round', '건명'], ['code', '단품코드']].map(([k, label]) => {
+            return [['round', '건명'], ['code', '단품코드'], ['country', '제품구분']].map(([k, label]) => {
                 const active = _pkgNewConfirmSortKey === k;
                 return _pkgModalSortBtnHtml(active, label, active ? (_pkgNewConfirmSortAsc ? '↑' : '↓') : '', `_pkgNewConfirmPickSort('${k}')`);
             }).join('');
