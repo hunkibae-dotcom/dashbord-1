@@ -10994,7 +10994,11 @@ function qcNewCopyRound(key, e) {
     suffix = ' (검사 스티커 부착)' + (country ? ' (' + country + ')' : '');
   }
   const esc = s => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const html = '<b>' + esc(base) + '</b>' + (suffix ? '<b style="color:#dc2626;">' + esc(suffix) + '</b>' : '');
+  // 구글시트에 붙여넣을 때 <b style="color:...">는 색이 안 먹고 굵게만 적용되는 경우가
+  // 있어서(버그 수정, 2026-10-29: "빨간색해달라고한부분도안되고"), 시트가 더 안정적으로
+  // 읽는 <span style="font-weight:bold;...">로 바꿨다.
+  const html = '<span style="font-weight:bold;">' + esc(base) + '</span>'
+    + (suffix ? '<span style="font-weight:bold;color:#dc2626;">' + esc(suffix) + '</span>' : '');
   _qcCopyRichHtml(html, base + suffix, e, '복사됨');
 }
 function qcNewCopyRow(key, e) {
