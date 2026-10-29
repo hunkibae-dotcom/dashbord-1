@@ -832,7 +832,7 @@
             </div>
             <input id="sf_country" type="text" placeholder="국가 / 구분 검색 (예: FAM, NY)"
                 style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13.5px;outline:none;width:100%;box-sizing:border-box;"
-                oninput="runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+                oninput="this.value=this.value.toUpperCase();runSearchDebounced()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
             <div style="font-size:11px;color:var(--text-sub);display:flex;align-items:center;justify-content:space-between;margin-top:-6px;">
                 <span>복수 선택 가능 · 아무것도 선택 안 하면 전체</span>
                 <button id="sfSourceAllBtn" onclick="toggleSfSourceAll()" style="font-size:11px;font-weight:700;color:#00B0FF;background:none;border:none;cursor:pointer;padding:2px 4px;flex-shrink:0;-webkit-appearance:none;">전체 선택</button>
