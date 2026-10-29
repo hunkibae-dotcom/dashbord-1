@@ -10962,6 +10962,41 @@ async function _qcNewCopyRows(rowsHtmlCells, plainText, e, label) {
   }
   copyCellText(plainText, e);
 }
+// 건명 클릭 복사(요청, 2026-10-29) — 표 셀로 나누지 않고 한 덩어리 텍스트로 복사한다
+// ("표처럼 셀이 나뉘어있는게아니라 그냥 한번에복사되야해"). 전체 볼드 + 수출/내수
+// 양식 구분: 수출건은 "건명 M/D 납기" 뒤에 "(검사 스티커 부착) (국가명)"을 빨간
+// 볼드로 덧붙이고, 내수건(한글 건명 등, _spuIsDomesticRound)은 그 부분 없이
+// "건명 M/D 납기"까지만 복사한다. 국가는 보고서용 거래처코드→국가 매핑(_rpCountryLabel)
+// 재사용 — 매핑에 없는 수출건은 "(검사 스티커 부착)"만 붙고 국가 괄호는 생략된다.
+async function _qcCopyRichHtml(html, plainText, e, label) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (navigator.clipboard && window.ClipboardItem) {
+    try {
+      const item = new ClipboardItem({
+        'text/plain': new Blob([plainText], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' })
+      });
+      await navigator.clipboard.write([item]);
+      _qcNewShowCopyToast(e, label);
+      return;
+    } catch (err) { /* 아래 일반 텍스트 복사로 대체 */ }
+  }
+  copyCellText(plainText, e);
+}
+function qcNewCopyRound(key, e) {
+  const d = _qcNewItems().find(it => _qcNewKey(it) === key);
+  if (!d) return;
+  const dueMD = _qcNewFmtMD(d.납기일);
+  const base = (d.건명 || '') + (dueMD ? (' ' + dueMD + ' 납기') : '');
+  let suffix = '';
+  if (!_spuIsDomesticRound(d.건명)) {
+    const country = _rpCountryLabel(d.건명);
+    suffix = ' (검사 스티커 부착)' + (country ? ' (' + country + ')' : '');
+  }
+  const esc = s => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const html = '<b>' + esc(base) + '</b>' + (suffix ? '<b style="color:#dc2626;">' + esc(suffix) + '</b>' : '');
+  _qcCopyRichHtml(html, base + suffix, e, '복사됨');
+}
 function qcNewCopyRow(key, e) {
   const d = _qcNewItems().find(it => _qcNewKey(it) === key);
   if (!d) return;
