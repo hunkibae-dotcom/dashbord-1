@@ -2306,8 +2306,12 @@ let archiveRows = [];
 let loadErrors = [];
 let lastSearchResults = [];
 let displayedRows = [];
-let tableSortKey = null;
-let tableSortDir = 'asc';
+// 기본 정렬: 납기일 내림차순(요청, 2026-10-29: "현황업데이트로 신규로 생기는 품목을
+// 기준으로 최신순 정렬을 기본세팅으로") — 생성 시각을 따로 기록하는 칼럼이 없어서,
+// 새로 들어오는 수주 건에 항상 채워지는 납기일을 "최근에 들어온 품목" 대용으로 쓴다
+// (포장강화 대시보드가 등록일자(포장일) 내림차순을 기본값으로 쓰는 것과 같은 방식).
+let tableSortKey = '납기일';
+let tableSortDir = 'desc';
 
 // ===== STATE =====
 let allData = [];
