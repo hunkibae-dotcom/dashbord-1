@@ -9091,7 +9091,9 @@
         function renderPkgNewList() {
             const body = document.getElementById('pkgNewBody');
             const sortBtnsEl = document.getElementById('pkgNewConfirmSortBtns');
-            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgNewConfirmSortBtnsHtml();
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgModalFieldBtnsHtml('confirm');
+            const dateRowEl = document.getElementById('pkgNewConfirmDateFilterRow');
+            if (dateRowEl) dateRowEl.innerHTML = _pkgModalDateFilterRowHtml('confirm');
             document.getElementById('pkgNewTabCnt-confirm').textContent = (window._pkgNewList || []).length;
             const list = _pkgNewDisplayList();
             if (!list.length) {
