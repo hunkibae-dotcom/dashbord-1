@@ -10364,10 +10364,12 @@ function _qcModalCalBtnHtml(tab) {
 function _qcModalDateFilterRowHtml(tab) {
   if (!_qcModalDateFilterOpen[tab]) return '';
   const f = _qcModalDateFilter[tab];
+  const st = _QC_MODAL_SORT_STATE[tab];
   const chips = QC_MODAL_DATE_FIELD_DEFS.map(([k, label]) => {
     const active = f.field === k;
+    const arrow = (active && st.key === k) ? (st.asc ? ' ↑' : ' ↓') : '';
     const style = active ? 'background:#6D5CE8;color:#fff;' : 'background:transparent;color:#64748b;';
-    return `<button onclick="_qcModalSetDateField('${tab}','${k}')" style="border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;${style}">${label}</button>`;
+    return `<button onclick="_qcModalSetDateField('${tab}','${k}')" style="border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;${style}">${label}${arrow}</button>`;
   }).join('');
   return `<div class="flex items-center gap-1.5 mb-2 flex-wrap">
     <div class="flex gap-0.5" style="background:#f8fafc;border-radius:8px;padding:2px;">${chips}</div>
