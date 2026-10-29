@@ -14981,8 +14981,9 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;flex-shrink:0;">수출 현황·출고 완료의 제품코드 중 상세스펙 기준 제품종류가 비어있는 품목입니다. 건명/제품코드를 누르면 복사되고, 행을 누르면 바로 채울 수 있습니다. 채워서 확인을 누르면 목록에서 사라집니다.</div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;">
                 <div style="display:flex;gap:5px;" id="pkgMissingSpecSortBtns"></div>
-                <input type="text" id="pkgMissingSpecSearchInput" oninput="renderPkgMissingSpecList()" placeholder="제품코드 검색" style="margin-left:auto;width:160px;max-width:40%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:16px;padding:5px 11px;font-size:11.5px;outline:none;">
+                <input type="text" id="pkgMissingSpecSearchInput" oninput="renderPkgMissingSpecList()" placeholder="건명/제품코드 검색" style="margin-left:auto;width:160px;max-width:40%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:16px;padding:5px 11px;font-size:11.5px;outline:none;">
             </div>
+            <div id="pkgMissingSpecDateFilterRow" style="flex-shrink:0;"></div>
             <div id="pkgMissingSpecBody" style="overflow-y:auto;flex:1;min-height:0;padding:2px;"></div>
         </div>
 
