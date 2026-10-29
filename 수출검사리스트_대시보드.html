@@ -10862,7 +10862,7 @@ function qcNewRenderList() {
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">${newTag}</span>
-            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${roundDisplay}</span>
+            <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="qcNewCopyRound('${_jsAttr(key)}', event)">${roundDisplay}</span>
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
             <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
