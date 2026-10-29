@@ -8929,6 +8929,41 @@
             renderPkgMissingTypeList();
         }
 
+        let _pkgNewShipDateEditKey = null;
+        function pkgNewToggleShipDateEdit(key) {
+            _pkgNewShipDateEditKey = (_pkgNewShipDateEditKey === key) ? null : key;
+            renderPkgNewList();
+        }
+        // 상차일 지정/수정 버튼(요청, 2026-10-29) — "확인" 탭은 아직 수출 현황 I열에
+        // "신규"가 남아있는 단계라 상차일이 비어있는 경우가 많다. pkgUpdateShipDate는
+        // 품목 수정 패널(저장하기)에서도 쓰는 동일 액션이라 그대로 재사용.
+        async function _pkgNewSaveShipDate(key, inputId) {
+            const input = document.getElementById(inputId);
+            const statusEl = document.getElementById(inputId + '_status');
+            const newDate = (input && input.value || '').trim();
+            if (!newDate) { if (statusEl) { statusEl.style.color = '#dc2626'; statusEl.textContent = '날짜를 선택하세요.'; } return; }
+            const it = (window._pkgNewList || []).find(x => _pkgNewKey(x) === key);
+            if (!it) return;
+            if (statusEl) { statusEl.style.color = '#64748b'; statusEl.textContent = '저장 중...'; }
+            try {
+                const gasUrl = _pkgGasUrl();
+                const res = await fetch(gasUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgUpdateShipDate', items: [{ code: it.code, round: it.round, color: _pkgNormColor(it.color) }], shipDate: newDate }),
+                    signal: AbortSignal.timeout(30000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '상차일 저장 실패');
+                it.date = newDate;
+                Object.keys(datasetMap).forEach(k => {
+                    if (!k.includes('수출 현황')) return;
+                    (datasetMap[k] || []).forEach(x => { if (_pkgNewKey(x) === key) x.date = newDate; });
+                });
+                _pkgNewShipDateEditKey = null;
+                renderPkgNewList();
+            } catch (e) {
+                if (statusEl) { statusEl.style.color = '#dc2626'; statusEl.textContent = '오류: ' + e.message; }
+            }
+        }
         function renderPkgNewList() {
             const body = document.getElementById('pkgNewBody');
             const sortBtnsEl = document.getElementById('pkgNewConfirmSortBtns');
@@ -8942,18 +8977,31 @@
                     const key = _pkgNewKey(it);
                     const checked = _pkgNewSelected.has(key) ? 'checked' : '';
                     const productType = _pkgProductTypeOf(it);
-                    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:10px;">
-                        <span style="margin-top:2px;width:18px;height:18px;border-radius:50%;background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx + 1}</span>
-                        <input type="checkbox" ${checked} style="margin-top:3px;width:15px;height:15px;cursor:pointer;flex-shrink:0;" onchange="_pkgNewToggleOne('${key}',this.checked)">
-                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
-                            <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
-                            <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
-                                <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.code)}', event)">${it.code || '-'}</span>
-                                <span>${it.color || '-'} · ${it.qty || 0}EA</span>
-                                ${productType ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${productType}</span>` : ''}
-                                <span>등록 ${it.regDate || it.date || '-'}</span>
+                    const shipDateNorm = normalizeDate(it.date);
+                    const shipDateShown = shipDateNorm !== '-' ? shipDateNorm : '';
+                    const editingShip = _pkgNewShipDateEditKey === key;
+                    const sdInputId = 'pkgNewSd_' + idx;
+                    return `<div style="display:flex;flex-direction:column;padding:9px 8px;border-radius:10px;">
+                        <div style="display:flex;align-items:flex-start;gap:10px;">
+                            <span style="margin-top:2px;width:18px;height:18px;border-radius:50%;background:#f1f5f9;color:#94a3b8;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx + 1}</span>
+                            <input type="checkbox" ${checked} style="margin-top:3px;width:15px;height:15px;cursor:pointer;flex-shrink:0;" onchange="_pkgNewToggleOne('${key}',this.checked)">
+                            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                                <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
+                                <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
+                                    <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="copyCellText('${_jsAttr(it.code)}', event)">${it.code || '-'}</span>
+                                    <span>${it.color || '-'} · ${it.qty || 0}EA</span>
+                                    ${productType ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${productType}</span>` : ''}
+                                    <span>등록 ${it.regDate || it.date || '-'}</span>
+                                </div>
                             </div>
+                            <button type="button" onclick="event.stopPropagation();pkgNewToggleShipDateEdit('${key}')" title="상차일 지정/수정" style="margin-top:1px;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid ${shipDateShown ? '#bbf7d0' : '#e2e8f0'};background:${shipDateShown ? '#f0fdf4' : '#f8fafc'};color:${shipDateShown ? '#16a34a' : '#94a3b8'};cursor:pointer;padding:0;"><i class="fa-solid fa-calendar-days" style="font-size:9.5px;"></i></button>
                         </div>
+                        ${editingShip ? `<div style="display:flex;align-items:center;gap:6px;margin:6px 0 2px 36px;flex-wrap:wrap;">
+                            <span style="font-size:11px;color:#94a3b8;font-weight:700;">상차일</span>
+                            <input type="date" id="${sdInputId}" value="${shipDateShown}" style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 8px;font-size:11.5px;color:#334155;outline:none;">
+                            <button type="button" onclick="_pkgNewSaveShipDate('${key}','${sdInputId}')" style="padding:4px 10px;border-radius:7px;border:none;background:#0284c7;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">저장</button>
+                            <span id="${sdInputId}_status" style="font-size:11px;font-weight:600;"></span>
+                        </div>` : ''}
                     </div>`;
                 }).join('');
             }
