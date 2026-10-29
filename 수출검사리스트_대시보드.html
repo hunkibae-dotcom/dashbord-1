@@ -10728,11 +10728,11 @@ function qcNewToggleOne(key, checked) {
   _qcNewUpdateSelUi();
 }
 function qcNewToggleAll(checked) {
-  _qcModalSearchFilter(_qcNewItems(), 'qcNewSearchInput').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNewSelected.add(k); else _qcNewSelected.delete(k); });
+  _qcModalApplyDateFilter(_qcModalSearchFilter(_qcNewItems(), 'qcNewSearchInput'), 'confirm').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNewSelected.add(k); else _qcNewSelected.delete(k); });
   qcNewRenderList();
 }
 function _qcNewUpdateSelUi() {
-  const items = _qcModalSearchFilter(_qcNewItems(), 'qcNewSearchInput');
+  const items = _qcModalApplyDateFilter(_qcModalSearchFilter(_qcNewItems(), 'qcNewSearchInput'), 'confirm');
   document.getElementById('qcNewSelCount').textContent = _qcNewSelected.size + '건 선택';
   const allCb = document.getElementById('qcNewSelectAll');
   if (allCb) allCb.checked = items.length > 0 && items.every(d => _qcNewSelected.has(_qcNewKey(d)));
