@@ -1093,7 +1093,7 @@ try {
       <input id="psName" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="건명/차수 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#6D5CE8'" onblur="this.style.borderColor='var(--border)'">
-      <input id="psCode" type="text" oninput="runProductSearchDebounced()" placeholder="단품코드 검색"
+      <input id="psCode" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="단품코드 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
       <div style="position:relative;min-width:0;">
@@ -1109,7 +1109,7 @@ try {
     <!-- 날짜·초기화는 아래 검색결과 줄의 빠른 버튼으로 옮겨서, 여기 남는 건 바로바로
          찾아보는 3개뿐이다 — 상세필터는 시트선택에 맞는 세부 진행상태 팝업을 바로 연다. -->
     <div class="ps-row ps-row-2" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <input id="psColor" type="text" oninput="runProductSearchDebounced()" placeholder="색상"
+      <input id="psColor" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="색상"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
       <input id="psPacker" type="text" oninput="runProductSearchDebounced()" placeholder="포장처"
