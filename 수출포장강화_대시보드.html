@@ -9016,6 +9016,11 @@
             const productType = sel.value === '__custom__' ? custom.value.trim() : sel.value;
             const boxHeight = heightInput.value.trim();
             if (!productType && !boxHeight) return;
+            // 반영 중 로딩 표시(요청, 2026-10-29: "확인누르면 반영중 로딩표시도좀 하고") —
+            // 서버 응답이 올 때까지 버튼을 비활성화하고 스피너로 바꿔, 중복 클릭과
+            // "눌렀는데 아무 반응 없음" 오인을 막는다.
+            const btn = document.getElementById(rowId + '_confirmBtn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 반영 중...'; }
             const payload = { action: 'updateProductSpec', code: code };
             if (productType) payload.productType = productType;
             if (boxHeight) payload.boxHeight = boxHeight;
