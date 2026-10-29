@@ -1999,7 +1999,7 @@ try {
           <div class="grid grid-cols-2 gap-3">
             <div>
               <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">건명</div>
-              <input type="text" id="mrBuild" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500" placeholder="예: 두산에너빌리티(주) 창원">
+              <input type="text" id="mrBuild" oninput="this.value=this.value.toUpperCase();" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-accent-500" placeholder="예: 두산에너빌리티(주) 창원">
             </div>
             <div>
               <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">납기일 <span class="normal-case text-slate-400 font-normal">· 비우면 빈칸 저장</span></div>
