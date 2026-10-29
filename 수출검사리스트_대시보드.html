@@ -10988,23 +10988,12 @@ function qcNewCopyRound(key, e) {
   if (!d) return;
   const dueMD = _qcNewFmtMD(d.납기일);
   const base = (d.건명 || '') + (dueMD ? (' ' + dueMD + ' 납기') : '');
-  // 건명 맨 앞 거래처 코드로 국가가 확인되면 항상 수출건으로 본다 — 한글 포함 여부만
-  // 보는 _spuIsDomesticRound 하나로는, 건명 뒤에 "테스트"처럼 한글이 섞여 들어간
-  // 수출건까지 내수로 잘못 판정했다(버그 수정, 2026-10-29: "(유럽) FFE-16/26 테스트"를
-  // 내수로 인식하면 안 된다는 지적). 국가를 못 찾을 때만 기존 한글 포함 여부로 판정한다.
-  const country = _rpCountryLabel(d.건명);
-  const isExport = country ? true : !_spuIsDomesticRound(d.건명);
-  let suffix = '';
-  if (isExport) {
-    suffix = ' (검사 스티커 부착)' + (country ? ' (' + country + ')' : '');
-  }
+  // "(검사 스티커 부착) (국가명)" 빨간 글씨 부분은 붙여넣는 곳에서 색이 계속 안 먹어서
+  // 아예 뺐다(요청, 2026-10-29: "그냥 제외시키자 빨간색이안되네") — 건명 M/D 납기만
+  // 볼드로 복사한다.
   const esc = s => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  // 구글시트에 붙여넣을 때 <b style="color:...">는 색이 안 먹고 굵게만 적용되는 경우가
-  // 있어서(버그 수정, 2026-10-29: "빨간색해달라고한부분도안되고"), 시트가 더 안정적으로
-  // 읽는 <span style="font-weight:bold;...">로 바꿨다.
-  const html = '<span style="font-weight:bold;">' + esc(base) + '</span>'
-    + (suffix ? '<span style="font-weight:bold;color:#dc2626;">' + esc(suffix) + '</span>' : '');
-  _qcCopyRichHtml(html, base + suffix, e, '복사됨');
+  const html = '<span style="font-weight:bold;">' + esc(base) + '</span>';
+  _qcCopyRichHtml(html, base, e, '복사됨');
 }
 function qcNewCopyRow(key, e) {
   const d = _qcNewItems().find(it => _qcNewKey(it) === key);
