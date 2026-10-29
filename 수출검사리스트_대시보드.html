@@ -917,7 +917,7 @@ try {
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           <div>
             <label class="block text-[10.5px] font-bold text-slate-400 mb-1">건명/차수</label>
-            <input type="text" id="fRound" oninput="applyFiltersDebounced()" placeholder="건명 검색"
+            <input type="text" id="fRound" oninput="this.value=this.value.toUpperCase();applyFiltersDebounced()" placeholder="건명 검색"
               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
           </div>
           <div>
