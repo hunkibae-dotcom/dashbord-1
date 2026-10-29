@@ -733,7 +733,7 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
                     <input id="sf_color" type="text" placeholder="색상"
                         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
-                        oninput="runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
+                        oninput="this.value=this.value.toUpperCase();runSearchDebounced()" onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
                     <input id="sf_pallet" type="text" inputmode="numeric" placeholder="적재 (예: 1)"
                         style="background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
                         oninput="onPalletSearchInputDebounced()" onfocus="this.style.borderColor='#A855F7'" onblur="this.style.borderColor='var(--border)'">
