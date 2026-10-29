@@ -10492,12 +10492,17 @@ function qcDrawingRender() {
       // 보여달라는 요청(2026-10-26: "도면출력단계에서 BOM확정이 Y인지 N인지도 표시좀
       // 업데이트될때마다도 바뀌어야해"). 메인 표의 BOM 뱃지(pill-bom-y/n)와 같은 스타일.
       const bomBadge = d.BOM ? `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${d.BOM === 'Y' ? 'pill-bom-y' : 'pill-bom-n'}">BOM ${d.BOM}</span>` : '';
+      // 진행상태(검사 칼럼) 표시(요청, 2026-10-29) — 도면 출력 여부를 판단할 때 이미
+      // 검사/포장이 진행된 품목인지도 같이 보고 싶다는 요청.
+      const inspectCls = QC_DRAWING_INSPECT_CLS[d.검사] || 'bg-slate-100 text-slate-500';
+      const inspectBadge = `<span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${inspectCls}">${d.검사 || '미검사'}</span>`;
       return `<div class="flex items-start gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-50">
         <input type="checkbox" ${checked} class="mt-1 w-[15px] h-[15px] cursor-pointer shrink-0" onchange="qcDrawingToggleOne('${_jsAttr(key)}', this.checked)">
         <div class="flex-1 min-w-0 flex flex-col gap-0.5">
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
             ${bomBadge}
+            ${inspectBadge}
             <span class="text-[13.5px] font-bold text-red-600 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
