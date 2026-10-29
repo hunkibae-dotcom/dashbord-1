@@ -8612,8 +8612,45 @@
             else { _pkgMissingTypeSortKey = null; _pkgMissingTypeSortAsc = true; }
             renderPkgMissingTypeList();
         }
+        // 납기/상차/입고 날짜 필터(요청, 2026-10-29: "납기/상차/입고날짜정하는 필터버튼도
+        // 만들어줘") — 기준 칼럼을 고르고(다시 누르면 해제), 범위를 넣으면 좁혀진다.
+        // 기준만 고르고 범위를 안 넣으면 아직 아무것도 거르지 않는다.
+        let _pkgMissingTypeDateField = null; // null | 'dueDate' | 'date' | 'arriveDate'
+        function _pkgMissingTypeSetDateField(field) {
+            _pkgMissingTypeDateField = (_pkgMissingTypeDateField === field) ? null : field;
+            const map = { dueDate: 'pmtDfDue', date: 'pmtDfDate', arriveDate: 'pmtDfArrive' };
+            Object.keys(map).forEach(f => {
+                const btn = document.getElementById(map[f]);
+                if (!btn) return;
+                const on = _pkgMissingTypeDateField === f;
+                btn.style.background = on ? '#fff' : 'transparent';
+                btn.style.color = on ? '#1e293b' : '#64748b';
+                btn.style.boxShadow = on ? '0 1px 2px rgba(0,0,0,.08)' : 'none';
+            });
+            renderPkgMissingTypeList();
+        }
+        function _pkgMissingTypeApplyDateFilter(items) {
+            if (!_pkgMissingTypeDateField) return items;
+            const from = document.getElementById('pkgMissingTypeDateFrom')?.value || '';
+            const to = document.getElementById('pkgMissingTypeDateTo')?.value || '';
+            if (!from && !to) return items;
+            return items.filter(it => {
+                const v = it[_pkgMissingTypeDateField];
+                if (!v || v === '-' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+                if (from && v < from) return false;
+                if (to && v > to) return false;
+                return true;
+            });
+        }
+        // 건명 옆 "상세스펙" 버튼(요청, 2026-10-29) — 신규품목확인 창을 닫고 사이드바
+        // 상세스펙 패널로 바로 넘어가 제품유형을 고칠 수 있게 한다.
+        function _pkgMissingTypeOpenSpec(code) {
+            closePkgNewModal();
+            switchToProductDetailView(code);
+        }
         function _pkgMissingTypeDisplayList() {
-            const items = _pkgModalSearchFilter(_pkgMissingTypeList(), 'pkgMissingTypeSearchInput', ['round', 'code']);
+            const searched = _pkgModalSearchFilter(_pkgMissingTypeList(), 'pkgMissingTypeSearchInput', ['round', 'code']);
+            const items = _pkgMissingTypeApplyDateFilter(searched);
             return _pkgModalSortItems(items, _pkgMissingTypeSortKey, _pkgMissingTypeSortAsc);
         }
 
