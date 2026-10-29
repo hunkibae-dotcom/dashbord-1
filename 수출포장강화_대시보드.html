@@ -8492,7 +8492,7 @@
                     // 행 하나만 대표로 쓰는 기존 방식은 그대로이고(건명도 이미 그래왔음),
                     // CBM은 그 대표 행 자신의 실제 값만 쓴다(다른 차수 평균 금지 원칙).
                     seen.set(code, {
-                        code: code, round: it.round || '', color: it.color || '',
+                        code: code, round: it.round || '', color: it.color || '', country: it.country || '',
                         qty: it.qty, status: it.status || '', statusLabel: it.statusLabel || it.status || '',
                         specW: it.specW, specD: it.specD, specH: it.specH, specG: it.specG,
                         // 상차/납기/입고/포장완료 날짜 필터용(요청, 2026-10-29, 제품검색 상단과
