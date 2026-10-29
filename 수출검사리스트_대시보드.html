@@ -1112,7 +1112,7 @@ try {
       <input id="psColor" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="색상"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#FF9100'" onblur="this.style.borderColor='var(--border)'">
-      <input id="psPacker" type="text" oninput="runProductSearchDebounced()" placeholder="포장처"
+      <input id="psPacker" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="포장처"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
       <div style="position:relative;min-width:0;">
