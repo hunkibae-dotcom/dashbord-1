@@ -8483,8 +8483,9 @@
                         code: code, round: it.round || '', color: it.color || '',
                         qty: it.qty, status: it.status || '', statusLabel: it.statusLabel || it.status || '',
                         specW: it.specW, specD: it.specD, specH: it.specH, specG: it.specG,
-                        // 납기/상차/입고 날짜 필터용(요청, 2026-10-29).
-                        dueDate: it.dueDate || '', date: it.date || '', arriveDate: it.arriveDate || ''
+                        // 상차/납기/입고/포장완료 날짜 필터용(요청, 2026-10-29, 제품검색 상단과
+                        // 같은 4가지 기준으로 통일).
+                        dueDate: it.dueDate || '', date: it.date || '', arriveDate: it.arriveDate || '', regDate: it.regDate || ''
                     });
                 });
             });
