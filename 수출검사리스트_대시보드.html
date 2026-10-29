@@ -10677,7 +10677,7 @@ function qcDrawingRender() {
   if (sortBtnsEl) sortBtnsEl.innerHTML = _qcModalSortBtnsHtml('drawing');
   const dateRowEl = document.getElementById('qcDrawingDateFilterRow');
   if (dateRowEl) dateRowEl.innerHTML = _qcModalDateFilterRowHtml('drawing');
-  const items = _qcModalSortItems(_qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing'), _qcDrawingSortKey, _qcDrawingSortAsc);
+  const items = _qcModalSortItems(_qcModalApplyColFilters(_qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing'), 'drawing'), _qcDrawingSortKey, _qcDrawingSortAsc);
   if (!items.length) {
     body.innerHTML = '<div class="text-center text-[13px] text-slate-400 py-10">도면 미출력 품목이 없습니다.</div>';
   } else {
@@ -10725,7 +10725,7 @@ function qcDrawingToggleOne(key, checked) {
   _qcDrawingUpdateSelUi();
 }
 function qcDrawingToggleAll(checked) {
-  _qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing').forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
+  _qcModalApplyColFilters(_qcModalApplyDateFilter(_qcModalSearchFilter(_qcDrawingItems(), 'qcDrawingSearchInput'), 'drawing'), 'drawing').forEach(d => { const k = _qcNewKey(d); if (checked) _qcDrawingSelected.add(k); else _qcDrawingSelected.delete(k); });
   qcDrawingRender();
 }
 function _qcDrawingUpdateSelUi() {
