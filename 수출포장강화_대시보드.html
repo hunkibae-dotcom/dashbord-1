@@ -14988,7 +14988,7 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;flex-shrink:0;">수출 현황 I열(비고)에 "신규"로 표시된 품목입니다. 건명/단품코드를 누르면 복사됩니다.</div>
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;">
                 <div style="display:flex;gap:5px;" id="pkgNewConfirmSortBtns"></div>
-                <input type="text" id="pkgNewSearchInput" oninput="renderPkgNewList()" placeholder="건명/단품코드 검색" style="margin-left:auto;width:160px;max-width:40%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:16px;padding:5px 11px;font-size:11.5px;outline:none;">
+                <input type="text" id="pkgNewSearchInput" oninput="this.value=this.value.toUpperCase();renderPkgNewList()" placeholder="건명/단품코드 검색" style="margin-left:auto;width:160px;max-width:40%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:16px;padding:5px 11px;font-size:11.5px;outline:none;">
             </div>
             <div id="pkgNewConfirmDateFilterRow" style="flex-shrink:0;"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9;flex-shrink:0;">
