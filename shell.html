@@ -1651,6 +1651,22 @@
             return true;
         });
     }
+    // 유형 선택 탭의 "상세스펙" 인라인 저장(요청, 2026-10-29) — pkgNiSaveMissingSpec과
+    // 같은 서버 액션(updateProductSpec)을 쓴다. id 접두사만 다르다(pkgNiTs_).
+    async function _pkgNiSaveTypeSpec(code) {
+        const rid = 'pkgNiTs_' + code.replace(/[^A-Z0-9]/g,'_');
+        const productType = (document.getElementById(rid + '_pt').value || '').trim();
+        const boxHeight = (document.getElementById(rid + '_bh').value || '').trim();
+        if (!productType && !boxHeight) return;
+        const payload = { action: 'updateProductSpec', code: code };
+        if (productType) payload.productType = productType;
+        if (boxHeight) payload.boxHeight = boxHeight;
+        _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code: code }, productType ? { productType } : {}, boxHeight ? { boxHeight } : {});
+        _pkgNiPersistSpecCache();
+        try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
+        _pkgNiTypeSpecEditCode = null;
+        pkgNiRenderAll();
+    }
     // ── 탭3: 유형 선택 ──
     function _pkgNiTypeDisplayList() {
         // 제품종류(요청, 2026-10-29: "사업장 말고 제품종류를 넣어달라는거였어") — 상세스펙에
