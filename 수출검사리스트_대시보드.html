@@ -10380,13 +10380,6 @@ function _qcModalSortItems(items, key, asc) {
   if (!key) return items;
   const field = _QC_MODAL_SORT_FIELD[key];
   return [...items].sort((a, b) => {
-    if (key === 'due') {
-      const da = parseKDate(a[field]), db = parseKDate(b[field]);
-      if (!da && !db) return 0;
-      if (!da) return 1;
-      if (!db) return -1;
-      return asc ? da - db : db - da;
-    }
     const av = (a[field] || '').toString(), bv = (b[field] || '').toString();
     if (!av && !bv) return 0;
     if (!av) return 1;
