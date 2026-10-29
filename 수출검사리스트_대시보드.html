@@ -10394,7 +10394,7 @@ const _QC_MODAL_SORT_STATE = {
 };
 function _qcModalSortBtnsHtml(tab) {
   const st = _QC_MODAL_SORT_STATE[tab];
-  return _QC_MODAL_SORT_DEFS.map(([k, label]) => {
+  const sortBtns = _QC_MODAL_SORT_DEFS.map(([k, label]) => {
     const active = st.key === k;
     const arrow = active ? (st.asc ? '↑' : '↓') : '';
     const style = active
@@ -10402,6 +10402,7 @@ function _qcModalSortBtnsHtml(tab) {
       : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
     return `<button onclick="_qcModalPickSort('${tab}','${k}')" style="${style}">${label} ${arrow}</button>`;
   }).join('');
+  return sortBtns + _qcModalCalBtnHtml(tab);
 }
 function _qcModalPickSort(tab, key) {
   const st = _QC_MODAL_SORT_STATE[tab];
