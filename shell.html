@@ -1459,6 +1459,210 @@
         return _pkgNiDedupByCode(allData.filter(d => d.source === 'standard' && (d.barcodePrinted||'').toUpperCase() === 'N' && d.status !== '미입고'));
     }
 
+    // ══════════ 신규품목확인(네이티브) 공통: 구글시트 칼럼 필터처럼(요청, 2026-10-29) ══════════
+    // PC 웹(수출포장강화_대시보드.html)의 _pkgColFilter* 패턴을 앱 데이터 구조에 맞춰 그대로
+    // 가져왔다. 정렬(오름/내림)과 값별 체크박스 필터를 드롭다운 하나로 합치고, 탭(confirm/
+    // missing/type/barcode) × 칼럼마다 독립된 상태를 쓴다.
+    const PKG_NI_FIELD_DEFS = {
+        confirm: [['round','건명'], ['code','단품코드'], ['country','제품구분']],
+        missing: [['round','건명'], ['code','제품코드']],
+        type:    [['round','건명'], ['code','제품코드'], ['productType','제품유형'], ['status','진행상태']],
+        barcode: [['round','건명'], ['code','제품코드'], ['status','진행상태']]
+    };
+    const PKG_NI_BASE_ITEMS = {
+        confirm: () => _pkgNiConfirmList(),
+        missing: () => _pkgNiMissingList(),
+        type:    () => _pkgNiTypeList().map(it => Object.assign({}, it, { productType: (_pkgNiSpecMap[it.code]||{}).productType || '' })),
+        barcode: () => _pkgNiBarcodeList()
+    };
+    const PKG_NI_RENDER = { confirm: () => pkgNiRenderConfirm(), missing: () => pkgNiRenderMissing(), type: () => pkgNiRenderType(), barcode: () => pkgNiRenderBarcode() };
+    let _pkgNiSortState = { confirm: {key:null,asc:true}, missing: {key:null,asc:true}, type: {key:null,asc:true}, barcode: {key:null,asc:true} };
+    let _pkgNiColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} };
+    let _pkgNiColFilterOpenKey = null; // "tab|field" 또는 null
+    let _pkgNiColFilterDraft = null;
+    let _pkgNiColFilterSearch = '';
+    function _pkgNiDisplayList(tab) {
+        let items = PKG_NI_BASE_ITEMS[tab]();
+        items = _pkgNiApplyColFilters(items, tab);
+        items = _pkgNiApplyDateFilter(items, tab);
+        const st = _pkgNiSortState[tab];
+        if (!st.key) return items;
+        return [...items].sort((a, b) => {
+            const av = (a[st.key]||'').toString(), bv = (b[st.key]||'').toString();
+            if (!av && !bv) return 0; if (!av) return 1; if (!bv) return -1;
+            return st.asc ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+    }
+    function _pkgNiItemsExceptField(tab, exceptField) {
+        let items = PKG_NI_BASE_ITEMS[tab]();
+        const filters = _pkgNiColFilters[tab];
+        Object.keys(filters).forEach(f => {
+            if (f === exceptField || !filters[f]) return;
+            items = items.filter(d => filters[f].has((d[f]||'').toString()));
+        });
+        return items;
+    }
+    function _pkgNiApplyColFilters(items, tab) {
+        const filters = _pkgNiColFilters[tab];
+        return items.filter(d => Object.keys(filters).every(f => {
+            if (!filters[f]) return true;
+            return filters[f].has((d[f]||'').toString());
+        }));
+    }
+    function _pkgNiColFilterAllValues(tab, field) {
+        const items = _pkgNiItemsExceptField(tab, field);
+        const set = new Set();
+        items.forEach(d => { const v = (d[field]||'').toString().trim(); if (v) set.add(v); });
+        return Array.from(set).sort((a,b) => a.localeCompare(b,'ko'));
+    }
+    function _pkgNiColFilterToggleOpen(tab, field) {
+        const key = tab + '|' + field;
+        if (_pkgNiColFilterOpenKey === key) { _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null; }
+        else {
+            _pkgNiColFilterOpenKey = key;
+            _pkgNiColFilterSearch = '';
+            const existing = _pkgNiColFilters[tab][field];
+            _pkgNiColFilterDraft = existing ? new Set(existing) : new Set(_pkgNiColFilterAllValues(tab, field));
+        }
+        PKG_NI_RENDER[tab]();
+    }
+    function _pkgNiColFilterSortPick(tab, field, dir) {
+        _pkgNiSortState[tab].key = field;
+        _pkgNiSortState[tab].asc = dir === 'asc';
+        _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        PKG_NI_RENDER[tab]();
+    }
+    function _pkgNiColFilterToggleVal(val) {
+        if (!_pkgNiColFilterDraft) return;
+        if (_pkgNiColFilterDraft.has(val)) _pkgNiColFilterDraft.delete(val); else _pkgNiColFilterDraft.add(val);
+        _pkgNiColFilterRerenderPanel();
+    }
+    function _pkgNiColFilterSelectAll(tab, field) {
+        _pkgNiColFilterDraft = new Set(_pkgNiColFilterAllValues(tab, field));
+        _pkgNiColFilterRerenderPanel();
+    }
+    function _pkgNiColFilterClearAll() {
+        _pkgNiColFilterDraft = new Set();
+        _pkgNiColFilterRerenderPanel();
+    }
+    function _pkgNiColFilterSetSearch(v) {
+        _pkgNiColFilterSearch = v;
+        _pkgNiColFilterRerenderPanel();
+    }
+    function _pkgNiColFilterRerenderPanel() {
+        if (!_pkgNiColFilterOpenKey) return;
+        const parts = _pkgNiColFilterOpenKey.split('|');
+        const el = document.getElementById('pkgNiColFilterPanel_' + parts[0] + '_' + parts[1]);
+        if (el) el.outerHTML = _pkgNiColFilterPanelHtml(parts[0], parts[1]);
+    }
+    function _pkgNiColFilterApply(tab, field) {
+        const allValues = _pkgNiColFilterAllValues(tab, field);
+        _pkgNiColFilters[tab][field] = (_pkgNiColFilterDraft.size >= allValues.length) ? null : new Set(_pkgNiColFilterDraft);
+        _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        PKG_NI_RENDER[tab]();
+    }
+    function _pkgNiColFilterCancel(tab) {
+        _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        PKG_NI_RENDER[tab]();
+    }
+    // 패널 바깥을 클릭하면 닫힌다(버튼·패널 클릭은 stopPropagation으로 막아둠).
+    document.addEventListener('click', function() {
+        if (!_pkgNiColFilterOpenKey) return;
+        const tab = _pkgNiColFilterOpenKey.split('|')[0];
+        _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        if (PKG_NI_RENDER[tab]) PKG_NI_RENDER[tab]();
+    });
+    function _pkgNiColFilterBtnHtml(tab, field, label) {
+        const st = _pkgNiSortState[tab];
+        const sortActive = st.key === field;
+        const filterActive = !!_pkgNiColFilters[tab][field];
+        const isOpen = _pkgNiColFilterOpenKey === (tab + '|' + field);
+        const arrow = sortActive ? (st.asc ? ' ↑' : ' ↓') : '';
+        const dot = filterActive ? '<span style="width:5px;height:5px;border-radius:50%;background:#facc15;display:inline-block;margin-left:2px;"></span>' : '';
+        const style = (sortActive || filterActive)
+            ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;display:inline-flex;align-items:center;gap:3px;'
+            : 'border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:var(--icon-bg);color:var(--text-sub);display:inline-flex;align-items:center;gap:3px;';
+        return `<span style="position:relative;display:inline-block;">
+            <button type="button" onclick="event.stopPropagation();_pkgNiColFilterToggleOpen('${tab}','${field}')" style="${style}-webkit-appearance:none;"><i class="fa-solid fa-filter" style="font-size:8px;"></i>${label}${arrow}${dot}</button>
+            ${isOpen ? _pkgNiColFilterPanelHtml(tab, field) : ''}
+        </span>`;
+    }
+    function _pkgNiColFilterPanelHtml(tab, field) {
+        const allValues = _pkgNiColFilterAllValues(tab, field);
+        const q = _pkgNiColFilterSearch.toLowerCase();
+        const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
+        const draft = _pkgNiColFilterDraft || new Set(allValues);
+        const checklistHtml = shown.map(v => {
+            const checked = draft.has(v) ? 'checked' : '';
+            return `<label style="display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:12px;color:var(--text);cursor:pointer;">
+                <input type="checkbox" ${checked} onchange="_pkgNiColFilterToggleVal(this.parentElement.dataset.v)" data-v="${v.replace(/"/g,'&quot;')}" style="cursor:pointer;flex-shrink:0;">
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v}</span>
+            </label>`;
+        }).join('') || '<div style="padding:10px;text-align:center;color:var(--text-sub);font-size:11.5px;">값이 없습니다</div>';
+        return `<div id="pkgNiColFilterPanel_${tab}_${field}" onclick="event.stopPropagation();" style="position:absolute;top:100%;left:0;margin-top:4px;background:var(--panel,var(--bg));border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);width:190px;z-index:50;overflow:hidden;">
+            <div onclick="_pkgNiColFilterSortPick('${tab}','${field}','asc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;">정렬, 오름차순</div>
+            <div onclick="_pkgNiColFilterSortPick('${tab}','${field}','desc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);">정렬, 내림차순</div>
+            <div style="padding:8px 12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#0284c7;font-weight:700;margin-bottom:6px;">
+                    <span style="cursor:pointer;" onclick="_pkgNiColFilterSelectAll('${tab}','${field}')">${allValues.length}개 모두 선택</span>
+                    <span style="cursor:pointer;color:var(--text-sub);" onclick="_pkgNiColFilterClearAll()">지우기</span>
+                </div>
+                <input type="text" value="${_pkgNiColFilterSearch.replace(/"/g,'&quot;')}" oninput="_pkgNiColFilterSetSearch(this.value)" placeholder="검색" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;margin-bottom:6px;background:var(--bg);color:var(--text);">
+                <div style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;">${checklistHtml}</div>
+            </div>
+            <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);">
+                <button onclick="_pkgNiColFilterCancel('${tab}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-sub);font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;">취소</button>
+                <button onclick="_pkgNiColFilterApply('${tab}','${field}')" style="flex:1;padding:6px;border-radius:6px;border:none;background:#16a34a;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;">확인</button>
+            </div>
+        </div>`;
+    }
+    function _pkgNiFieldBtnsHtml(tab) {
+        return PKG_NI_FIELD_DEFS[tab].map(([k,label]) => _pkgNiColFilterBtnHtml(tab, k, label)).join('');
+    }
+
+    // ─── 날짜 기간 필터(상차일/납기일/입고일/포장완료일) — PC 웹 제품검색 상단과 동일 기준 ───
+    const PKG_NI_DATE_FIELD_DEFS = [['date','상차일'], ['dueDate','납기일'], ['arriveDate','입고일'], ['regDate','포장완료일']];
+    let _pkgNiDateFilter = {
+        confirm: { field: null, from: '', to: '' },
+        missing: { field: null, from: '', to: '' },
+        type:    { field: null, from: '', to: '' },
+        barcode: { field: null, from: '', to: '' }
+    };
+    function _pkgNiSetDateField(tab, field) {
+        const f = _pkgNiDateFilter[tab];
+        f.field = (f.field === field) ? null : field;
+        PKG_NI_RENDER[tab]();
+    }
+    function _pkgNiSetDateRange(tab, which, value) {
+        _pkgNiDateFilter[tab][which] = value;
+        PKG_NI_RENDER[tab]();
+    }
+    function _pkgNiApplyDateFilter(items, tab) {
+        const f = _pkgNiDateFilter[tab];
+        if (!f || !f.field) return items;
+        if (!f.from && !f.to) return items;
+        return items.filter(it => {
+            const v = _nd(it[f.field]);
+            if (!v) return false;
+            if (f.from && v < f.from) return false;
+            if (f.to && v > f.to) return false;
+            return true;
+        });
+    }
+    function _pkgNiDateFilterRowHtml(tab) {
+        const f = _pkgNiDateFilter[tab];
+        const chips = PKG_NI_DATE_FIELD_DEFS.map(([k,label]) => {
+            const on = f.field === k;
+            return `<button onclick="_pkgNiSetDateField('${tab}','${k}')" style="padding:4px 9px;border-radius:6px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:${on?'#0284c7':'transparent'};color:${on?'#fff':'var(--text-sub)'};-webkit-appearance:none;">${label}</button>`;
+        }).join('');
+        return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+            <div style="display:flex;gap:3px;background:var(--icon-bg);border-radius:8px;padding:3px;">${chips}</div>
+            <input type="date" value="${f.from}" onchange="_pkgNiSetDateRange('${tab}','from',this.value)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11.5px;color:var(--text);background:var(--bg);outline:none;">
+            <span style="color:var(--text-sub);font-size:11px;">~</span>
+            <input type="date" value="${f.to}" onchange="_pkgNiSetDateRange('${tab}','to',this.value)" style="border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11.5px;color:var(--text);background:var(--bg);outline:none;">
+        </div>`;
+    }
+
     function openPkgNewItemsOverlay() {
         pkgNiSwitchTab('confirm');
         pkgNiRenderAll();
