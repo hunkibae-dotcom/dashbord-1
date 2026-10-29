@@ -15009,6 +15009,7 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 <div style="display:flex;gap:5px;flex-wrap:wrap;" id="pkgBarcodeSortBtns"></div>
                 <input type="text" id="pkgBarcodeSearchInput" oninput="renderPkgBarcodeList()" placeholder="건명/단품코드 검색" style="margin-left:auto;width:160px;max-width:40%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:16px;padding:5px 11px;font-size:11.5px;outline:none;">
             </div>
+            <div id="pkgBarcodeDateFilterRow" style="flex-shrink:0;"></div>
             <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 2px 10px;font-size:12.5px;border-bottom:1px solid #f1f5f9;flex-shrink:0;gap:8px;">
                 <button id="pkgBarcodeSelectBtn" onclick="pkgBarcodeToggleSelectMode()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:12.5px;font-weight:700;color:#475569;background:#f8fafc;cursor:pointer;flex-shrink:0;">선택</button>
                 <span style="color:#94a3b8;font-weight:600;flex:1;">선택 안 하면 보이는 전체가 대상입니다</span>
