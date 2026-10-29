@@ -8723,20 +8723,34 @@
             </div>`;
         }
         function _pkgModalFieldBtnsHtml(tab) {
-            return PKG_MODAL_FIELD_DEFS[tab].map(([k, label]) => _pkgColFilterBtnHtml(tab, k, label)).join('');
+            return PKG_MODAL_FIELD_DEFS[tab].map(([k, label]) => _pkgColFilterBtnHtml(tab, k, label)).join('') + _pkgModalCalBtnHtml(tab);
         }
 
         // ─── 날짜 기간 필터(상차일/납기일/입고일/포장완료일) ───────────────────
         // 포장강화 제품검색 상단의 날짜필터(wdfDate/wdfDue/wdfArrive/wdfReg,
         // setWebDateField)와 완전히 같은 기준·순서로 통일했다(요청, 2026-10-29:
         // "내가 말한 제품검색창의 필터창과 똑같이 수정해줘"). 탭마다 독립된 상태.
+        // 품질검사 모달과 같은 방식(요청, 2026-10-29: "달력아이콘버튼으로해서 클릭시
+        // 날짜나타나게") — 평소엔 달력 아이콘 버튼만 보이고, 누르면 칩+기간 입력이 펼쳐진다.
         const PKG_MODAL_DATE_FIELD_DEFS = [['date', '상차일'], ['dueDate', '납기일'], ['arriveDate', '입고일'], ['regDate', '포장완료일']];
+        let _pkgModalDateFilterOpen = { confirm: false, missing: false, type: false, barcode: false };
         let _pkgModalDateFilter = {
             confirm: { field: null, from: '', to: '' },
             missing: { field: null, from: '', to: '' },
             type:    { field: null, from: '', to: '' },
             barcode: { field: null, from: '', to: '' }
         };
+        function _pkgModalToggleDateFilter(tab) {
+            _pkgModalDateFilterOpen[tab] = !_pkgModalDateFilterOpen[tab];
+            PKG_MODAL_RENDER[tab]();
+        }
+        function _pkgModalCalBtnHtml(tab) {
+            const active = !!_pkgModalDateFilter[tab].field;
+            const style = active
+                ? 'border:none;border-radius:16px;padding:3px 9px;font-size:10.5px;font-weight:800;cursor:pointer;background:#0284c7;color:#fff;'
+                : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 9px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
+            return `<button onclick="_pkgModalToggleDateFilter('${tab}')" title="상차일/납기일/입고일/포장완료일 기간 필터" style="${style}"><i class="fa-solid fa-calendar-days"></i></button>`;
+        }
         function _pkgModalSetDateField(tab, field) {
             const f = _pkgModalDateFilter[tab];
             f.field = (f.field === field) ? null : field;
