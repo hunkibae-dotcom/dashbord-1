@@ -1090,7 +1090,7 @@ try {
   <!-- 필터 입력 -->
   <div class="ps-filter-panel" style="background:var(--panel);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;flex-direction:column;gap:8px;flex-shrink:0;">
     <div class="ps-row ps-row-1" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-      <input id="psName" type="text" oninput="runProductSearchDebounced()" placeholder="건명/차수 검색"
+      <input id="psName" type="text" oninput="this.value=this.value.toUpperCase();runProductSearchDebounced()" placeholder="건명/차수 검색"
         style="background:var(--input-bg);color:var(--text);border:1.5px solid var(--border);border-radius:12px;padding:11px 10px;font-size:13px;outline:none;width:100%;box-sizing:border-box;min-width:0;"
         onfocus="this.style.borderColor='#6D5CE8'" onblur="this.style.borderColor='var(--border)'">
       <input id="psCode" type="text" oninput="runProductSearchDebounced()" placeholder="단품코드 검색"
