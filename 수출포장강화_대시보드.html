@@ -8774,6 +8774,7 @@
             });
         }
         function _pkgModalDateFilterRowHtml(tab) {
+            if (!_pkgModalDateFilterOpen[tab]) return '';
             const f = _pkgModalDateFilter[tab];
             const chips = PKG_MODAL_DATE_FIELD_DEFS.map(([k, label]) => {
                 const on = f.field === k;
