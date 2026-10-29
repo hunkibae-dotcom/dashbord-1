@@ -1914,7 +1914,7 @@
                 <div style="display:flex;gap:6px;">
                     <input id="${rid}_pt" type="text" placeholder="제품종류" value="${s.productType||''}" style="flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
                     <input id="${rid}_bh" type="text" placeholder="PE폼 높이" value="${s.boxHeight||''}" style="width:90px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
-                    <button onclick="pkgNiSaveMissingSpec('${it.code}')" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;-webkit-appearance:none;">저장</button>
+                    <button onclick="pkgNiSaveMissingSpec('${it.code}')" id="${rid}_saveBtn" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;-webkit-appearance:none;">저장</button>
                 </div>
             </div>`;
         }).join('');
