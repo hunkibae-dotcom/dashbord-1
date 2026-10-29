@@ -10785,6 +10785,8 @@ function qcOpenNewItemsModal() {
     confirm: { field: null, from: '', to: '' },
     drawing: { field: null, from: '', to: '' }
   };
+  _qcModalColFilters = { notify: { round: null, code: null }, confirm: { round: null, code: null }, drawing: { round: null, code: null } };
+  _qcColFilterOpenKey = null; _qcColFilterDraft = null;
 
   _qcNotifyFac = 'all'; _qcNotifySelected = new Set();
   document.getElementById('qcNotifyStatus').textContent = '';
