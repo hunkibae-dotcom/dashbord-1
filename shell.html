@@ -226,7 +226,11 @@
                     <span id="pkgNiSel-confirm" style="margin-left:auto;font-size:11px;color:var(--text-sub);">0건 선택</span>
                 </div>
                 <div id="pkgNiBody-confirm" class="no-scrollbar" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
-                <div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;margin-top:8px;flex-shrink:0;">
+                <div style="display:flex;gap:8px;border-top:1px solid var(--border);padding-top:10px;margin-top:8px;flex-shrink:0;align-items:center;">
+                    <button onclick="pkgNiRunSortExportSheet()" id="pkgNiSortExportBtn" title="수출 현황을 상차일 우선으로 정렬(구글시트에도 동일 반영)"
+                        style="width:40px;height:40px;flex-shrink:0;border-radius:10px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-appearance:none;">
+                        <i class="fa-solid fa-arrow-down-wide-short" style="font-size:13px;"></i>
+                    </button>
                     <button onclick="pkgNiConfirmNew()" id="pkgNiConfirmBtn" disabled style="flex:1;padding:11px;border-radius:10px;border:none;background:#16a34a;color:#fff;font-weight:800;font-size:13px;cursor:pointer;opacity:.4;-webkit-appearance:none;">신규등록</button>
                     <button onclick="pkgNiDeleteNew()" id="pkgNiDeleteBtn" disabled style="flex:1;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--icon-bg);color:#dc2626;font-weight:800;font-size:13px;cursor:pointer;opacity:.4;-webkit-appearance:none;">삭제</button>
                 </div>
