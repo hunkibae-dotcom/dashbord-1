@@ -10301,13 +10301,75 @@ function _qcFmtChangeDate(s) {
   return `${m[1]}. ${parseInt(m[2], 10)}. ${parseInt(m[3], 10)}`;
 }
 // 신규품목확인 모달의 확인/등록/도면출력여부 탭 공통 정렬(요청, 2026-10-23) — 건명/
-// 단품코드/납기 중 하나로 오름↔내림차순. 탭마다 독립된 상태를 쓴다(다른 탭을 눌러도
-// 서로 영향 없음).
+// 단품코드 중 하나로 오름↔내림차순. 탭마다 독립된 상태를 쓴다(다른 탭을 눌러도
+// 서로 영향 없음). "납기" 정렬 버튼은 제품검색 상단과 같은 날짜기준 기간 필터로
+// 바뀌었다(요청, 2026-10-29) — _qcModalCalBtnHtml/_qcModalApplyDateFilter 참고.
 let _qcNotifySortKey = null, _qcNotifySortAsc = true;
 let _qcNewSortKey = null, _qcNewSortAsc = true;
 let _qcDrawingSortKey = null, _qcDrawingSortAsc = true;
-const _QC_MODAL_SORT_DEFS = [['round', '건명'], ['code', '단품코드'], ['due', '납기']];
-const _QC_MODAL_SORT_FIELD = { round: '건명', code: '단품코드', due: '납기일' };
+const _QC_MODAL_SORT_DEFS = [['round', '건명'], ['code', '단품코드']];
+const _QC_MODAL_SORT_FIELD = { round: '건명', code: '단품코드' };
+
+// ─── 신규품목확인 모달 공통 날짜 기간 필터(납기일/포장일/검사완료일) ───────────
+// 확인/등록/도면출력여부 탭의 "납기" 정렬 버튼을 없애고, 제품검색 상단의 날짜기준
+// 칩+기간 선택과 같은 모양의 달력 아이콘 버튼으로 바꿨다(요청, 2026-10-29: "납기버튼을
+// 달력모양 아이콘으로 변경한뒤, 제품검색의 날짜필터버튼처럼 바꿔주고"). 정렬이 아니라
+// 필터라서 _qcModalSortItems와는 별개로 각 탭 렌더 함수에서 한 단계 더 거친다.
+const QC_MODAL_DATE_FIELD_DEFS = [['납기일', '납기일'], ['포장일', '포장일'], ['검사일', '검사완료일']];
+let _qcModalDateFilterOpen = { notify: false, confirm: false, drawing: false };
+let _qcModalDateFilter = {
+  notify:  { field: null, from: '', to: '' },
+  confirm: { field: null, from: '', to: '' },
+  drawing: { field: null, from: '', to: '' }
+};
+function _qcModalToggleDateFilter(tab) {
+  _qcModalDateFilterOpen[tab] = !_qcModalDateFilterOpen[tab];
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+function _qcModalSetDateField(tab, field) {
+  const f = _qcModalDateFilter[tab];
+  f.field = (f.field === field) ? null : field;
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+function _qcModalSetDateRange(tab, which, value) {
+  _qcModalDateFilter[tab][which] = value;
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+function _qcModalApplyDateFilter(items, tab) {
+  const f = _qcModalDateFilter[tab];
+  if (!f || !f.field) return items;
+  const fromD = f.from ? new Date(f.from + 'T00:00:00') : null;
+  const toD = f.to ? new Date(f.to + 'T23:59:59') : null;
+  return items.filter(d => {
+    const dt = parseKDate(d[f.field]);
+    if (!dt) return false;
+    if (fromD && dt < fromD) return false;
+    if (toD && dt > toD) return false;
+    return true;
+  });
+}
+function _qcModalCalBtnHtml(tab) {
+  const active = !!_qcModalDateFilter[tab].field;
+  const style = active
+    ? 'border:none;border-radius:16px;padding:3px 9px;font-size:10.5px;font-weight:800;cursor:pointer;background:#6D5CE8;color:#fff;'
+    : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 9px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
+  return `<button onclick="_qcModalToggleDateFilter('${tab}')" title="납기일/포장일/검사완료일 기간 필터" style="${style}"><i class="fa-solid fa-calendar-days"></i></button>`;
+}
+function _qcModalDateFilterRowHtml(tab) {
+  if (!_qcModalDateFilterOpen[tab]) return '';
+  const f = _qcModalDateFilter[tab];
+  const chips = QC_MODAL_DATE_FIELD_DEFS.map(([k, label]) => {
+    const active = f.field === k;
+    const style = active ? 'background:#6D5CE8;color:#fff;' : 'background:transparent;color:#64748b;';
+    return `<button onclick="_qcModalSetDateField('${tab}','${k}')" style="border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;${style}">${label}</button>`;
+  }).join('');
+  return `<div class="flex items-center gap-1.5 mb-2 flex-wrap">
+    <div class="flex gap-0.5" style="background:#f8fafc;border-radius:8px;padding:2px;">${chips}</div>
+    <input type="date" value="${f.from}" onchange="_qcModalSetDateRange('${tab}','from',this.value)" style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 7px;font-size:11px;color:#334155;outline:none;">
+    <span style="color:#94a3b8;font-size:11px;">~</span>
+    <input type="date" value="${f.to}" onchange="_qcModalSetDateRange('${tab}','to',this.value)" style="border:1px solid #e2e8f0;border-radius:8px;padding:4px 7px;font-size:11px;color:#334155;outline:none;">
+  </div>`;
+}
 // 신규품목확인 모달 검색(요청, 2026-10-23) — 건명/단품코드 부분일치. 탭마다 자기 검색칸만 본다.
 function _qcModalSearchFilter(items, inputId) {
   const q = (document.getElementById(inputId)?.value || '').trim().toLowerCase();
