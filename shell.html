@@ -3425,14 +3425,26 @@
         runSearch();
     }
 
+    // 다른 문서(엑셀·워드 등)에서 복사해 붙여넣은 검색어에 눈엔 똑같아 보이지만 실제로는
+    // 다른 문자가 섞여 들어오는 경우가 있다 — 특히 하이픈("FAM-57")이 워드 자동고침 등으로
+    // en dash/non-breaking hyphen 같은 비슷한 문자로 바뀌어 붙여넣어지면, 시트에 실제로
+    // 저장된 진짜 하이픈(U+002D)과 글자가 달라서 분명히 맞는 글자인데 검색이 안 된다(요청,
+    // 2026-10-29, 품질검사 제품검색에서 먼저 발견됨).
+    function _normSearchText(s) {
+        return (s || '')
+            .normalize('NFKC')
+            .replace(/[‐-―−]/g, '-')
+            .replace(/[​-‍﻿]/g, '')
+            .trim();
+    }
     function runSearch() {
         const nextPalletEl = document.getElementById('srNextPallet');
         if (nextPalletEl) nextPalletEl.textContent = '다음적재 - ' + _nextPalletNumber();
-        const round   = (document.getElementById('sf_round').value   || '').trim().toLowerCase();
-        const code    = (document.getElementById('sf_code').value    || '').trim().toLowerCase();
-        const color   = (document.getElementById('sf_color').value   || '').trim().toLowerCase();
-        const country = (document.getElementById('sf_country').value || '').trim().toLowerCase();
-        const pallet  = (document.getElementById('sf_pallet').value  || '').trim();
+        const round   = _normSearchText(document.getElementById('sf_round').value).toLowerCase();
+        const code    = _normSearchText(document.getElementById('sf_code').value).toLowerCase();
+        const color   = _normSearchText(document.getElementById('sf_color').value).toLowerCase();
+        const country = _normSearchText(document.getElementById('sf_country').value).toLowerCase();
+        const pallet  = _normSearchText(document.getElementById('sf_pallet').value);
         const dateFrom = document.getElementById('sf_dateFrom').value || '';
         const dateTo   = document.getElementById('sf_dateTo').value || '';
         // 수출 일정 카드/포장대기 카드의 "선택 조회"로 들어온 경우가 아니라면 매번 해제 —
