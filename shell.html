@@ -1924,6 +1924,9 @@
         const productType = (document.getElementById(rid + '_pt').value || '').trim();
         const boxHeight = (document.getElementById(rid + '_bh').value || '').trim();
         if (!productType && !boxHeight) return;
+        // 반영 중 로딩 표시(요청, 2026-10-29: "확인누르면 반영중 로딩표시도좀 하고").
+        const btn = document.getElementById(rid + '_saveBtn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
         const payload = { action: 'updateProductSpec', code: code };
         if (productType) payload.productType = productType;
         if (boxHeight) payload.boxHeight = boxHeight;
