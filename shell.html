@@ -1722,7 +1722,7 @@
                     <span>${it.round||'-'}</span>
                     <span style="font-family:ui-monospace,monospace;font-weight:600;color:var(--text-sub);font-size:11.5px;">${it.code}</span>
                     <span style="font-size:10px;font-weight:700;color:#2563eb;background:#eff6ff;border-radius:6px;padding:2px 6px;">${it.productType || '제품종류 미입력'}</span>
-                    <button onclick="pkgNiToggleTypeSpecEdit('${it.code}')" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid var(--border);background:var(--icon-bg);color:#4338ca;cursor:pointer;-webkit-appearance:none;"><i class="fa-solid fa-ruler-combined" style="font-size:9px;"></i> 상세스펙</button>
+                    <button onclick="pkgNiToggleTypeSpecEdit('${it.code}')" title="상세스펙 수정" style="width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid var(--border);background:var(--icon-bg);color:#4338ca;cursor:pointer;padding:0;-webkit-appearance:none;"><i class="fa-solid fa-ruler-combined" style="font-size:9.5px;"></i></button>
                 </div>
                 <div style="font-size:10.5px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;">${dates}</div>
                 ${editingSpec ? `<div style="display:flex;gap:6px;">
