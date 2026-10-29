@@ -1660,6 +1660,16 @@
 
     function openPkgNewItemsOverlay() {
         pkgNiSwitchTab('confirm');
+        // 칼럼 필터/날짜 필터도 매번 열 때마다 초기화한다(요청, 2026-10-29 신설) — 지난번
+        // 필터가 남아있으면 다음에 열었을 때 품목이 안 보여서 헷갈릴 수 있다.
+        _pkgNiColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} };
+        _pkgNiColFilterOpenKey = null; _pkgNiColFilterDraft = null;
+        _pkgNiDateFilter = {
+            confirm: { field: null, from: '', to: '' },
+            missing: { field: null, from: '', to: '' },
+            type:    { field: null, from: '', to: '' },
+            barcode: { field: null, from: '', to: '' }
+        };
         pkgNiRenderAll();
         document.getElementById('pkgNewItemsOverlay').style.display = 'flex';
     }
