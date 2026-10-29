@@ -3187,8 +3187,15 @@
             const key = sortConfig.key;
             const dir = sortConfig.direction;
             
+            // 정렬 칼럼이 없을 때(기본 화면 진입, 또는 헤더를 3번 눌러 정렬을 해제했을
+            // 때)는 시트의 실제 등록 순서를 보여준다 — 단, "분류(수주)"가 신규 품목을
+            // 시트 맨 아래에 추가하는 구조라(GAS _coreClassifyAndUpdate), 그대로 오름차순이면
+            // 가장 오래된 행이 위로 온다. 최신 건이 위에 보이도록 역순(최근에 추가된
+            // 행부터)으로 보여준다(요청, 2026-10-29: "제품검색에서 보이는 리스트의
+            // 기본세팅은 실제 시트의 순서대로가면돼" — 시트 순서 자체를 쓰되 최신이
+            // 위로 오게).
             if (dir === 'none' || !key) {
-                state.filteredData.sort((a, b) => (a.originalIndex || 0) - (b.originalIndex || 0));
+                state.filteredData.sort((a, b) => (b.originalIndex || 0) - (a.originalIndex || 0));
                 return;
             }
 
