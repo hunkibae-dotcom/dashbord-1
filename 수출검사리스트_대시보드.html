@@ -922,12 +922,12 @@ try {
           </div>
           <div>
             <label class="block text-[10.5px] font-bold text-slate-400 mb-1">단품코드/명칭</label>
-            <input type="text" id="fCode" oninput="applyFiltersDebounced()" placeholder="코드/명칭 검색"
+            <input type="text" id="fCode" oninput="this.value=this.value.toUpperCase();applyFiltersDebounced()" placeholder="코드/명칭 검색"
               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
           </div>
           <div>
             <label class="block text-[10.5px] font-bold text-slate-400 mb-1">색상</label>
-            <input type="text" id="fColor" oninput="applyFiltersDebounced()" placeholder="색상 검색"
+            <input type="text" id="fColor" oninput="this.value=this.value.toUpperCase();applyFiltersDebounced()" placeholder="색상 검색"
               class="w-full border border-slate-200 rounded-lg px-3 py-2 text-[13.5px] text-slate-700 outline-none transition-colors focus:border-accent-500 placeholder:text-slate-300">
           </div>
           <div>
