@@ -1401,8 +1401,6 @@
     let _pkgNiSpecMap = {};
     let _pkgNiActiveTab = 'confirm';
     let _pkgNiSelConfirm = new Set(), _pkgNiSelBarcode = new Set();
-    let _pkgNiTypeSortKey = null, _pkgNiTypeSortAsc = true;
-    const PKG_NI_TYPE_SORT_DEFS = [['round','건명'], ['code','제품코드'], ['productType','제품종류'], ['dueDate','납기일'], ['date','상차일'], ['arriveDate','입고일']];
 
     // 메인 데이터와 같은 이유로 세션 캐시를 둔다(요청, 2026-10-29: "F.WORK 앱을 아예
     // 종료하지않는이상 데이터는 유지가되었으면 좋겠어") — 캐시가 있으면 네트워크 재조회를
