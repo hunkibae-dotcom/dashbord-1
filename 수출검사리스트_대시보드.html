@@ -10393,25 +10393,154 @@ const _QC_MODAL_SORT_STATE = {
   drawing: { get key()  { return _qcDrawingSortKey; }, get asc()  { return _qcDrawingSortAsc; }, set(k, a) { _qcDrawingSortKey = k; _qcDrawingSortAsc = a; }, render: () => qcDrawingRender() },
 };
 function _qcModalSortBtnsHtml(tab) {
-  const st = _QC_MODAL_SORT_STATE[tab];
-  const sortBtns = _QC_MODAL_SORT_DEFS.map(([k, label]) => {
-    const active = st.key === k;
-    const arrow = active ? (st.asc ? '↑' : '↓') : '';
-    const style = active
-      ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#6D5CE8;color:#fff;'
-      : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;';
-    return `<button onclick="_qcModalPickSort('${tab}','${k}')" style="${style}">${label} ${arrow}</button>`;
-  }).join('');
-  return sortBtns + _qcModalCalBtnHtml(tab);
+  return _QC_MODAL_SORT_DEFS.map(([k, label]) => _qcColFilterBtnHtml(tab, k, label)).join('') + _qcModalCalBtnHtml(tab);
 }
-function _qcModalPickSort(tab, key) {
+
+// ─── 건명/단품코드 — 구글시트 칼럼 필터처럼(요청, 2026-10-29: "확인,등록,도면출력여부
+// 단계에서 건명,단품코드를 구글시트 필터처럼바꿔줘") 정렬(오름/내림)과 값별 체크박스
+// 필터를 드롭다운 하나로 합쳤다. 탭×칼럼마다 독립된 필터 상태를 쓰고, 다른 칼럼에
+// 이미 필터가 걸려있으면 그 조건까지 반영한 후보값만 체크리스트에 보여준다(구글시트와
+// 동일 동작).
+let _qcModalColFilters = {
+  notify:  { round: null, code: null },
+  confirm: { round: null, code: null },
+  drawing: { round: null, code: null }
+};
+let _qcColFilterOpenKey = null; // "tab|field" 또는 null(닫힘) — 한 번에 하나만 열림
+let _qcColFilterDraft = null;   // 드롭다운이 열려있는 동안의 체크 상태(확인 누르기 전까지 실제 반영 안 됨)
+let _qcColFilterSearch = '';
+function _qcModalBaseItemsForTab(tab) {
+  if (tab === 'notify') return _qcNotifyItems();
+  if (tab === 'confirm') return _qcNewItems();
+  if (tab === 'drawing') return _qcDrawingItems();
+  return [];
+}
+function _qcModalItemsExceptField(tab, exceptField) {
+  let items = _qcModalBaseItemsForTab(tab);
+  const filters = _qcModalColFilters[tab];
+  Object.keys(filters).forEach(f => {
+    if (f === exceptField || !filters[f]) return;
+    const fieldName = _QC_MODAL_SORT_FIELD[f];
+    items = items.filter(d => filters[f].has((d[fieldName] || '').toString()));
+  });
+  return items;
+}
+function _qcModalApplyColFilters(items, tab) {
+  const filters = _qcModalColFilters[tab];
+  return items.filter(d => Object.keys(filters).every(f => {
+    if (!filters[f]) return true;
+    const fieldName = _QC_MODAL_SORT_FIELD[f];
+    return filters[f].has((d[fieldName] || '').toString());
+  }));
+}
+function _qcColFilterAllValues(tab, field) {
+  const fieldName = _QC_MODAL_SORT_FIELD[field];
+  const items = _qcModalItemsExceptField(tab, field);
+  const set = new Set();
+  items.forEach(d => { const v = (d[fieldName] || '').toString().trim(); if (v) set.add(v); });
+  return Array.from(set).sort((a, b) => a.localeCompare(b, 'ko'));
+}
+function _qcColFilterToggleOpen(tab, field) {
+  const key = tab + '|' + field;
+  if (_qcColFilterOpenKey === key) { _qcColFilterOpenKey = null; _qcColFilterDraft = null; }
+  else {
+    _qcColFilterOpenKey = key;
+    _qcColFilterSearch = '';
+    const existing = _qcModalColFilters[tab][field];
+    _qcColFilterDraft = existing ? new Set(existing) : new Set(_qcColFilterAllValues(tab, field));
+  }
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+function _qcColFilterSortPick(tab, field, dir) {
   const st = _QC_MODAL_SORT_STATE[tab];
-  if (!st) return;
-  // 오름차순 → 내림차순 → 정렬 해제(초기화) 3단계로 돈다(요청, 2026-10-27).
-  if (st.key !== key) st.set(key, true);
-  else if (st.asc) st.set(key, false);
-  else st.set(null, true);
+  st.set(field, dir === 'asc');
+  _qcColFilterOpenKey = null; _qcColFilterDraft = null;
   st.render();
+}
+function _qcColFilterToggleVal(val) {
+  if (!_qcColFilterDraft) return;
+  if (_qcColFilterDraft.has(val)) _qcColFilterDraft.delete(val); else _qcColFilterDraft.add(val);
+  _qcColFilterRerenderPanel();
+}
+function _qcColFilterSelectAll(tab, field) {
+  _qcColFilterDraft = new Set(_qcColFilterAllValues(tab, field));
+  _qcColFilterRerenderPanel();
+}
+function _qcColFilterClearAll() {
+  _qcColFilterDraft = new Set();
+  _qcColFilterRerenderPanel();
+}
+function _qcColFilterSetSearch(v) {
+  _qcColFilterSearch = v;
+  _qcColFilterRerenderPanel();
+}
+function _qcColFilterRerenderPanel() {
+  if (!_qcColFilterOpenKey) return;
+  const [tab, field] = _qcColFilterOpenKey.split('|');
+  const el = document.getElementById('qcColFilterPanel_' + tab + '_' + field);
+  if (el) el.outerHTML = _qcColFilterPanelHtml(tab, field);
+}
+function _qcColFilterApply(tab, field) {
+  const allValues = _qcColFilterAllValues(tab, field);
+  // 전부 선택돼 있으면 "필터 없음"과 같으니 null(=전체 표시)로 되돌린다.
+  _qcModalColFilters[tab][field] = (_qcColFilterDraft.size >= allValues.length) ? null : new Set(_qcColFilterDraft);
+  _qcColFilterOpenKey = null; _qcColFilterDraft = null;
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+function _qcColFilterCancel(tab) {
+  _qcColFilterOpenKey = null; _qcColFilterDraft = null;
+  _QC_MODAL_SORT_STATE[tab].render();
+}
+// 패널 바깥을 클릭하면 닫힌다(버튼·패널 클릭은 stopPropagation으로 막아둠).
+document.addEventListener('click', function() {
+  if (!_qcColFilterOpenKey) return;
+  const tab = _qcColFilterOpenKey.split('|')[0];
+  _qcColFilterOpenKey = null; _qcColFilterDraft = null;
+  if (_QC_MODAL_SORT_STATE[tab]) _QC_MODAL_SORT_STATE[tab].render();
+});
+function _qcColFilterBtnHtml(tab, field, label) {
+  const st = _QC_MODAL_SORT_STATE[tab];
+  const sortActive = st.key === field;
+  const filterActive = !!_qcModalColFilters[tab][field];
+  const isOpen = _qcColFilterOpenKey === (tab + '|' + field);
+  const arrow = sortActive ? (st.asc ? ' ↑' : ' ↓') : '';
+  const dot = filterActive ? '<span style="width:5px;height:5px;border-radius:50%;background:#facc15;display:inline-block;margin-left:2px;"></span>' : '';
+  const style = (sortActive || filterActive)
+    ? 'border:none;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:800;cursor:pointer;background:#6D5CE8;color:#fff;display:inline-flex;align-items:center;gap:3px;'
+    : 'border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;display:inline-flex;align-items:center;gap:3px;';
+  return `<span style="position:relative;display:inline-block;">
+    <button type="button" onclick="event.stopPropagation();_qcColFilterToggleOpen('${tab}','${field}')" style="${style}"><i class="fa-solid fa-filter" style="font-size:8px;"></i>${label}${arrow}${dot}</button>
+    ${isOpen ? _qcColFilterPanelHtml(tab, field) : ''}
+  </span>`;
+}
+function _qcColFilterPanelHtml(tab, field) {
+  const allValues = _qcColFilterAllValues(tab, field);
+  const q = _qcColFilterSearch.toLowerCase();
+  const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
+  const draft = _qcColFilterDraft || new Set(allValues);
+  const checklistHtml = shown.map(v => {
+    const checked = draft.has(v) ? 'checked' : '';
+    return `<label style="display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:12px;color:#334155;cursor:pointer;">
+      <input type="checkbox" ${checked} onchange="_qcColFilterToggleVal('${_jsAttr(v)}')" style="cursor:pointer;flex-shrink:0;">
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v}</span>
+    </label>`;
+  }).join('') || '<div style="padding:10px;text-align:center;color:#94a3b8;font-size:11.5px;">값이 없습니다</div>';
+  return `<div id="qcColFilterPanel_${tab}_${field}" onclick="event.stopPropagation();" style="position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:200px;z-index:50;overflow:hidden;">
+    <div onclick="_qcColFilterSortPick('${tab}','${field}','asc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 오름차순</div>
+    <div onclick="_qcColFilterSortPick('${tab}','${field}','desc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 내림차순</div>
+    <div style="padding:8px 12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#6D5CE8;font-weight:700;margin-bottom:6px;">
+        <span style="cursor:pointer;" onclick="_qcColFilterSelectAll('${tab}','${field}')">${allValues.length}개 모두 선택</span>
+        <span style="cursor:pointer;color:#94a3b8;" onclick="_qcColFilterClearAll()">지우기</span>
+      </div>
+      <input type="text" value="${_jsAttr(_qcColFilterSearch)}" oninput="_qcColFilterSetSearch(this.value)" placeholder="검색" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;margin-bottom:6px;">
+      <div style="max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;">${checklistHtml}</div>
+    </div>
+    <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid #f1f5f9;">
+      <button onclick="_qcColFilterCancel('${tab}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:11.5px;font-weight:700;cursor:pointer;">취소</button>
+      <button onclick="_qcColFilterApply('${tab}','${field}')" style="flex:1;padding:6px;border-radius:6px;border:none;background:#16a34a;color:#fff;font-size:11.5px;font-weight:700;cursor:pointer;">확인</button>
+    </div>
+  </div>`;
 }
 
 function qcNotifyRender() {
