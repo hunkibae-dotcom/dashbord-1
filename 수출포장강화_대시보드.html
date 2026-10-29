@@ -9000,7 +9000,9 @@
         function renderPkgMissingTypeList() {
             const body = document.getElementById('pkgMissingTypeBody');
             const sortBtnsEl = document.getElementById('pkgMissingTypeSortBtns');
-            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgMissingTypeSortBtnsHtml();
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgModalFieldBtnsHtml('type');
+            const dateRowEl = document.getElementById('pkgMissingTypeDateFilterRow');
+            if (dateRowEl) dateRowEl.innerHTML = _pkgModalDateFilterRowHtml('type');
             document.getElementById('pkgNewTabCnt-type').textContent = _pkgMissingTypeList().length;
             const list = _pkgMissingTypeDisplayList();
             if (!list.length) {
