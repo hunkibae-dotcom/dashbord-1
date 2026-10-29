@@ -10598,7 +10598,7 @@ function qcNotifyToggleOne(key, checked) {
 }
 function qcNotifyToggleAll(checked) {
   // 검색/날짜 필터 중이면 "전체선택"도 지금 화면에 보이는 품목만 대상으로 한다.
-  _qcModalApplyDateFilter(_qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput'), 'notify').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNotifySelected.add(k); else _qcNotifySelected.delete(k); });
+  _qcModalApplyColFilters(_qcModalApplyDateFilter(_qcModalSearchFilter(_qcNotifyItems(), 'qcNotifySearchInput'), 'notify'), 'notify').forEach(d => { const k = _qcNewKey(d); if (checked) _qcNotifySelected.add(k); else _qcNotifySelected.delete(k); });
   qcNotifyRender();
 }
 function _qcNotifyUpdateSelUi() {
