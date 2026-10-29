@@ -1249,11 +1249,11 @@
                             <th onclick="handleSort('dueDate')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
                                 납기일 <span id="sort-icon-dueDate" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
                             </th>
-                            <!-- 상차준비완료/미완료 정렬(요청, 2026-10-28) — 실제 칼럼이 아니라
-                                 비고란의 "상차 준비완료" 문구 유무로 정렬하는 가상 칼럼. 상차일
-                                 칼럼 바로 왼쪽에 둔다. -->
-                            <th onclick="handleSort('_shipReady')" title="상차준비완료/미완료 기준 정렬" class="py-2.5 px-2 font-semibold cursor-pointer text-center transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
-                                상차준비 <span id="sort-icon-_shipReady" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
+                            <!-- "등록일자(포장일)"로 뭉쳐 있던 칸을 "포장일"로 정리하고, 유명무실하던
+                                 상차준비 칼럼(전부 "-") 자리로 옮겼다(요청, 2026-10-29). 상차준비
+                                 완료 여부는 이제 행 배경색(노란색)으로 대신 보여준다. -->
+                            <th onclick="handleSort('regDate')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
+                                포장일 <span id="sort-icon-regDate" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
                             </th>
                             <th onclick="handleSort('date')" class="py-2.5 px-3 font-semibold cursor-pointer text-left transition-colors" style="user-select:none;" onmouseover="this.style.color='#475569'" onmouseout="this.style.color='#94a3b8'">
                                 상차일 <span id="sort-icon-date" class="ml-0.5"><i class="fa-solid fa-sort text-[9px]"></i></span>
