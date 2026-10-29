@@ -8846,7 +8846,9 @@
         function renderPkgBarcodeList() {
             const body = document.getElementById('pkgBarcodeBody');
             const sortBtnsEl = document.getElementById('pkgBarcodeSortBtns');
-            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgBarcodeSortBtnsHtml();
+            if (sortBtnsEl) sortBtnsEl.innerHTML = _pkgModalFieldBtnsHtml('barcode');
+            const dateRowEl = document.getElementById('pkgBarcodeDateFilterRow');
+            if (dateRowEl) dateRowEl.innerHTML = _pkgModalDateFilterRowHtml('barcode');
             document.getElementById('pkgNewTabCnt-barcode').textContent = _pkgBarcodeList().length;
             const selBtn = document.getElementById('pkgBarcodeSelectBtn');
             if (selBtn) {
