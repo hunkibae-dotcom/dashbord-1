@@ -10900,18 +10900,39 @@ function _qcNewUpdateSelUi() {
   if (copyBtn) copyBtn.disabled = _qcNewSelected.size === 0;
 }
 
-// 한 줄(단품코드/색상/단품명칭/수량)을 복사 — 구글 "시트"에 붙여넣을 땐 탭 구분
-// 일반텍스트만으로도 칸이 자동으로 나뉘지만, 구글 "문서(Docs)" 안의 표는 그렇지
-// 않아서(탭 글자가 그냥 한 칸 안에 통째로 들어가버림, 2026-10-16 확인) 클립보드에
-// 진짜 <table> HTML도 같이 담아 보낸다 — 엑셀/시트를 복사해서 문서 표에 붙여넣을 때
-// 칸이 맞춰지는 것과 같은 원리. HTML 클립보드가 안 되는 구형 환경에서는 탭 구분
-// 텍스트로 자동 대체된다.
-function _qcNewRowText(code, color, name, qty) {
-  return [code || '', color || '', name || '', qty != null ? qty : ''].join('\t');
+// 한 줄(프로젝트/단품코드/색상/단품명칭/수량/공장/포장일/출고일/검사자)을 복사(요청,
+// 2026-10-29) — 구글 "시트"에 붙여넣을 땐 탭 구분 일반텍스트만으로도 칸이 자동으로
+// 나뉘지만, 구글 "문서(Docs)" 안의 표는 그렇지 않아서(탭 글자가 그냥 한 칸 안에
+// 통째로 들어가버림, 2026-10-16 확인) 클립보드에 진짜 <table> HTML도 같이 담아
+// 보낸다 — 엑셀/시트를 복사해서 문서 표에 붙여넣을 때 칸이 맞춰지는 것과 같은
+// 원리. HTML 클립보드가 안 되는 구형 환경에서는 탭 구분 텍스트로 자동 대체된다.
+function _qcNewFmtMD(dateStr) {
+  const d = parseKDate(dateStr);
+  if (!d) return '';
+  return (d.getMonth() + 1) + '/' + d.getDate();
 }
-function _qcNewRowHtmlCells(code, color, name, qty) {
+// 출고일 = 납기일 - 2일(요청, 2026-10-29: "출고일(납기일에서 -2일로 간주해서 10/27
+// 이런식으로 표기, 납기일없으면 공백)").
+function _qcNewShipOutDateMD(dueDateStr) {
+  const d = parseKDate(dueDateStr);
+  if (!d) return '';
+  const out = new Date(d.getTime() - 2 * 86400000);
+  return (out.getMonth() + 1) + '/' + out.getDate();
+}
+function _qcNewRowFields(d) {
+  const fac = d.공장 === 'cj1' ? '충주1' : '충주2';
+  const inspector = d.공장 === 'cj1' ? '정일성' : '배훈기';
+  return [
+    '프로젝트', d.단품코드 || '', d.색상 || '', d.단품명칭 || '', d.수량 != null ? d.수량 : '',
+    fac, _qcNewFmtMD(d.포장일), _qcNewShipOutDateMD(d.납기일), inspector
+  ];
+}
+function _qcNewRowText(d) {
+  return _qcNewRowFields(d).join('\t');
+}
+function _qcNewRowHtmlCells(d) {
   const esc = s => (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  return '<tr><td>' + esc(code) + '</td><td>' + esc(color) + '</td><td>' + esc(name) + '</td><td>' + esc(qty) + '</td></tr>';
+  return '<tr>' + _qcNewRowFields(d).map(v => '<td>' + esc(v) + '</td>').join('') + '</tr>';
 }
 function _qcNewShowCopyToast(e, label) {
   const toast = document.createElement('div');
