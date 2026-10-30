@@ -9078,12 +9078,21 @@
             const payload = { action: 'updateProductSpec', code: code };
             if (productType) payload.productType = productType;
             if (boxHeight) payload.boxHeight = boxHeight;
+            const url = _pkgGasUrl();
+            try {
+                const res = url ? await fetch(url, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }).then(r => r.json()) : null;
+                if (url && _pkgIsGasError(res)) throw new Error((res && res.message) || '저장 실패');
+            } catch (e) {
+                // 서버 저장이 실패했는데도 로컬만 저장된 것처럼 처리하면, 그 자리에서는
+                // 목록에서 사라졌다가 다음 새로고침 때 "왜 다시 미구성으로 뜨지" 하고
+                // 헷갈리게 된다 — 저장 확인 전에는 로컬 상태도 바꾸지 않고, 버튼을 다시
+                // 눌러 재시도할 수 있게 둔다.
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 확인'; }
+                alert('저장에 실패했습니다 — 네트워크를 확인하고 다시 시도해주세요.\n(' + ((e && e.message) || e) + ')');
+                return;
+            }
             _pkgServerSpecMap[code] = Object.assign({}, _pkgServerSpecMap[code], { code: code },
                 productType ? { productType: productType } : {}, boxHeight ? { boxHeight: boxHeight } : {});
-            const url = _pkgGasUrl();
-            if (url) {
-                try { await fetch(url, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
-            }
             _pkgMissingSpecEditCode = null;
             renderPkgMissingSpecList();
             renderPkgMissingTypeList();
