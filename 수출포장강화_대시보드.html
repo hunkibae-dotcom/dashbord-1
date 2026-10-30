@@ -15204,6 +15204,19 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- ── 분류(수주) 재고활용 확인/선택 팝업(요청, 2026-10-30) ──────────── -->
+<div id="pkgReuseConfirmModal" style="display:none;position:fixed;inset:0;z-index:230;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:560px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:4px;">재고활용 가능 품목 확인</div>
+        <div style="font-size:12px;color:#64748b;margin:8px 0 14px;line-height:1.6;">분류(수주) 자체는 이미 반영되었습니다. 재고활용 재고가 있는 품목만 모아 보여드립니다 — 적용할 건명을 확인/선택한 뒤 "적용"을 누르면, 선택된 만큼 재고활용 원본 수량이 줄고(0이 되면 그 행은 삭제됨) 해당 주문행 비고에 "N EA 재고활용 적용됨 회수시 -해주세요."가 노란 배경으로 표시됩니다. "취소"를 누르면 재고활용만 적용하지 않고 넘어갑니다.</div>
+        <div id="pkgReuseConfirmList" style="display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;margin-top:16px;">
+            <button id="pkgReuseConfirmCancelBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소(재고활용 미적용)</button>
+            <button id="pkgReuseConfirmApplyBtn" style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">적용</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── 데이터 출력: 관리용/출력용 선택 모달 ──────────────────── -->
 <div id="pkgExportChoiceModal" onclick="if(event.target===this)pkgCloseExportChoiceModal()"
     style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
