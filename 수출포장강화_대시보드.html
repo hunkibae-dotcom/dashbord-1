@@ -12918,12 +12918,16 @@ async function peLoadAll() {
                   iUnit = peFi(h, '단위'), iType = peFi(h, '유형'), iStat = peFi(h, '상태'),
                   iIn = peFi(h, '입고일'), iUser = peFi(h, '발주자'), iSite = peFi(h, '사업장'),
                   iWh = peFi(h, '반입창고'), iNote = peFi(h, '비고'), iLead = peFi(h, '리드타임(일)');
-            peOrderRows = logTable.slice(1).filter(r => r[iOrd]).map(r => ({
+            // _row(실제 시트 행 번호, 1-based)를 같이 들고 다닌다(요청, 2026-10-30:
+            // 발주이력 행별 상태 변경 기능 추가) — 같은 발주번호 아래 품목(코드)이
+            // 여러 줄로 있을 수 있어서, 상태를 바꿀 때 발주번호만으로는 어느 줄인지
+            // 정확히 집을 수 없다. filter보다 먼저 map해서 원래 행 번호를 보존한다.
+            peOrderRows = logTable.slice(1).map((r, idx) => ({
                 ordNo: r[iOrd] || '', date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
                 spec: r[iSpec] || '', qty: r[iQty] || 0, unit: r[iUnit] || '', type: r[iType] || '',
                 stat: r[iStat] || '', in: r[iIn] || '', user: r[iUser] || '', site: r[iSite] || '',
-                wh: r[iWh] || '', note: r[iNote] || '', lead: r[iLead] || ''
-            }));
+                wh: r[iWh] || '', note: r[iNote] || '', lead: r[iLead] || '', _row: idx + 2
+            })).filter(r => r.ordNo);
         } else peOrderRows = [];
 
         const stkTable = json[PE_SHEET_STK] || [];
