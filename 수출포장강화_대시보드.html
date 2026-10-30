@@ -13319,6 +13319,30 @@ function peRenderHistory() {
         </td>
       </tr>`).join('') : '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--pe-label);">해당하는 발주 내역이 없습니다</td></tr>';
 }
+// 발주이력 행별 상태 변경(요청, 2026-10-30) — 같은 발주번호 아래 여러 품목(코드)이
+// 줄줄이 있을 수 있어서, 발주번호만으로는 어느 줄인지 정확히 못 집는다. 실제 시트
+// 행 번호(row)까지 같이 보내서 GAS가 정확히 그 줄만 바꾸게 한다(GAS doGet 스크립트의
+// updateOrderStatus 액션도 같이 고쳐야 함 — row 우선, 없으면 예전처럼 발주번호로 찾음).
+async function _peHistChangeStatus(ordNo, row, newStatus) {
+    const target = peOrderRows.find(r => r._row === row);
+    const prevStat = target ? target.stat : '';
+    if (prevStat === newStatus) return;
+    const params = { action: 'updateOrderStatus', ordNo: ordNo, status: newStatus, row: row };
+    if (newStatus === '입고완료' || newStatus === '부분입고') {
+        const d = new Date();
+        params.date = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    try {
+        const res = await fetch(peGasUrl() + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(20000) }).then(r => r.json());
+        if (res.status !== 'success') throw new Error(res.message || '상태 변경 실패');
+        if (target) { target.stat = newStatus; if (params.date) target.in = params.date; }
+        peRenderHistory();
+        peShowToast('상태를 "' + newStatus + '"(으)로 변경했습니다' + (res.stockRegistered ? ' · 재고에도 자동 등록됨' : ''));
+    } catch (e) {
+        alert('상태 변경 실패: ' + e.message);
+        peRenderHistory(); // select가 바뀐 채로 남지 않도록 원래 값으로 되돌려 다시 그린다.
+    }
+}
 function peOpenOrderDetail(ordNo) {
     const r = peOrderRows.find(x => x.ordNo === ordNo);
     if (!r) return;
