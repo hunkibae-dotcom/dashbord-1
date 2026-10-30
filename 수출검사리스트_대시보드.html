@@ -7375,6 +7375,11 @@ function generateReportPptx() {
       // 오른쪽으로 잘려나가던 문제 — 실제 양식과 같은 16:9 와이드스크린 크기로 맞춘다.
       pptx.defineLayout({ name: 'WIDE_REPORT', width: 13.33, height: 7.5 });
       pptx.layout = 'WIDE_REPORT';
+      // 원격 사진을 못 받아온 품목을 집계해서 생성이 끝난 뒤 알려준다(버그 수정,
+      // 2026-10-30: "대량으로 작성하면 몇몇 사진이 없어지는 현상" — 재시도까지 다
+      // 실패한 경우만 "진짜 실패"로 센다. 애초에 사진 참조 자체가 없던 품목은 정상
+      // 동작이라 포함하지 않는다).
+      const failedPhotoItems = [];
       for (const key of keys) {
         const sel = _reportSelected[key];
         const repRound = await _resolveRepresentativeRound(sel.item);
@@ -7383,6 +7388,9 @@ function generateReportPptx() {
         // 링크를 그대로 <img src>로 씀) 평소엔 이 요청이 전혀 안 나간다.
         sel._resolvedProductPhoto = await _rpResolvePhotoForSlide(sel, 'product');
         sel._resolvedPackagePhoto = await _rpResolvePhotoForSlide(sel, 'package');
+        const itemLabel = (sel.item.건명 || '') + ' ' + (sel.item.단품코드 || '');
+        if (sel.productPhotoRemote && !sel._resolvedProductPhoto) failedPhotoItems.push(itemLabel + '(제품)');
+        if (sel.packagePhotoRemote && !sel._resolvedPackagePhoto) failedPhotoItems.push(itemLabel + '(포장)');
         _addReportSlide(pptx, sel.item, sel, repRound);
       }
 
@@ -7394,9 +7402,20 @@ function generateReportPptx() {
       const factoriesUsed = new Set(keys.map(k => _reportSelected[k].item.공장));
       const factoryLabel = factoriesUsed.size === 1 ? _rpFactoryLabel([...factoriesUsed][0]) : [...factoriesUsed].map(_rpFactoryLabel).join('+');
       const fname = `수출건 검사 세부내역${dateLabel}(${factoryLabel}-${keys.length}품목).pptx`;
-      pptx.writeFile({ fileName: fname }).then(_rpResetGenBtn).catch(function(e) { alert('생성 실패: ' + e.message); _rpResetGenBtn(); });
+      pptx.writeFile({ fileName: fname }).then(function() {
+        _rpResetGenBtn();
+        if (failedPhotoItems.length) {
+          _rpShowErrorBanner(
+            failedPhotoItems.length + '개 사진을 받아오지 못해 빈칸으로 들어갔습니다: ' + failedPhotoItems.slice(0, 3).join(', ') + (failedPhotoItems.length > 3 ? ' 외' : ''),
+            '다시 생성', () => generateReportPptx()
+          );
+        }
+      }).catch(function(e) {
+        _rpShowErrorBanner('생성 실패: ' + e.message, '재시도', () => generateReportPptx());
+        _rpResetGenBtn();
+      });
     } catch (e) {
-      alert('생성 실패: ' + e.message);
+      _rpShowErrorBanner('생성 실패: ' + e.message, '재시도', () => generateReportPptx());
       _rpResetGenBtn();
     }
   });
