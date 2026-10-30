@@ -14650,10 +14650,7 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                 </div>
                 <div style="overflow-x:auto;">
                     <table style="width:100%;border-collapse:collapse;font-size:12px;">
-                        <thead><tr style="text-align:left;">
-                            <th style="padding:8px;">발주번호</th><th style="padding:8px;">발주일자</th><th style="padding:8px;">코드</th><th style="padding:8px;">유형</th>
-                            <th style="padding:8px;">규격상세</th><th style="padding:8px;">수량</th><th style="padding:8px;">발주자</th><th style="padding:8px;">반입창고</th><th style="padding:8px;">상태</th>
-                        </tr></thead>
+                        <thead><tr id="peHistHeadRow" style="text-align:left;"></tr></thead>
                         <tbody id="peHistBody"></tbody>
                     </table>
                 </div>
