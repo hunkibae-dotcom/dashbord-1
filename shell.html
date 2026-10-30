@@ -2032,8 +2032,12 @@
                 return `<div style="display:flex;align-items:flex-start;gap:9px;padding:9px 8px;border:1px solid var(--border);border-radius:10px;">
                     <input type="checkbox" ${checked} onchange="pkgNiToggleOne('barcode','${key}',this.checked)" style="margin-top:2px;width:15px;height:15px;cursor:pointer;flex-shrink:0;">
                     <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
-                        <span style="font-size:13px;font-weight:700;color:var(--text);">${it.round||'-'}</span>
-                        <div style="font-size:11px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;">${_pkgNiRowMeta(it)}<span>납기 ${it.dueDate||'-'}</span><span>상차 ${it.date||'-'}</span></div>
+                        <span style="font-size:13px;font-weight:700;color:var(--text-sub);">${it.round||'-'}</span>
+                        <div style="font-size:11px;color:var(--text-sub);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <span style="font-family:ui-monospace,monospace;font-weight:700;font-size:13px;color:var(--text);">${it.code||'-'}</span>
+                            <span style="font-size:13px;">${(it.color&&it.color!=='-')?it.color:'-'} · ${it.qty||0}EA</span>
+                            <span>납기 ${it.dueDate||'-'}</span><span>상차 ${it.date||'-'}</span>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
