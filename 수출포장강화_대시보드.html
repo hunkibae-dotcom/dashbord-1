@@ -8597,31 +8597,38 @@
         let _pkgBarcodeSelectMode = false;
         let _pkgBarcodeSelected = new Set(); // key = CODE|round|color (_pkgNewKey와 동일 형식)
         let _pkgBarcodeSortKey = null, _pkgBarcodeSortAsc = true;
+        // PE폼 발주이력(요청, 2026-10-30) — 신규품목확인 모달과 같은 탭이 아니지만, 같은
+        // 구글시트 칼럼 필터 엔진을 'peHistory'라는 탭 이름으로 그대로 재사용한다.
+        let _peHistSortKey = null, _peHistSortAsc = true;
         const PKG_MODAL_SORT_STATE = {
             confirm: { get key() { return _pkgNewConfirmSortKey; }, get asc() { return _pkgNewConfirmSortAsc; }, set(k, a) { _pkgNewConfirmSortKey = k; _pkgNewConfirmSortAsc = a; } },
             missing: { get key() { return _pkgMissingSpecSortKey; }, get asc() { return _pkgMissingSpecSortAsc; }, set(k, a) { _pkgMissingSpecSortKey = k; _pkgMissingSpecSortAsc = a; } },
             type:    { get key() { return _pkgMissingTypeSortKey; }, get asc() { return _pkgMissingTypeSortAsc; }, set(k, a) { _pkgMissingTypeSortKey = k; _pkgMissingTypeSortAsc = a; } },
-            barcode: { get key() { return _pkgBarcodeSortKey; }, get asc() { return _pkgBarcodeSortAsc; }, set(k, a) { _pkgBarcodeSortKey = k; _pkgBarcodeSortAsc = a; } }
+            barcode: { get key() { return _pkgBarcodeSortKey; }, get asc() { return _pkgBarcodeSortAsc; }, set(k, a) { _pkgBarcodeSortKey = k; _pkgBarcodeSortAsc = a; } },
+            peHistory: { get key() { return _peHistSortKey; }, get asc() { return _peHistSortAsc; }, set(k, a) { _peHistSortKey = k; _peHistSortAsc = a; } }
         };
         const PKG_MODAL_FIELD_DEFS = {
             confirm: [['round', '건명'], ['code', '단품코드'], ['country', '제품구분']],
             missing: [['round', '건명'], ['code', '제품코드'], ['country', '제품구분']],
             type:    [['round', '건명'], ['code', '제품코드'], ['productType', '제품종류'], ['statusLabel', '진행상태']],
-            barcode: [['round', '건명'], ['code', '제품코드'], ['statusLabel', '진행상태']]
+            barcode: [['round', '건명'], ['code', '제품코드'], ['statusLabel', '진행상태']],
+            peHistory: [['code', '코드'], ['type', '유형'], ['spec', '규격상세'], ['qty', '수량'], ['user', '발주자'], ['wh', '반입창고'], ['stat', '상태']]
         };
         const PKG_MODAL_BASE_ITEMS = {
             confirm: () => window._pkgNewList || [],
             missing: () => _pkgMissingSpecList(),
             type:    () => _pkgMissingTypeList(),
-            barcode: () => _pkgBarcodeList()
+            barcode: () => _pkgBarcodeList(),
+            peHistory: () => peOrderRows
         };
         const PKG_MODAL_RENDER = {
             confirm: () => renderPkgNewList(),
             missing: () => renderPkgMissingSpecList(),
             type:    () => renderPkgMissingTypeList(),
-            barcode: () => renderPkgBarcodeList()
+            barcode: () => renderPkgBarcodeList(),
+            peHistory: () => peRenderHistory()
         };
-        let _pkgModalColFilters = { confirm: {}, missing: {}, type: {}, barcode: {} }; // 탭별 { field: Set|null }
+        let _pkgModalColFilters = { confirm: {}, missing: {}, type: {}, barcode: {}, peHistory: {} }; // 탭별 { field: Set|null }
         let _pkgColFilterOpenKey = null; // "tab|field" 또는 null(닫힘) — 한 번에 하나만 열림
         let _pkgColFilterDraft = null;   // 드롭다운이 열려있는 동안의 체크 상태(확인 전까진 미반영)
         let _pkgColFilterSearch = '';
