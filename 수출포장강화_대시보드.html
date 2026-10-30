@@ -13280,13 +13280,27 @@ function peDashSelect(code) {
 let peHistTypeFilter = '', peHistStatusFilter = '';
 function peHistTypePick(v, btn) { peHistTypeFilter = v; document.querySelectorAll('#peTab-history .hist-type-chip').forEach(b => b.classList.remove('on')); btn.classList.add('on'); peRenderHistory(); }
 function peHistStatusPick(v, btn) { peHistStatusFilter = v; document.querySelectorAll('#peTab-history .hist-status-chip').forEach(b => b.classList.remove('on')); btn.classList.add('on'); peRenderHistory(); }
+const PE_HIST_STATUS_OPTIONS = ['발주', '부분입고', '입고완료', '취소'];
 function peRenderHistory() {
+    const headEl = document.getElementById('peHistHeadRow');
+    if (headEl) headEl.innerHTML = `
+        <th style="padding:8px;">${_peHistSimpleSortHtml('ordNo', '발주번호')}</th>
+        <th style="padding:8px;">${_peHistSimpleSortHtml('date', '발주일자')}</th>
+        <th style="padding:8px;">${_peHistFieldBtnsHtml()}</th>`;
     let rows = peOrderRows;
     if (peHistTypeFilter) rows = rows.filter(r => r.type === peHistTypeFilter);
     if (peHistStatusFilter) rows = rows.filter(r => r.stat === peHistStatusFilter);
     const q = (document.getElementById('peHistSearch').value || '').trim().toLowerCase();
     if (q) rows = rows.filter(r => (r.ordNo + ' ' + r.code + ' ' + r.name).toLowerCase().includes(q));
-    rows = [...rows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    // 코드~상태 칼럼 구글시트 필터(요청, 2026-10-30).
+    rows = _pkgModalApplyColFilters(rows, 'peHistory');
+    const st = PKG_MODAL_SORT_STATE.peHistory;
+    if (st.key) {
+        rows = _pkgModalSortItems(rows, st.key, st.asc);
+    } else {
+        // 아무 칼럼도 정렬을 안 걸었으면 기존처럼 최신 발주일자 우선.
+        rows = [...rows].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    }
     document.getElementById('peHistCount').textContent = rows.length + '건';
     document.getElementById('peHistBody').innerHTML = rows.length ? rows.map(r => `
       <tr>
@@ -13298,7 +13312,11 @@ function peRenderHistory() {
         <td style="padding:8px;">${(r.qty || 0).toLocaleString()} ${r.unit || ''}</td>
         <td style="padding:8px;">${r.user || '—'}</td>
         <td style="padding:8px;">${r.wh || '—'}</td>
-        <td style="padding:8px;"><span class="pe-pill ${pePillClass(r.stat)}">${r.stat || '—'}</span></td>
+        <td style="padding:8px;">
+            <select onchange="_peHistChangeStatus('${_jsAttr(r.ordNo)}', ${r._row}, this.value)" class="pe-pill ${pePillClass(r.stat)}" style="border:none;cursor:pointer;font:inherit;-webkit-appearance:none;appearance:none;padding:3px 8px;">
+                ${PE_HIST_STATUS_OPTIONS.map(s => `<option value="${s}" ${r.stat === s ? 'selected' : ''}>${s}</option>`).join('')}
+            </select>
+        </td>
       </tr>`).join('') : '<tr><td colspan="9" style="padding:20px;text-align:center;color:var(--pe-label);">해당하는 발주 내역이 없습니다</td></tr>';
 }
 function peOpenOrderDetail(ordNo) {
