@@ -7099,6 +7099,29 @@ function _rpSaveEditModal() {
 
 // 저장 버튼 등을 막고 기다리게 하지 않으면서도 시트 반영 성공/실패는 알려주기 위한
 // 작은 하단 토스트 — 아무 것도 가리지 않고 잠깐 떴다 사라진다.
+// 보고서 작업(사진 업로드/보고서 생성/작성완료·철물·제외포함 반영) 실패 시 공통으로
+// 쓰는 에러 배너(요청, 2026-10-30: "각 실패시에는 무조건 에러문구와 재시도 버튼이
+// 꼭있어야해") — 토스트(_rpShowToast)와 달리 사용자가 재시도를 누르거나 직접 닫기
+// 전까지 화면에 계속 남아있는다. 한 번에 하나만 보여준다(새로 뜨면 이전 걸 덮어씀).
+function _rpShowErrorBanner(message, retryLabel, onRetry) {
+  let banner = document.getElementById('rpErrorBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'rpErrorBanner';
+    banner.style.cssText = 'position:fixed;left:50%;bottom:84px;transform:translateX(-50%);z-index:100000;background:#DC2626;color:#fff;font-size:12.5px;font-weight:700;padding:10px 10px 10px 14px;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.35);display:flex;align-items:center;gap:10px;max-width:88vw;';
+    document.body.appendChild(banner);
+  }
+  const retryId = 'rpErrorBannerRetry';
+  banner.innerHTML = `
+    <i class="fa-solid fa-triangle-exclamation" style="flex-shrink:0;"></i>
+    <span style="flex:1;min-width:0;">${message}</span>
+    ${onRetry ? `<button id="${retryId}" style="flex-shrink:0;background:#fff;color:#DC2626;border:none;border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:800;cursor:pointer;">${retryLabel || '재시도'}</button>` : ''}
+    <button style="flex-shrink:0;background:none;border:none;color:#fff;cursor:pointer;font-size:15px;padding:0 2px;" onclick="document.getElementById('rpErrorBanner').remove()">×</button>
+  `;
+  if (onRetry) {
+    document.getElementById(retryId).onclick = () => { banner.remove(); onRetry(); };
+  }
+}
 function _rpShowToast(message, isError) {
   const toast = document.createElement('div');
   toast.textContent = message;
