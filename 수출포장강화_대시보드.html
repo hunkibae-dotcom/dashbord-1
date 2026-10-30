@@ -9802,6 +9802,63 @@
             });
         }
 
+        // 분류(수주) 결과로 재고활용 재고가 있는 품목이 나오면(pkgClassifySunju의
+        // reuseCandidates), 바로 적용하지 않고 이 팝업으로 확인/선택을 받는다(요청,
+        // 2026-10-30 — 같은 품목코드를 여러 건명이 동시에 필요로 할 때 전부 "재고활용
+        // 가능"으로 잘못 표시되던 문제 때문에, 적용 전 확인 절차를 추가함). groups는
+        // GAS _coreComputeReuseCandidates()가 돌려주는 모양 그대로([{code, color,
+        // available, candidates:[{row, orderName, qty}]}]) — candidates가 2개 이상인
+        // 그룹은 어느 건명에 적용할지 체크박스로 고르게 한다. 선택 결과(선택 안 하고
+        // 취소하면 null)로 resolve.
+        function _pkgShowReuseConfirm(groups) {
+            return new Promise((resolve) => {
+                const listEl = document.getElementById('pkgReuseConfirmList');
+                listEl.innerHTML = groups.map((g, gi) => {
+                    const ambiguous = g.candidates.length > 1;
+                    const rows = g.candidates.map((c, ci) => `
+                        <label style="display:flex;gap:8px;align-items:flex-start;padding:4px 2px;cursor:pointer;">
+                            <input type="checkbox" class="pkg-reuse-cand-chk" data-gi="${gi}" data-ci="${ci}" checked style="margin-top:3px;width:15px;height:15px;flex-shrink:0;">
+                            <div style="font-size:12.5px;line-height:1.5;">
+                                <div style="color:#1e293b;font-weight:600;">${_pkgEscHtml(c.orderName)}</div>
+                                <div style="color:#64748b;font-size:11.5px;">필요 ${c.qty}개</div>
+                            </div>
+                        </label>`).join('');
+                    const warn = ambiguous
+                        ? `<div style="color:#b45309;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:6px 8px;font-size:11.5px;margin-bottom:8px;">⚠ 같은 품목코드를 ${g.candidates.length}개 건명이 동시에 필요로 합니다 — 적용할 건명만 체크하세요(체크한 건명들에 목록 순서대로 재고가 채워집니다).</div>`
+                        : '';
+                    return `
+                        <div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                            <div style="font-weight:800;color:#1e293b;margin-bottom:6px;">${_pkgEscHtml(g.code)} / ${_pkgEscHtml(g.color || '-')} — 재고활용 가능 수량: <span style="color:#0284c7;">${g.available}개</span></div>
+                            ${warn}
+                            <div style="display:flex;flex-direction:column;gap:4px;">${rows}</div>
+                        </div>`;
+                }).join('');
+                const modal = document.getElementById('pkgReuseConfirmModal');
+                modal.style.display = 'flex';
+                const cleanup = () => { modal.style.display = 'none'; };
+                document.getElementById('pkgReuseConfirmApplyBtn').onclick = () => {
+                    const selections = [];
+                    groups.forEach((g, gi) => {
+                        const allocations = [];
+                        g.candidates.forEach((c, ci) => {
+                            const chk = document.querySelector(`.pkg-reuse-cand-chk[data-gi="${gi}"][data-ci="${ci}"]`);
+                            if (chk && chk.checked) allocations.push({ row: c.row, take: c.qty });
+                        });
+                        if (allocations.length) selections.push({ code: g.code, color: g.color, allocations: allocations });
+                    });
+                    cleanup();
+                    resolve(selections);
+                };
+                document.getElementById('pkgReuseConfirmCancelBtn').onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+            });
+        }
+        function _pkgEscHtml(s) {
+            return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
         // 분류(수주)/분류(입고) 엑셀 업데이트를 마지막으로 언제 했는지 사이드바에
         // 표시한다 — 브라우저에 저장해두고(localStorage) 새로고침해도 유지한다. 품질검사
         // 대시보드가 "수주"/"공정"을 따로 보여주는 것과 통일해서, 여기도 "분류 업데이트"
