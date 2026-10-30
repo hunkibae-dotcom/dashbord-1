@@ -8757,10 +8757,6 @@
         function _pkgModalFieldBtnsHtml(tab) {
             return PKG_MODAL_FIELD_DEFS[tab].map(([k, label]) => _pkgColFilterBtnHtml(tab, k, label)).join('') + _pkgModalCalBtnHtml(tab);
         }
-        // 발주이력은 날짜 기간 필터가 없는 표라 달력 버튼 없이 칼럼 필터 버튼만 쓴다.
-        function _peHistFieldBtnsHtml() {
-            return PKG_MODAL_FIELD_DEFS.peHistory.map(([k, label]) => _pkgColFilterBtnHtml('peHistory', k, label)).join('');
-        }
         // 발주번호/발주일자 칼럼 — 값별 체크박스 필터 없이 단순 3단계 정렬만(요청,
         // 2026-10-30: "클릭 시 오름차 클릭시 내림차 클릭시 초기화"). 코드~상태 칼럼의
         // 구글시트 필터와 같은 정렬 상태(PKG_MODAL_SORT_STATE.peHistory)를 공유한다 —
