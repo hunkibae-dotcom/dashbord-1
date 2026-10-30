@@ -13279,10 +13279,13 @@ function peHistStatusPick(v, btn) { peHistStatusFilter = v; document.querySelect
 const PE_HIST_STATUS_OPTIONS = ['발주', '부분입고', '입고완료', '취소'];
 function peRenderHistory() {
     const headEl = document.getElementById('peHistHeadRow');
-    if (headEl) headEl.innerHTML = `
-        <th style="padding:8px;">${_peHistSimpleSortHtml('ordNo', '발주번호')}</th>
-        <th style="padding:8px;">${_peHistSimpleSortHtml('date', '발주일자')}</th>
-        <th style="padding:8px;">${_peHistFieldBtnsHtml()}</th>`;
+    if (headEl) {
+        const fieldThs = PKG_MODAL_FIELD_DEFS.peHistory.map(([k, label]) => `<th style="padding:8px;">${_pkgColFilterBtnHtml('peHistory', k, label)}</th>`).join('');
+        headEl.innerHTML = `
+            <th style="padding:8px;">${_peHistSimpleSortHtml('ordNo', '발주번호')}</th>
+            <th style="padding:8px;">${_peHistSimpleSortHtml('date', '발주일자')}</th>
+            ${fieldThs}`;
+    }
     let rows = peOrderRows;
     if (peHistTypeFilter) rows = rows.filter(r => r.type === peHistTypeFilter);
     if (peHistStatusFilter) rows = rows.filter(r => r.stat === peHistStatusFilter);
