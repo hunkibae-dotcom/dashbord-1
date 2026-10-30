@@ -4943,6 +4943,13 @@ function _rpSyncMetaToServer(key, onDone) {
       // 실패(또는 확인 불가)면 dirty 표시를 그대로 둬서, 다음 변경이나 재시도 때까지
       // _rpFetchSharedReportData()가 이 항목을 절대 덮어쓰지 못하게 보호한다.
     } catch (e) { /* 네트워크 자체 실패 — 역시 dirty 표시는 그대로 유지 */ }
+    if (!ok) {
+      // 작성완료/철물/제외·포함 전부 이 함수 하나를 거치므로, 여기 한 곳에만 넣으면
+      // 전부 적용된다(요청, 2026-10-30: "각 실패시에는 무조건 에러문구와 재시도
+      // 버튼이 꼭있어야해"). dirty 표시가 남아있어 재시도는 그 사이 더 바뀐 최신
+      // 값을 다시 보낸다.
+      _rpShowErrorBanner('"' + (sel.item.건명 || '품목') + '" 저장에 실패했습니다 — 네트워크를 확인해주세요.', '재시도', () => _rpSyncMetaToServer(key, onDone));
+    }
     if (onDone) onDone(ok);
   }, 400);
 }
