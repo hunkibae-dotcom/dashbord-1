@@ -7146,7 +7146,7 @@ function _loadPptxGenJS(cb) {
   const s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
   s.onload = cb;
-  s.onerror = function() { alert('PPTX 라이브러리 로드 실패 — 네트워크를 확인해주세요.'); _rpResetGenBtn(); };
+  s.onerror = function() { _rpShowErrorBanner('PPTX 라이브러리 로드 실패 — 네트워크를 확인해주세요.', '재시도', () => generateReportPptx()); _rpResetGenBtn(); };
   document.head.appendChild(s);
 }
 
