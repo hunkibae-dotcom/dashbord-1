@@ -6133,13 +6133,13 @@
             // 보여주는" 표시용 근사치가 섞여 들어온다 — 실제로 시트에 적힌 값만 보는
             // regDateRaw를 쓴다. 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로,
             // 정상 날짜면 날짜선택 모드로 자동으로 맞춰서 보여준다(요청, 2026-11-02).
-            _pkgSetDateFieldMode('ieRegDate', 'ieRegDateModeBtn', item.regDateRaw, _nd(item.regDateRaw));
+            _pkgSetDateFieldMode('ieRegDate', 'ieRegDateModeBtn', item.regDateRaw);
             _ieOrigRegDate = document.getElementById('ieRegDate').value;
-            _pkgSetDateFieldMode('ieShipDate', 'ieShipDateModeBtn', item.dateRaw, _nd(item.date));
+            _pkgSetDateFieldMode('ieShipDate', 'ieShipDateModeBtn', item.dateRaw);
             _ieOrigShipDate = document.getElementById('ieShipDate').value;
-            _pkgSetDateFieldMode('ieDueDate', 'ieDueDateModeBtn', item.dueDateRaw, _nd(item.dueDate));
+            _pkgSetDateFieldMode('ieDueDate', 'ieDueDateModeBtn', item.dueDateRaw);
             _ieOrigDueDate = document.getElementById('ieDueDate').value;
-            _pkgSetDateFieldMode('ieArriveDate', 'ieArriveDateModeBtn', item.arriveDate, _nd(item.arriveDate));
+            _pkgSetDateFieldMode('ieArriveDate', 'ieArriveDateModeBtn', item.arriveDate);
             _ieOrigArriveDate = document.getElementById('ieArriveDate').value;
             _ieOrigStatus = item.status || '';
             _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
