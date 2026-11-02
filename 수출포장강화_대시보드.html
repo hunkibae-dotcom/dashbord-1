@@ -10699,20 +10699,16 @@
             }
         }
 
+        // "확인" 버튼 — 체크해둔 품목이 있어도 상관없이 항상 적재번호를 직접
+        // 입력받아서 그 적재번호로 "충주공장 재고"를 조회해 생성한다(요청,
+        // 2026-11-02). 선택/검색 결과로 바로 찍고 싶을 때는 "제품검색 출력"
+        // 버튼(pkgLabelSubmitFromSearch)을 쓴다 — 그쪽은 이 "확인" 버튼과 완전히
+        // 별개의 경로다.
         async function pkgLabelSubmitPallet() {
-            const useSelection = _pkgSelectedKeys.size > 0;
             const raw = document.getElementById('pkgLabelPalletInput').value;
             const fb = document.getElementById('pkgLabelPalletFeedback');
-            // 선택 모드에선 적재번호 입력칸 자체를 숨기고 비워버리는데(바로 위 주석 참고),
-            // 그동안 여기서 그 빈 값을 그대로 큰 제목(mainTitle)에 써서 구글시트 양식의
-            // 큰 번호("B-20" 등)가 통째로 안 보이고 있었다 — 선택한 품목들이 전부 같은
-            // 적재에 있으면 그 값을, 섞여있거나 없으면 빈 칸을 쓰도록 만들어둔
-            // _pkgDerivePalletTitleFromSelection()이 있었는데 실제로는 아무 데서도
-            // 호출을 안 하고 있었다(만들어두고 연결을 안 한 코드).
-            const palletNumber = useSelection ? _pkgDerivePalletTitleFromSelection() : _pkgNormalizePalletNumber(raw);
-            // 선택된 품목으로 만들 땐 적재번호가 없어도(섞여있어서 못 뽑은 경우) 그냥
-            // 제목만 빈 채로 진행한다 — 입력을 요구하지 않는다.
-            if (!useSelection && !palletNumber) { fb.textContent = '적재번호를 입력해주세요.'; return; }
+            const palletNumber = _pkgNormalizePalletNumber(raw);
+            if (!palletNumber) { fb.textContent = '적재번호를 입력해주세요.'; return; }
             const needsZone = (_pkgLabelState.shipType === 'kim' || _pkgLabelState.shipType === 'choi');
             const zoneName = needsZone ? document.getElementById('pkgLabelZoneInput').value.trim() : '';
             if (needsZone && !zoneName) { fb.textContent = '구역이름을 입력해주세요. (예: B-20)'; return; }
@@ -10723,34 +10719,24 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 처리 중...';
             try {
                 if (_pkgLabelState.kind === 'stock') {
-                    const body = useSelection
-                        ? { action: 'pkgPrintStockLabelSelected', palletNumber: palletNumber, items: _pkgSelectedItemsForLabel() }
-                        : { action: 'pkgPrintStockLabel', palletNumber: palletNumber };
                     const res = await fetch(_pkgGasUrl(), {
-                        method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
+                        method: 'POST', body: JSON.stringify({ action: 'pkgPrintStockLabel', palletNumber: palletNumber }),
+                        signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고용 인식표 생성에 실패했습니다.');
                     await _pkgGenerateStockLabelPdf(res);
                 } else {
-                    const body = useSelection
-                        ? {
-                            action: 'pkgPrintShipLabelSelected', palletNumber: palletNumber,
-                            labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
-                            customName: _pkgLabelState.customName, items: _pkgSelectedItemsForLabel(),
-                            zoneName: zoneName
-                          }
-                        : {
-                            action: 'pkgPrintShipLabel', palletNumber: palletNumber,
-                            labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
-                            customName: _pkgLabelState.customName, zoneName: zoneName
-                          };
+                    const body = {
+                        action: 'pkgPrintShipLabel', palletNumber: palletNumber,
+                        labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
+                        customName: _pkgLabelState.customName, zoneName: zoneName
+                    };
                     const res = await fetch(_pkgGasUrl(), {
                         method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '출고용 인식표 생성에 실패했습니다.');
                     await _pkgGenerateShipLabelPdf(res);
                 }
-                if (useSelection) pkgExitMultiSelectMode();
                 syncWithGoogleSheets(false);
                 pkgCloseLabelModal();
             } catch (e) {
