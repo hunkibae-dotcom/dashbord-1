@@ -2138,6 +2138,12 @@
                 const key = (item.round || '') + '|' + (item.code || '');
                 if (stockDateMap[key]) {
                     item.regDate = stockDateMap[key];
+                    // regDateDisp("-")가 이미 채워져 있으면 || 연산에서 안 걸러지고
+                    // 그대로 "-"를 보여주는 문제가 있었다(요청, 2026-11-02 — 입고현황
+                    // 탭에서 분명 포장완료인데 포장일이 "-"로만 보임). 여기서도 같이 갱신한다.
+                    item.regDateDisp = stockDateMap[key];
+                    item.regDateRaw = stockDateMap[key];
+                    item.regDateText = stockDateMap[key];
                 }
             });
         }
