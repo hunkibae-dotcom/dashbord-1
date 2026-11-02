@@ -7791,8 +7791,9 @@ function _psOpenBulkEdit() {
   if (!_psSelected.size) { alert('먼저 품목을 하나 이상 선택해주세요.'); return; }
   _psBulkStatus = null;
   document.getElementById('psBulkCount').textContent = _psSelected.size + '개 품목 선택됨';
-  document.getElementById('psBulkPackDate').value = '';
-  document.getElementById('psBulkDueDate').value = '';
+  // 지난번에 "직접입력"으로 바꿔둔 채 닫았을 수 있어 매번 날짜선택 모드로 되돌린다.
+  _miSetDateFieldMode('psBulkPackDate', 'psBulkPackDateModeBtn', '', '');
+  _miSetDateFieldMode('psBulkDueDate', 'psBulkDueDateModeBtn', '', '');
   document.getElementById('psBulkResult').textContent = '';
   _psRenderBulkStatusBtns();
   document.getElementById('psBulkModal').style.display = 'flex';
