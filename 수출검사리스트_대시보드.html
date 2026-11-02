@@ -13936,15 +13936,24 @@ function onNativeScanResult(raw) {
       <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:10px;">일정</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;">
         <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#0284C7;"></i> 포장일</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+            <span style="font-size:9px;font-weight:700;color:var(--text-sub);"><i class="fa-regular fa-calendar" style="color:#0284C7;"></i> 포장일</span>
+            <button type="button" id="miPackDateModeBtn" onclick="_miToggleDateInputMode('miPackDateInput','miPackDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+          </div>
           <input id="miPackDateInput" type="date" onchange="setMiField('포장일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#0284C7;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
         </div>
         <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#D97706;"></i> 납기일</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+            <span style="font-size:9px;font-weight:700;color:var(--text-sub);"><i class="fa-regular fa-calendar" style="color:#D97706;"></i> 납기일</span>
+            <button type="button" id="miDueDateModeBtn" onclick="_miToggleDateInputMode('miDueDateInput','miDueDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+          </div>
           <input id="miDueDateInput" type="date" onchange="setMiField('납기일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#D97706;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
         </div>
         <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-          <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;"><i class="fa-regular fa-calendar" style="color:#7C3AED;"></i> 검사일</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+            <span style="font-size:9px;font-weight:700;color:var(--text-sub);"><i class="fa-regular fa-calendar" style="color:#7C3AED;"></i> 검사일</span>
+            <button type="button" id="miDateModeBtn" onclick="_miToggleDateInputMode('miDateInput','miDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+          </div>
           <input id="miDateInput" type="date" onchange="setMiField('검사일', this.value)" style="width:100%;background:transparent;border:none;padding:0;font-size:12.5px;font-weight:800;color:#7C3AED;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
         </div>
       </div>
