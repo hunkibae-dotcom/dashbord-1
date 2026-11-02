@@ -6070,18 +6070,18 @@
             _ieRenderPeSpecOptions(_ieOrigPeType, _ieOrigPeSpec);
             const iePeBoxHeightInp = document.getElementById('iePeBoxHeight');
             if (iePeBoxHeightInp) iePeBoxHeightInp.value = _ieOv.boxHeight || '';
-            _ieOrigRegDate = item.regDate && item.regDate !== '-' ? _nd(item.regDate) : '';
-            _ieOrigShipDate = item.date && item.date !== '-' ? _nd(item.date) : '';
-            _ieOrigDueDate = item.dueDate && item.dueDate !== '-' ? _nd(item.dueDate) : '';
-            _ieOrigArriveDate = item.arriveDate && item.arriveDate !== '-' ? _nd(item.arriveDate) : '';
-            const ieRegDateInp = document.getElementById('ieRegDate');
-            if (ieRegDateInp) ieRegDateInp.value = _ieOrigRegDate;
-            const ieShipDateInp = document.getElementById('ieShipDate');
-            if (ieShipDateInp) ieShipDateInp.value = _ieOrigShipDate;
-            const ieDueDateInp = document.getElementById('ieDueDate');
-            if (ieDueDateInp) ieDueDateInp.value = _ieOrigDueDate;
-            const ieArriveDateInp = document.getElementById('ieArriveDate');
-            if (ieArriveDateInp) ieArriveDateInp.value = _ieOrigArriveDate;
+            // 포장완료일은 item.regDate 그대로 쓰면 "값이 없을 때 상차일로 근사해서
+            // 보여주는" 표시용 근사치가 섞여 들어온다 — 실제로 시트에 적힌 값만 보는
+            // regDateRaw를 쓴다. 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로,
+            // 정상 날짜면 날짜선택 모드로 자동으로 맞춰서 보여준다(요청, 2026-11-02).
+            _pkgSetDateFieldMode('ieRegDate', 'ieRegDateModeBtn', item.regDateRaw, _nd(item.regDateRaw));
+            _ieOrigRegDate = document.getElementById('ieRegDate').value;
+            _pkgSetDateFieldMode('ieShipDate', 'ieShipDateModeBtn', item.dateRaw, _nd(item.date));
+            _ieOrigShipDate = document.getElementById('ieShipDate').value;
+            _pkgSetDateFieldMode('ieDueDate', 'ieDueDateModeBtn', item.dueDateRaw, _nd(item.dueDate));
+            _ieOrigDueDate = document.getElementById('ieDueDate').value;
+            _pkgSetDateFieldMode('ieArriveDate', 'ieArriveDateModeBtn', item.arriveDate, _nd(item.arriveDate));
+            _ieOrigArriveDate = document.getElementById('ieArriveDate').value;
             _ieOrigStatus = item.status || '';
             _ieOrigW = (item.specW||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigD = (item.specD||'').toString().replace(/[^0-9.]/g,'');
