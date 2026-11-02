@@ -6064,12 +6064,13 @@
     }
     function _ieDisplayDate(v) {
         if (!v || v === '-') return '—';
-        const n = _nd(v);
-        // 정상 날짜면 깔끔하게, 아니면("미정" 등 자유 텍스트) 원문을 그대로 보여준다
-        // (요청, 2026-11-02 — 구글시트에 적힌 그대로 표현해야 함).
-        if (!n) return v;
-        const p = n.split('-');
-        return p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
+        const a = _pkgDateAnnotation(v);
+        // 날짜가 없으면("미정" 등) '—'로, 날짜+안내문구("11/6 (예정)")면 둘 다 보여준다
+        // (요청, 2026-11-02).
+        if (!a.date) return '—';
+        const p = a.date.split('-');
+        const base = p[0].slice(2) + '. ' + p[1] + '. ' + p[2];
+        return a.note ? base + ' ' + a.note : base;
     }
     function _ieSyncScheduleView() {
         const dv = (viewId, inpId) => { const el = document.getElementById(viewId); if (el) el.textContent = _ieDisplayDate(document.getElementById(inpId)?.value); };
