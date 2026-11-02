@@ -10112,9 +10112,11 @@ function openMItemDetail(key) {
   if (miBlockingCard) miBlockingCard.style.display = (d.source === 'archive') ? 'none' : '';
   _miRenderBlockingButtons();
   document.getElementById('miReasonInput').value = d.비고 || '';
-  document.getElementById('miDateInput').value = _miNormDate(d.검사일);
-  document.getElementById('miPackDateInput').value = _miNormDate(d.포장일);
-  document.getElementById('miDueDateInput').value = _miNormDate(d.납기일);
+  // 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로, 정상 날짜면 날짜선택
+  // 모드로 자동으로 맞춰서 보여준다(요청, 2026-11-02 — 포장강화 PC웹/앱과 동일).
+  _miSetDateFieldMode('miDateInput', 'miDateModeBtn', d.검사일, _miNormDate(d.검사일));
+  _miSetDateFieldMode('miPackDateInput', 'miPackDateModeBtn', d.포장일, _miNormDate(d.포장일));
+  _miSetDateFieldMode('miDueDateInput', 'miDueDateModeBtn', d.납기일, _miNormDate(d.납기일));
   document.getElementById('miW').value = d.가로 || '';
   document.getElementById('miD').value = d.세로 || '';
   document.getElementById('miH').value = d.높이 || '';
