@@ -10974,6 +10974,7 @@
             document.getElementById('pkgDueBadge').textContent = '납기 ' + (item.dueDateDisp || shortDate(item.dueDate));
             document.getElementById('pkgDateBadge').textContent = '상차 ' + (item.dateDisp || shortDate(item.date));
 
+
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
             _pkgStatusOpenGroup = _pkgStatusGroupKeyFor(_pkgCurStatus);
