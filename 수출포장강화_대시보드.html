@@ -3829,7 +3829,7 @@
                     <td class="py-3 px-4 font-semibold text-slate-400 text-center whitespace-nowrap">${item.color || 'WW'}</td>
                     <td class="py-3 px-4 text-center font-bold text-slate-300 whitespace-nowrap">${item.qty} BOX</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap"><span class="px-2.5 py-1 rounded-full text-[17.5px] ${statusBadge} select-none">${item.statusLabel || item.status}</span></td>
-                    <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.dueDate)}</td>
+                    <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${(item.dueDateDisp || shortDate(item.dueDate))}</td>
                     <td class="py-3 px-4 text-slate-600 text-[17.5px] text-center whitespace-nowrap">${shortDate(item.date)}</td>
                     <td class="py-3 px-4 text-center whitespace-nowrap">${_dtPCH}</td>
                 `;
@@ -3845,7 +3845,7 @@
                             <div class="flex justify-between"><span>색상</span><span class="text-slate-300">${item.color || 'WW'}</span></div>
                             <div class="flex justify-between"><span>수량</span><span class="text-slate-200 font-semibold">${item.qty} BOX</span></div>
                             <div class="flex justify-between"><span>등록일</span><span class="text-slate-300">${normalizeDate(item.regDate)}</span></div>
-                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
+                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${(item.dueDateDisp || shortDate(item.dueDate))}</span></div>
                             <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
                             <div class="flex justify-between"><span>적재</span><span style="color:${_dtIsS?(_dtPv==='피킹'?'#A78BFA':'#34D399'):'#CBD5E1'}">${_dtPv}</span></div>
                         </div>
@@ -4548,7 +4548,7 @@
                     </td>
                     <td style="padding:10px 12px;text-align:center;font-size:13px;color:${item.color && item.color !== '-' ? '#ea580c' : '#94a3b8'};">${item.color && item.color !== '-' ? item.color : '—'}</td>
                     <td style="padding:10px 12px;text-align:center;color:#1e293b;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;">${item.qty.toLocaleString()}</td>
-                    <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${shortDate(item.dueDate)}</td>
+                    <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${(item.dueDateDisp || shortDate(item.dueDate))}</td>
                     <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${normalizeDate(item.regDate)}</td>
                     <td style="padding:10px 12px;text-align:left;color:#64748b;font-size:13px;">${shortDate(item.date)}</td>
                     <td style="padding:10px 8px;text-align:center;color:#dc2626;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;">${item.strengthenedQty.toLocaleString()}</td>
@@ -4575,7 +4575,7 @@
                             <div class="flex justify-between"><span>강화(BOX)</span><span class="font-semibold" style="color:#F87171;">${item.strengthenedQty.toLocaleString()}</span></div>
                             <div class="flex justify-between"><span>출고(BOX)</span><span class="font-semibold" style="color:#38BDF8;">${item.shippedQty.toLocaleString()}</span></div>
                             <div class="flex justify-between"><span>등록일</span><span class="text-slate-300">${normalizeDate(item.regDate)}</span></div>
-                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${shortDate(item.dueDate)}</span></div>
+                            <div class="flex justify-between"><span>납기일</span><span class="text-slate-300">${(item.dueDateDisp || shortDate(item.dueDate))}</span></div>
                             <div class="flex justify-between"><span>상차일</span><span class="text-slate-300">${shortDate(item.date)}</span></div>
                             <div class="flex justify-between"><span>CBM</span><span class="text-slate-300">${_cbm}</span></div>
                             <div class="flex justify-between"><span>적재</span><span style="color:${_isShipped?(item.status==='피킹'?'#A78BFA':'#34D399'):'#CBD5E1'}">${_pallet}</span></div>
@@ -8938,7 +8938,7 @@
             { label: '제품코드', get: item => item.code || '' },
             { label: '색상', get: item => (item.color && item.color !== '-') ? item.color : '' },
             { label: '수량', get: item => item.qty },
-            { label: '납기일', get: item => shortDate(item.dueDate) },
+            { label: '납기일', get: item => (item.dueDateDisp || shortDate(item.dueDate)) },
             { label: '상차일', get: item => shortDate(item.date) },
             { label: '입고일', get: item => shortDate(item.arriveDate) },
             { label: '진행상태', get: item => item.statusLabel || item.status || '' },
@@ -10971,7 +10971,7 @@
             document.getElementById('pkgCatBadge').textContent = (item.country || '').toString().trim() || '—';
             document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
             document.getElementById('pkgQtyBadge').textContent = (item.qty || 0).toLocaleString() + ' BOX';
-            document.getElementById('pkgDueBadge').textContent = '납기 ' + shortDate(item.dueDate);
+            document.getElementById('pkgDueBadge').textContent = '납기 ' + (item.dueDateDisp || shortDate(item.dueDate));
             document.getElementById('pkgDateBadge').textContent = '상차 ' + shortDate(item.date);
 
             _pkgOrigStatus = item.status || '';
