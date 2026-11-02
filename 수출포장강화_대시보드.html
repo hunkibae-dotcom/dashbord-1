@@ -2655,7 +2655,7 @@
                 }
 
                 // 포장이 완료되지 않은 상태는 포장일 없음 처리 (실재고 시트는 '미입고' 대신 '미확인'이 같은 역할)
-                if (statusCategory === '미입고' || statusCategory === '미확인' || statusCategory === '입고' || statusCategory === '재고활용') regDateVal = '-';
+                if (statusCategory === '미입고' || statusCategory === '미확인' || statusCategory === '입고' || statusCategory === '재고활용') { regDateVal = '-'; regDateDisp = '-'; }
 
                 let countryVal = indices.country !== -1 && indices.country < row.length && row[indices.country] ? row[indices.country].toString().trim() : 'DOMESTIC';
                 let colorVal = indices.color !== -1 && indices.color < row.length && row[indices.color] ? row[indices.color].toString().trim() : '-';
@@ -2676,12 +2676,20 @@
 
                 const _mappedItem = {
                     date: dateVal,
+                    dateRaw: dateRawVal,
+                    dateDisp: dateDisp,
                     regDate: regDateVal,
                     regDateRaw: regDateRawVal,
+                    regDateText: regDateTextVal,
+                    regDateDisp: regDateDisp,
                     round: roundVal,
                     qty: qtyVal,
                     dueDate: dueDateVal,
+                    dueDateRaw: dueDateRawVal,
+                    dueDateDisp: dueDateDisp,
                     arriveDate: arriveDateVal,
+                    arriveDateRaw: arriveDateRawVal,
+                    arriveDateDisp: arriveDateDisp,
                     country: countryVal,
                     targetQty: targetQtyVal,
                     strengthenedQty: strengthenedQtyVal,
