@@ -11023,21 +11023,19 @@
 
             // item.regDate는 표 목록 표시용(실제 값이 없으면 상차일로 근사해서 보여줌)이라
             // 수정창에 그대로 넣으면 "이미 입력된 값"처럼 보여 혼동을 준다 — 여기선 시트에
-            // 실제로 적힌 값(regDateRaw, 없으면 빈 문자열)만 쓴다.
-            _pkgOrigRegDate = item.regDateRaw || '';
-            document.getElementById('pkgRegDate').value = _pkgOrigRegDate;
+            // 실제로 적힌 값만 쓴다. 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로,
+            // 정상 날짜면 날짜선택 모드로 자동으로 맞춰서 보여준다(요청, 2026-11-02).
+            _pkgSetDateFieldMode('pkgRegDate', 'pkgRegDateModeBtn', item.regDateText, item.regDateRaw);
+            _pkgOrigRegDate = document.getElementById('pkgRegDate').value;
 
-            const arriveDateNorm = normalizeDate(item.arriveDate);
-            _pkgOrigArriveDate = arriveDateNorm !== '-' ? arriveDateNorm : '';
-            document.getElementById('pkgArriveDate').value = _pkgOrigArriveDate;
+            _pkgSetDateFieldMode('pkgArriveDate', 'pkgArriveDateModeBtn', item.arriveDateRaw, item.arriveDate);
+            _pkgOrigArriveDate = document.getElementById('pkgArriveDate').value;
 
-            const shipDateNorm = normalizeDate(item.date);
-            _pkgOrigShipDate = shipDateNorm !== '-' ? shipDateNorm : '';
-            document.getElementById('pkgShipDate').value = _pkgOrigShipDate;
+            _pkgSetDateFieldMode('pkgShipDate', 'pkgShipDateModeBtn', item.dateRaw, item.date);
+            _pkgOrigShipDate = document.getElementById('pkgShipDate').value;
 
-            const dueDateNorm = normalizeDate(item.dueDate);
-            _pkgOrigDueDate = dueDateNorm !== '-' ? dueDateNorm : '';
-            document.getElementById('pkgDueDate').value = _pkgOrigDueDate;
+            _pkgSetDateFieldMode('pkgDueDate', 'pkgDueDateModeBtn', item.dueDateRaw, item.dueDate);
+            _pkgOrigDueDate = document.getElementById('pkgDueDate').value;
 
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
             document.getElementById('pkgPallet').value = _pkgOrigPallet;
