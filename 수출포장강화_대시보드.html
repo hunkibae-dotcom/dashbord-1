@@ -2593,6 +2593,25 @@
                 let dueDateVal = indices.dueDate !== -1 && indices.dueDate < row.length && row[indices.dueDate] ? normalizeDate(row[indices.dueDate]) : '-';
                 let arriveDateVal = indices.arriveDate !== -1 && indices.arriveDate < row.length && row[indices.arriveDate] ? normalizeDate(row[indices.arriveDate]) : '-';
 
+                // ── 날짜 칸의 "진짜 원문" 보존(요청, 2026-11-02: "상차일보면 구글시트기준
+                // 미정이거나 11월 10일 (예정) 이런식으로 실제 날짜값이 아닌경우도 많은데
+                // 구글시트기준으로 뭐라써있던 써있는대로 표현해줘야해") — normalizeDate는
+                // "미정"/"11월 10일(예정)"처럼 날짜 패턴이 전혀 없는 글자는 전부 '-'로
+                // 뭉개버려서 시트에 뭐라고 적혀있었는지가 사라진다. 정렬/필터/CSV 등
+                // 기존 로직은 전부 위의 정규화 값(date/dueDate/arriveDate/regDate)을 그대로
+                // 쓰고, 아래 XRaw는 오직 "화면에 원문 그대로 보여주기"와 "수정창 직접입력
+                // 칸 초기값"에만 쓴다 — 기존 동작에는 영향 없음.
+                const dateRawVal = indices.date !== -1 && indices.date < row.length && row[indices.date] ? row[indices.date].toString().trim() : '';
+                const dueDateRawVal = indices.dueDate !== -1 && indices.dueDate < row.length && row[indices.dueDate] ? row[indices.dueDate].toString().trim() : '';
+                const arriveDateRawVal = indices.arriveDate !== -1 && indices.arriveDate < row.length && row[indices.arriveDate] ? row[indices.arriveDate].toString().trim() : '';
+                const regDateTextVal = indices.regDate !== -1 && indices.regDate < row.length && row[indices.regDate] ? row[indices.regDate].toString().trim() : '';
+                // 정규화에 성공했으면(진짜 날짜) 깔끔한 날짜를, 실패했으면(자유 텍스트) 원문을
+                // 그대로 보여주는 "표시용" 값 — 둘 다 없으면 '-'.
+                const dateDisp = dateVal !== '-' ? dateVal : (dateRawVal || '-');
+                const dueDateDisp = dueDateVal !== '-' ? dueDateVal : (dueDateRawVal || '-');
+                const arriveDateDisp = arriveDateVal !== '-' ? arriveDateVal : (arriveDateRawVal || '-');
+                const regDateDisp = regDateRawVal !== '' ? regDateRawVal : (regDateTextVal || '-');
+
                 let statusVal = indices.status !== -1 && indices.status < row.length && row[indices.status] ? row[indices.status].toString().trim() : '';
                 if (statusVal === '') statusVal = emptyStatusDefault;
                 let rawStatusNorm = statusVal.toString().replace(/\s+/g, '').toLowerCase();
