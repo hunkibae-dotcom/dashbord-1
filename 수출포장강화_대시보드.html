@@ -2568,17 +2568,20 @@
         // 못했다). 품목수정창·일괄수정 양쪽에서 공용으로 쓴다 — input의 type을
         // 'date'<->'text'로 바꿔치기만 하고, 저장 로직은 기존처럼 그냥 input.value를
         // 그대로 문자열로 보내므로 손댈 필요가 없다.
-        function _pkgSetDateFieldMode(inputId, btnId, rawText, normalized) {
+        function _pkgSetDateFieldMode(inputId, btnId, rawText) {
             const inp = document.getElementById(inputId);
             const btn = document.getElementById(btnId);
             if (!inp) return;
-            if (normalized && normalized !== '-') {
+            // 날짜만 깔끔하게 적혀있으면(안내문구 없음) 날짜선택 모드, "11/6 (예정)"처럼
+            // 안내문구가 섞여있거나 "미정"처럼 날짜가 아예 없는 글자면 그 원문을 그대로
+            // 보여주는 직접입력 모드로 시작한다(요청, 2026-11-02 — 날짜선택 모드로
+            // 바뀌면서 "(예정)" 같은 문구가 수정창에서 사라져 보이던 문제 수정).
+            const a = _pkgDateAnnotation(rawText);
+            if (a.date && !a.note) {
                 inp.type = 'date';
-                inp.value = normalized;
+                inp.value = a.date;
                 inp.placeholder = '';
             } else if (rawText) {
-                // 정상 날짜로는 못 읽었지만(normalized 없음) 시트에 뭔가 적혀있긴 한
-                // 경우("미정" 등) — 그 글자를 그대로 보여주는 직접입력 모드로 시작한다.
                 inp.type = 'text';
                 inp.value = rawText;
                 inp.placeholder = '예: 미정, 11월 10일 (예정)';
