@@ -2298,6 +2298,16 @@
             const regDate= r[iReg]    ? r[iReg].toString().trim()    : date;
             const round  = r[iRound]  ? r[iRound].toString().trim()  : '-';
             const dueDate= r[iDue]    ? r[iDue].toString().trim()    : '-';
+            // ── 날짜 칸의 "진짜 원문" 그대로 보존(요청, 2026-11-02: "상차일보면 구글시트
+            // 기준 미정이거나 11월 10일 (예정) 이런식으로 실제 날짜값이 아닌경우도 많은데
+            // 구글시트기준으로 뭐라써있던 써있는대로 표현해줘야해") — date/dueDate/regDate
+            // 위 값들은 _nd()로 정규화가 안 되면 그냥 날짜 자체가 비어있는 것처럼 보이는
+            // 문제가 있었다. 자유 텍스트("미정" 등)도 화면엔 그대로 보여주고 수정창의
+            // 직접입력 모드 초기값으로 쓰기 위해 원문을 따로 들고 간다. 정렬/필터 등
+            // 기존 로직은 위 정규화 값을 그대로 쓰므로 영향 없음.
+            const dateRaw = r[iDate] ? r[iDate].toString().trim() : '';
+            const dueDateRaw = r[iDue] ? r[iDue].toString().trim() : '';
+            const regDateRaw = r[iReg] ? r[iReg].toString().trim() : '';
             const country= r[iCtry]   ? r[iCtry].toString().trim()   : '';
             const divRaw = iDiv >= 0 && r[iDiv] ? r[iDiv].toString().trim() : '';
             const div    = divRaw || sheetDiv;
