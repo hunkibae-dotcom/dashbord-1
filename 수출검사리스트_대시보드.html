@@ -10526,7 +10526,8 @@ const _QC_MODAL_SORT_STATE = {
   drawing: { get key()  { return _qcDrawingSortKey; }, get asc()  { return _qcDrawingSortAsc; }, set(k, a) { _qcDrawingSortKey = k; _qcDrawingSortAsc = a; }, render: () => qcDrawingRender() },
 };
 function _qcModalSortBtnsHtml(tab) {
-  return _QC_MODAL_SORT_DEFS.map(([k, label]) => _qcColFilterBtnHtml(tab, k, label)).join('') + _qcModalCalBtnHtml(tab);
+  const defs = _QC_MODAL_FIELD_DEFS[tab] || _QC_MODAL_SORT_DEFS;
+  return defs.map(([k, label]) => _qcColFilterBtnHtml(tab, k, label)).join('') + _qcModalCalBtnHtml(tab);
 }
 
 // ─── 건명/단품코드 — 구글시트 칼럼 필터처럼(요청, 2026-10-29: "확인,등록,도면출력여부
@@ -10537,7 +10538,7 @@ function _qcModalSortBtnsHtml(tab) {
 let _qcModalColFilters = {
   notify:  { round: null, code: null },
   confirm: { round: null, code: null },
-  drawing: { round: null, code: null }
+  drawing: { round: null, code: null, bom: null, status: null }
 };
 let _qcColFilterOpenKey = null; // "tab|field" 또는 null(닫힘) — 한 번에 하나만 열림
 let _qcColFilterDraft = null;   // 드롭다운이 열려있는 동안의 체크 상태(확인 누르기 전까지 실제 반영 안 됨)
