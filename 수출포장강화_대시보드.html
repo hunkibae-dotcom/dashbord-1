@@ -10636,30 +10636,8 @@
             return s;
         }
 
-        // "선택" 모드로 체크해둔 품목이 있으면 적재번호로 "충주공장 재고"를 다시
-        // 조회하지 않고 그 품목들을 그대로 쓴다(데이터 출력의 선택 우선 방식과 동일).
-        // 적재번호 입력칸은 그대로 두되, 이 경우엔 조회 키가 아니라 큰 제목/라벨
-        // 문구용으로만 쓰인다.
-        function _pkgSelectedItemsForLabel() {
-            return Array.from(_pkgSelectedKeys)
-                .map(k => window._pkgRowMap && window._pkgRowMap[k])
-                .filter(Boolean)
-                .map(it => ({
-                    round: it.round || '', code: it.code || '', color: it.color || '',
-                    // cat(제품구분)은 출고용 인식표의 "구분" 칸에 그대로 들어간다 — 진행상태
-                    // (status)는 별개로, "미포장 채 출고"인지 판정하는 용도로만 같이 보낸다.
-                    qty: it.qty || '', status: it.status || '', cat: it.country || '', date: it.date || '', regDate: it.regDate || '',
-                    pallet: it.pallet || ''
-                }));
-        }
-
-        // 선택된 품목이 있으면 적재번호를 손으로 입력받지 않고, 그 품목들이 실제로
-        // 걸려있는 적재(파렛트) 값을 그대로 큰 제목용으로 쓴다(전부 같은 적재면 그 값,
-        // 섞여있거나 없으면 빈 칸 — 어차피 선택한 품목 자체를 보고 찍는 거라 "어느
-        // 적재인지"는 부가정보일 뿐이다).
-        function _pkgDerivePalletTitleFromSelection() {
-            return _pkgDerivePalletTitleFromItems(_pkgSelectedItemsForLabel());
-        }
+        // 선택/검색 결과로 찍힌 적재(파렛트) 값을 "제품검색 출력" 쪽 큰 제목용으로
+        // 뽑는다(전부 같은 적재면 그 값, 섞여있거나 없으면 빈 칸).
         function _pkgDerivePalletTitleFromItems(items) {
             const pallets = Array.from(new Set((items || [])
                 .map(it => (it.pallet || '').toString().trim())
