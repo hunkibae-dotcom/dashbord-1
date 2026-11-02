@@ -8940,7 +8940,7 @@
             { label: '수량', get: item => item.qty },
             { label: '납기일', get: item => (item.dueDateDisp || shortDate(item.dueDate)) },
             { label: '상차일', get: item => (item.dateDisp || shortDate(item.date)) },
-            { label: '입고일', get: item => shortDate(item.arriveDate) },
+            { label: '입고일', get: item => item.arriveDateDisp || shortDate(item.arriveDate) },
             { label: '진행상태', get: item => item.statusLabel || item.status || '' },
         ];
         function pkgBarcodeDownload() {
