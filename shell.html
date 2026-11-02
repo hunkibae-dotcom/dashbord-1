@@ -1409,7 +1409,7 @@
         if (!force) {
             try {
                 const raw = sessionStorage.getItem(_PKG_NI_SPEC_CACHE_KEY);
-                if (raw) { _pkgNiSpecMap = JSON.parse(raw); pkgNiUpdateHomeCounts(); return; }
+                if (raw) { _pkgNiSpecMap = JSON.parse(raw); pkgNiUpdateHomeCounts(); _pkgNiRefreshSpecViews(); return; }
             } catch (e) {}
         }
         try {
@@ -1421,7 +1421,30 @@
             _pkgNiPersistSpecCache();
             pkgNiUpdateHomeCounts();
             if (document.getElementById('pkgNewItemsOverlay').style.display === 'flex') pkgNiRenderAll();
+            _pkgNiRefreshSpecViews();
         } catch (e) {}
+    }
+    // 상세스펙 화면/품목수정창이 이미 열려있는 채로 스펙맵이 늦게 도착하면(요청,
+    // 2026-11-02 — 서버 동기화 추가), 열려있는 화면에도 방금 받은 값을 바로
+    // 반영한다. 품목수정창은 사용자가 다른 칸을 입력 중일 수 있어 전체를 다시
+    // 그리지 않고 제품종류/PE폼 유형/PE폼 높이 표시만 갱신한다.
+    function _pkgNiRefreshSpecViews() {
+        if (typeof _currentView !== 'undefined' && _currentView === 'viewSpec') runSpecSearch();
+        if (typeof isOpen === 'function' && isOpen('itemEditSheet') && _ieCode) {
+            const server = _pkgNiSpecMap[(_ieCode||'').toString().trim().toUpperCase()];
+            if (server) {
+                const ieCodeTypeEl = document.getElementById('ieCodeType');
+                const ieTypeEl = document.getElementById('ieType');
+                if (server.productType) {
+                    if (ieCodeTypeEl) ieCodeTypeEl.textContent = server.productType;
+                    if (ieTypeEl) ieTypeEl.textContent = server.productType;
+                }
+                const iePeBoxHeightInp = document.getElementById('iePeBoxHeight');
+                if (server.boxHeight && iePeBoxHeightInp && !iePeBoxHeightInp.value) iePeBoxHeightInp.value = server.boxHeight;
+                const iePeTypeInp = document.getElementById('iePeType');
+                if (server.peType && iePeTypeInp && !iePeTypeInp.value) { iePeTypeInp.value = server.peType; _ieOrigPeType = server.peType; }
+            }
+        }
     }
     function _pkgNiKey(it) { return (it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + ((it.color && it.color!=='-') ? it.color : ''); }
     function _pkgNiDedupByCode(list) {
