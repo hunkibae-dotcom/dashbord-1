@@ -4142,6 +4142,15 @@
         try { ov = JSON.parse(localStorage.getItem('pkgSpecOverride_' + code) || '{}'); } catch (e) {}
         ov[field] = value;
         try { localStorage.setItem('pkgSpecOverride_' + code, JSON.stringify(ov)); } catch (e) {}
+        // PC 웹(수출포장강화_대시보드.html)과 같은 방식으로 구글시트(상세스펙 탭)에도
+        // 올린다(요청, 2026-11-02 — 전엔 이 기기에만 저장돼서 PC 웹/다른 기기와 안
+        // 맞았다). field는 'productType' 또는 'boxHeight' 중 하나.
+        const codeUpper = code.toString().trim().toUpperCase();
+        _pkgNiSpecMap[codeUpper] = Object.assign({}, _pkgNiSpecMap[codeUpper], { code: codeUpper, [field]: value });
+        _pkgNiPersistSpecCache();
+        const payload = { action: 'updateProductSpec', code: codeUpper };
+        payload[field] = value;
+        fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }).catch(() => {});
     }
 
     // ── PE폼 유형/규격 (제품 수정창 전용, PC 대시보드와 같은 localStorage 키를 써서
