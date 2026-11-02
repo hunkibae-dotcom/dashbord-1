@@ -14301,24 +14301,36 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">일정</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
                         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
-                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">📅 납기일</div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+                                <span style="font-size:9px;font-weight:700;color:#64748b;">📅 납기일</span>
+                                <button type="button" id="pkgDueDateModeBtn" onclick="_pkgToggleDateInputMode('pkgDueDate','pkgDueDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+                            </div>
                             <input id="pkgDueDate" type="date"
                                 style="width:100%;background:transparent !important;border:none;padding:0;font-size:12.5px;font-weight:800;color:#D97706 !important;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
                         </div>
                         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
-                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">🚚 상차일</div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+                                <span style="font-size:9px;font-weight:700;color:#64748b;">🚚 상차일</span>
+                                <button type="button" id="pkgShipDateModeBtn" onclick="_pkgToggleDateInputMode('pkgShipDate','pkgShipDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+                            </div>
                             <input id="pkgShipDate" type="date"
                                 style="width:100%;background:transparent !important;border:none;padding:0;font-size:12.5px;font-weight:800;color:#7C3AED !important;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
                         </div>
                     </div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
-                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">📥 입고일</div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+                                <span style="font-size:9px;font-weight:700;color:#64748b;">📥 입고일</span>
+                                <button type="button" id="pkgArriveDateModeBtn" onclick="_pkgToggleDateInputMode('pkgArriveDate','pkgArriveDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+                            </div>
                             <input id="pkgArriveDate" type="date"
                                 style="width:100%;background:transparent !important;border:none;padding:0;font-size:12.5px;font-weight:800;color:#059669 !important;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
                         </div>
                         <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:9px 6px;text-align:center;">
-                            <div style="font-size:9px;font-weight:700;color:#64748b;margin-bottom:6px;">📦 포장완료일</div>
+                            <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:6px;">
+                                <span style="font-size:9px;font-weight:700;color:#64748b;">📦 포장완료일</span>
+                                <button type="button" id="pkgRegDateModeBtn" onclick="_pkgToggleDateInputMode('pkgRegDate','pkgRegDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;"><i class="fa-solid fa-keyboard"></i></button>
+                            </div>
                             <input id="pkgRegDate" type="date"
                                 style="width:100%;background:transparent !important;border:none;padding:0;font-size:12.5px;font-weight:800;color:#0284c7 !important;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
                         </div>
