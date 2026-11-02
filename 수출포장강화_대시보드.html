@@ -2610,7 +2610,7 @@
                 const dateDisp = dateVal !== '-' ? dateVal : (dateRawVal || '-');
                 const dueDateDisp = dueDateVal !== '-' ? dueDateVal : (dueDateRawVal || '-');
                 const arriveDateDisp = arriveDateVal !== '-' ? arriveDateVal : (arriveDateRawVal || '-');
-                const regDateDisp = regDateRawVal !== '' ? regDateRawVal : (regDateTextVal || '-');
+                let regDateDisp = regDateRawVal !== '' ? regDateRawVal : (regDateTextVal || '-');
 
                 let statusVal = indices.status !== -1 && indices.status < row.length && row[indices.status] ? row[indices.status].toString().trim() : '';
                 if (statusVal === '') statusVal = emptyStatusDefault;
