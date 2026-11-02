@@ -1430,7 +1430,8 @@
     // 그리지 않고 제품종류/PE폼 유형/PE폼 높이 표시만 갱신한다.
     function _pkgNiRefreshSpecViews() {
         if (typeof _currentView !== 'undefined' && _currentView === 'viewSpec') runSpecSearch();
-        if (typeof isOpen === 'function' && isOpen('itemEditSheet') && _ieCode) {
+        const _ieSheetEl = document.getElementById('itemEditSheet');
+        if (_ieSheetEl && _ieSheetEl.style.display === 'flex' && _ieCode) {
             const server = _pkgNiSpecMap[(_ieCode||'').toString().trim().toUpperCase()];
             if (server) {
                 const ieCodeTypeEl = document.getElementById('ieCodeType');
