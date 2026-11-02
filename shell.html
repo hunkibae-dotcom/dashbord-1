@@ -2941,6 +2941,48 @@
         if (p.length === 3 && p[0].length >= 4) return p[0] + '-' + p[1].padStart(2,'0') + '-' + p[2].padStart(2,'0');
         return '';
     }
+    // 날짜칸 "날짜선택"/"직접입력" 전환 공통 유틸(요청, 2026-11-02 — PC 웹과 동일한
+    // 문제: 구글시트 날짜 칸에 "미정"/"11월 10일 (예정)"처럼 실제 날짜가 아닌 자유
+    // 텍스트가 들어있으면 input type="date" 하나로는 보여주지도 입력하지도 못한다).
+    // 저장 로직은 기존처럼 input.value를 그대로 문자열로 보내므로 손댈 필요 없음.
+    function _pkgSetDateFieldMode(inputId, btnId, rawText, normalized) {
+        const inp = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if (!inp) return;
+        if (normalized && normalized !== '-') {
+            inp.type = 'date';
+            inp.value = normalized;
+            inp.placeholder = '';
+        } else if (rawText) {
+            inp.type = 'text';
+            inp.value = rawText;
+            inp.placeholder = '예: 미정, 11월 10일 (예정)';
+        } else {
+            inp.type = 'date';
+            inp.value = '';
+            inp.placeholder = '';
+        }
+        if (btn) {
+            const isText = inp.type === 'text';
+            btn.innerHTML = isText ? '<i class="fa-solid fa-calendar-days"></i>' : '<i class="fa-solid fa-keyboard"></i>';
+            btn.title = isText ? '날짜선택으로 전환' : '직접입력으로 전환';
+        }
+    }
+    function _pkgToggleDateInputMode(inputId, btnId) {
+        const inp = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        if (!inp) return;
+        if (inp.type === 'date') {
+            inp.type = 'text';
+            inp.placeholder = '예: 미정, 11월 10일 (예정)';
+            if (btn) { btn.innerHTML = '<i class="fa-solid fa-calendar-days"></i>'; btn.title = '날짜선택으로 전환'; }
+        } else {
+            const norm = _nd(inp.value);
+            inp.type = 'date';
+            inp.value = (norm && norm !== '-') ? norm : '';
+            if (btn) { btn.innerHTML = '<i class="fa-solid fa-keyboard"></i>'; btn.title = '직접입력으로 전환'; }
+        }
+    }
     function _lastWorkDate() {
         const today = todayStr();
         const dates = new Set();
