@@ -4154,8 +4154,14 @@
     }
     function _pkgGetPeType(itemOrCode) {
         const code = (itemOrCode && typeof itemOrCode === 'object') ? itemOrCode.code : itemOrCode;
-        const v = _pkgPeTypeMap()[_pkgPeKey(code)];
-        return v || { type: '', spec: '' };
+        const key = _pkgPeKey(code);
+        const legacy = _pkgPeTypeMap()[key] || { type: '', spec: '' };
+        // PE폼 유형은 구글시트(상세스펙 탭, _pkgNiSpecMap)에서 받아온 값이 있으면 그걸
+        // 우선 쓴다(요청, 2026-11-02 — 전엔 이 기기 localStorage만 보고 있어서 PC
+        // 웹에서 바꾼 값이 앱에 안 보였다). 규격은 여전히 이 기기 기억값 그대로.
+        const server = _pkgNiSpecMap[key];
+        const type = (server && server.peType) ? server.peType : legacy.type;
+        return { type: type || '', spec: legacy.spec || '' };
     }
     function _pkgSetPeType(code, type, spec) {
         const map = _pkgPeTypeMap();
