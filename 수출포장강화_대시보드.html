@@ -10604,7 +10604,6 @@
             zoneWrap.style.display = (type === 'kim' || type === 'choi') ? '' : 'none';
             document.getElementById('pkgLabelZoneInput').value = '';
             _pkgLabelShowStep('pkgLabelStepPallet');
-            if (_pkgSelectedKeys.size > 0 && zoneWrap.style.display === 'none') pkgLabelSubmitPallet();
         }
         function pkgLabelBackToShipType() {
             _pkgLabelShowStep('pkgLabelStepShipType');
@@ -10619,7 +10618,6 @@
             _pkgLabelState.customName = name;
             _pkgSetLabelPalletTitle('사전조립 인식표 — 적재번호를 입력하세요.');
             _pkgLabelShowStep('pkgLabelStepPallet');
-            if (_pkgSelectedKeys.size > 0) pkgLabelSubmitPallet();
         }
         function pkgLabelBackFromPallet() {
             if (_pkgLabelState.kind === 'stock') {
