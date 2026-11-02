@@ -2110,8 +2110,15 @@
     function fmtKr(s) {
         if (!s || s === '-') return '—';
         const d = new Date(s);
-        if (isNaN(d)) return s;
-        return (d.getMonth()+1) + '.' + d.getDate() + ' (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')';
+        if (!isNaN(d)) return (d.getMonth()+1) + '.' + d.getDate() + ' (' + ['일','월','화','수','목','금','토'][d.getDay()] + ')';
+        // 날짜로 바로 못 읽으면("11/6 (예정)" 등) 안에서 날짜만 뽑아 요일까지 보여주고,
+        // 안내문구는 그대로 옆에 붙인다. 날짜 패턴이 아예 없으면("미정" 등) '—'로
+        // 둔다(요청, 2026-11-02 — 날짜가 아닌 글자를 화면에 그대로 띄우지 않음).
+        const a = _pkgDateAnnotation(s);
+        if (!a.date) return '—';
+        const dd = new Date(a.date);
+        const base = isNaN(dd) ? a.date : ((dd.getMonth()+1) + '.' + dd.getDate() + ' (' + ['일','월','화','수','목','금','토'][dd.getDay()] + ')');
+        return a.note ? base + ' ' + a.note : base;
     }
 
     // ── 데이터 캐시 (sessionStorage: 앱 종료 전까지 유지) ──
