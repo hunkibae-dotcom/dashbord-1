@@ -10565,28 +10565,21 @@
         function pkgCloseLabelModal() {
             document.getElementById('pkgLabelModal').style.display = 'none';
         }
-        // 체크(선택)된 품목이 있으면 적재번호를 물어볼 필요가 없다 — 어차피 선택한
-        // 품목만 쓸 거니까. 입력칸을 통째로 숨기고, 큰 제목에 적재번호를 억지로
-        // 채워넣지도 않는다(요청한 적 없는 동작) — 그냥 빈 채로 둔다.
+        // 확인 버튼 체인은 항상 적재번호를 직접 입력받는다 — 체크(선택)해둔 품목이
+        // 있다고 입력칸을 숨기고 그걸로 대신 생성하던 동작은 삭제한다(요청, 2026-11-02:
+        // "체크해둔 N건 품목으로 바로 생성됩니다 문구는 맞지않아 제품검색기준으로
+        // 출력하거나 선택한 부분만 출력할때를 대비해서 제품검색 출력버튼을 만든거야").
+        // 선택/검색 결과를 쓰는 건 전용 "제품검색 출력" 버튼(pkgLabelSubmitFromSearch)
+        // 몫이고, 이 "확인" 버튼은 언제나 적재번호로 조회해서 생성한다.
         function _pkgSetLabelPalletTitle(baseText) {
-            const el = document.getElementById('pkgLabelPalletTitle');
-            const inputWrap = document.getElementById('pkgLabelPalletInputWrap');
-            if (_pkgSelectedKeys.size > 0) {
-                el.innerHTML = '<span style="color:#16a34a;font-weight:700;">체크해둔 ' + _pkgSelectedKeys.size + '건 품목으로 바로 생성됩니다.</span>';
-                inputWrap.style.display = 'none';
-                document.getElementById('pkgLabelPalletInput').value = '';
-            } else {
-                el.textContent = baseText;
-                inputWrap.style.display = '';
-            }
+            document.getElementById('pkgLabelPalletTitle').textContent = baseText;
+            document.getElementById('pkgLabelPalletInputWrap').style.display = '';
         }
         function pkgLabelChooseKind(kind) {
             _pkgLabelState.kind = kind;
             if (kind === 'stock') {
                 _pkgSetLabelPalletTitle('재고용 인식표 — 적재번호를 입력하세요.');
                 _pkgLabelShowStep('pkgLabelStepPallet');
-                // 선택된 품목이 있으면 물어볼 것 없이 바로 생성한다.
-                if (_pkgSelectedKeys.size > 0) pkgLabelSubmitPallet();
             } else {
                 _pkgLabelShowStep('pkgLabelStepShipType');
             }
