@@ -3611,8 +3611,9 @@
         if (!_sfSelected.size) { alert('먼저 품목을 하나 이상 선택해주세요.'); return; }
         _sfBulkStatus = null;
         document.getElementById('sfBulkCount').textContent = _sfSelected.size + '개 품목 선택됨';
-        document.getElementById('sfBulkRegDate').value = '';
-        document.getElementById('sfBulkArriveDate').value = '';
+        // 지난번에 "직접입력"으로 바꿔둔 채 닫았을 수 있어 매번 날짜선택 모드로 되돌린다.
+        _pkgSetDateFieldMode('sfBulkRegDate', 'sfBulkRegDateModeBtn', '', '');
+        _pkgSetDateFieldMode('sfBulkArriveDate', 'sfBulkArriveDateModeBtn', '', '');
         document.getElementById('sfBulkPallet').value = '';
         document.getElementById('sfBulkResult').textContent = '';
         _sfRenderBulkStatusBtns();
