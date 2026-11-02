@@ -2505,6 +2505,52 @@
             return '-';
         }
 
+        // 날짜 칸에 "11/6 (예정)"처럼 실제 날짜 + 안내 문구가 같이 적혀있을 때, 날짜는
+        // 정상적으로 인식하면서 "(예정)" 같은 문구도 화면에서 사라지지 않게 따로 뽑아낸다
+        // (요청, 2026-11-02 — normalizeDate만 쓰면 날짜는 맞게 뽑아도 "예정" 문구가
+        // 버려져서 "내가 입력한 게 제대로 반영 안 된 것 같다"는 혼동을 줬다). 날짜 패턴이
+        // 아예 없는 글자("미정" 등)는 시트에 '-'로 남아있는 것과 똑같이 그냥 '-'로 둔다
+        // — 이런 글자는 화면에 그대로 보여주지 않는다(요청, 2026-11-02: "미정이라고
+        // 되어있는 항목은 실제시트에 지금처럼 -표시로 그냥냅두고").
+        function _pkgDateAnnotation(rawDate) {
+            if (!rawDate) return { date: '', note: '' };
+            if (rawDate instanceof Date) return { date: normalizeDate(rawDate), note: '' };
+            const str = rawDate.toString().trim();
+            if (str === '' || str === '미구성' || str === '-') return { date: '', note: '' };
+            if (str.includes('T') || str.includes('GMT') || str.includes('Korea') || str.includes('Standard')) {
+                return { date: normalizeDate(str), note: '' };
+            }
+            const fullMatch = str.match(/(\d{4}|\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+            if (fullMatch) {
+                let y = fullMatch[1];
+                if (y.length === 2) y = '20' + y;
+                const date = `${y}-${fullMatch[2].padStart(2,'0')}-${fullMatch[3].padStart(2,'0')}`;
+                const note = str.replace(fullMatch[0], '').replace(/[()]/g, '').trim();
+                return { date, note };
+            }
+            const noYearMatch = str.match(/^(\d{1,2})[.\/](\d{1,2})(\D.*)?$/);
+            if (noYearMatch) {
+                const mm = parseInt(noYearMatch[1], 10), dd = parseInt(noYearMatch[2], 10);
+                const now = new Date();
+                let y = now.getFullYear();
+                const candidate = new Date(y, mm - 1, dd);
+                const cutoff = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+                if (candidate < cutoff) y += 1;
+                const date = `${y}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+                const note = (noYearMatch[3] || '').replace(/[()]/g, '').trim();
+                return { date, note };
+            }
+            const normalized = normalizeDate(str);
+            return { date: normalized !== '-' ? normalized : '', note: '' };
+        }
+        // 표/수정창 "표시용" 문자열 — 정상 날짜면 날짜만, 날짜+안내문구("11/6 (예정)")면
+        // 둘 다, 날짜 패턴이 아예 없으면 '-'.
+        function _pkgDateDisplay(rawDate) {
+            const a = _pkgDateAnnotation(rawDate);
+            if (!a.date) return '-';
+            return a.note ? `${a.date} (${a.note})` : a.date;
+        }
+
         // 날짜에서 연도 제거 (YYYY-MM-DD → MM-DD)
         function shortDate(rawDate) {
             const d = normalizeDate(rawDate);
