@@ -2520,7 +2520,7 @@
             if (str.includes('T') || str.includes('GMT') || str.includes('Korea') || str.includes('Standard')) {
                 return { date: normalizeDate(str), note: '' };
             }
-            const fullMatch = str.match(/(\d{4}|\d{2})[.\-\/](\d{1,2})[.\-\/](\d{1,2})/);
+            const fullMatch = str.match(/(\d{4}|\d{2})\s*[.\-\/년]\s*(\d{1,2})\s*[.\-\/월]\s*(\d{1,2})\s*일?/);
             if (fullMatch) {
                 let y = fullMatch[1];
                 if (y.length === 2) y = '20' + y;
@@ -2528,7 +2528,10 @@
                 const note = str.replace(fullMatch[0], '').replace(/[()]/g, '').trim();
                 return { date, note };
             }
-            const noYearMatch = str.match(/^(\d{1,2})[.\/](\d{1,2})(\D.*)?$/);
+            // "11월 10일 (예정)"처럼 연도 없이 월/일을 한글로 적는 경우도 "11/10"과
+            // 동일하게 처리한다(요청, 2026-11-02 — 이 형식이 규격 분리 안 돼 있어서
+            // 날짜가 아예 안 뽑히고 '-'로만 보이던 문제).
+            const noYearMatch = str.match(/^(\d{1,2})\s*[.\/월]\s*(\d{1,2})\s*일?(\D.*)?$/);
             if (noYearMatch) {
                 const mm = parseInt(noYearMatch[1], 10), dd = parseInt(noYearMatch[2], 10);
                 const now = new Date();
