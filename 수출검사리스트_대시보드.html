@@ -1181,11 +1181,17 @@ try {
     </div>
     <div style="margin-bottom:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
       <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">포장일 (비워두면 변경 안 함)</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">포장일 (비워두면 변경 안 함)</span>
+          <button type="button" id="psBulkPackDateModeBtn" onclick="_miToggleDateInputMode('psBulkPackDate','psBulkPackDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;"><i class="fa-solid fa-keyboard"></i></button>
+        </div>
         <input id="psBulkPackDate" type="date" style="width:100%;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;box-sizing:border-box;">
       </div>
       <div>
-        <div style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:8px;">납기일 (비워두면 변경 안 함)</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">납기일 (비워두면 변경 안 함)</span>
+          <button type="button" id="psBulkDueDateModeBtn" onclick="_miToggleDateInputMode('psBulkDueDate','psBulkDueDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;"><i class="fa-solid fa-keyboard"></i></button>
+        </div>
         <input id="psBulkDueDate" type="date" style="width:100%;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px;outline:none;box-sizing:border-box;">
       </div>
     </div>
