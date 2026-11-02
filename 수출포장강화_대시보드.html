@@ -11049,16 +11049,16 @@
             // 수정창에 그대로 넣으면 "이미 입력된 값"처럼 보여 혼동을 준다 — 여기선 시트에
             // 실제로 적힌 값만 쓴다. 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로,
             // 정상 날짜면 날짜선택 모드로 자동으로 맞춰서 보여준다(요청, 2026-11-02).
-            _pkgSetDateFieldMode('pkgRegDate', 'pkgRegDateModeBtn', item.regDateText, item.regDateRaw);
+            _pkgSetDateFieldMode('pkgRegDate', 'pkgRegDateModeBtn', item.regDateText);
             _pkgOrigRegDate = document.getElementById('pkgRegDate').value;
 
-            _pkgSetDateFieldMode('pkgArriveDate', 'pkgArriveDateModeBtn', item.arriveDateRaw, item.arriveDate);
+            _pkgSetDateFieldMode('pkgArriveDate', 'pkgArriveDateModeBtn', item.arriveDateRaw);
             _pkgOrigArriveDate = document.getElementById('pkgArriveDate').value;
 
-            _pkgSetDateFieldMode('pkgShipDate', 'pkgShipDateModeBtn', item.dateRaw, item.date);
+            _pkgSetDateFieldMode('pkgShipDate', 'pkgShipDateModeBtn', item.dateRaw);
             _pkgOrigShipDate = document.getElementById('pkgShipDate').value;
 
-            _pkgSetDateFieldMode('pkgDueDate', 'pkgDueDateModeBtn', item.dueDateRaw, item.dueDate);
+            _pkgSetDateFieldMode('pkgDueDate', 'pkgDueDateModeBtn', item.dueDateRaw);
             _pkgOrigDueDate = document.getElementById('pkgDueDate').value;
 
             _pkgOrigPallet = (item.pallet && item.pallet !== '-') ? item.pallet.toString().replace(/^적재\s*/, '') : '';
