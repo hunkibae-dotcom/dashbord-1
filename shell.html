@@ -3667,8 +3667,8 @@
         _sfBulkStatus = null;
         document.getElementById('sfBulkCount').textContent = _sfSelected.size + '개 품목 선택됨';
         // 지난번에 "직접입력"으로 바꿔둔 채 닫았을 수 있어 매번 날짜선택 모드로 되돌린다.
-        _pkgSetDateFieldMode('sfBulkRegDate', 'sfBulkRegDateModeBtn', '', '');
-        _pkgSetDateFieldMode('sfBulkArriveDate', 'sfBulkArriveDateModeBtn', '', '');
+        _pkgSetDateFieldMode('sfBulkRegDate', 'sfBulkRegDateModeBtn', '');
+        _pkgSetDateFieldMode('sfBulkArriveDate', 'sfBulkArriveDateModeBtn', '');
         document.getElementById('sfBulkPallet').value = '';
         document.getElementById('sfBulkResult').textContent = '';
         _sfRenderBulkStatusBtns();
