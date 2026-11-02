@@ -2198,7 +2198,11 @@
             if (s.specD) it.specD = s.specD;
             if (s.specH) it.specH = s.specH;
             if (s.specG) it.specG = s.specG;
-            if (s.regDate && s.regDate !== '-') it.regDate = s.regDate;
+            // regDate만 바꾸고 regDateRaw(품목수정창이 실제로 읽는 값)는 안 바꾸면,
+            // 포장일이 충주공장 재고에서 합쳐져 들어온 품목은 품목수정창에서 다시
+            // 빈칸으로 보인다(요청, 2026-11-02 — PC웹 입고현황 탭의 같은 문제를
+            // 고치면서 같이 확인).
+            if (s.regDate && s.regDate !== '-') { it.regDate = s.regDate; it.regDateRaw = s.regDateRaw || s.regDate; }
         });
     }
 
