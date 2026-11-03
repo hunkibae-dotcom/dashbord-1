@@ -9655,6 +9655,38 @@
             }
         }
 
+        // 일괄수정창 "삭제" — 단일 품목수정창의 deletePkgItemDetail과 같은 생각으로,
+        // 체크해둔 품목 전체를 한 번에 구글시트에서 완전히 삭제한다(요청, 2026-11-04).
+        async function pkgBulkDelete() {
+            const fb = document.getElementById('pkgBulkFeedback');
+            const btn = document.getElementById('pkgBulkDeleteBtn');
+            fb.textContent = ''; fb.style.color = '';
+            if (!_pkgBulkItems.length) { fb.textContent = '선택된 품목이 없습니다.'; fb.style.color = '#dc2626'; return; }
+            if (!confirm(`선택한 ${_pkgBulkItems.length}건을 정말로 삭제하시겠습니까?\n구글시트에서도 완전히 삭제되며 되돌릴 수 없습니다.`)) return;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
+            try {
+                const items = _pkgBulkItems.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgDeleteItemsBatch', items: items }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '삭제 중 오류가 발생했습니다.');
+                fb.textContent = `✓ ${res.deletedCount || items.length}건 삭제되었습니다.`; fb.style.color = '#16a34a';
+                setTimeout(() => {
+                    pkgCloseBulkModal();
+                    pkgExitMultiSelectMode();
+                    syncWithGoogleSheets(false);
+                }, 600);
+            } catch (e) {
+                fb.textContent = '삭제 실패: ' + (e.message || '오류'); fb.style.color = '#dc2626';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
+            }
+        }
+
         // ── 분류(수주)/분류(입고) 엑셀 업로드 ──────────────────────────────
         // 품질검사 대시보드의 엑셀 업로드 기능(_spuRunImport 등)과 같은 방식:
         // 브라우저 안에서 엑셀을 표로 바꿔서 필요한 값만 뽑아 구글시트로 보내고,
