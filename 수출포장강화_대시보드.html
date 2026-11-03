@@ -11247,6 +11247,34 @@
             _pkgDefectPhotos = []; _pkgDefectRemovedFileIds = [];
         }
 
+        // 품목수정창 "삭제" — 되돌릴 수 없는 작업이라 신규품목확인 탭의 삭제와 같은
+        // 방식(확인창 + 구글시트에서 완전히 삭제)으로 만든다(요청, 2026-11-04: "삭제클릭
+        // 시 정말로 삭제하시겠습니까 문구를 띄워주고 확인 시 해당 데이터가 지워지게").
+        // 수출현황/충주공장재고/출고완료 중 이 품목이 실제로 있는 시트에서 지운다(GAS
+        // deleteItem 액션).
+        async function deletePkgItemDetail() {
+            if (!_pkgCode) return;
+            if (!confirm(`${_pkgCode}${_pkgColor && _pkgColor !== '-' ? ' / ' + _pkgColor : ''} (${_pkgRound}) 품목을 정말로 삭제하시겠습니까?\n구글시트에서도 완전히 삭제되며 되돌릴 수 없습니다.`)) return;
+            const btn = document.getElementById('pkgDetailDeleteBtn');
+            const fb = document.getElementById('pkgDetailFeedback');
+            fb.textContent = ''; fb.style.color = '';
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
+            try {
+                await _pkgFetchChecked(_pkgGasUrl() + '?' + new URLSearchParams({ action: 'deleteItem', code: _pkgCode, round: _pkgRound, color: _pkgColor }), '품목 삭제');
+                fb.textContent = '✓ 삭제되었습니다.'; fb.style.color = '#16a34a';
+                setTimeout(() => {
+                    closePkgItemDetail();
+                    syncWithGoogleSheets(false);
+                }, 500);
+            } catch (e) {
+                fb.textContent = e.message || String(e); fb.style.color = '#dc2626';
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
         let _pkgStatusOpenGroup = null; // 사람이 직접 펼친 그룹(현재 상태가 없을 때만 씀)
 
         function _renderPkgStatusOpts() {
