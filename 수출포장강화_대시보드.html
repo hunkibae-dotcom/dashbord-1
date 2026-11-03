@@ -15282,7 +15282,9 @@ async function peExportOrderXlsx(ordNo, meta, items) {
 
         <div id="pkgBulkFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin:12px 0;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
-            <button onclick="pkgCloseBulkModal()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
+            <button onclick="pkgBulkDelete()" id="pkgBulkDeleteBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #fecaca;background:#fff;color:#dc2626;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                <i class="fa-solid fa-trash"></i> 삭제
+            </button>
             <button onclick="pkgBulkApply()" id="pkgBulkApplyBtn"
                 style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
                 <i class="fa-solid fa-check"></i> 적용
