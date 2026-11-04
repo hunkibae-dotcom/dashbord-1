@@ -8223,6 +8223,11 @@
         // 같은 건명에 색상만 다른 행이 여러 개일 때 서로 헷갈릴 수 있어 color까지 함께 보낸다.
         let _pkgCode = '', _pkgRound = '', _pkgColor = '';
         let _pkgOrigStatus = '', _pkgCurStatus = '';
+        // 버그 수정(요청, 2026-11-05) — 지금 열려있는 품목이 실제로 어느 시트
+        // (export=수출 현황/shipped=출고 완료/stock=충주공장 재고) 출신인지. 진행상태 그룹
+        // 중 이 값과 일치하는 그룹에서만 "현재 선택됨" 표시를 켠다(다른 그룹에 같은 값이
+        // 우연히 겹쳐도 거긴 안 켜짐).
+        let _pkgCurOrigin = null;
         let _pkgOrigPallet = '';
         let _pkgOrigRegDate = '';
         let _pkgOrigArriveDate = '';
