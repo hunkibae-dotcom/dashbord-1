@@ -10089,20 +10089,31 @@ function _refreshMiStatusButtons(status) {
 
 // 블로킹(O열) 카드 — 요청(2026-10-23): 품목 수정창에서도 블로킹을 보고 바꿀 수 있어야
 // 한다. 검사완료 이력(source==='archive')엔 블로킹 칸 자체가 없어 카드를 숨긴다.
+const QC_BLOCKING_DOT = { '미등록': '#94a3b8', '검사대기': '#e11d48', '검사완료': '#059669', '취소': '#64748b' };
 function _miRenderBlockingButtons() {
   const wrap = document.getElementById('miBlockingBtns');
   if (!wrap || !_miCurrent) return;
   const cur = ('블로킹' in _miPendingSync) ? _miPendingSync.블로킹 : (_miCurrent.블로킹 || '미등록');
-  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => `<button data-mi-blocking="${v}" onclick="setMiField('블로킹','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${_qcBlockingLabel(v)}</button>`).join('');
-  _refreshMiBlockingButtons(cur);
+  const color = QC_BLOCKING_DOT[cur] || '#94a3b8';
+  wrap.innerHTML = `
+    <div class="fw-dd-anchor${_miBlockingPanelOpen ? ' open' : ''}">
+      <div class="fw-dd-trigger active" onclick="_miToggleBlockingPanel()">
+        <span class="fw-dd-dot" style="background:${color}"></span>
+        <span>${_qcBlockingLabel(cur)}</span>
+        <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+      </div>
+      <div class="fw-dd-panel" style="display:${_miBlockingPanelOpen ? '' : 'none'};">
+        ${QC_BLOCKING_VALUES.map(v => `<div class="fw-dd-opt${cur === v ? ' on' : ''}" data-mi-blocking="${v}" onclick="setMiField('블로킹','${v}')"><span class="fw-dd-dot" style="background:${QC_BLOCKING_DOT[v]}"></span>${_qcBlockingLabel(v)}${cur === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
+      </div>
+    </div>`;
+}
+function _miToggleBlockingPanel() {
+  _miBlockingPanelOpen = !_miBlockingPanelOpen;
+  _miRenderBlockingButtons();
 }
 function _refreshMiBlockingButtons(v) {
-  document.querySelectorAll('#miBlockingBtns [data-mi-blocking]').forEach(btn => {
-    const on = btn.dataset.miBlocking === v;
-    btn.style.background = on ? '#6D5CE8' : 'var(--panel)';
-    btn.style.color = on ? '#fff' : 'var(--text-sub)';
-    btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
-  });
+  _miBlockingPanelOpen = false;
+  _miRenderBlockingButtons();
 }
 
 // 진행상태/일정/규격 카드 — 전엔 연필 아이콘을 눌러 보기↔수정 모드를 전환해야만
