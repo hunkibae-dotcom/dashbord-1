@@ -3918,6 +3918,8 @@
                     statusBadge = 'bg-accentOrange/10 text-accentOrange border-accentOrange/20 font-bold';
                 } else if (item.status === '미입고' || item.status === '미입고상태') {
                     statusBadge = 'bg-red-900/20 text-red-400 border-red-700/30 font-bold';
+                } else if (item.status === '회수중') {
+                    statusBadge = 'bg-fuchsia-900/20 text-fuchsia-400 border-fuchsia-700/30 font-bold';
                 } else if (item.status === '일부입고') {
                     statusBadge = 'bg-amber-900/20 text-amber-400 border-amber-700/30 font-bold';
                 } else if (item.status === '미포장') {
