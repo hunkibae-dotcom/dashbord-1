@@ -11175,8 +11175,6 @@
             document.getElementById('pkgCatBadge').textContent = (item.country || '').toString().trim() || '—';
             document.getElementById('pkgColorBadge').textContent = (item.color && item.color !== '-') ? item.color : '—';
             document.getElementById('pkgQtyBadge').textContent = (item.qty || 0).toLocaleString() + ' BOX';
-            document.getElementById('pkgDueBadge').textContent = '납기 ' + (item.dueDateDisp || shortDate(item.dueDate));
-            document.getElementById('pkgDateBadge').textContent = '상차 ' + (item.dateDisp || shortDate(item.date));
 
 
             _pkgOrigStatus = item.status || '';
