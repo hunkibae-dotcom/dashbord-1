@@ -6645,143 +6645,119 @@
       <!-- 진행상태 — 탭+알약+연필토글 방식을 PC 웹과 같은 시트별 드롭다운으로 바꿨다
            (요청, 2026-11-04: "니가 시안만들었잖아 똑같이 반영해야지"). 항상 바로 눌러서
            고치고, 접힌 채로 시작한다(예전엔 늘 펼쳐져 있었음). -->
-      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">진행상태</span>
-          <span id="ieStatusChangedDate" style="font-size:10px;color:var(--label);font-family:monospace;"></span>
+      <!-- 진행상태를 반으로 줄이고 오른쪽에 상차 준비완료 박스, 적재번호는 PC 웹처럼
+           별도 카드로 분리, 일정/규격도 PC 웹처럼 2단 배치 + 보기/수정 토글 없이 항상
+           바로 고칠 수 있게 바꿨다(요청, 2026-11-04: "일정과 cbm창의 레이아웃과 구성을
+           웹처럼바꿔주고 적재번호와 pe폼유형 역시 웹처럼 바꿔줘"). -->
+      <div style="display:flex;gap:10px;margin-bottom:12px;align-items:stretch;">
+        <div style="flex:1;min-width:0;background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">진행상태</span>
+            <span id="ieStatusChangedDate" style="font-size:10px;color:var(--label);font-family:monospace;"></span>
+          </div>
+          <div id="ieStatusOpts"></div>
         </div>
-        <div id="ieStatusOpts"></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--divider);">
-          <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);flex-shrink:0;">적재번호</span>
-          <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
-            style="width:100px;flex-shrink:0;margin-left:auto;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-size:12.5px;color:var(--text);outline:none;box-sizing:border-box;text-align:right;font-family:monospace;"
-            oninput="_checkIePalletExists();_ieSyncPalletView();"
-            onkeydown="if(event.key==='Enter')saveItemEdit()">
+        <div style="flex:1;min-width:0;background:rgba(0,230,118,.08);border:1.5px solid rgba(0,230,118,.3);border-radius:14px;padding:14px;display:flex;align-items:center;">
+          <label title="상차 준비완료" style="display:flex;align-items:center;gap:9px;color:#00B0A0;font-size:12.5px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+            <input type="checkbox" id="ieShipReadyChk" style="width:17px;height:17px;accent-color:#00B0A0;cursor:pointer;margin:0;flex-shrink:0;"> 상차 준비완료
+          </label>
         </div>
+      </div>
+
+      <div style="margin-bottom:12px;background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+        <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);flex-shrink:0;margin-bottom:8px;">적재번호</div>
+        <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
+          style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;text-align:left;font-family:monospace;"
+          oninput="_checkIePalletExists();_ieSyncPalletView();"
+          onkeydown="if(event.key==='Enter')saveItemEdit()">
         <div id="iePalletWarning" style="display:none;font-size:11px;color:#F59E0B;margin-top:6px;"></div>
       </div>
 
-      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleIeScheduleEdit()">
-          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">일정</span>
-          <span id="ieScheduleToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:start;">
+        <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">일정</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;text-align:center;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:5px;">
+                <span style="font-size:9px;font-weight:700;color:var(--text-sub);">납기일</span>
+                <button type="button" id="ieDueDateModeBtn" onclick="_pkgToggleDateInputMode('ieDueDate','ieDueDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
+              </div>
+              <input id="ieDueDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:800;color:#F59E0B;outline:none;box-sizing:border-box;text-align:center;">
+            </div>
+            <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;text-align:center;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:5px;">
+                <span style="font-size:9px;font-weight:700;color:var(--text-sub);">상차일</span>
+                <button type="button" id="ieShipDateModeBtn" onclick="_pkgToggleDateInputMode('ieShipDate','ieShipDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
+              </div>
+              <input id="ieShipDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:800;color:#059669;outline:none;box-sizing:border-box;text-align:center;">
+            </div>
+            <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;text-align:center;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:5px;">
+                <span style="font-size:9px;font-weight:700;color:var(--text-sub);">입고일</span>
+                <button type="button" id="ieArriveDateModeBtn" onclick="_pkgToggleDateInputMode('ieArriveDate','ieArriveDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
+              </div>
+              <input id="ieArriveDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:800;color:#7C3AED;outline:none;box-sizing:border-box;text-align:center;">
+            </div>
+            <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;text-align:center;">
+              <div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:5px;">
+                <span style="font-size:9px;font-weight:700;color:var(--text-sub);">포장일</span>
+                <button type="button" id="ieRegDateModeBtn" onclick="_pkgToggleDateInputMode('ieRegDate','ieRegDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
+              </div>
+              <input id="ieRegDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:800;color:#00B0FF;outline:none;box-sizing:border-box;text-align:center;">
+            </div>
+          </div>
+          <div id="ieScheduleHint" style="font-size:10.5px;color:var(--label);margin-top:8px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
         </div>
-        <div id="ieScheduleViewWrap" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">납기일</div>
-            <div id="ieDueDateView" style="font-size:12.5px;font-weight:800;color:#F59E0B;">-</div>
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">상차일</div>
-            <div id="ieShipDateView" style="font-size:12.5px;font-weight:800;color:#059669;">-</div>
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">입고일</div>
-            <div id="ieArriveDateView" style="font-size:12.5px;font-weight:800;color:#7C3AED;">-</div>
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-            <div style="font-size:9px;font-weight:700;color:var(--text-sub);margin-bottom:6px;">포장일</div>
-            <div id="ieRegDateView" style="font-size:12.5px;font-weight:800;color:#00B0FF;">-</div>
-          </div>
-        </div>
-        <div id="ieScheduleEditWrap" style="display:none;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
-              <span style="font-size:9px;font-weight:700;color:var(--text-sub);">납기일</span>
-              <button type="button" id="ieDueDateModeBtn" onclick="_pkgToggleDateInputMode('ieDueDate','ieDueDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
-            </div>
-            <input id="ieDueDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
-              <span style="font-size:9px;font-weight:700;color:var(--text-sub);">상차일</span>
-              <button type="button" id="ieShipDateModeBtn" onclick="_pkgToggleDateInputMode('ieShipDate','ieShipDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
-            </div>
-            <input id="ieShipDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
-              <span style="font-size:9px;font-weight:700;color:var(--text-sub);">입고일</span>
-              <button type="button" id="ieArriveDateModeBtn" onclick="_pkgToggleDateInputMode('ieArriveDate','ieArriveDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
-            </div>
-            <input id="ieArriveDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
-          </div>
-          <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:8px 7px;">
-            <div style="display:flex;align-items:center;gap:4px;margin-bottom:5px;">
-              <span style="font-size:9px;font-weight:700;color:var(--text-sub);">포장일</span>
-              <button type="button" id="ieRegDateModeBtn" onclick="_pkgToggleDateInputMode('ieRegDate','ieRegDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:var(--text-sub);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;-webkit-appearance:none;"><i class="fa-solid fa-keyboard"></i></button>
-            </div>
-            <input id="ieRegDate" type="date" style="width:100%;background:transparent;border:none;padding:0;font-size:11.5px;font-weight:700;color:var(--text);outline:none;box-sizing:border-box;">
-          </div>
-        </div>
-        <div id="ieScheduleHint" style="display:none;font-size:10.5px;color:var(--label);margin-top:8px;">비워두고 포장완료로 저장하면 오늘 날짜로 자동 입력됩니다.</div>
-      </div>
 
-      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:10px;" onclick="toggleIeSpecEdit()">
-          <span style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;">규격 (mm) 무게(kg)</span>
-          <span id="ieSpecToggleIcon" style="width:22px;height:22px;border-radius:6px;background:var(--icon-bg);color:var(--text-sub);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-pen" style="font-size:10px;"></i></span>
-        </div>
-        <div id="ieSpecViewWrap" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div style="text-align:center;">
-            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">가로 (mm)</div>
-            <div id="ieWView" style="font-size:16px;font-weight:800;color:#0284C7;">-</div>
+        <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">규격 (mm) 무게(kg)</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="text-align:center;">
+              <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">가로 (mm)</div>
+              <input id="ieW" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:transparent;border:none;padding:0;font-size:16px;font-weight:800;color:#0284C7;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">세로 (mm)</div>
+              <input id="ieD" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:transparent;border:none;padding:0;font-size:16px;font-weight:800;color:#059669;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">높이 (mm)</div>
+              <input id="ieH" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:transparent;border:none;padding:0;font-size:16px;font-weight:800;color:#D97706;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">무게 (kg)</div>
+              <input id="ieG" type="number" placeholder="—" step="0.01" style="width:100%;background:transparent;border:none;padding:0;font-size:16px;font-weight:800;color:#7C3AED;outline:none;box-sizing:border-box;text-align:center;font-family:inherit;">
+            </div>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">세로 (mm)</div>
-            <div id="ieDView" style="font-size:16px;font-weight:800;color:#059669;">-</div>
+          <div style="margin-top:8px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
+            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">CBM (m³)</div>
+            <div id="ieCbm" style="font-size:14px;font-weight:800;color:var(--text);">—</div>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">높이 (mm)</div>
-            <div id="ieHView" style="font-size:16px;font-weight:800;color:#D97706;">-</div>
-          </div>
-          <div style="text-align:center;">
-            <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">무게 (kg)</div>
-            <div id="ieGView" style="font-size:16px;font-weight:800;color:#7C3AED;">-</div>
-          </div>
-        </div>
-        <div id="ieSpecEditWrap" style="display:none;grid-template-columns:1fr 1fr;gap:8px;">
-          <div>
-            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">가로 (mm)</div>
-            <input id="ieW" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">세로 (mm)</div>
-            <input id="ieD" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">높이 (mm)</div>
-            <input id="ieH" type="number" placeholder="—" oninput="_updateIeCbm()" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">무게 (kg)</div>
-            <input id="ieG" type="number" placeholder="—" step="0.01" style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-        </div>
-        <div style="margin-top:8px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 6px;text-align:center;">
-          <div style="font-size:9.5px;font-weight:700;color:var(--label);border-bottom:1px solid var(--divider);padding-bottom:5px;margin-bottom:5px;">CBM (m³)</div>
-          <div id="ieCbm" style="font-size:14px;font-weight:800;color:var(--text);">—</div>
         </div>
       </div>
 
-      <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">PE폼 유형</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <input id="iePeType" type="text" list="iePeTypeOptions" placeholder="예: 일자형" onchange="_ieOnPeTypeChange()"
-            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          <datalist id="iePeTypeOptions">
-            <option value="일자형"><option value="코너형"><option value="패드형"><option value="롤형">
-          </datalist>
-          <input id="iePeSpec" type="text" list="iePeSpecOptions" placeholder="규격 (목록 또는 직접입력)"
-            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
-          <datalist id="iePeSpecOptions"></datalist>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:start;">
+        <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">적재번호</div>
+          <div style="font-size:10px;color:var(--label);">위쪽 적재번호 칸에서 바로 수정합니다.</div>
         </div>
-        <div style="margin-top:10px;">
-          <div style="font-size:10px;color:var(--text-sub);margin-bottom:4px;">PE폼 높이</div>
-          <input id="iePeBoxHeight" type="text" placeholder="PE폼 높이를 입력하세요" oninput="saveSpecOverride(_ieCode, 'boxHeight', this.value)"
-            style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+        <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">PE폼 유형</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <select id="iePeType" onchange="_ieOnPeTypeChange()"
+              style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;cursor:pointer;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+              <option value="">선택</option>
+              <option value="일자형">일자형</option>
+              <option value="코너형">코너형</option>
+              <option value="패드형">패드형</option>
+              <option value="롤형">롤형</option>
+            </select>
+            <input id="iePeSpec" type="text" list="iePeSpecOptions" placeholder="목록에서 고르거나 직접 입력"
+              style="width:100%;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13px;color:var(--text);outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+            <datalist id="iePeSpecOptions"></datalist>
+          </div>
+          <div style="font-size:10px;color:var(--label);margin-top:6px;">목록에 없으면 직접 입력해도 됩니다. 오른쪽 칸(규격)은 상세스펙의 PE폼 높이와 연동되어 있어, 여기서 고치면 상세스펙의 해당 제품코드 PE폼 높이에도 그대로 반영됩니다.</div>
         </div>
-        <div style="font-size:10px;color:var(--label);margin-top:8px;">PE폼 유형·높이는 구글시트(상세스펙)에 저장되어 PC 웹에도 똑같이 보입니다. 규격(자동완성 목록)은 이 앱(이 기기)에만 기억됩니다.</div>
       </div>
 
       <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px;">
