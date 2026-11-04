@@ -11336,7 +11336,7 @@
             const d = parseFloat(document.getElementById('pkgD').value) || 0;
             const h = parseFloat(document.getElementById('pkgH').value) || 0;
             const cbm = (w && d && h) ? (w * d * h) / 1e9 : 0;
-            document.getElementById('pkgDetailCbm').textContent = cbm ? 'CBM ' + cbm.toFixed(4) + 'm³' : 'CBM —';
+            document.getElementById('pkgDetailCbm').textContent = cbm ? cbm.toFixed(4) : '—';
         }
 
         // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 누르면 이 창은 닫고(z-index가 상세스펙
