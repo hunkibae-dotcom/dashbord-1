@@ -9997,14 +9997,18 @@
 
             // K열(건명/배송지 문구)에 적히는 "포장강화 대상" 표시가 예전엔 글자 그대로
             // "(포장 강화)"였는데, 전산 쪽에서 이 표시 방식을 바꿔서 이제 그 자리에
-            // "김기원님앞"이라고 담당자 이름이 적힌다(요청, 2026-10-12 확인) — 예전 파일이
-            // 섞여 들어와도 안 깨지게 두 글자 다 확인한다.
+            // "김기원님앞"처럼 담당자 이름이 적힌다(요청, 2026-10-12 확인) — 예전 파일이
+            // 섞여 들어와도 안 깨지게 둘 다 확인한다. 담당자 이름을 "김기원"으로만 고정해
+            // 두면 다른 사람 앞으로 처리된 행(예: "배훈기님앞")을 못 찾는 버그가 있었다
+            // (요청, 2026-11-05: "포장강화_261104_배훈기님앞 (1001)... 감지를 못하는 것
+            // 같아") — 특정 이름을 고정하지 않고 "...님앞" 형태면 전부 포장강화 대상으로
+            // 인식하도록 일반화했다.
             const entries = [];
             for (let i = startRow; i < grid.length; i++) {
                 const row = grid[i];
                 if (!row) continue;
                 const markRaw = (row[10] || '').toString().replace(/\s+/g, '');
-                if (!markRaw.includes('포장강화') && !markRaw.includes('김기원님앞')) continue;
+                if (!markRaw.includes('포장강화') && !/\S+님앞/.test(markRaw)) continue;
                 const picked = _pkgPickOutResultRow(row, iCode, iColor, iQty);
                 if (picked) entries.push(picked);
             }
