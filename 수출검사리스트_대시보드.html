@@ -10095,7 +10095,12 @@ function _miRenderStatusButtons() {
   wrap.innerHTML = `<div class="fw-dd-group">` + MI_BASIS_LIST.map(b => {
     const set = MI_STATUS_SET_BY_BASIS[b.key];
     const groupHighlight = _miGroupHighlightStatus(b.key);
-    const isActiveGroup = groupHighlight != null && set.includes(groupHighlight);
+    // 버그 수정(요청, 2026-11-04: "실제데이터가 있는 시트기준으로 불이들어오고 어떤
+    // 진행상태인지 알 수 있어야해") — 실제 값이 정해진 4개 버튼 목록에 없는 값이어도
+    // (예: 진행중 시트인데 값이 "외관검사"처럼 출고완료 쪽 값인 경우) 그 품목이 실제로
+    // 속한 시트(_miGroupHighlightStatus가 이미 판단)라면 무조건 켜서 실제 값을 보여준다
+    // — 버튼 목록 소속 여부는 드롭다운 안 체크 표시(아래 set.map)에만 쓴다.
+    const isActiveGroup = groupHighlight != null && groupHighlight !== '';
     const isOpen = (b.key === _miBasis) && _miStatusPanelOpen;
     return `
       <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
