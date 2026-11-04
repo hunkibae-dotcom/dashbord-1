@@ -6730,7 +6730,11 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:start;">
         <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
           <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">적재번호</div>
-          <div style="font-size:10px;color:var(--label);">위쪽 적재번호 칸에서 바로 수정합니다.</div>
+          <input id="iePallet" type="text" placeholder="예: 1, 2, A-1 ..."
+            style="width:100%;background:var(--panel);border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;font-size:13.5px;color:var(--text);outline:none;box-sizing:border-box;transition:border-color .15s;"
+            oninput="_checkIePalletExists();_ieSyncPalletView();"
+            onkeydown="if(event.key==='Enter')saveItemEdit()" onfocus="this.style.borderColor='#00B0FF'" onblur="this.style.borderColor='var(--border)'">
+          <div id="iePalletWarning" style="display:none;font-size:11px;color:#F59E0B;margin-top:6px;"></div>
         </div>
         <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
           <div style="font-size:11px;font-weight:700;color:var(--label);letter-spacing:.04em;margin-bottom:10px;">PE폼 유형</div>
