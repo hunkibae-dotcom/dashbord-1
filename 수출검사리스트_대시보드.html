@@ -10147,6 +10147,33 @@ function closeMItemDetail() {
   _miDefectPhotos = [];
   _miDefectRemovedFileIds = [];
 }
+// 품목수정창 "삭제" — 되돌릴 수 없는 작업이라 확인창을 띄운 뒤 구글시트에서 그 행을
+// 완전히 삭제한다(요청, 2026-11-04: "삭제클릭 시 정말로 삭제하시겠습니까 문구를
+// 띄워주고 확인 시 해당 데이터가 지워지게"). 서버의 deleteItem 액션은 _qcFindRow
+// (건명+단품코드+색상+수량 4개 값)로 정확히 그 행 하나만 찾아 지운다.
+async function deleteMItemDetail() {
+  const item = _miCurrent;
+  if (!item) return;
+  if (!confirm(`${item.단품코드 || ''}${item.색상 ? ' / ' + item.색상 : ''} (${item.건명 || ''}) 품목을 정말로 삭제하시겠습니까?\n구글시트에서도 완전히 삭제되며 되돌릴 수 없습니다.`)) return;
+  const url = _gasUrlForFactory(item.공장);
+  if (!url) { _setMiSyncNote('시트 연동 URL이 아직 설정되지 않아 삭제할 수 없습니다.', true); return; }
+  const btn = document.getElementById('miDeleteBtn');
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
+  try {
+    const qs = new URLSearchParams({ action: 'deleteItem', round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: item.수량 || '' });
+    const res = await fetch(url + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
+    const json = await res.json().catch(() => null);
+    if (!json || json.status !== 'success') throw new Error((json && json.message) || '알 수 없는 오류');
+    closeMItemDetail();
+    loadData(true);
+  } catch (e) {
+    _setMiSyncNote('삭제 실패: ' + (e.message || e), true);
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
 // 이 창의 입력칸(진행상태/검사완료일/규격/재투입 사유)은 예전엔 건드리는 즉시 시트에
 // 반영됐는데, 그러면 하단 "저장" 버튼이 이미 다 끝난 일을 다시 누르는 것 같은 의미
 // 없는 버튼이 됐다 — 이제 변경사항은 _miPendingSync에만 모아두고, 실제 시트 반영은
