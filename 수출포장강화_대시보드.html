@@ -10249,6 +10249,8 @@
                 // 오해할 수 있어서(요청, 2026-10-20) — 이번 분류로 바뀐 수주건명/납기일/상차일을
                 // 이미 입고되어 있던 재고 행에도 같이 맞춰준 것뿐이라는 원인을 문구에 명시한다.
                 let line = `✓ ${entry.name} → 분류(수주) 완료 — 신규 ${res.newCount || 0}건, 납기변경 ${res.updatedCount || 0}건, 재고에 건명·납기·상차일 동기화 ${res.syncAppliedCount || 0}건(이번 분류로 바뀐 내용을 충주공장 재고에도 반영)`;
+                // "상세보기" 팝업용 — 파일별로 실제 신규/납기변경 목록을 쌓아둔다(요청, 2026-11-05).
+                _pkgClassifyDetails.push({ fileName: entry.name, kind: 'sunju', newItems: res.newItems || [], updatedItems: res.updatedItems || [] });
 
                 // 재고활용 재고가 있는 품목이 있으면 바로 적용하지 않고 확인/선택 팝업을
                 // 먼저 띄운다(요청, 2026-10-30 — 같은 품목코드를 여러 건명이 동시에
