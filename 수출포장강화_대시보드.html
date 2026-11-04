@@ -11173,6 +11173,7 @@
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
             _pkgCurOrigin = item._pkgOrigin || null;
+            _pkgOriginStatusMap = _pkgFindOriginStatusMap(item.code, item.round, item.color);
             // 드롭다운 시안 반영 전엔 "현재 상태가 속한 그룹"을 항상 펼친 채로 열었지만
             // (옛 아코디언 디자인 때 얘기), 지금은 접힌 드롭다운 버튼이라 열 때마다 펼쳐진
             // 채로 뜨면 안 된다(요청, 2026-11-04: "아무거나 클릭하면 수정창이 바로 저렇게
@@ -11415,7 +11416,7 @@
 
         function _renderPkgStatusOpts() {
             const wrap = document.getElementById('pkgStatusOpts');
-            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup, _pkgCurOrigin);
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup, _pkgOriginStatusMap);
             _pkgUpdatePartialQtyVisibility();
         }
 
