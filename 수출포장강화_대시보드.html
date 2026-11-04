@@ -2770,7 +2770,7 @@
                 }
 
                 // 포장이 완료되지 않은 상태는 포장일 없음 처리 (실재고 시트는 '미입고' 대신 '미확인'이 같은 역할)
-                if (statusCategory === '미입고' || statusCategory === '미확인' || statusCategory === '입고' || statusCategory === '재고활용') { regDateVal = '-'; regDateDisp = '-'; }
+                if (statusCategory === '미입고' || statusCategory === '회수중' || statusCategory === '미확인' || statusCategory === '입고' || statusCategory === '재고활용') { regDateVal = '-'; regDateDisp = '-'; }
 
                 let countryVal = indices.country !== -1 && indices.country < row.length && row[indices.country] ? row[indices.country].toString().trim() : 'DOMESTIC';
                 let colorVal = indices.color !== -1 && indices.color < row.length && row[indices.color] ? row[indices.color].toString().trim() : '-';
@@ -4231,8 +4231,8 @@
 
             rawData.forEach(item => {
                 const statusNorm = (item.status || '').toString().replace(/\s+/g, '').toLowerCase();
-                // 미입고: "미입고" 또는 "일부입고" / 입고: "입고" 또는 "포장완료"
-                const isNotReceived = /미입고|일부입고/.test(statusNorm);
+                // 미입고: "미입고"·"회수중"(회수요청은 넣었지만 아직 미입고) 또는 "일부입고" / 입고: "입고" 또는 "포장완료"
+                const isNotReceived = /미입고|회수중|일부입고/.test(statusNorm);
 
                 if (isNotReceived) {
                     notReceivedQty += item.qty;
