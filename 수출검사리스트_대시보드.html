@@ -3821,6 +3821,40 @@ async function _tblApplyBulkEdit() {
   setTimeout(() => { closeTblBulkEditModal(); }, 900);
 }
 
+// 일괄수정창 "삭제" — 단일 품목수정창의 deleteMItemDetail과 같은 생각으로, 선택한
+// 품목 전체를 한 번에 구글시트에서 완전히 삭제한다(요청, 2026-11-04). 공장(충주1/
+// 충주2)마다 GAS 주소가 달라서 품목별로 각자의 주소로 보낸다.
+async function _tblBulkDelete() {
+  const resultEl = document.getElementById('tblBulkResult');
+  const items = _tblBulkTargetKeys.map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+  if (!confirm(`선택한 ${items.length}건을 정말로 삭제하시겠습니까?\n구글시트에서도 완전히 삭제되며 되돌릴 수 없습니다.`)) return;
+
+  const btn = document.getElementById('tblBulkDeleteBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
+
+  let okCount = 0, failCount = 0;
+  await Promise.all(items.map(async item => {
+    const url = _gasUrlForFactory(item.공장);
+    if (!url) { failCount++; return; }
+    try {
+      const qs = new URLSearchParams({ action: 'deleteItem', round: item.건명 || '', code: item.단품코드 || '', color: item.색상 || '', qty: item.수량 || '' });
+      const res = await fetch(url + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
+      const json = await res.json().catch(() => null);
+      if (json && json.status === 'success') okCount++; else failCount++;
+    } catch (e) { failCount++; }
+  }));
+
+  resultEl.textContent = `삭제 완료 ${okCount}건` + (failCount ? `, 실패 ${failCount}건` : '');
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
+  setTimeout(() => {
+    closeTblBulkEditModal();
+    loadData(true);
+  }, 800);
+}
+
 // ===== CHARTS =====
 function renderCharts(data) {
   renderTopUndoneChart(data);
