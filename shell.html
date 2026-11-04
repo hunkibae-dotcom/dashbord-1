@@ -6303,7 +6303,7 @@
         const newD = (document.getElementById('ieD')?.value || '').trim();
         const newH = (document.getElementById('ieH')?.value || '').trim();
         const newG = (document.getElementById('ieG')?.value || '').trim();
-        const newMemo = (document.getElementById('ieMemo')?.value || '').trim();
+        const newMemo = _pkgNoteWithShipReady((document.getElementById('ieMemo')?.value || '').trim(), document.getElementById('ieShipReadyChk')?.checked);
         const newPeType = (document.getElementById('iePeType')?.value || '').trim();
         const newPeSpec = (document.getElementById('iePeSpec')?.value || '').trim();
         const peChanged = newPeType !== _ieOrigPeType || newPeSpec !== _ieOrigPeSpec;
