@@ -8599,8 +8599,12 @@
         // 시트별 드롭다운 버튼 3개(가로 나열, 내용 크기만큼만) + 펼친 그룹만 그 아래
         // 팝오버로 보여주는 시안 반영(요청, 2026-11-04: "펼쳐진상태로보여주지말고
         // 시트별로 잘나눠서보여줘", "박스크기에맞게 쫙쫙 늘리지 말라니까").
-        function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey, originMap) {
-            return `<div style="display:flex;gap:6px;flex-wrap:wrap;">` + PKG_STATUS_GROUPS.map(g => {
+        // stackVertical: true면 그룹 버튼 3개를 가로로 안 끼워맞추고 세로로 한 줄씩
+        // 쌓는다(요청, 2026-11-04: "진행상태가 지금 2줄로 되어있는데 3줄로해서") — 카드
+        // 폭이 반으로 줄어서 2개는 붙고 1개만 다음 줄로 밀리는 게 어색했다. 일괄수정
+        // 모달은 카드 폭이 넓어 기존처럼 가로로 끼워맞춘다(이 옵션 안 넘기면 그대로).
+        function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey, originMap, stackVertical) {
+            return `<div style="display:flex;${stackVertical ? 'flex-direction:column;' : 'flex-wrap:wrap;'}gap:6px;">` + PKG_STATUS_GROUPS.map(g => {
                 const isOpen = g.key === openKey;
                 const effectiveCur = originMap ? originMap[g.key] : curValue;
                 const hasData = originMap ? (g.key in originMap) : true;
@@ -8609,12 +8613,12 @@
                 // 있으면 무조건 켜서 보여준다. 목록 소속 여부는 드롭다운 안 체크 표시에만 쓴다.
                 const isActiveGroup = hasData && effectiveCur != null && effectiveCur !== '';
                 const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748b') : '#475569';
-                return `<div style="position:relative;display:inline-block;max-width:100%;">
+                return `<div style="position:relative;${stackVertical ? 'display:block;width:100%;' : 'display:inline-block;'}max-width:100%;">
                     <button type="button" onclick="${toggleFnName}('${g.key}')"
-                        style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid ${isActiveGroup?c:'#e2e8f0'};background:${isActiveGroup?c+'1A':'#fff'};color:${c};font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        style="display:${stackVertical ? 'flex' : 'inline-flex'};${stackVertical ? 'width:100%;box-sizing:border-box;' : ''}align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid ${isActiveGroup?c:'#e2e8f0'};background:${isActiveGroup?c+'1A':'#fff'};color:${c};font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
                         ${isActiveGroup ? `<i class="fa-solid fa-circle" style="font-size:6px;color:${c};"></i>` : ''}
                         <span>${g.label}</span>${isActiveGroup ? ` · ${effectiveCur}` : ''}
-                        <i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:9px;color:#94a3b8;"></i>
+                        <i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:9px;color:#94a3b8;${stackVertical ? 'margin-left:auto;' : ''}"></i>
                     </button>
                     ${isOpen ? `<div style="position:absolute;top:100%;left:0;margin-top:6px;border:1.5px solid #e2e8f0;border-radius:12px;background:#fff;padding:9px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:20;">${_pkgStatusGroupOptionsHtml(g.key, curValue, onPickFnName, originMap)}</div>` : ''}
                 </div>`;
