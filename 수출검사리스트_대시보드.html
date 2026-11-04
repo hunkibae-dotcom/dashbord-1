@@ -10071,20 +10071,20 @@ function selectMiBasis(key) {
 function _miRenderStatusButtons() {
   const wrap = document.getElementById('miStatusBtns');
   if (!wrap || !_miCurrent) return;
-  const highlight = _miCurrentHighlightStatus();
   wrap.innerHTML = `<div class="fw-dd-group">` + MI_BASIS_LIST.map(b => {
     const set = MI_STATUS_SET_BY_BASIS[b.key];
-    const isActiveGroup = highlight != null && set.includes(highlight);
+    const groupHighlight = _miGroupHighlightStatus(b.key);
+    const isActiveGroup = groupHighlight != null && set.includes(groupHighlight);
     const isOpen = (b.key === _miBasis) && _miStatusPanelOpen;
     return `
       <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
         <div class="fw-dd-trigger${isActiveGroup ? ' active' : ''}" onclick="_miToggleStatusPanel('${b.key}')">
           ${isActiveGroup ? `<span class="fw-dd-dot" style="background:#6D5CE8"></span>` : ''}
-          <span>${b.label}</span>${isActiveGroup ? ` · ${_miStatusLabel(highlight)}` : ''}
+          <span>${b.label}</span>${isActiveGroup ? ` · ${_miStatusLabel(groupHighlight)}` : ''}
           <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
         </div>
         <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
-          ${set.map(v => `<div class="fw-dd-opt${highlight === v ? ' on' : ''}" data-mi-status="${v}" onclick="setMiField('검사','${v}')"><span class="fw-dd-dot" style="background:${highlight === v ? '#6D5CE8' : 'var(--border)'}"></span>${_miStatusLabel(v)}${highlight === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
+          ${set.map(v => `<div class="fw-dd-opt${groupHighlight === v ? ' on' : ''}" data-mi-status="${v}" onclick="setMiField('검사','${v}')"><span class="fw-dd-dot" style="background:${groupHighlight === v ? '#6D5CE8' : 'var(--border)'}"></span>${_miStatusLabel(v)}${groupHighlight === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
         </div>
       </div>`;
   }).join('') + `</div>`;
@@ -14300,9 +14300,9 @@ function onNativeScanResult(raw) {
      이 줄이 다시 덮어써서 2단 그리드가 한 번도 적용된 적이 없었다. */
   #mItemDetailModal .mi-grid2 { display: contents; }
   @media (min-width: 900px) {
-    #mItemDetailModal .mi-modal-box { width: 820px !important; }
-    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: stretch; }
-    #mItemDetailModal .mi-grid2 > div { height: 100%; box-sizing: border-box; }
+    #mItemDetailModal .mi-modal-box { width: 620px !important; }
+    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    #mItemDetailModal .mi-grid2 > div { box-sizing: border-box; }
     #mItemDetailModal .mi-grid2 > div { margin-top: 0 !important; }
   }
   /* 진행상태/블로킹 — 버튼열을 시트별 드롭다운으로 바꾼 시안 반영(요청, 2026-11-04:
