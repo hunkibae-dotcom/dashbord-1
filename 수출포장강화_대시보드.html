@@ -8542,16 +8542,31 @@
             '일부입고': '#FBBF24', '포장완료': '#3B82F6', '재고활용': '#0d9488',
             '미포장': '#FB923C', '미확인': '#64748B', '포장대기': '#F59E0B', '철물': '#94A3B8',
         };
-        function _pkgStatusGroupKeyFor(v) {
-            const g = v ? PKG_STATUS_GROUPS.find(gr => gr.statuses.includes(v)) : null;
+        // preferOrigin: 있으면 그 출처(export/shipped/stock)와 같은 그룹에 현재 값이
+        // 있는지부터 먼저 본다 — 값이 여러 그룹에 겹쳐 있을 때(예: "출고") 실제로 그
+        // 품목이 있는 시트의 그룹을 펼친다. 없으면(일괄수정 등 출처를 모를 때) 기존처럼
+        // 배열 순서상 처음 걸리는 그룹을 쓴다.
+        function _pkgStatusGroupKeyFor(v, preferOrigin) {
+            if (!v) return null;
+            if (preferOrigin) {
+                const preferred = PKG_STATUS_GROUPS.find(gr => gr.key === preferOrigin && gr.statuses.includes(v));
+                if (preferred) return preferred.key;
+            }
+            const g = PKG_STATUS_GROUPS.find(gr => gr.statuses.includes(v));
             return g ? g.key : null;
         }
-        function _pkgStatusGroupOptionsHtml(groupKey, curValue, onPickFnName) {
+        // restrictToOrigin: 있으면 groupKey가 그 값과 같을 때만 curValue 일치 여부를 따진다
+        // (버그 수정, 2026-11-05: "품목수정창에서 해당시트에 있는 부분만 켜져있어야해" —
+        // "출고"/"피킹"/"포장완료"처럼 같은 값이 여러 그룹에 겹쳐 있어서, 실제로 그 시트에
+        // 없는 품목인데도 다른 그룹에 체크 표시가 잘못 켜지는 문제). 일괄수정처럼 출처를
+        // 가리지 않는 곳은 이 값을 안 넘기면 기존과 동일하게 동작한다.
+        function _pkgStatusGroupOptionsHtml(groupKey, curValue, onPickFnName, restrictToOrigin) {
             const group = PKG_STATUS_GROUPS.find(g => g.key === groupKey);
             if (!group) return '';
+            const groupAllowsCur = !restrictToOrigin || restrictToOrigin === groupKey;
             return group.statuses.map(v => {
                 const c = PKG_STATUS_COLOR[v] || '#64748b';
-                const isCur = v === curValue;
+                const isCur = groupAllowsCur && v === curValue;
                 return `<button onclick="${onPickFnName}('${v}')"
                     style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:9px;border:1.5px solid ${isCur?c:'#e2e8f0'};background:${isCur?c+'1A':'#fff'};color:${isCur?c:'#475569'};font-size:13px;font-weight:${isCur?800:600};cursor:pointer;text-align:left;width:100%;">
                     <i class="fa-solid fa-circle" style="font-size:6px;color:${c};opacity:.8;"></i>${v}${isCur?'<i class="fa-solid fa-check" style="margin-left:auto;font-size:10px;"></i>':''}
@@ -8562,7 +8577,7 @@
         // "현재 상태가 속한 그룹"으로 한 번 맞춰두고 나면, 그 뒤로는 사람이 직접 다른
         // 그룹을 펼치고 접는 걸 그대로 따른다(현재 값이 있다고 매번 강제로 되돌아가면
         // 다른 그룹을 구경조차 못 하게 된다).
-        function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey) {
+        function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey, restrictToOrigin) {
             return PKG_STATUS_GROUPS.map(g => {
                 const isOpen = g.key === openKey;
                 return `<div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
@@ -8571,7 +8586,7 @@
                         <span>${g.label}</span>
                         <i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:10px;color:#94a3b8;"></i>
                     </button>
-                    ${isOpen ? `<div style="display:flex;flex-direction:column;gap:6px;padding:8px;border-top:1px solid #f1f5f9;">${_pkgStatusGroupOptionsHtml(g.key, curValue, onPickFnName)}</div>` : ''}
+                    ${isOpen ? `<div style="display:flex;flex-direction:column;gap:6px;padding:8px;border-top:1px solid #f1f5f9;">${_pkgStatusGroupOptionsHtml(g.key, curValue, onPickFnName, restrictToOrigin)}</div>` : ''}
                 </div>`;
             }).join('');
         }
