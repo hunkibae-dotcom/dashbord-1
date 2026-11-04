@@ -5631,7 +5631,7 @@ function _rpRowHtmlDesktop(d, checkedOrderMap) {
         </div>
       </td>
       <td style="padding:10px 6px;white-space:nowrap;"><span class="pill ${pillCls}" style="font-size:10px;">${d.검사 || '—'}</span></td>
-      <td style="padding:10px 6px;color:var(--text);font-weight:700;font-size:13.5px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.건명 || '').replace(/"/g, '&quot;')}">${d.건명 ? `<span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>` : '—'}</td>
+      <td style="padding:10px 6px;color:var(--text);font-weight:700;font-size:13.5px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d._rpGroupLabel || d.건명 || '').replace(/"/g, '&quot;')}${d._rpGroupSize ? ' (코드·색상이 같은 ' + d._rpGroupSize + '건 중 납기일이 가장 빠른 1건)' : ''}">${d.건명 ? `<span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d._rpGroupLabel || d.건명}</span>` : '—'}</td>
       <td style="padding:10px 6px;color:var(--text);font-weight:800;font-family:'Inter',monospace;font-size:12.5px;white-space:nowrap;">${d.단품코드 ? `<span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>` : '—'}</td>
       <td style="padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;">${d.색상 || '—'}</td>
       <td style="padding:10px 6px;text-align:center;color:var(--text-sub);white-space:nowrap;">${d.수량 || 0}</td>
