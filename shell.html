@@ -1440,8 +1440,8 @@
                     if (ieCodeTypeEl) ieCodeTypeEl.textContent = server.productType;
                     if (ieTypeEl) ieTypeEl.textContent = server.productType;
                 }
-                const iePeBoxHeightInp = document.getElementById('iePeBoxHeight');
-                if (server.boxHeight && iePeBoxHeightInp && !iePeBoxHeightInp.value) iePeBoxHeightInp.value = server.boxHeight;
+                const iePeSpecInp = document.getElementById('iePeSpec');
+                if (server.boxHeight && iePeSpecInp && !iePeSpecInp.value) { iePeSpecInp.value = server.boxHeight; _ieOrigPeSpec = server.boxHeight; }
                 const iePeTypeInp = document.getElementById('iePeType');
                 if (server.peType && iePeTypeInp && !iePeTypeInp.value) { iePeTypeInp.value = server.peType; _ieOrigPeType = server.peType; }
             }
