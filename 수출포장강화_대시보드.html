@@ -9806,6 +9806,8 @@
             document.getElementById('pkgClassifyFileInput').value = '';
             document.getElementById('pkgClassifyFileDetect').innerHTML = '';
             document.getElementById('pkgClassifyResult').textContent = '';
+            const detailBtn0 = document.getElementById('pkgClassifyDetailBtn');
+            if (detailBtn0) detailBtn0.style.display = 'none';
             const runBtn = document.getElementById('pkgClassifyRunBtn');
             runBtn.disabled = true; runBtn.style.opacity = '.5';
             runBtn.innerHTML = '<i class="fa-solid fa-upload"></i> 업데이트 실행';
