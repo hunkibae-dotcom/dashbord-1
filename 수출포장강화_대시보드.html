@@ -15425,6 +15425,15 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             </div>
         </div>
 
+        <!-- 상차 준비완료 일괄 적용(요청, 2026-10-28) — 체크하고 적용하면 선택된 품목
+             전부의 비고란에 "상차 준비완료"가 각자 기존 내용을 보존한 채 추가된다.
+             헤더에 있던 걸 적재번호/PE폼유형 아래 박스로 옮겼다(요청, 2026-11-04). -->
+        <div style="margin-bottom:10px;background:rgba(22,163,74,.08);border:1.5px solid rgba(22,163,74,.25);border-radius:10px;padding:12px 14px;">
+            <label title="선택한 품목 전체에 '상차 준비완료' 적용" style="display:flex;align-items:center;gap:8px;color:#16a34a;font-size:13px;font-weight:700;cursor:pointer;">
+                <input type="checkbox" id="pkgBulkShipReadyChk" style="width:15px;height:15px;accent-color:#16a34a;cursor:pointer;margin:0;flex-shrink:0;"> 상차 준비완료로 일괄 적용
+            </label>
+        </div>
+
         <div id="pkgBulkFeedback" style="font-size:12.5px;font-weight:700;text-align:center;min-height:16px;margin:12px 0;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
             <button onclick="pkgBulkDelete()" id="pkgBulkDeleteBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #fecaca;background:#fff;color:#dc2626;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;">
