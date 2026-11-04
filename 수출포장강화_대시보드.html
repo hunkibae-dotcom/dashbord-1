@@ -10378,6 +10378,46 @@
             syncWithGoogleSheets(false);
         }
 
+        // "상세보기" 팝업 — 파일별로 분류(수주)는 신규/납기변경, 분류(입고)는
+        // 입고처리/재고반영 목록을 각각 표로 보여준다(요청, 2026-11-05).
+        function _pkgClassifyDetailItemRow(label, color, it) {
+            return `<div style="display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;">
+                <span style="flex-shrink:0;font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;background:${color}1A;color:${color};">${label}</span>
+                <span style="font-family:monospace;font-weight:700;color:#1e293b;min-width:90px;">${_pkgEscHtml(it.code || '-')}</span>
+                <span style="color:#64748b;min-width:50px;">${_pkgEscHtml(it.color || '-')}</span>
+                <span style="color:#0284c7;font-weight:700;min-width:40px;">${it.qty != null ? it.qty : '-'}개</span>
+                <span style="color:#334155;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${_pkgEscHtml(it.orderName || '')}</span>
+                ${it.oldDate ? `<span style="color:#94a3b8;font-size:11px;flex-shrink:0;">${it.oldDate} → <span style="color:#b45309;font-weight:700;">${it.newDate}</span></span>` : ''}
+            </div>`;
+        }
+        function _pkgShowClassifyDetail() {
+            const wrap = document.getElementById('pkgClassifyDetailBody');
+            if (!_pkgClassifyDetails.length) {
+                wrap.innerHTML = '<div style="text-align:center;color:#94a3b8;padding:30px 0;">상세 내역이 없습니다.</div>';
+            } else {
+                wrap.innerHTML = _pkgClassifyDetails.map(d => {
+                    let rows = '';
+                    if (d.kind === 'sunju') {
+                        rows += (d.newItems || []).map(it => _pkgClassifyDetailItemRow('신규', '#16a34a', it)).join('');
+                        rows += (d.updatedItems || []).map(it => _pkgClassifyDetailItemRow('납기변경', '#b45309', it)).join('');
+                        if (!rows) rows = '<div style="padding:10px;color:#94a3b8;font-size:12px;">신규/납기변경 없음</div>';
+                    } else {
+                        rows += (d.matchedItems || []).map(it => _pkgClassifyDetailItemRow('입고처리', '#0284c7', { code: it.itemCode, color: it.color, qty: it.qty })).join('');
+                        rows += (d.insertedItems || []).map(it => _pkgClassifyDetailItemRow('재고반영', '#7c3aed', it)).join('');
+                        if (!rows) rows = '<div style="padding:10px;color:#94a3b8;font-size:12px;">입고처리/재고반영 없음</div>';
+                    }
+                    return `<div style="margin-bottom:16px;">
+                        <div style="font-size:13px;font-weight:800;color:#1e293b;margin-bottom:6px;">${_pkgEscHtml(d.fileName)} <span style="font-size:11px;font-weight:700;color:${d.kind === 'sunju' ? '#16a34a' : '#0284c7'};">— 분류(${d.kind === 'sunju' ? '수주' : '입고'})</span></div>
+                        <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">${rows}</div>
+                    </div>`;
+                }).join('');
+            }
+            document.getElementById('pkgClassifyDetailModal').style.display = 'flex';
+        }
+        function pkgCloseClassifyDetailModal() {
+            document.getElementById('pkgClassifyDetailModal').style.display = 'none';
+        }
+
         function _pkgGasUrl() {
             return localStorage.getItem('sheet_pub_url') ||
                 'https://script.google.com/macros/s/AKfycbzUpKWs0n6yXC1CBRUpngylbFT57RvYFtOP2cOCDmGcN24mPdQBpgZHPUM9Zg2owjo/exec';
