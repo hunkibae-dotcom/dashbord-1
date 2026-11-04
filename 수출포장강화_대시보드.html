@@ -15623,6 +15623,22 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- ── 분류(입고) 파일이 감지되면 반영 직전에 입고일을 고르는 팝업 ──────────── -->
+<!-- 업로드 모달 안에 항상 떠있는 날짜칸이 아니라, 실제로 분류(입고) 파일이 섞여
+     있을 때만 반영 직전에 한 번 물어본다(요청, 2026-11-05: "분류 입고 가 감지되고
+     반영하기전에 팝업으로 입고일을 선택하시오(미선택 시 금일로 지정)"). -->
+<div id="pkgIpgoDateModal" style="display:none;position:fixed;inset:0;z-index:235;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:380px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="font-size:16px;font-weight:800;color:#1e293b;margin-bottom:4px;">입고일 선택</div>
+        <div style="font-size:12.5px;color:#64748b;margin:10px 0 16px;line-height:1.6;">분류(입고) 파일이 감지됐습니다. 입고일을 선택하세요.<br>선택하지 않으면 오늘 날짜로 처리됩니다.</div>
+        <input type="date" id="pkgIpgoDateInput" style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 11px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;margin-bottom:18px;">
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button id="pkgIpgoDateCancelBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">취소</button>
+            <button id="pkgIpgoDateConfirmBtn" style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">확인</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── 분류(입고) 마크 못 찾았을 때 — 미입고 품목 대조 확인 팝업 ──────────── -->
 <div id="pkgIpgoCandidateModal" style="display:none;position:fixed;inset:0;z-index:230;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
     <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:520px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
