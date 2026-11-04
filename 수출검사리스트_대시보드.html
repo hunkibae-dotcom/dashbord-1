@@ -14344,17 +14344,22 @@ function onNativeScanResult(raw) {
       <span id="miChipQty" style="font-size:10.5px;padding:3px 9px;background:var(--panel);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:800;font-family:ui-monospace,monospace;"></span>
     </div>
 
-    <div style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:16px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">진행상태</span>
-        <span id="miStatusChangedDate" style="font-size:10px;color:var(--label);font-family:ui-monospace,monospace;"></span>
+    <!-- 진행상태/블로킹 — 각각 버튼열일 땐 세로로 길어서 따로 뒀지만, 지금은 둘 다
+         드롭다운 한 줄짜리라 반반 나눠 같은 줄에 두는 게 공간을 덜 차지한다(요청,
+         2026-11-04: "진행상태 박스를 반으로 줄이고 그오른쪽에 블로킹박스를 넣어줘"). -->
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <div id="miStatusCard" style="flex:1;min-width:0;background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;">진행상태</span>
+          <span id="miStatusChangedDate" style="font-size:10px;color:var(--label);font-family:ui-monospace,monospace;"></span>
+        </div>
+        <div id="miStatusBtns"></div>
       </div>
-      <div id="miStatusBtns"></div>
-    </div>
 
-    <div id="miBlockingCard" style="background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-top:14px;">
-      <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:10px;">블로킹</div>
-      <div id="miBlockingBtns"></div>
+      <div id="miBlockingCard" style="flex:1;min-width:0;background:var(--input-bg);border:1px solid var(--border);border-radius:14px;padding:14px;">
+        <div style="font-size:10.5px;font-weight:700;color:var(--text-sub);letter-spacing:.04em;margin-bottom:10px;">블로킹</div>
+        <div id="miBlockingBtns"></div>
+      </div>
     </div>
 
     <div class="mi-grid2">
