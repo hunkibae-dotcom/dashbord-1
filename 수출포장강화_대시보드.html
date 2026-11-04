@@ -10151,6 +10151,43 @@
                 };
             });
         }
+        // 분류(수주) 결과로 "예전에 포장강화 아니라고 지운 코드"와 같은 코드가 또
+        // 들어왔을 때 보여주는 확인 팝업(요청, 2026-11-05) — 다중선택/전체선택
+        // 가능. "지우기"를 누르면 체크된 것만 {code, round, color} 모양으로
+        // resolve(_webPkgDeleteNewItems가 그 모양을 쓴다 — newLineRefs의 건명
+        // 필드명은 orderName이라 여기서 round로 바꿔 보낸다), 그냥 닫으면 null.
+        function _pkgShowRejectedMatchConfirm(matches) {
+            return new Promise((resolve) => {
+                const listEl = document.getElementById('pkgRejectedMatchList');
+                listEl.innerHTML = matches.map((m, idx) => `
+                    <label style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #fde68a;background:#fffbeb;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="pkg-rejected-match-chk" data-idx="${idx}" checked style="margin-top:3px;width:15px;height:15px;flex-shrink:0;">
+                        <div style="font-size:12.5px;line-height:1.6;">
+                            <div style="font-weight:800;color:#1e293b;font-family:monospace;">${_pkgEscHtml(m.code)} <span style="font-weight:600;color:#64748b;font-family:inherit;">/ ${_pkgEscHtml(m.color || '-')} / ${m.qty || 0}개</span></div>
+                            <div style="color:#92400e;">${_pkgEscHtml(m.orderName || '-')}</div>
+                        </div>
+                    </label>
+                `).join('');
+                document.getElementById('pkgRejectedMatchCount').textContent = `${matches.length}건 — 예전에 신규품목확인에서 "포장강화 제품 아님"으로 삭제했던 단품코드와 같습니다.`;
+                const modal = document.getElementById('pkgRejectedMatchModal');
+                modal.style.display = 'flex';
+                const cleanup = () => { modal.style.display = 'none'; };
+                document.getElementById('pkgRejectedMatchApplyBtn').onclick = () => {
+                    const selected = Array.from(document.querySelectorAll('.pkg-rejected-match-chk'))
+                        .filter(chk => chk.checked)
+                        .map(chk => {
+                            const m = matches[parseInt(chk.dataset.idx, 10)];
+                            return { code: m.code, round: m.orderName, color: m.color };
+                        });
+                    cleanup();
+                    resolve(selected);
+                };
+                document.getElementById('pkgRejectedMatchCancelBtn').onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+            });
+        }
         function _pkgEscHtml(s) {
             return (s == null ? '' : String(s)).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
