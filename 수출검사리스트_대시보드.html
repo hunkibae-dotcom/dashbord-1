@@ -5490,7 +5490,39 @@ function _rpFilteredRows() {
       return (da - db) * dir;
     });
   }
-  return rows;
+  return _rpGroupByCodeColor(rows);
+}
+
+// 같은 단품코드+색상인데 건명(차수)만 다른 행이 너무 많다는 지적(요청, 2026-11-04:
+// "하나로합쳐서 이전에 묶어놓는거처럼 FAM외 N차수로 표시") — 수주분류의 "...외N차수"
+// 표기와 같은 발상으로, 보고서 목록 화면에서만 코드+색상이 같은 행들을 하나로 접는다.
+// 묶인 행 중 실제로 선택/보고서(PPTX)에 들어갈 수 있는 건 납기일이 가장 빠른 대표
+// 1건뿐이고(요청대로 "네, 대표 1개만 들어가고 나머지는 빠짐"), 나머지 차수는 이
+// 목록 자체에 아예 안 나타난다. _miKey(건명/단품코드/색상/수량)는 대표 행 원본
+// 그대로라 _reportChecked/_reportSelected 등 기존 선택·저장 로직은 전혀 안 건드려도
+// 된다 — 화면에 그 행들이 안 보일 뿐이다. allData/archiveRows 원본 객체는 절대
+// 수정하지 않고 대표 행만 얕은 복사해서 표시용 라벨(_rpGroupLabel)을 덧붙인다.
+function _rpGroupByCodeColor(rows) {
+  const groups = new Map(); // key(단품코드|색상) -> 원본 행 배열(먼저 나온 순서 보존)
+  rows.forEach(d => {
+    const key = (d.단품코드 || '') + '|' + (d.색상 || '');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(d);
+  });
+  const out = [];
+  groups.forEach(list => {
+    if (list.length === 1) { out.push(list[0]); return; }
+    let rep = list[0], repDate = parseKDate(list[0].납기일);
+    for (let i = 1; i < list.length; i++) {
+      const dt = parseKDate(list[i].납기일);
+      if (dt && (!repDate || dt < repDate)) { rep = list[i]; repDate = dt; }
+    }
+    out.push(Object.assign({}, rep, {
+      _rpGroupSize: list.length,
+      _rpGroupLabel: (rep.건명 || '') + '외 ' + (list.length - 1) + '차수',
+    }));
+  });
+  return out;
 }
 
 function renderReportList() {
