@@ -11036,6 +11036,9 @@ function qcNotifyRender() {
       if (cf.due)  changeFromParts.push(`<span>납기 ${_qcFmtChangeDate(cf.due)} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.납기일 || '—'}</span>`);
       if (cf.pack) changeFromParts.push(`<span>포장 ${_qcFmtChangeDate(cf.pack)} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.포장일 || '—'}</span>`);
       if (cf.bom)  changeFromParts.push(`<span>BOM ${cf.bom} <i class="fa-solid fa-arrow-right" style="font-size:9px;"></i> ${d.BOM || '—'}</span>`);
+      // 수량변경(요청, 2026-11-05) — GAS가 이미 "N개 추가됨 (A개 → B개)" 문장으로 메모를
+      // 남겨주므로, 날짜/BOM처럼 따로 화살표를 또 만들지 않고 그 문장을 그대로 보여준다.
+      if (cf.qty)  changeFromParts.push(`<span>수량 ${cf.qty}</span>`);
       const changeFromHtml = changeFromParts.length
         ? `<div class="text-[11px] font-semibold flex gap-2.5 flex-wrap mt-0.5" style="color:#7C3AED;">${changeFromParts.join('')}</div>`
         : '';
