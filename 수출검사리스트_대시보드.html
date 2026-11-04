@@ -3831,9 +3831,70 @@ function _tblSetBulkBlocking(v) {
   _tblRenderBulkBlockingBtns();
 }
 
+// "출고완료" 탭에서 이동 대상 상태를 고르고 적용을 누르면 호출된다(요청, 2026-11-04).
+// 선택한 품목을 공장(충주1/충주2)별로 묶어서 각자의 qcMigrateToCompleted로 보낸다 —
+// 이미 검사완료 리스트에 있는 품목이 섞여 있어도(archive에서 찾힘) GAS 쪽이 그 자리의
+// 검사 칸만 갱신하도록 이미 처리하므로, 여기서는 출처를 가리지 않고 전부 같이 보낸다.
+// 검사완료일을 같이 골랐으면 이동 전에 먼저 반영해서, 옮겨진 행에도 최신 날짜가
+// 그대로 따라가게 한다(단일 품목수정창 _miSaveWithMigration과 같은 순서).
+async function _tblApplyBulkMigrate() {
+  const destStatus = _tblBulkMigrateTarget;
+  const dateVal = (document.getElementById('tblBulkDateInput').value || '').trim();
+  const resultEl = document.getElementById('tblBulkResult');
+  const items = _tblBulkTargetKeys.map(k => window._mItemByMiKey && window._mItemByMiKey[k]).filter(Boolean);
+  if (!items.length) { resultEl.textContent = '선택된 품목을 찾을 수 없습니다.'; return; }
+  if (!confirm(`선택한 ${items.length}건을 "검사완료 리스트"로 이동할까요? (${_miStatusLabel(destStatus)})`)) return;
+
+  const btn = document.getElementById('tblBulkApplyBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 이동 중...';
+
+  const dateJobs = [];
+  items.forEach(item => {
+    let effectiveDate = dateVal;
+    if (destStatus === '검사' && !dateVal && !item.검사일) {
+      const _today = new Date();
+      effectiveDate = _today.getFullYear() + '-' + String(_today.getMonth() + 1).padStart(2, '0') + '-' + String(_today.getDate()).padStart(2, '0');
+    }
+    if (effectiveDate) dateJobs.push(_postMiSync(item, { action: 'updateInspectDate', date: effectiveDate }));
+  });
+  if (dateJobs.length) await Promise.all(dateJobs);
+
+  const byFactory = {};
+  items.forEach(item => {
+    (byFactory[item.공장] || (byFactory[item.공장] = [])).push(item);
+  });
+
+  let migratedTotal = 0, failCount = 0;
+  await Promise.all(Object.keys(byFactory).map(async factoryKey => {
+    const url = _gasUrlForFactory(factoryKey);
+    const factoryItems = byFactory[factoryKey];
+    if (!url) { failCount += factoryItems.length; return; }
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'qcMigrateToCompleted',
+          items: factoryItems.map(it => ({ round: it.건명 || '', code: it.단품코드 || '', color: it.색상 || '', qty: it.수량 || '', destStatus: destStatus }))
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+      const json = await res.json().catch(() => null);
+      if (json && json.status === 'success') migratedTotal += (json.migratedCount || 0) + (json.updatedCount || 0);
+      else failCount += factoryItems.length;
+    } catch (e) { failCount += factoryItems.length; }
+  }));
+
+  resultEl.textContent = `${migratedTotal}건 이동 완료` + (failCount ? `, 실패 ${failCount}건` : '');
+  btn.disabled = false;
+  btn.innerHTML = '적용';
+  setTimeout(() => { closeTblBulkEditModal(); loadData(true); }, 900);
+}
+
 // 저장 버튼을 눌렀을 때만 실제로 반영한다(단일 품목 상세창의 저장 방식과 동일) —
 // 여러 건을 한꺼번에 백그라운드로 쏘고, 끝나는 대로 결과를 모아서 보여준다.
 async function _tblApplyBulkEdit() {
+  if (_tblBulkMigrateTarget) { _tblApplyBulkMigrate(); return; }
   const status = _tblBulkStatus;
   const dateVal = (document.getElementById('tblBulkDateInput').value || '').trim();
   const blocking = _tblBulkBlocking;
