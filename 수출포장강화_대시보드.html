@@ -9640,7 +9640,13 @@
 
                 if (_pkgBulkStatus) {
                     const isIncoming = (_pkgBulkStatus === '입고' || _pkgBulkStatus === '일부입고');
-                    const action = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
+                    // 버그 수정(요청, 2026-11-04로 "회수중" 추가하며 발견) — 미입고/재고활용/
+                    // 회수중처럼 "수출 현황"에만 있는 값을 예전처럼 pkgProcessShipOut으로
+                    // 보내면, 그 함수가 "출고"가 아닌 상태는 전부 "출고"로 덮어써서 실제로
+                    // 품목이 출고 완료로 옮겨져 버렸다(의도와 전혀 다른 결과). 이 세 값은
+                    // 반드시 pkgUpdateMainStatusBatch(수출 현황 H열만 갱신)로 보낸다.
+                    const isExportOnly = PKG_EXPORT_ONLY_STATUSES.includes(_pkgBulkStatus);
+                    const action = isIncoming ? 'pkgProcessIncoming' : (isExportOnly ? 'pkgUpdateMainStatusBatch' : 'pkgProcessShipOut');
                     const items = _pkgBulkItems.map(it => isIncoming
                         ? { code: it.code, round: it.round, color: it.color, qty: partialQtyByKey ? partialQtyByKey[it.key] : null }
                         : { code: it.code, round: it.round, color: it.color, status: _pkgBulkStatus });
