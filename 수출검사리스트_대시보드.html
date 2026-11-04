@@ -10294,6 +10294,7 @@ async function deleteMItemDetail() {
 // 없는 버튼이 됐다 — 이제 변경사항은 _miPendingSync에만 모아두고, 실제 시트 반영은
 // 이 저장 버튼을 눌렀을 때 한 번에 보낸다.
 function saveMItemDetail() {
+  if (_miMigrateTarget) { _miSaveWithMigration(); return; }
   const btn = document.getElementById('miSaveBtn');
   if (btn) {
     btn.disabled = true;
