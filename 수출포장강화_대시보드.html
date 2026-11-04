@@ -15665,12 +15665,29 @@ async function peExportOrderXlsx(ordNo, meta, items) {
         <div id="pkgClassifyFileDetect" style="font-size:12.5px;margin-bottom:14px;"></div>
         <div id="pkgClassifyResult" style="font-size:12.5px;color:#334155;white-space:pre-line;line-height:1.6;margin-bottom:10px;"></div>
         <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;">
+            <!-- 수주별/입고별로 실제 반영된 목록을 상세히 보는 버튼(요청, 2026-11-05) —
+                 처리가 끝나고 내용이 있을 때만 보여준다. -->
+            <button onclick="_pkgShowClassifyDetail()" id="pkgClassifyDetailBtn" style="display:none;padding:9px 16px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;margin-right:auto;">
+                <i class="fa-solid fa-list-ul"></i> 상세보기
+            </button>
             <button onclick="pkgCloseClassifyUploadModal()" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">닫기</button>
             <button onclick="_pkgRunClassifyUpload()" id="pkgClassifyRunBtn" disabled
                 style="padding:9px 22px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;opacity:.5;">
                 <i class="fa-solid fa-upload"></i> 업데이트 실행
             </button>
         </div>
+    </div>
+</div>
+
+<!-- ── 분류(수주)/분류(입고) 결과 "상세보기" 팝업(요청, 2026-11-05) ──────────── -->
+<div id="pkgClassifyDetailModal" onclick="if(event.target===this)pkgCloseClassifyDetailModal()" style="display:none;position:fixed;inset:0;z-index:240;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:620px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0;">
+            <div style="font-size:16px;font-weight:800;color:#1e293b;">업데이트 상세보기</div>
+            <button onclick="pkgCloseClassifyDetailModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;color:#64748b;font-size:15px;cursor:pointer;width:30px;height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;margin:10px 0 14px;flex-shrink:0;">이번에 "현황 업데이트"로 실제 반영된 품목을 파일별로 보여줍니다.</div>
+        <div id="pkgClassifyDetailBody" style="overflow-y:auto;flex:1;min-height:0;"></div>
     </div>
 </div>
 
