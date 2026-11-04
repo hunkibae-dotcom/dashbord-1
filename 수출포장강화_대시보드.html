@@ -10331,10 +10331,17 @@
                 };
             });
         }
+        // 파일별 상세 목록(요청, 2026-11-05: "수주별, 입고별로 업데이트된 리스트를
+        // 상세하게 볼 수 있는 상세보기 버튼도 따로만들어줘") — 실행할 때마다 비우고
+        // 새로 쌓는다. _pkgShowClassifyDetail()이 이걸 읽어서 보여준다.
+        let _pkgClassifyDetails = [];
         async function _pkgRunClassifyUpload() {
             if (!_pkgClassifyFiles.length) return;
             const btn = document.getElementById('pkgClassifyRunBtn');
             const resultEl = document.getElementById('pkgClassifyResult');
+            const detailBtn = document.getElementById('pkgClassifyDetailBtn');
+            if (detailBtn) detailBtn.style.display = 'none';
+            _pkgClassifyDetails = [];
             const orderedFiles = _pkgClassifyFiles.slice()
                 .sort((a, b) => (a.kind === b.kind) ? 0 : (a.kind === 'sunju' ? -1 : 1));
             const total = orderedFiles.length;
