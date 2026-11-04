@@ -15791,6 +15791,24 @@ async function peExportOrderXlsx(ordNo, meta, items) {
     </div>
 </div>
 
+<!-- ── 분류(수주) 결과 중 "예전에 포장강화 아니라고 지웠던 코드" 확인 팝업(요청, 2026-11-05) ── -->
+<div id="pkgRejectedMatchModal" style="display:none;position:fixed;inset:0;z-index:230;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:26px 30px;width:520px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <div style="font-size:16px;font-weight:800;color:#1e293b;">이전에 제거하셨던 미포장강화 품목입니다</div>
+            <label style="display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#64748b;cursor:pointer;flex-shrink:0;">
+                <input type="checkbox" id="pkgRejectedMatchSelectAll" checked onchange="document.querySelectorAll('.pkg-rejected-match-chk').forEach(c=>c.checked=this.checked)" style="width:14px;height:14px;cursor:pointer;"> 전체선택
+            </label>
+        </div>
+        <div id="pkgRejectedMatchCount" style="font-size:12.5px;color:#64748b;margin:8px 0 14px;line-height:1.6;"></div>
+        <div id="pkgRejectedMatchList" style="display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid #f1f5f9;padding-top:16px;margin-top:16px;">
+            <button id="pkgRejectedMatchCancelBtn" style="padding:9px 22px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:14px;font-weight:600;cursor:pointer;">닫기(그대로 둠)</button>
+            <button id="pkgRejectedMatchApplyBtn" style="padding:9px 22px;border-radius:8px;border:none;background:#dc2626;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">선택 항목 지우기</button>
+        </div>
+    </div>
+</div>
+
 <!-- ── 데이터 출력: 관리용/출력용 선택 모달 ──────────────────── -->
 <div id="pkgExportChoiceModal" onclick="if(event.target===this)pkgCloseExportChoiceModal()"
     style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
