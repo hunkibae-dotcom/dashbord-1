@@ -10372,7 +10372,8 @@ function openMItemDetail(key) {
   document.getElementById('miChipQty').textContent = (d.수량 || 0) + 'EA';
   _miBasis = (d.source === 'archive') ? 'shipped' : 'inprogress';
   _miMigrateTarget = null;
-  _miRenderBasisTabs();
+  _miStatusPanelOpen = false;
+  _miBlockingPanelOpen = false;
   _miRenderStatusButtons();
   // 블로킹은 진행중 품목에만 있는 칸이라(검사완료 이력 시트엔 없음) 그 경우만 카드를 보여준다.
   const miBlockingCard = document.getElementById('miBlockingCard');
