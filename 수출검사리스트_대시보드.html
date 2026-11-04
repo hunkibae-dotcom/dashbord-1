@@ -10726,8 +10726,11 @@ let _qcNewFac = 'all';
 let _qcNewSelected = new Set(); // key = 공장|건명|단품코드|색상
 
 // ───── "확인" 탭 — 차수추가/납기변경/포장변경/BOM변경 알림(요청, 2026-10-22) ─────
-const QC_TAG_LABELS = { new: '신규', due: '납기변경', pack: '포장변경', bom: 'BOM변경' };
-const QC_TAG_CLS = { new: 'bg-amber-50 text-amber-700', due: 'bg-violet-50 text-violet-700', pack: 'bg-sky-50 text-sky-700', bom: 'bg-rose-50 text-rose-700' };
+// qty(수량변경, 요청 2026-11-05) — 수주분류가 같은 건명+코드+색상 중복을 합치거나
+// 기존 행 수량을 늘릴 때 붙는 태그. 다른 태그와 똑같은 방식(GAS가 D열 보라색+메모로
+// 표시 → doGet getActive가 읽어서 전달)이다.
+const QC_TAG_LABELS = { new: '신규', due: '납기변경', pack: '포장변경', bom: 'BOM변경', qty: '수량변경' };
+const QC_TAG_CLS = { new: 'bg-amber-50 text-amber-700', due: 'bg-violet-50 text-violet-700', pack: 'bg-sky-50 text-sky-700', bom: 'bg-rose-50 text-rose-700', qty: 'bg-emerald-50 text-emerald-700' };
 let _qcNotifyFac = 'all';
 let _qcNotifySelected = new Set();
 // "신규"(new)는 "등록" 탭에서 이미 보이므로 "확인" 탭에서는 뺀다(요청, 2026-10-29:
