@@ -6190,6 +6190,29 @@ function _rpSetOverride(key, value) {
 function rpExcludeItem(key) {
   _rpSetOverride(key, 'excluded');
 }
+// 상단 "삭제" 버튼 — 체크해둔(선택) 품목들을 한꺼번에 보고서에서 제외한다(요청,
+// 2026-11-04: "선택칼럼 오른쪽 x버튼 없애고 분류기 왼쪽에 삭제버튼 만들어서 선택한
+// 항목을 대시보드 기준에서 지울 수 있게"). 실제 구글시트 데이터는 전혀 건드리지
+// 않고, 이 보고서 화면에서만 안 보이게(override='excluded') 만든다 — 기존 행별 ✕
+// 버튼(rpExcludeItem)과 같은 동작을 여러 개 한 번에 적용하는 것뿐이라, 저장/렌더만
+// 전부 끝난 뒤 한 번씩 하도록 묶었다(품목마다 매번 다시 그리면 느려짐).
+function rpBulkDeleteChecked() {
+  const keys = Array.from(_reportChecked);
+  if (!keys.length) { alert('먼저 삭제할 품목을 체크해주세요.'); return; }
+  if (!confirm(keys.length + '개 품목을 보고서 목록에서 제외할까요?\n(구글시트 데이터는 지워지지 않고, 이 보고서 화면에서만 빠집니다)')) return;
+  keys.forEach(key => {
+    _rpEnsureRecord(key);
+    const sel = _reportSelected[key];
+    if (!sel) return;
+    sel.override = 'excluded';
+    sel._updatedAt = Date.now();
+    _rpDirtyMetaKeys.add(key);
+    _rpSyncMetaToServer(key);
+    _reportChecked.delete(key);
+  });
+  _rpSaveToStorage(false, true);
+  renderReportList();
+}
 // 이 품목이 지금 보고서 목록에 보여야 하는지 — 자동 판정(내수/수출 추정)을 사람이
 // 직접 뒤집어둔 override가 있으면 그게 우선이다. _rpFilteredRows()와 추가/제외
 // 검색창(openRpAddItemModal)이 똑같이 이 함수 하나를 기준으로 삼는다.
