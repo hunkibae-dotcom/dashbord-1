@@ -10007,6 +10007,11 @@ let _miBasis = 'inprogress';
 // 것처럼 보이던 버그를 막기 위해, 이 탭에서는 _miPendingSync.검사/item.검사를 절대
 // 보지 않고 오직 이 값만 본다.
 let _miMigrateTarget = null;
+// 진행상태 드롭다운(진행중/출고완료) 중 지금 펼쳐진 쪽 — _miBasis와 별개로, 같은 탭을
+// 다시 누르면 접고 펼치기만 토글한다(요청, 2026-11-04: "시트별로 드롭박스 버튼이
+// 있어야 해").
+let _miStatusPanelOpen = false;
+let _miBlockingPanelOpen = false;
 function _miStatusSet() {
   return MI_STATUS_SET_BY_BASIS[_miBasis] || MI_STATUS_SET_INPROGRESS;
 }
@@ -10050,17 +10055,36 @@ function selectMiBasis(key) {
 function _miRenderStatusButtons() {
   const wrap = document.getElementById('miStatusBtns');
   if (!wrap || !_miCurrent) return;
-  const set = _miStatusSet();
-  wrap.innerHTML = set.map(v => `<button data-mi-status="${v}" onclick="setMiField('검사','${v}')" style="flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;cursor:pointer;background:var(--panel);color:var(--text-sub);">${_miStatusLabel(v)}</button>`).join('');
-  _refreshMiStatusButtons(_miCurrentHighlightStatus());
+  const highlight = _miCurrentHighlightStatus();
+  wrap.innerHTML = `<div class="fw-dd-group">` + MI_BASIS_LIST.map(b => {
+    const set = MI_STATUS_SET_BY_BASIS[b.key];
+    const isActiveGroup = highlight != null && set.includes(highlight);
+    const isOpen = (b.key === _miBasis) && _miStatusPanelOpen;
+    return `
+      <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
+        <div class="fw-dd-trigger${isActiveGroup ? ' active' : ''}" onclick="_miToggleStatusPanel('${b.key}')">
+          ${isActiveGroup ? `<span class="fw-dd-dot" style="background:#6D5CE8"></span>` : ''}
+          <span>${b.label}</span>${isActiveGroup ? ` · ${_miStatusLabel(highlight)}` : ''}
+          <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+        </div>
+        <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
+          ${set.map(v => `<div class="fw-dd-opt${highlight === v ? ' on' : ''}" data-mi-status="${v}" onclick="setMiField('검사','${v}')"><span class="fw-dd-dot" style="background:${highlight === v ? '#6D5CE8' : 'var(--border)'}"></span>${_miStatusLabel(v)}${highlight === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
+        </div>
+      </div>`;
+  }).join('') + `</div>`;
+}
+function _miToggleStatusPanel(key) {
+  if (key === _miBasis) {
+    _miStatusPanelOpen = !_miStatusPanelOpen;
+    _miRenderStatusButtons();
+  } else {
+    _miStatusPanelOpen = true;
+    selectMiBasis(key);
+  }
 }
 function _refreshMiStatusButtons(status) {
-  document.querySelectorAll('#miStatusBtns [data-mi-status]').forEach(btn => {
-    const on = btn.dataset.miStatus === status;
-    btn.style.background = on ? '#6D5CE8' : 'var(--panel)';
-    btn.style.color = on ? '#fff' : 'var(--text-sub)';
-    btn.style.borderColor = on ? '#6D5CE8' : 'var(--border)';
-  });
+  _miStatusPanelOpen = false;
+  _miRenderStatusButtons();
 }
 
 // 블로킹(O열) 카드 — 요청(2026-10-23): 품목 수정창에서도 블로킹을 보고 바꿀 수 있어야
@@ -10315,7 +10339,7 @@ function _updateMiCbm() {
   const d = parseFloat(document.getElementById('miD').value) || 0;
   const h = parseFloat(document.getElementById('miH').value) || 0;
   const cbm = (w && d && h) ? (w * d * h) / 1e9 : 0;
-  document.getElementById('miCbm').textContent = cbm ? 'CBM ' + cbm.toFixed(4) + 'm³' : 'CBM —';
+  document.getElementById('miCbm').textContent = cbm ? cbm.toFixed(4) : '—';
   // 품목 자신의 CBM 값(d.CBM, 제품검색 등에서 읽음)은 여기서 바로 안 건드린다 — 저장
   // 버튼을 눌렀을 때(saveMItemDetail) 한 번에 반영한다. 이 함수는 모달 안의 미리보기
   // 글자만 바꾼다.
