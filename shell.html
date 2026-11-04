@@ -6234,16 +6234,44 @@
     function _renderIeStatus() {
         const container = document.getElementById('ieStatusOpts');
         if (!container) return;
-        const set = PKG_STATUS_GROUPS[_ieBasis];
-        container.innerHTML = set.map(v => {
-            const active = v === _ieCurStatus;
-            const c = PKG_STATUS_COLOR[v] || '#64748B';
-            return `<button onclick="selectIeStatus('${v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${active?c:'var(--border)'};background:${active?c+'22':'var(--input-bg)'};color:${active?c:'var(--text-sub)'};font-size:11px;font-weight:${active?800:600};cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;">${v}</button>`;
-        }).join('');
+        container.innerHTML = `<div class="fw-dd-group">` + PKG_BASIS_LIST.map(b => {
+            const set = PKG_STATUS_GROUPS[b.key];
+            const effectiveCur = _ieOriginStatusMap[b.key];
+            const hasData = b.key in _ieOriginStatusMap;
+            const isActiveGroup = hasData && effectiveCur != null && set.includes(effectiveCur);
+            const isOpen = _ieStatusOpenGroup === b.key;
+            const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748B') : null;
+            return `
+              <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
+                <div class="fw-dd-trigger" ${isActiveGroup ? `style="border-color:${c};background:${c}22;color:${c};"` : ''} onclick="_ieToggleStatusPanel('${b.key}')">
+                  ${isActiveGroup ? `<span class="fw-dd-dot" style="background:${c}"></span>` : ''}
+                  <span>${b.label}</span>${isActiveGroup ? ` · ${effectiveCur}` : ''}
+                  <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+                </div>
+                <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:190px;">
+                    ${set.map(v => {
+                      const vc = PKG_STATUS_COLOR[v] || '#64748B';
+                      const on = v === effectiveCur;
+                      return `<div class="fw-dd-opt" onclick="selectIeStatus('${b.key}','${v}')" style="border-radius:999px;border:1.5px solid ${on?vc:'var(--border)'};background:${on?vc+'22':'var(--input-bg)'};color:${on?vc:'var(--text-sub)'};"><span class="fw-dd-dot" style="background:${vc}"></span>${v}${on?'<span class="fw-dd-chk">✓</span>':''}</div>`;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>`;
+        }).join('') + `</div>`;
     }
 
-    function selectIeStatus(v) {
+    function _ieToggleStatusPanel(key) {
+        if (_ieStatusOpenGroup === key) { _ieStatusOpenGroup = null; _renderIeStatus(); return; }
+        _ieStatusOpenGroup = key;
+        _renderIeStatus();
+    }
+
+    function selectIeStatus(groupKey, v) {
+        _ieBasis = groupKey;
         _ieCurStatus = v;
+        _ieOriginStatusMap[groupKey] = v;
+        _ieStatusOpenGroup = null;
         _renderIeStatus();
         _renderIeStatusView();
     }
