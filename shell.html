@@ -6145,6 +6145,7 @@
             _ieOrigG = (item.specG||'').toString().replace(/[^0-9.]/g,'');
             _ieOrigMemo = item.memo || '';
             _ieBasis = PKG_STATUS_GROUPS[item.source] ? item.source : 'standard';
+            _ieOriginStatusMap = _ieFindOriginStatusMap(code, round, color || '');
         } else {
             ['ieColor','ieCountry','ieQty','ieCodeType','ieType'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
@@ -6167,15 +6168,15 @@
             const iePeBoxHeightInp0 = document.getElementById('iePeBoxHeight');
             if (iePeBoxHeightInp0) iePeBoxHeightInp0.value = '';
             _ieBasis = 'standard';
+            _ieOriginStatusMap = {};
         }
         _ieCurStatus = _ieOrigStatus;
         const memoInp = document.getElementById('ieMemo');
         if (memoInp) memoInp.value = _ieOrigMemo;
-        _ieEditStatus = false; _ieEditSchedule = false; _ieEditSpec = false;
-        _ieApplyCardToggle('ieStatus', false);
+        _ieEditSchedule = false; _ieEditSpec = false;
         _ieApplyCardToggle('ieSchedule', false);
         _ieApplyCardToggle('ieSpec', false);
-        _renderIeBasisTabs();
+        _ieStatusOpenGroup = null;
         _renderIeStatus();
         _renderIeStatusView();
         const pm = _buildPalletMap();
