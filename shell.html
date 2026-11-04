@@ -6030,27 +6030,24 @@
     }
     function toggleIeSpecEdit()     { _ieEditSpec = !_ieEditSpec;         _ieApplyCardToggle('ieSpec', _ieEditSpec); }
 
-    function _renderIeBasisTabs() {
-        const wrap = document.getElementById('ieBasisTabs');
-        if (!wrap) return;
-        wrap.innerHTML = PKG_BASIS_LIST.map(b => {
-            const active = b.key === _ieBasis;
-            return `<button onclick="selectIeBasis('${b.key}')" style="flex:1;border:none;border-radius:7px;padding:6px 2px;font-size:9.5px;font-weight:${active?800:700};cursor:pointer;background:${active?'var(--panel)':'transparent'};color:${active?'#00B0FF':'var(--text-sub)'};${active?'box-shadow:0 1px 2px rgba(0,0,0,.15);':''}">${b.label}</button>`;
-        }).join('');
-    }
-    function selectIeBasis(key) {
-        _ieBasis = key;
-        // 기준을 바꾸면 그 기준에 없는 상태값은 의미가 없으므로 기본 상태로 다시 맞춘다
-        // — 단 원래 상태가 새 기준에도 있는 값이면 그대로 유지한다.
-        const set = PKG_STATUS_GROUPS[key];
-        if (!set.includes(_ieCurStatus)) _ieCurStatus = PKG_BASIS_DEFAULT_STATUS[key];
-        _renderIeBasisTabs();
-        _renderIeStatus();
-        _renderIeStatusView();
+    // 버그 수정(요청, 2026-11-04: PC 웹과 동일) — 같은 품목(code+round+color)이 수출현황/
+    // 충주공장 재고/출고완료 여러 시트에 동시에 실제 행을 갖고 있을 수 있어서, 지금 연
+    // 행의 출처(item.source) 하나만 보면 다른 시트에 실제로 있는 데이터도 꺼진 채로
+    // 보인다. 이 맵은 {기준키: 그 시트에서의 실제 상태값}으로, 열 때 한 번 채운다.
+    let _ieOriginStatusMap = {};
+    let _ieStatusOpenGroup = null;
+    function _ieFindOriginStatusMap(code, round, color) {
+        const map = {};
+        (allData || []).forEach(it => {
+            if ((it.code||'').toUpperCase() === (code||'').toUpperCase() && (it.round||'') === (round||'') &&
+                (it.color||'') === (color||'') && PKG_STATUS_GROUPS[it.source]) {
+                map[it.source] = it.status;
+            }
+        });
+        return map;
     }
     function _renderIeStatusView() {
-        const pill = document.getElementById('ieStatusPillText');
-        if (pill) pill.textContent = _ieCurStatus || '—';
+        // (더 이상 쓰지 않는 알약 표시 자리 — 드롭다운 트리거 자체가 값을 보여준다)
     }
     function _ieSyncPalletView() {
         const el = document.getElementById('iePalletView');
