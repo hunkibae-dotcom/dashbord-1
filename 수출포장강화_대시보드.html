@@ -10304,6 +10304,31 @@
         // 파일을 고른 순서(브라우저 파일 선택창 순서, 보장 안 됨)를 그대로 쓰면 입고가
         // 먼저 처리돼버릴 수 있어서, 실행 직전에 항상 sunju를 앞으로 재정렬한다(같은
         // 종류끼리는 원래 순서 유지 — Array.sort는 안정 정렬).
+        // 분류(입고) 파일이 감지되면 반영하기 전에 입고일을 고르는 팝업을 띄운다(요청,
+        // 2026-11-05: "현황업데이트 할때 분류 입고 가 감지되고 반영하기전에 팝업으로
+        // 입고일을 선택하시오(미선택 시 금일로 지정)" — 모달 안에 늘 떠있는 날짜칸이
+        // 아니라, 실제로 입고 파일이 있을 때만 한 번 물어보는 방식). 날짜를 고르고
+        // 확인하면 그 날짜 문자열을, 고르지 않고 확인하면 빈 문자열(= 오늘)을, 창을
+        // 닫아서 취소하면 null을 resolve한다(취소면 업데이트 자체를 중단).
+        let _pkgChosenIpgoDate = '';
+        function _pkgShowIpgoDatePrompt() {
+            return new Promise((resolve) => {
+                const input = document.getElementById('pkgIpgoDateInput');
+                if (input) input.value = '';
+                const modal = document.getElementById('pkgIpgoDateModal');
+                modal.style.display = 'flex';
+                const cleanup = () => { modal.style.display = 'none'; };
+                document.getElementById('pkgIpgoDateConfirmBtn').onclick = () => {
+                    const v = (input && input.value) || '';
+                    cleanup();
+                    resolve(v);
+                };
+                document.getElementById('pkgIpgoDateCancelBtn').onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+            });
+        }
         async function _pkgRunClassifyUpload() {
             if (!_pkgClassifyFiles.length) return;
             const btn = document.getElementById('pkgClassifyRunBtn');
@@ -10311,6 +10336,13 @@
             const orderedFiles = _pkgClassifyFiles.slice()
                 .sort((a, b) => (a.kind === b.kind) ? 0 : (a.kind === 'sunju' ? -1 : 1));
             const total = orderedFiles.length;
+            if (orderedFiles.some(f => f.kind === 'ipgo')) {
+                const picked = await _pkgShowIpgoDatePrompt();
+                if (picked === null) return; // 취소 — 업데이트 자체를 진행하지 않음
+                _pkgChosenIpgoDate = picked;
+            } else {
+                _pkgChosenIpgoDate = '';
+            }
             btn.disabled = true;
             resultEl.textContent = '';
             const lines = [];
