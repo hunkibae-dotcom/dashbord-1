@@ -14472,15 +14472,24 @@ async function peExportOrderXlsx(ordNo, meta, items) {
         </div>
         <div style="padding:0 30px 26px;">
 
-            <!-- 진행상태 카드 (PC 화면 폭을 다 쓰도록 전체너비, 나머지는 아래 2단 그리드) -->
-            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-bottom:14px;">
-                <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">진행상태</div>
-                <div id="pkgStatusOpts" style="display:flex;flex-direction:column;gap:6px;"></div>
-                <div id="pkgPartialQtyWrap" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px;">
-                    <div style="font-size:12.5px;color:#92400e;font-weight:700;margin-bottom:6px;">일부입고 수량 입력</div>
-                    <div style="font-size:11.5px;color:#92400e;margin-bottom:8px;" id="pkgPartialQtyHint"></div>
-                    <input id="pkgPartialQty" type="number" placeholder="실제 입고된 수량"
-                        style="width:100%;background:#fff;border:1.5px solid #fbbf24;border-radius:8px;padding:9px 12px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+            <!-- 진행상태 카드를 반으로 줄이고 오른쪽에 상차 준비완료 박스를 뒀다(요청,
+                 2026-11-04: "진행상태를 절반으로 넓이를 줄이고 오른쪽에 새박스를 넣은뒤
+                 상차 준비완료 버튼을 거기에 이동시켜주고" — 헤더에 있던 버튼을 옮김). -->
+            <div style="display:flex;gap:14px;margin-bottom:14px;align-items:stretch;">
+                <div style="flex:1;min-width:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;">
+                    <div style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:10px;">진행상태</div>
+                    <div id="pkgStatusOpts" style="display:flex;flex-direction:column;gap:6px;"></div>
+                    <div id="pkgPartialQtyWrap" style="display:none;margin-top:10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px;">
+                        <div style="font-size:12.5px;color:#92400e;font-weight:700;margin-bottom:6px;">일부입고 수량 입력</div>
+                        <div style="font-size:11.5px;color:#92400e;margin-bottom:8px;" id="pkgPartialQtyHint"></div>
+                        <input id="pkgPartialQty" type="number" placeholder="실제 입고된 수량"
+                            style="width:100%;background:#fff;border:1.5px solid #fbbf24;border-radius:8px;padding:9px 12px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="flex:1;min-width:0;background:rgba(22,163,74,.08);border:1.5px solid rgba(22,163,74,.25);border-radius:14px;padding:16px;display:flex;align-items:center;">
+                    <label title="상차 준비완료" style="display:flex;align-items:center;gap:9px;color:#16a34a;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <input type="checkbox" id="pkgShipReadyChk" style="width:17px;height:17px;accent-color:#16a34a;cursor:pointer;margin:0;flex-shrink:0;"> 상차 준비완료
+                    </label>
                 </div>
             </div>
 
