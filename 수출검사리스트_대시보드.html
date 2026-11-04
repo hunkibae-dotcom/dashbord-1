@@ -14295,10 +14295,12 @@ function onNativeScanResult(raw) {
 <!-- 일정/규격을 포장강화 수정창과 같은 모양(2단 배치, 칸 안쪽도 2x2 그리드)으로 맞췄다
      (요청, 2026-11-04: "일정과 cbm칸도 사진처럼 위치 크기조정좀해줘" — 포장강화 스크린샷
      참고). 모달 폭을 포장강화와 똑같이 640px로 맞춰둔 상태라 전처럼(820px) 비좁지 않다.
-     카드 높이를 억지로 맞추지 않도록 align-items:start로 둔다(안 그러면 Grid 기본값인
-     stretch 때문에 짧은 카드가 긴 카드 높이만큼 빈 공간으로 늘어난다 — 2026-11-04 버그). -->
+     일정도 규격과 똑같이 2x2라 이제 두 카드 내용량이 비슷해져서, 높이를 서로 맞추는
+     stretch를 다시 켜도(요청, 2026-11-04: "일정박스 높이 cbm박스높이랑 동일하게")
+     예전처럼(포장일/납기일/검사일이 한 줄짜리였을 때) 빈 공간이 크게 남지 않는다. -->
 <style>
-  #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: start; }
+  #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: stretch; }
+  #mItemDetailModal .mi-grid2 > div { height: 100%; }
   /* 진행상태/블로킹 — 버튼열을 시트별 드롭다운으로 바꾼 시안 반영(요청, 2026-11-04:
      "버튼들이 쓸데없이 좌우로 길고 못생겼다") */
   #mItemDetailModal .fw-dd-group { display: flex; gap: 6px; flex-wrap: wrap; }
