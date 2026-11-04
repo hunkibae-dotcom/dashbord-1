@@ -2151,8 +2151,44 @@ function fiRenderList() {
     if (q && d.code.toLowerCase().indexOf(q) < 0 && d.content.toLowerCase().indexOf(q) < 0) return false;
     return true;
   });
-  document.getElementById('fiList').innerHTML = filtered.map(fiCardHtml).join('');
+  const _fiTotalPages = Math.max(1, Math.ceil(filtered.length / _fiPageSize));
+  if (_fiCurrentPage >= _fiTotalPages) _fiCurrentPage = _fiTotalPages - 1;
+  if (_fiCurrentPage < 0) _fiCurrentPage = 0;
+  const _fiStart = _fiCurrentPage * _fiPageSize;
+  const pageData = filtered.slice(_fiStart, _fiStart + _fiPageSize);
+  document.getElementById('fiList').innerHTML = pageData.map(fiCardHtml).join('');
   document.getElementById('fiListEmpty').style.display = filtered.length ? 'none' : 'block';
+  _fiRenderPagination(filtered.length, _fiTotalPages);
+}
+let _fiPageSize = 30;
+let _fiCurrentPage = 0;
+function _fiRenderPagination(totalCount, totalPages) {
+  const bar = document.getElementById('fiPaginationBar');
+  if (!bar) return;
+  if (totalCount === 0 || totalPages <= 1) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.display = 'block';
+  const cur = _fiCurrentPage + 1;
+  const WINDOW = 5;
+  let start = Math.max(1, cur - Math.floor(WINDOW / 2));
+  let end = Math.min(totalPages, start + WINDOW - 1);
+  start = Math.max(1, end - WINDOW + 1);
+  const btn = (label, page, disabled, active) =>
+    `<button type="button" onclick="_fiGoToPage(${page - 1})" ${disabled ? 'disabled' : ''} style="flex-shrink:0;min-width:28px;height:28px;padding:0 7px;border-radius:8px;border:1.5px solid ${active ? 'var(--accent,#0ea5e9)' : 'var(--border)'};background:${active ? 'var(--accent,#0ea5e9)' : 'var(--panel)'};color:${active ? '#fff' : 'var(--text-sub)'};font-size:12px;font-weight:800;cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};">${label}</button>`;
+  let html = `<div style="text-align:center;font-size:11.5px;color:var(--label);margin-bottom:7px;">총 ${totalCount.toLocaleString()}건 · ${cur}/${totalPages}페이지</div>`;
+  html += `<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;">`;
+  html += btn('처음', 1, cur === 1, false);
+  html += btn('이전', Math.max(1, cur - 1), cur === 1, false);
+  for (let p = start; p <= end; p++) html += btn(String(p), p, false, p === cur);
+  html += btn('다음', Math.min(totalPages, cur + 1), cur === totalPages, false);
+  html += btn('끝', totalPages, cur === totalPages, false);
+  html += `</div>`;
+  bar.innerHTML = html;
+}
+function _fiGoToPage(p) {
+  _fiCurrentPage = p;
+  fiRenderList();
+  const listWrap = document.getElementById('fiList');
+  if (listWrap) listWrap.scrollIntoView({ block: 'start' });
 }
 function fiRenderSearchTab() {
   const q = document.getElementById('fiSearchTabInput').value.trim().toLowerCase();
