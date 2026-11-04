@@ -3664,8 +3664,15 @@ let _tblSelectedKeys = new Set();
 // 단일 품목 상세창(_refreshMiStatusButtons)이 사람이 직접 고르게 두는 상태값과 똑같이
 // 맞춘다 — 미투입/포장대기/취소는 자동 전환(공정진행정보 분류 등)이나 별도 경로로만
 // 바뀌는 값이라 여기서도 임의로 노출하지 않는다.
-const TBL_BULK_STATUS_OPTIONS = ['미검사', '검사', '재투입', '양지'];
-let _tblBulkStatus = null; // null = 변경 안 함
+// 품목수정창과 똑같이 "진행중"/"출고완료" 탭으로 나눴다(요청, 2026-11-04: "지금 일괄
+// 수정창을보면 진행상태가 시트별로 나뉘어져있지않으니 수정좀해줘"). 값 목록은 품목
+// 수정창의 MI_STATUS_SET_INPROGRESS/SHIPPED를 그대로 재사용해서 두 군데가 어긋나지
+// 않게 한다.
+let _tblBulkBasis = 'inprogress';
+let _tblBulkStatus = null; // null = 변경 안 함("진행중" 탭에서 고른 값)
+// "출고완료" 탭에서 고르면 단일 품목수정창과 동일하게 "검사완료 이동"으로 처리한다 —
+// 체크된 품목들을 실제로 검사완료 리스트로 옮긴다. null이면 아무 것도 안 고른 것.
+let _tblBulkMigrateTarget = null;
 let _tblBulkTargetKeys = []; // "수정"을 누른 시점의 선택 목록(모달은 이걸 기준으로 동작)
 
 function toggleTblMultiSelect() {
