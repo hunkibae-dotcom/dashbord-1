@@ -1,0 +1,373 @@
+<title>상태 버튼 개선 시안</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+  :root{
+    --bg:#f1f5f9; --panel:#ffffff; --panel-2:#f8fafc; --border:#e2e8f0; --text:#1e293b; --text-sub:#64748b;
+    --accent:#6D5CE8; --accent-bg:rgba(109,92,222,.1); --good:#16a34a; --bad:#dc2626;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0b0f19; --panel:#131a2a; --panel-2:#0f1522; --border:#232c40; --text:#e8ecf5; --text-sub:#8b96ad;
+      --accent:#8B7CF0; --accent-bg:rgba(139,124,240,.16); --good:#34d399; --bad:#f87171;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0b0f19; --panel:#131a2a; --panel-2:#0f1522; --border:#232c40; --text:#e8ecf5; --text-sub:#8b96ad;
+    --accent:#8B7CF0; --accent-bg:rgba(139,124,240,.16); --good:#34d399; --bad:#f87171;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard',Roboto,sans-serif;
+    padding-block:24px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  }
+  .wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:36px;}
+  h1{font-size:19px;font-weight:800;margin:0 0 4px;}
+  .sub{font-size:13px;color:var(--text-sub);margin:0 0 20px;line-height:1.6;}
+  .section{display:flex;flex-direction:column;gap:12px;}
+  .section-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;}
+  .section-title .badge{font-size:10.5px;font-weight:700;color:var(--accent);background:var(--accent-bg);padding:3px 9px;border-radius:999px;}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media (max-width:620px){.pair{grid-template-columns:1fr;}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:16px;}
+  .card-label{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+  .card-label.before{color:var(--bad);}
+  .card-label.after{color:var(--good);}
+  .field-label{font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px;}
+
+  /* ===== BEFORE: 기존 버튼 행(스트레치) ===== */
+  .old-row{display:flex;flex-wrap:wrap;gap:6px;}
+  .old-btn{flex:1;min-width:0;padding:9px 0;border-radius:10px;border:1px solid var(--border);font-size:12px;font-weight:700;background:var(--panel-2);color:var(--text-sub);text-align:center;white-space:nowrap;}
+  .old-btn.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .old-stack{display:flex;flex-direction:column;gap:6px;}
+  .old-stack-btn{width:100%;display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--panel);color:var(--text-sub);font-size:12.5px;font-weight:600;}
+  .old-stack-btn .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .old-stack-btn .chk{margin-left:auto;font-size:10px;}
+  .old-stack-btn.on{border-color:var(--pkg-c, var(--accent));background:color-mix(in srgb, var(--pkg-c, var(--accent)) 10%, transparent);color:var(--pkg-c, var(--accent));font-weight:800;}
+
+  /* ===== AFTER: 드롭다운 — 내용 크기만큼만, 시트(그룹)별로 버튼 자체를 분리 ===== */
+  .dd-group{display:flex;gap:8px;flex-wrap:wrap;}
+  .dd-anchor{position:relative;display:inline-block;max-width:100%;}
+  .dd-trigger{display:inline-flex;width:auto;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--panel-2);color:var(--text-sub);cursor:pointer;font-size:12.5px;font-weight:700;white-space:nowrap;}
+  .dd-trigger .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .dd-trigger .chev{font-size:9px;color:var(--text-sub);transition:transform .15s;flex-shrink:0;}
+  .dd-anchor.open .chev{transform:rotate(180deg);}
+  .dd-trigger.active{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);font-weight:800;}
+  .dd-trigger .sheet-label{opacity:.8;}
+  .dd-trigger.active .sheet-label{opacity:1;}
+  .dd-panel{position:absolute;top:100%;left:0;margin-top:6px;min-width:180px;border:1.5px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.12);z-index:5;}
+  .dd-opt{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--text-sub);cursor:pointer;white-space:nowrap;}
+  .dd-opt .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .dd-opt.on{background:var(--accent-bg);color:var(--accent);font-weight:800;}
+  .dd-opt .chk{margin-left:auto;font-size:11px;color:var(--accent);padding-left:14px;}
+  .dd-opt:hover{background:var(--panel-2);}
+
+  /* 단일 드롭다운(블로킹용) */
+  .dd{display:inline-block;max-width:100%;}
+  .dd .dd-panel{min-width:190px;}
+
+  /* ===== AFTER: PKG — 시트별 드롭다운(수출현황/출고완료/실재고), 안에는 컴팩트 칩 =====
+     칩을 flex-wrap으로만 두면 글자 길이가 다 달라서 칸이 들쭉날쭉해 보였다(요청,
+     2026-11-05: "간격을 맞춰보자") — 2열 그리드로 바꿔서 칩 너비를 열 단위로 맞추고,
+     셀 안에서 칩이 꽉 차 보이도록 justify-self를 stretch로 둔다. */
+  .chip-row{display:grid;grid-template-columns:repeat(2, 1fr);gap:7px 8px;min-width:210px;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);background:var(--panel-2);color:var(--text-sub);font-size:12.5px;font-weight:700;white-space:nowrap;cursor:pointer;}
+  .chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .chip.on{border-color:var(--chip-c,var(--accent));background:color-mix(in srgb, var(--chip-c,var(--accent)) 12%, transparent);color:var(--chip-c,var(--accent));}
+  .chip .chk{margin-left:auto;font-size:9.5px;}
+  .group-wrap{display:flex;flex-direction:column;gap:6px;}
+  .dd-panel.chip-panel{padding:10px;}
+
+  .note{font-size:11.5px;color:var(--text-sub);line-height:1.6;background:var(--panel-2);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin-top:4px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--text-sub);}
+  .legend span{display:inline-flex;align-items:center;gap:5px;}
+  .legend .dot{width:7px;height:7px;border-radius:50%;}
+
+  .theme-toggle{position:fixed;top:14px;right:max(14px, env(safe-area-inset-right,0px));display:flex;gap:4px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:3px;z-index:20;}
+  .theme-toggle button{border:none;background:transparent;color:var(--text-sub);font-size:11px;font-weight:700;padding:6px 10px;border-radius:7px;cursor:pointer;}
+  .theme-toggle button.active{background:var(--accent);color:#fff;}
+</style>
+
+<div class="theme-toggle">
+  <button onclick="setTheme('light')" id="tbLight">라이트</button>
+  <button onclick="setTheme('dark')" id="tbDark">다크</button>
+</div>
+
+<div class="wrap">
+  <div>
+    <h1>진행상태 · 블로킹 버튼 — 개선 시안 (v4)</h1>
+    <p class="sub">시트별로 드롭다운 버튼 자체를 나눴고, 포장강화 쪽 칩 간격을 2열 그리드로 맞췄습니다. 왼쪽(빨강)이 지금 모습, 오른쪽(초록)이 제안입니다. 전부 눌러보실 수 있습니다.</p>
+  </div>
+
+  <!-- ================= QC 진행상태 ================= -->
+  <div class="section">
+    <div class="section-title">① 품질검사 — 진행상태 <span class="badge">버튼열 → 시트별 드롭다운 2개</span></div>
+    <div class="pair">
+      <div class="card">
+        <div class="card-label before">지금</div>
+        <div class="field-label">진행상태</div>
+        <div class="old-row">
+          <div class="old-btn">미검사</div>
+          <div class="old-btn on">검사완료</div>
+          <div class="old-btn">재투입</div>
+          <div class="old-btn">양지</div>
+        </div>
+        <div class="note">글자 짧은 버튼도 전부 같은 너비로 억지로 늘어나 있어 양 옆에 빈 공간이 많이 남습니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-label after">제안</div>
+        <div class="field-label">진행상태</div>
+        <div class="dd-group">
+          <div class="dd-anchor" id="ddProgress">
+            <div class="dd-trigger active" onclick="toggleDD2('ddProgress')">
+              <span class="dot" style="background:#6D5CE8"></span>
+              <span class="sheet-label">진행중</span> · <span class="val-text">검사완료</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel" style="display:none;">
+              <div class="dd-opt" onclick="pick2('ddProgress','ddShipped','미검사','#94a3b8')"><span class="dot" style="background:#94a3b8"></span>미검사</div>
+              <div class="dd-opt on" onclick="pick2('ddProgress','ddShipped','검사완료','#6D5CE8')"><span class="dot" style="background:#6D5CE8"></span>검사완료<span class="chk">✓</span></div>
+              <div class="dd-opt" onclick="pick2('ddProgress','ddShipped','재투입','#a855f7')"><span class="dot" style="background:#a855f7"></span>재투입</div>
+              <div class="dd-opt" onclick="pick2('ddProgress','ddShipped','양지','#f59e0b')"><span class="dot" style="background:#f59e0b"></span>양지</div>
+            </div>
+          </div>
+          <div class="dd-anchor" id="ddShipped">
+            <div class="dd-trigger" onclick="toggleDD2('ddShipped')">
+              <span class="sheet-label">출고완료</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel" style="display:none;">
+              <div class="dd-opt" onclick="pick2('ddShipped','ddProgress','검사완료','#6D5CE8')"><span class="dot" style="background:#6D5CE8"></span>검사완료</div>
+              <div class="dd-opt" onclick="pick2('ddShipped','ddProgress','미검사','#94a3b8')"><span class="dot" style="background:#94a3b8"></span>미검사</div>
+              <div class="dd-opt" onclick="pick2('ddShipped','ddProgress','외관검사','#0ea5e9')"><span class="dot" style="background:#0ea5e9"></span>외관검사</div>
+              <div class="dd-opt" onclick="pick2('ddShipped','ddProgress','양지검사','#f59e0b')"><span class="dot" style="background:#f59e0b"></span>양지검사</div>
+            </div>
+          </div>
+        </div>
+        <div class="note">지금은 "진행중" 버튼이 활성(보라색)이고 안에 "검사완료"라고 값이 보입니다 — 이 품목이 실제로 검사항목 리스트에 있다는 뜻입니다. "출고완료" 버튼을 눌러 그 안의 값을 고르면, 그 버튼이 활성으로 바뀌고 "진행중" 버튼은 다시 중립(값 없음)으로 돌아갑니다 — 저장하면 실제로 검사완료 리스트로 이동 처리됩니다. 한번 눌러서 확인해보세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= QC 블로킹 ================= -->
+  <div class="section">
+    <div class="section-title">② 품질검사 — 블로킹 <span class="badge">버튼열 → 작은 드롭다운</span></div>
+    <div class="pair">
+      <div class="card">
+        <div class="card-label before">지금</div>
+        <div class="field-label">블로킹</div>
+        <div class="old-row">
+          <div class="old-btn">미등록</div>
+          <div class="old-btn on">대기</div>
+          <div class="old-btn">완료</div>
+          <div class="old-btn">취소</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-label after">제안</div>
+        <div class="field-label">블로킹</div>
+        <div class="dd" id="ddQcBlock">
+          <div class="dd-anchor">
+            <div class="dd-trigger active" onclick="toggleDD2('ddQcBlock')">
+              <span class="dot" style="background:#dc2626"></span>
+              <span class="val-text">대기</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel" style="display:none;">
+              <div class="dd-opt" onclick="pickSimple(this,'ddQcBlock','미등록','#94a3b8')"><span class="dot" style="background:#94a3b8"></span>미등록</div>
+              <div class="dd-opt on" onclick="pickSimple(this,'ddQcBlock','대기','#dc2626')"><span class="dot" style="background:#dc2626"></span>대기<span class="chk">✓</span></div>
+              <div class="dd-opt" onclick="pickSimple(this,'ddQcBlock','완료','#16a34a')"><span class="dot" style="background:#16a34a"></span>완료</div>
+              <div class="dd-opt" onclick="pickSimple(this,'ddQcBlock','취소','#64748b')"><span class="dot" style="background:#64748b"></span>취소</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PKG 진행상태 ================= -->
+  <div class="section">
+    <div class="section-title">③ 포장강화 — 진행상태 <span class="badge">펼쳐진 세로열 → 시트별 드롭다운 3개(접힘)</span></div>
+    <div class="pair">
+      <div class="card">
+        <div class="card-label before">지금</div>
+        <div class="field-label">진행상태 › 수출현황 (항상 펼쳐짐)</div>
+        <div class="old-stack">
+          <div class="old-stack-btn" style="--pkg-c:#dc2626;">미입고</div>
+          <div class="old-stack-btn" style="--pkg-c:#a21caf;">회수중</div>
+          <div class="old-stack-btn" style="--pkg-c:#38BDF8;">입고</div>
+          <div class="old-stack-btn on" style="--pkg-c:#16a34a;">출고<span class="chk">✓</span></div>
+          <div class="old-stack-btn" style="--pkg-c:#7c3aed;">피킹</div>
+          <div class="old-stack-btn" style="--pkg-c:#FBBF24;">일부입고</div>
+        </div>
+        <div class="note">옵션 하나하나가 모달 전체 너비를 다 차지해서 세로로 길게 늘어지고, 글자에 비해 버튼이 과하게 넓습니다. 그룹을 펼쳐도 아래로 계속 늘어납니다.</div>
+      </div>
+      <div class="card">
+        <div class="card-label after">제안</div>
+        <div class="field-label">진행상태</div>
+        <div class="dd-group">
+          <div class="dd-anchor" id="pkgExport">
+            <div class="dd-trigger" onclick="toggleDD2('pkgExport')">
+              <span class="sheet-label">수출현황</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip" onclick="pickGroup('pkgExport','미입고','#dc2626')"><span class="dot" style="background:#dc2626"></span>미입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','회수중','#a21caf')"><span class="dot" style="background:#a21caf"></span>회수중</div>
+                <div class="chip" onclick="pickGroup('pkgExport','입고','#38BDF8')"><span class="dot" style="background:#38BDF8"></span>입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','출고','#16a34a')"><span class="dot" style="background:#16a34a"></span>출고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','피킹','#7c3aed')"><span class="dot" style="background:#7c3aed"></span>피킹</div>
+                <div class="chip" onclick="pickGroup('pkgExport','일부입고','#FBBF24')"><span class="dot" style="background:#FBBF24"></span>일부입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','포장완료','#3B82F6')"><span class="dot" style="background:#3B82F6"></span>포장완료</div>
+                <div class="chip" onclick="pickGroup('pkgExport','재고활용','#0d9488')"><span class="dot" style="background:#0d9488"></span>재고활용</div>
+              </div>
+            </div>
+          </div>
+          <div class="dd-anchor" id="pkgShipped">
+            <div class="dd-trigger active" onclick="toggleDD2('pkgShipped')">
+              <span class="dot" style="background:#16a34a"></span>
+              <span class="sheet-label">출고완료</span> · <span class="val-text">출고</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip on" style="--chip-c:#16a34a;" onclick="pickGroup('pkgShipped','출고','#16a34a')"><span class="dot" style="background:#16a34a"></span>출고<span class="chk">✓</span></div>
+                <div class="chip" onclick="pickGroup('pkgShipped','피킹','#7c3aed')"><span class="dot" style="background:#7c3aed"></span>피킹</div>
+                <div class="chip" onclick="pickGroup('pkgShipped','미포장','#FB923C')"><span class="dot" style="background:#FB923C"></span>미포장</div>
+              </div>
+            </div>
+          </div>
+          <div class="dd-anchor" id="pkgStock">
+            <div class="dd-trigger" onclick="toggleDD2('pkgStock')">
+              <span class="sheet-label">실재고</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip" onclick="pickGroup('pkgStock','미확인','#64748B')"><span class="dot" style="background:#64748B"></span>미확인</div>
+                <div class="chip" onclick="pickGroup('pkgStock','포장대기','#F59E0B')"><span class="dot" style="background:#F59E0B"></span>포장대기</div>
+                <div class="chip" onclick="pickGroup('pkgStock','포장완료','#3B82F6')"><span class="dot" style="background:#3B82F6"></span>포장완료</div>
+                <div class="chip" onclick="pickGroup('pkgStock','철물','#94A3B8')"><span class="dot" style="background:#94A3B8"></span>철물</div>
+                <div class="chip" onclick="pickGroup('pkgStock','미포장','#FB923C')"><span class="dot" style="background:#FB923C"></span>미포장</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">세 버튼 다 평소엔 접혀있습니다. 지금은 "출고완료" 버튼만 초록색으로 활성이고 안에 "출고"라고 값이 보입니다. 칩들은 2열 그리드로 폭을 맞춰서 간격이 들쭉날쭉하지 않습니다. 다른 버튼을 눌러보세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">색 범례(진행상태 그대로 재사용)</div>
+    <div class="legend">
+      <span><span class="dot" style="background:#dc2626"></span>미입고</span>
+      <span><span class="dot" style="background:#a21caf"></span>회수중</span>
+      <span><span class="dot" style="background:#38BDF8"></span>입고</span>
+      <span><span class="dot" style="background:#16a34a"></span>출고</span>
+      <span><span class="dot" style="background:#7c3aed"></span>피킹</span>
+      <span><span class="dot" style="background:#FBBF24"></span>일부입고</span>
+      <span><span class="dot" style="background:#3B82F6"></span>포장완료</span>
+      <span><span class="dot" style="background:#0d9488"></span>재고활용</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('tbLight').classList.toggle('active', t==='light');
+  document.getElementById('tbDark').classList.toggle('active', t==='dark');
+  try{ localStorage.setItem('mockup_theme', t); }catch(e){}
+}
+(function(){
+  let t='light';
+  try{ t = localStorage.getItem('mockup_theme') || 'light'; }catch(e){}
+  setTheme(t);
+})();
+
+function toggleDD2(id){
+  document.querySelectorAll('.dd-anchor').forEach(a=>{
+    if(a.id!==id){ a.classList.remove('open'); a.querySelector('.dd-panel').style.display='none'; }
+  });
+  const anchor = document.getElementById(id);
+  const panel = anchor.querySelector('.dd-panel');
+  const opening = panel.style.display === 'none';
+  panel.style.display = opening ? '' : 'none';
+  anchor.classList.toggle('open', opening);
+}
+
+// 진행중/출고완료 — 한쪽을 고르면 그쪽이 활성(값 표시)이 되고, 반대쪽은 중립으로 돌아간다.
+function pick2(pickedId, otherId, label, color){
+  const pickedAnchor = document.getElementById(pickedId);
+  const otherAnchor = document.getElementById(otherId);
+  const pickedTrigger = pickedAnchor.querySelector('.dd-trigger');
+  const otherTrigger = otherAnchor.querySelector('.dd-trigger');
+  const sheetLabel = pickedTrigger.querySelector('.sheet-label').textContent;
+
+  pickedTrigger.classList.add('active');
+  pickedTrigger.innerHTML = '<span class="dot" style="background:'+color+'"></span><span class="sheet-label">'+sheetLabel+'</span> · <span class="val-text">'+label+'</span><i class="chev">▾</i>';
+
+  const otherSheetLabel = otherTrigger.querySelector('.sheet-label').textContent;
+  otherTrigger.classList.remove('active');
+  otherTrigger.innerHTML = '<span class="sheet-label">'+otherSheetLabel+'</span><i class="chev">▾</i>';
+
+  pickedAnchor.querySelectorAll('.dd-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.chk')?.remove(); });
+  pickedAnchor.querySelectorAll('.dd-opt').forEach(o=>{
+    if(o.textContent.trim().replace('✓','') === label){ o.classList.add('on'); o.insertAdjacentHTML('beforeend','<span class="chk">✓</span>'); }
+  });
+
+  toggleDD2(pickedId);
+}
+
+// PKG — 수출현황/출고완료/실재고 중 하나를 고르면 그 버튼만 활성(값 표시)이 되고
+// 나머지는 중립으로 돌아간다(시트 셋 다 같은 .dd-group 안에 있다고 가정).
+function pickGroup(pickedId, label, color){
+  const pickedAnchor = document.getElementById(pickedId);
+  const group = pickedAnchor.closest('.dd-group');
+  group.querySelectorAll('.dd-anchor').forEach(a=>{
+    const trigger = a.querySelector('.dd-trigger');
+    const sheetLabel = trigger.querySelector('.sheet-label').textContent;
+    if (a.id === pickedId){
+      trigger.classList.add('active');
+      trigger.innerHTML = '<span class="dot" style="background:'+color+'"></span><span class="sheet-label">'+sheetLabel+'</span> · <span class="val-text">'+label+'</span><i class="chev">▾</i>';
+    } else {
+      trigger.classList.remove('active');
+      trigger.innerHTML = '<span class="sheet-label">'+sheetLabel+'</span><i class="chev">▾</i>';
+    }
+  });
+  pickedAnchor.querySelectorAll('.chip').forEach(c=>{
+    c.classList.remove('on'); c.querySelector('.chk')?.remove();
+    if (c.textContent.trim().replace('✓','') === label){ c.classList.add('on'); c.style.setProperty('--chip-c', color); c.insertAdjacentHTML('beforeend','<span class="chk">✓</span>'); }
+  });
+  toggleDD2(pickedId);
+}
+
+function pickSimple(el, ddId, label, color){
+  const dd = document.getElementById(ddId);
+  dd.querySelectorAll('.dd-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.chk')?.remove(); });
+  el.classList.add('on');
+  el.insertAdjacentHTML('beforeend', '<span class="chk">✓</span>');
+  const trigger = dd.querySelector('.dd-trigger');
+  trigger.querySelector('.dot').style.background = color;
+  trigger.querySelector('.val-text').textContent = label;
+  toggleDD2(dd.querySelector('.dd-anchor').id || dd.id);
+  const anchor = dd.querySelector('.dd-anchor');
+  anchor.classList.remove('open');
+  anchor.querySelector('.dd-panel').style.display = 'none';
+}
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    const row = chip.closest('.chip-row');
+    row.querySelectorAll('.chip').forEach(c=>{ c.classList.remove('on'); c.querySelector('.chk')?.remove(); });
+    chip.classList.add('on');
+    chip.insertAdjacentHTML('beforeend', '<span class="chk">✓</span>');
+  });
+});
+</script>
