@@ -1474,17 +1474,55 @@ function fiPcRender() {
     return true;
   });
 
-  fiPcLastFiltered = filtered; // 전체선택이 "지금 화면에 보이는 결과" 기준으로 동작하게
+  fiPcLastFiltered = filtered; // 전체선택은 페이지와 상관없이 "지금 조건에 맞는 결과 전체" 기준으로 동작
+
+  // 기본 30개씩 페이지로 끊어서 보여준다(요청, 2026-11-04: "기본적으로 보여지는
+  // 품목들을 30개로 제한하고 페이지화해줘") — 포장강화 대시보드의 페이지네이션
+  // (_pkgRenderPagination)과 같은 방식.
+  const _fiPcTotalPages = Math.max(1, Math.ceil(filtered.length / _fiPcPageSize));
+  if (_fiPcCurrentPage >= _fiPcTotalPages) _fiPcCurrentPage = _fiPcTotalPages - 1;
+  if (_fiPcCurrentPage < 0) _fiPcCurrentPage = 0;
+  const _fiPcStart = _fiPcCurrentPage * _fiPcPageSize;
+  const pageData = filtered.slice(_fiPcStart, _fiPcStart + _fiPcPageSize);
 
   const grid = document.getElementById('fipcGrid');
   if (filtered.length) {
-    grid.innerHTML = filtered.map(fiPcCardHtml).join('');
+    grid.innerHTML = pageData.map(fiPcCardHtml).join('');
   } else if (!fiGasUrl()) {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--label);font-size:13px;">아직 GAS 연동 주소가 등록되지 않았습니다.<br>우측 상단 "⚙ 설정"에서 먼저 등록해주세요.</div>';
   } else {
     grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--label);font-size:13px;">조건에 맞는 항목이 없습니다.</div>';
   }
+  _fiPcRenderPagination(filtered.length, _fiPcTotalPages);
   fiUpdateSelectBar();
+}
+let _fiPcPageSize = 30;
+let _fiPcCurrentPage = 0;
+function _fiPcRenderPagination(totalCount, totalPages) {
+  const bar = document.getElementById('fipcPaginationBar');
+  if (!bar) return;
+  if (totalCount === 0 || totalPages <= 1) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.display = 'block';
+  const cur = _fiPcCurrentPage + 1;
+  const WINDOW = window.innerWidth < 640 ? 5 : 7;
+  let start = Math.max(1, cur - Math.floor(WINDOW / 2));
+  let end = Math.min(totalPages, start + WINDOW - 1);
+  start = Math.max(1, end - WINDOW + 1);
+  const btn = (label, page, disabled, active) =>
+    `<button type="button" onclick="_fiPcGoToPage(${page - 1})" ${disabled ? 'disabled' : ''} style="flex-shrink:0;min-width:30px;height:30px;padding:0 8px;border-radius:8px;border:1.5px solid ${active ? 'var(--accent,#0ea5e9)' : 'var(--border)'};background:${active ? 'var(--accent,#0ea5e9)' : 'var(--panel)'};color:${active ? '#fff' : 'var(--text-sub)'};font-size:12.5px;font-weight:800;cursor:${disabled ? 'default' : 'pointer'};opacity:${disabled ? '.4' : '1'};">${label}</button>`;
+  let html = `<div style="text-align:center;font-size:12.5px;color:var(--label);margin-bottom:8px;">총 ${totalCount.toLocaleString()}건 · ${cur}/${totalPages}페이지</div>`;
+  html += `<div style="display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;">`;
+  html += btn('처음', 1, cur === 1, false);
+  html += btn('이전', Math.max(1, cur - 1), cur === 1, false);
+  for (let p = start; p <= end; p++) html += btn(String(p), p, false, p === cur);
+  html += btn('다음', Math.min(totalPages, cur + 1), cur === totalPages, false);
+  html += btn('끝', totalPages, cur === totalPages, false);
+  html += `</div>`;
+  bar.innerHTML = html;
+}
+function _fiPcGoToPage(p) {
+  _fiPcCurrentPage = p;
+  fiPcRender();
 }
 // ── 품목 선택(다중/전체선택) · 보고서 자동제작 버튼 ──────────────────────
 // 보고서를 실제로 만드는 로직은 아직 없다(요청, 2026-10-20: "우선 버튼만") — 선택
