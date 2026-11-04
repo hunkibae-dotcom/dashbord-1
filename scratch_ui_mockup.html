@@ -49,20 +49,23 @@
   .old-stack-btn .chk{margin-left:auto;font-size:10px;}
   .old-stack-btn.on{border-color:var(--pkg-c, var(--accent));background:color-mix(in srgb, var(--pkg-c, var(--accent)) 10%, transparent);color:var(--pkg-c, var(--accent));font-weight:800;}
 
-  /* ===== AFTER: 드롭다운(닫힘/열림) ===== */
-  .dd{position:relative;}
-  .dd-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--panel-2);cursor:pointer;}
-  .dd-trigger .val{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:800;color:var(--text);}
-  .dd-trigger .val .dot{width:8px;height:8px;border-radius:50%;}
-  .dd-trigger .chev{font-size:11px;color:var(--text-sub);transition:transform .15s;}
+  /* ===== AFTER: 드롭다운 — 내용 크기만큼만(요청, 2026-11-05: "박스크기에맞게 쫙쫙
+     늘리지 말라") — 카드 전체 너비를 차지하지 않고, 글자 길이만큼만 작은 알약 모양으로 */
+  .dd{display:inline-block;max-width:100%;}
+  .dd-trigger{display:inline-flex;width:auto;align-items:center;gap:10px;padding:9px 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--panel-2);cursor:pointer;}
+  .dd-trigger .val{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--text);white-space:nowrap;}
+  .dd-trigger .val .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .dd-trigger .chev{font-size:10px;color:var(--text-sub);transition:transform .15s;flex-shrink:0;}
   .dd.open .chev{transform:rotate(180deg);}
-  .dd-panel{margin-top:6px;border:1.5px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.08);}
-  .dd-opt{display:flex;align-items:center;gap:9px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--text-sub);cursor:pointer;border-bottom:1px solid var(--border);}
-  .dd-opt:last-child{border-bottom:none;}
+  .dd-panel{position:absolute;margin-top:6px;min-width:190px;border:1.5px solid var(--border);border-radius:12px;background:var(--panel);overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.12);z-index:5;}
+  .dd-opt{display:flex;align-items:center;gap:9px;padding:9px 14px;font-size:12.5px;font-weight:600;color:var(--text-sub);cursor:pointer;white-space:nowrap;}
   .dd-opt .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
   .dd-opt.on{background:var(--accent-bg);color:var(--accent);font-weight:800;}
-  .dd-opt .chk{margin-left:auto;font-size:11px;color:var(--accent);}
+  .dd-opt .chk{margin-left:auto;font-size:11px;color:var(--accent);padding-left:14px;}
   .dd-opt:hover{background:var(--panel-2);}
+  .dd-group-label{padding:8px 14px 5px;font-size:9.5px;font-weight:800;color:var(--text-sub);text-transform:uppercase;letter-spacing:.05em;background:var(--panel-2);}
+  .dd-trigger .tag{font-size:10px;font-weight:700;color:var(--text-sub);background:var(--panel);border:1px solid var(--border);border-radius:999px;padding:1px 8px;}
+  .dd-anchor{position:relative;display:inline-block;max-width:100%;}
 
   /* ===== AFTER: PKG 컴팩트 칩 ===== */
   .chip-row{display:flex;flex-wrap:wrap;gap:7px;}
@@ -70,8 +73,6 @@
   .chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
   .chip.on{border-color:var(--chip-c,var(--accent));background:color-mix(in srgb, var(--chip-c,var(--accent)) 12%, transparent);color:var(--chip-c,var(--accent));}
   .chip .chk{font-size:9.5px;}
-  .group-head{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel-2);font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
-  .group-head .chev{font-size:10px;color:var(--text-sub);}
   .group-wrap{display:flex;flex-direction:column;gap:6px;}
 
   .note{font-size:11.5px;color:var(--text-sub);line-height:1.6;background:var(--panel-2);border:1px dashed var(--border);border-radius:10px;padding:10px 12px;margin-top:4px;}
@@ -91,13 +92,13 @@
 
 <div class="wrap">
   <div>
-    <h1>진행상태 · 블로킹 버튼 — 개선 시안</h1>
-    <p class="sub">실제 반영 전 모양만 먼저 확인하는 용도입니다. 왼쪽(빨강 표시)이 지금 모습, 오른쪽(초록 표시)이 제안 드리는 모습입니다. 버튼은 전부 눌러볼 수 있게 만들어뒀습니다.</p>
+    <h1>진행상태 · 블로킹 버튼 — 개선 시안 (v2)</h1>
+    <p class="sub">말씀하신 대로 고쳤습니다 — 드롭다운도 카드 너비에 맞춰 늘리지 않고, 글자 길이만큼만 작은 알약 모양으로 줄였습니다. 왼쪽(빨강)이 지금 모습, 오른쪽(초록)이 제안입니다. 전부 눌러보실 수 있습니다.</p>
   </div>
 
   <!-- ================= QC 진행상태 ================= -->
   <div class="section">
-    <div class="section-title">① 품질검사 — 진행상태 <span class="badge">버튼열 → 드롭다운</span></div>
+    <div class="section-title">① 품질검사 — 진행상태 <span class="badge">버튼열 → 작은 드롭다운, 시트별 분류</span></div>
     <div class="pair">
       <div class="card">
         <div class="card-label before">지금</div>
@@ -113,26 +114,35 @@
       <div class="card">
         <div class="card-label after">제안</div>
         <div class="field-label">진행상태</div>
-        <div class="dd" id="ddQcStatus">
-          <div class="dd-trigger" onclick="toggleDD('ddQcStatus')">
-            <span class="val"><span class="dot" style="background:#6D5CE8"></span>검사완료</span>
-            <i class="chev">▾</i>
+        <div class="dd-anchor">
+          <div class="dd" id="ddQcStatus">
+            <div class="dd-trigger" onclick="toggleDD('ddQcStatus')">
+              <span class="val"><span class="dot" style="background:#6D5CE8"></span>검사완료</span>
+              <span class="tag">진행중</span>
+              <i class="chev">▾</i>
+            </div>
           </div>
-          <div class="dd-panel" style="display:none;">
-            <div class="dd-opt" onclick="pick(this,'ddQcStatus','검사완료')"><span class="dot" style="background:#94a3b8"></span>미검사</div>
-            <div class="dd-opt on" onclick="pick(this,'ddQcStatus','검사완료')"><span class="dot" style="background:#6D5CE8"></span>검사완료<span class="chk">✓</span></div>
-            <div class="dd-opt" onclick="pick(this,'ddQcStatus','재투입')"><span class="dot" style="background:#a855f7"></span>재투입</div>
-            <div class="dd-opt" onclick="pick(this,'ddQcStatus','양지')"><span class="dot" style="background:#f59e0b"></span>양지</div>
+          <div class="dd-panel" id="ddQcStatusPanel" style="display:none;">
+            <div class="dd-group-label">진행중 · 검사항목 리스트</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','미검사','진행중')"><span class="dot" style="background:#94a3b8"></span>미검사</div>
+            <div class="dd-opt on" onclick="pick(this,'ddQcStatus','검사완료','진행중')"><span class="dot" style="background:#6D5CE8"></span>검사완료<span class="chk">✓</span></div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','재투입','진행중')"><span class="dot" style="background:#a855f7"></span>재투입</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','양지','진행중')"><span class="dot" style="background:#f59e0b"></span>양지</div>
+            <div class="dd-group-label">출고완료 · 검사완료 리스트</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','검사완료','출고완료')"><span class="dot" style="background:#6D5CE8"></span>검사완료</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','미검사','출고완료')"><span class="dot" style="background:#94a3b8"></span>미검사</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','외관검사','출고완료')"><span class="dot" style="background:#0ea5e9"></span>외관검사</div>
+            <div class="dd-opt" onclick="pick(this,'ddQcStatus','양지검사','출고완료')"><span class="dot" style="background:#f59e0b"></span>양지검사</div>
           </div>
         </div>
-        <div class="note">한 줄로 접혀있다가 누르면 펼쳐집니다. 지금 선택된 값이 바로 보이고, 공간도 훨씬 적게 씁니다.</div>
+        <div class="note">실제 시트 구조(진행중=검사항목 리스트 / 출고완료=검사완료 리스트) 그대로 드롭다운 안에서 소제목으로 나뉩니다. 품목이 실제로 있는 시트 쪽만 체크가 켜지고(지난번 고친 버그와 같은 원칙), 다른 쪽을 고르면 그 시트로 이동 처리됩니다. 닫혀있을 땐 글자 길이만큼만 작게 보입니다.</div>
       </div>
     </div>
   </div>
 
   <!-- ================= QC 블로킹 ================= -->
   <div class="section">
-    <div class="section-title">② 품질검사 — 블로킹 <span class="badge">버튼열 → 드롭다운</span></div>
+    <div class="section-title">② 품질검사 — 블로킹 <span class="badge">버튼열 → 작은 드롭다운</span></div>
     <div class="pair">
       <div class="card">
         <div class="card-label before">지금</div>
@@ -147,12 +157,14 @@
       <div class="card">
         <div class="card-label after">제안</div>
         <div class="field-label">블로킹</div>
-        <div class="dd" id="ddQcBlock">
-          <div class="dd-trigger" onclick="toggleDD('ddQcBlock')">
-            <span class="val"><span class="dot" style="background:#dc2626"></span>대기</span>
-            <i class="chev">▾</i>
+        <div class="dd-anchor">
+          <div class="dd" id="ddQcBlock">
+            <div class="dd-trigger" onclick="toggleDD('ddQcBlock')">
+              <span class="val"><span class="dot" style="background:#dc2626"></span>대기</span>
+              <i class="chev">▾</i>
+            </div>
           </div>
-          <div class="dd-panel" style="display:none;">
+          <div class="dd-panel" id="ddQcBlockPanel" style="display:none;">
             <div class="dd-opt" onclick="pick(this,'ddQcBlock','미등록')"><span class="dot" style="background:#94a3b8"></span>미등록</div>
             <div class="dd-opt on" onclick="pick(this,'ddQcBlock','대기')"><span class="dot" style="background:#dc2626"></span>대기<span class="chk">✓</span></div>
             <div class="dd-opt" onclick="pick(this,'ddQcBlock','완료')"><span class="dot" style="background:#16a34a"></span>완료</div>
@@ -171,7 +183,7 @@
         <div class="card-label before">지금</div>
         <div class="field-label">진행상태 › 수출현황 (펼쳐짐)</div>
         <div class="old-stack">
-          <div class="old-stack-btn" style="--pkg-c:#dc2626;">미입고<span class="dot" style="background:#dc2626;margin-left:auto;order:1;"></span></div>
+          <div class="old-stack-btn" style="--pkg-c:#dc2626;">미입고</div>
           <div class="old-stack-btn" style="--pkg-c:#a21caf;">회수중</div>
           <div class="old-stack-btn" style="--pkg-c:#38BDF8;">입고</div>
           <div class="old-stack-btn on" style="--pkg-c:#16a34a;">출고<span class="chk">✓</span></div>
@@ -228,22 +240,28 @@ function setTheme(t){
   setTheme(t);
 })();
 function toggleDD(id){
-  document.querySelectorAll('.dd-panel').forEach(p=>{ if(p.closest('.dd').id!==id) p.style.display='none'; });
+  document.querySelectorAll('.dd-panel').forEach(p=>{ if(p.id !== id+'Panel') p.style.display='none'; });
   document.querySelectorAll('.dd').forEach(d=>{ if(d.id!==id) d.classList.remove('open'); });
   const dd = document.getElementById(id);
-  const panel = dd.querySelector('.dd-panel');
+  const panel = document.getElementById(id+'Panel');
   const opening = panel.style.display === 'none';
   panel.style.display = opening ? '' : 'none';
   dd.classList.toggle('open', opening);
 }
-function pick(el, ddId, label){
-  const dd = document.getElementById(ddId);
-  dd.querySelectorAll('.dd-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.chk')?.remove(); });
+function pick(el, ddId, label, groupTag){
+  const panel = document.getElementById(ddId+'Panel');
+  panel.querySelectorAll('.dd-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.chk')?.remove(); });
   el.classList.add('on');
   const dot = el.querySelector('.dot').style.background;
   el.insertAdjacentHTML('beforeend', '<span class="chk">✓</span>');
-  const trigger = dd.querySelector('.dd-trigger .val');
-  trigger.innerHTML = '<span class="dot" style="background:'+dot+'"></span>'+label;
+  const dd = document.getElementById(ddId);
+  const trigger = dd.querySelector('.dd-trigger');
+  const tagEl = trigger.querySelector('.tag');
+  trigger.querySelector('.val').innerHTML = '<span class="dot" style="background:'+dot+'"></span>'+label;
+  if (groupTag) {
+    if (tagEl) tagEl.textContent = groupTag;
+    else trigger.querySelector('.val').insertAdjacentHTML('afterend', '<span class="tag">'+groupTag+'</span>');
+  }
   toggleDD(ddId);
 }
 document.querySelectorAll('.chip').forEach(chip=>{
