@@ -6085,6 +6085,17 @@
         if (changedEl) { const disp = _ieDisplayDate(document.getElementById('ieRegDate')?.value); changedEl.textContent = disp === '—' ? '' : disp + ' 변경'; }
     }
 
+    // 상차 준비완료(PC 웹과 동일, 요청 2026-11-04) — 비고란은 자유 텍스트라 다른 메모와
+    // 섞여 있을 수 있어서, "상차 준비완료" 문구만 따로 떼어 토글한다(" / "로 구분해 이어붙임).
+    const PKG_SHIP_READY_TEXT = '상차 준비완료';
+    function _pkgNoteHasShipReady(note) {
+        return (note || '').toString().split('/').map(s => s.trim()).includes(PKG_SHIP_READY_TEXT);
+    }
+    function _pkgNoteWithShipReady(note, checked) {
+        const parts = (note || '').toString().split('/').map(s => s.trim()).filter(s => s && s !== PKG_SHIP_READY_TEXT);
+        if (checked) parts.push(PKG_SHIP_READY_TEXT);
+        return parts.join(' / ');
+    }
     // color까지 넘어오면 그걸로 정확히 지목하고, 안 넘어오면(이전 호출부 호환) 예전처럼 code+round 첫 매치.
     // 같은 code+round인데 색상만 다른 행이 여러 개 있으면 색상 없이는 항상 같은(첫) 행만 열려서
     // "다른 색상 카드를 눌러도 전부 같은 항목이 열린다"는 문제가 있었다.
@@ -6169,6 +6180,8 @@
         _ieCurStatus = _ieOrigStatus;
         const memoInp = document.getElementById('ieMemo');
         if (memoInp) memoInp.value = _ieOrigMemo;
+        const shipReadyChk = document.getElementById('ieShipReadyChk');
+        if (shipReadyChk) shipReadyChk.checked = _pkgNoteHasShipReady(_ieOrigMemo);
         _ieEditSchedule = false; _ieEditSpec = false;
         _ieApplyCardToggle('ieSchedule', false);
         _ieApplyCardToggle('ieSpec', false);
