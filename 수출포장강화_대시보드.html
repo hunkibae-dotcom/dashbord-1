@@ -14456,12 +14456,6 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <div id="pkgRoundLabel" style="font-size:12.5px;color:#64748b;margin-top:2px;font-weight:600;"></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:7px;flex-shrink:0;margin-left:8px;">
-                    <!-- 상차 준비완료(요청, 2026-10-28) — 체크 후 저장하면 시트 비고란에
-                         "상차 준비완료" 문구가 자동으로 기입/제거된다(_pkgNoteWithShipReady).
-                         상세스펙 버튼과 위치를 바꿨다(요청, 2026-11-04). -->
-                    <label title="상차 준비완료" style="background:rgba(22,163,74,.1);border:1px solid rgba(22,163,74,.25);color:#16a34a;border-radius:8px;height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
-                        <input type="checkbox" id="pkgShipReadyChk" style="width:13px;height:13px;accent-color:#16a34a;cursor:pointer;margin:0;"> 상차 준비완료
-                    </label>
                     <button onclick="openPkgSpecFromItemDetail()" title="상세스펙 보기" style="background:rgba(2,132,199,.1);border:1px solid rgba(2,132,199,.25);color:#0284c7;border-radius:8px;height:26px;padding:0 10px;display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap;">
                         <i class="fa-solid fa-ruler-combined"></i> 상세스펙
                     </button>
