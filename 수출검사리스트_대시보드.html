@@ -2409,7 +2409,7 @@ async function loadData(force = false) {
   if (cached) {
     archiveTotals = cached.totals;
     archiveRows = cached.rows;
-    _qcTagDuplicateOccurrences(archiveRows);
+    _qcTagDuplicateOccurrences([...allData, ...archiveRows]);
     applyMiOverrides(archiveRows);
     _rpInvalidateKeyIndex();
     renderQualityCharts();
@@ -2433,7 +2433,7 @@ async function loadData(force = false) {
       }
     });
     allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
-    _qcTagDuplicateOccurrences(allData);
+    _qcTagDuplicateOccurrences([...allData, ...archiveRows]);
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
     applyFilters();
@@ -2458,7 +2458,7 @@ async function loadData(force = false) {
   if (activeCached) {
     _qcShowLoadSourceDebug('세션 캐시 사용 · 네트워크 생략');
     allData = activeCached;
-    _qcTagDuplicateOccurrences(allData);
+    _qcTagDuplicateOccurrences([...allData, ...archiveRows]);
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
     applyFilters();
@@ -2483,7 +2483,7 @@ async function loadData(force = false) {
   ).then(archives => {
     archives.forEach((t, i) => { archiveTotals[ARCHIVES[i].key] = t ? { cord: t.cord, qty: t.qty } : null; });
     archiveRows = archives.filter(Boolean).flatMap(t => t.items).map(r => r.source ? r : { ...r, source: 'archive' });
-    _qcTagDuplicateOccurrences(archiveRows);
+    _qcTagDuplicateOccurrences([...allData, ...archiveRows]);
     applyMiOverrides(archiveRows);
     _rpInvalidateKeyIndex();
     _saveArchiveCache(archiveTotals, archiveRows);
