@@ -2458,6 +2458,7 @@ async function loadData(force = false) {
   if (activeCached) {
     _qcShowLoadSourceDebug('세션 캐시 사용 · 네트워크 생략');
     allData = activeCached;
+    _qcTagDuplicateOccurrences(allData);
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
     applyFilters();
