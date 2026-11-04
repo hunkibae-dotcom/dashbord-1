@@ -6244,7 +6244,7 @@
     function _renderIeStatus() {
         const container = document.getElementById('ieStatusOpts');
         if (!container) return;
-        container.innerHTML = `<div class="fw-dd-group">` + PKG_BASIS_LIST.map(b => {
+        container.innerHTML = `<div class="fw-dd-group" style="flex-direction:column;">` + PKG_BASIS_LIST.map(b => {
             const set = PKG_STATUS_GROUPS[b.key];
             const effectiveCur = _ieOriginStatusMap[b.key];
             const hasData = b.key in _ieOriginStatusMap;
@@ -6254,11 +6254,11 @@
             const isOpen = _ieStatusOpenGroup === b.key;
             const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748B') : null;
             return `
-              <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
-                <div class="fw-dd-trigger" ${isActiveGroup ? `style="border-color:${c};background:${c}22;color:${c};"` : ''} onclick="_ieToggleStatusPanel('${b.key}')">
+              <div class="fw-dd-anchor${isOpen ? ' open' : ''}" style="display:block;width:100%;">
+                <div class="fw-dd-trigger" style="display:flex;width:100%;box-sizing:border-box;${isActiveGroup ? `border-color:${c};background:${c}22;color:${c};` : ''}" onclick="_ieToggleStatusPanel('${b.key}')">
                   ${isActiveGroup ? `<span class="fw-dd-dot" style="background:${c}"></span>` : ''}
                   <span>${b.label}</span>${isActiveGroup ? ` · ${effectiveCur}` : ''}
-                  <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+                  <i class="fa-solid fa-chevron-down fw-dd-chev" style="margin-left:auto;"></i>
                 </div>
                 <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:190px;">
