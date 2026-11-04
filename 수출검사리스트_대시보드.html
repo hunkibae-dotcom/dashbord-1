@@ -14292,13 +14292,13 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 품목 상세/수정 (모바일 리스트 항목 클릭 시) ===== -->
-<!-- PC에서만 820px로 넓히고 일정/규격을 2단으로 나눴던 걸(2026-10-19) 되돌렸다(요청,
-     2026-11-04: "cbm창이 너무좁아서 이상해졌는데 일정창이 지금보면 공간낭비가심하니까") —
-     2단으로 나누면 규격/CBM 칸이 절반 너비로 눌려서 좁아지고, 일정 칸은 내용에 비해
-     카드가 너무 커져서 빈 공간만 늘어났다. 이제 화면 크기와 상관없이 항상 단일 칼럼으로
-     세로로 쌓는다(모바일 앱과 완전히 같은 레이아웃). -->
+<!-- 일정/규격을 포장강화 수정창과 같은 모양(2단 배치, 칸 안쪽도 2x2 그리드)으로 맞췄다
+     (요청, 2026-11-04: "일정과 cbm칸도 사진처럼 위치 크기조정좀해줘" — 포장강화 스크린샷
+     참고). 모달 폭을 포장강화와 똑같이 640px로 맞춰둔 상태라 전처럼(820px) 비좁지 않다.
+     카드 높이를 억지로 맞추지 않도록 align-items:start로 둔다(안 그러면 Grid 기본값인
+     stretch 때문에 짧은 카드가 긴 카드 높이만큼 빈 공간으로 늘어난다 — 2026-11-04 버그). -->
 <style>
-  #mItemDetailModal .mi-grid2 { display: contents; }
+  #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; align-items: start; }
   /* 진행상태/블로킹 — 버튼열을 시트별 드롭다운으로 바꾼 시안 반영(요청, 2026-11-04:
      "버튼들이 쓸데없이 좌우로 길고 못생겼다") */
   #mItemDetailModal .fw-dd-group { display: flex; gap: 6px; flex-wrap: wrap; }
