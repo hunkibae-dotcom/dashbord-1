@@ -2735,6 +2735,14 @@
                 } else if (rawStatusNorm === '철물') {
                     statusDisplay = '철물';
                     statusCategory = '철물';
+                } else if (rawStatusNorm.includes('회수중')) {
+                    // 회수중: "미회수"(아직 회수 요청 자체를 안 한 미입고)와 구분하기 위해
+                    // 추가된 진행상태(요청, 2026-11-04) — 회수(수거) 요청은 넣었지만 아직
+                    // 공장에 실제로 들어오지 않은 중간 단계. 미입고와 똑같이 "아직 입고
+                    // 전"이라 포장일 비움 등은 미입고와 동일하게 취급하되, 값 자체는 따로
+                    // 센다.
+                    statusDisplay = '회수중';
+                    statusCategory = '회수중';
                 } else if (rawStatusNorm.includes('미입고') || rawStatusNorm.includes('입고대기')) {
                     statusDisplay = statusVal;
                     statusCategory = '미입고';
