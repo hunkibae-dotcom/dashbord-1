@@ -10374,6 +10374,7 @@
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-check"></i> 완료';
             btn.onclick = pkgCloseClassifyUploadModal;
+            if (detailBtn && _pkgClassifyDetails.length) detailBtn.style.display = '';
             syncWithGoogleSheets(false);
         }
 
