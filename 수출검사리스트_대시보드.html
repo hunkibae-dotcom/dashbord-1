@@ -10078,8 +10078,12 @@ function _miToggleStatusPanel(key) {
     _miStatusPanelOpen = !_miStatusPanelOpen;
     _miRenderStatusButtons();
   } else {
-    _miStatusPanelOpen = true;
+    // selectMiBasis가 안에서 setMiField를 부를 수도 있고, 그러면 _refreshMiStatusButtons가
+    // 패널을 도로 닫아버리므로(값 자동선택 ≠ 패널을 보고 싶다는 뜻) 항상 마지막에
+    // 다시 펼친 상태로 덮어쓴다.
     selectMiBasis(key);
+    _miStatusPanelOpen = true;
+    _miRenderStatusButtons();
   }
 }
 function _refreshMiStatusButtons(status) {
