@@ -11155,7 +11155,11 @@
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
             _pkgCurOrigin = item._pkgOrigin || null;
-            _pkgStatusOpenGroup = _pkgStatusGroupKeyFor(_pkgCurStatus, _pkgCurOrigin);
+            // 드롭다운 시안 반영 전엔 "현재 상태가 속한 그룹"을 항상 펼친 채로 열었지만
+            // (옛 아코디언 디자인 때 얘기), 지금은 접힌 드롭다운 버튼이라 열 때마다 펼쳐진
+            // 채로 뜨면 안 된다(요청, 2026-11-04: "아무거나 클릭하면 수정창이 바로 저렇게
+            // 드롭다운이 펼쳐진상태로 열리는데"). 항상 닫힌 채로 시작한다.
+            _pkgStatusOpenGroup = null;
             document.getElementById('pkgPartialQty').value = '';
             _renderPkgStatusOpts();
 
