@@ -3753,11 +3753,14 @@ function _tblToggleRowSelect(key) {
 }
 
 function openTblBulkEditModal() {
+  _tblBulkBasis = 'inprogress';
   _tblBulkStatus = null;
+  _tblBulkMigrateTarget = null;
   _tblBulkBlocking = null;
   document.getElementById('tblBulkDateInput').value = '';
   document.getElementById('tblBulkResult').textContent = '';
   document.getElementById('tblBulkCount').textContent = _tblBulkTargetKeys.length + '개 품목 선택됨';
+  _tblRenderBulkBasisTabs();
   _tblRenderBulkStatusBtns();
   _tblRenderBulkBlockingBtns();
   document.getElementById('tblBulkEditModal').style.display = 'flex';
@@ -3765,16 +3768,52 @@ function openTblBulkEditModal() {
 function closeTblBulkEditModal() {
   document.getElementById('tblBulkEditModal').style.display = 'none';
 }
+function _tblRenderBulkBasisTabs() {
+  const wrap = document.getElementById('tblBulkBasisTabs');
+  if (!wrap) return;
+  wrap.innerHTML = MI_BASIS_LIST.map(b => {
+    const active = b.key === _tblBulkBasis;
+    return `<button type="button" onclick="_tblSelectBulkBasis('${b.key}')" style="flex:1;border:none;border-radius:7px;padding:6px 0;font-size:10.5px;font-weight:${active ? 800 : 700};cursor:pointer;background:${active ? '#fff' : 'transparent'};color:${active ? '#6D5CE8' : '#64748b'};${active ? 'box-shadow:0 1px 2px rgba(0,0,0,.15);' : ''}">${b.label}</button>`;
+  }).join('');
+}
+// "출고완료" 탭으로 바꾸는 것 자체는 아직 아무 것도 고른 게 아니다(요청, 2026-11-04) —
+// 품목수정창과 같은 이유로, 실제로 상태 버튼을 눌러야만 "이동하겠다"는 뜻으로 받아들인다.
+function _tblSelectBulkBasis(key) {
+  _tblBulkBasis = key;
+  _tblRenderBulkBasisTabs();
+  _tblRenderBulkStatusBtns();
+}
+function _tblBulkStatusSet() {
+  return _tblBulkBasis === 'shipped' ? MI_STATUS_SET_SHIPPED : MI_STATUS_SET_INPROGRESS;
+}
 function _tblRenderBulkStatusBtns() {
   const wrap = document.getElementById('tblBulkStatusBtns');
   if (!wrap) return;
-  wrap.innerHTML = TBL_BULK_STATUS_OPTIONS.map(v => {
-    const on = _tblBulkStatus === v;
-    return `<button type="button" onclick="_tblSetBulkStatus('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${v}</button>`;
+  const set = _tblBulkStatusSet();
+  const highlight = _tblBulkBasis === 'shipped' ? _tblBulkMigrateTarget : _tblBulkStatus;
+  wrap.innerHTML = set.map(v => {
+    const on = highlight === v;
+    return `<button type="button" onclick="_tblSetBulkStatus('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${_miStatusLabel(v)}</button>`;
   }).join('');
+  const note = document.getElementById('tblBulkMigrateNote');
+  if (note) {
+    if (_tblBulkBasis === 'shipped' && _tblBulkMigrateTarget) {
+      note.style.display = '';
+      note.textContent = `적용을 누르면 선택한 품목 전부가 "검사완료 리스트"로 이동됩니다 (${_miStatusLabel(_tblBulkMigrateTarget)})`;
+    } else {
+      note.style.display = 'none';
+    }
+  }
 }
 function _tblSetBulkStatus(v) {
-  _tblBulkStatus = (_tblBulkStatus === v) ? null : v; // 같은 걸 다시 누르면 "변경 안 함"으로
+  if (_tblBulkBasis === 'shipped') {
+    // 출고완료 탭 = 이동 의도. 진행중 탭에서 고른 값은 서로 배타적이라 비운다.
+    _tblBulkMigrateTarget = (_tblBulkMigrateTarget === v) ? null : v;
+    _tblBulkStatus = null;
+  } else {
+    _tblBulkStatus = (_tblBulkStatus === v) ? null : v; // 같은 걸 다시 누르면 "변경 안 함"으로
+    _tblBulkMigrateTarget = null;
+  }
   _tblRenderBulkStatusBtns();
 }
 // 블로킹 일괄 수정(요청, 2026-10-23) — 진행상태 버튼과 완전히 같은 방식.
