@@ -3759,7 +3759,8 @@ function openTblBulkEditModal() {
   document.getElementById('tblBulkDateInput').value = '';
   document.getElementById('tblBulkResult').textContent = '';
   document.getElementById('tblBulkCount').textContent = _tblBulkTargetKeys.length + '개 품목 선택됨';
-  _tblRenderBulkBasisTabs();
+  _tblBulkStatusOpenGroup = null;
+  _tblBulkBlockingOpen = false;
   _tblRenderBulkStatusBtns();
   _tblRenderBulkBlockingBtns();
   document.getElementById('tblBulkEditModal').style.display = 'flex';
@@ -3767,36 +3768,40 @@ function openTblBulkEditModal() {
 function closeTblBulkEditModal() {
   document.getElementById('tblBulkEditModal').style.display = 'none';
 }
-function _tblRenderBulkBasisTabs() {
-  const wrap = document.getElementById('tblBulkBasisTabs');
-  if (!wrap) return;
-  wrap.innerHTML = MI_BASIS_LIST.map(b => {
-    const active = b.key === _tblBulkBasis;
-    return `<button type="button" onclick="_tblSelectBulkBasis('${b.key}')" style="flex:1;border:none;border-radius:7px;padding:6px 0;font-size:10.5px;font-weight:${active ? 800 : 700};cursor:pointer;background:${active ? '#fff' : 'transparent'};color:${active ? '#6D5CE8' : '#64748b'};${active ? 'box-shadow:0 1px 2px rgba(0,0,0,.15);' : ''}">${b.label}</button>`;
-  }).join('');
-}
-// "출고완료" 탭으로 바꾸는 것 자체는 아직 아무 것도 고른 게 아니다(요청, 2026-11-04) —
-// 품목수정창과 같은 이유로, 실제로 상태 버튼을 눌러야만 "이동하겠다"는 뜻으로 받아들인다.
-function _tblSelectBulkBasis(key) {
+// 일괄수정창 진행상태도 품목수정창과 같은 시트별 드롭다운으로 바꿨다(요청, 2026-11-04:
+// "일괄 수정창도좀 스타일좀 바꿔봐 내가얘기했던것들 잘생각해서"). 진행중/출고완료 그룹은
+// 서로 배타적으로 하나만 고를 수 있고(_tblSetBulkStatus가 반대쪽을 비움), 같은 값을
+// 다시 누르면 "변경 안 함"으로 돌아간다(기존 동작 그대로).
+let _tblBulkStatusOpenGroup = null;
+function _tblToggleBulkStatusPanel(key) {
+  if (_tblBulkStatusOpenGroup === key) { _tblBulkStatusOpenGroup = null; _tblRenderBulkStatusBtns(); return; }
+  _tblBulkStatusOpenGroup = key;
   _tblBulkBasis = key;
-  _tblRenderBulkBasisTabs();
   _tblRenderBulkStatusBtns();
-}
-function _tblBulkStatusSet() {
-  return _tblBulkBasis === 'shipped' ? MI_STATUS_SET_SHIPPED : MI_STATUS_SET_INPROGRESS;
 }
 function _tblRenderBulkStatusBtns() {
   const wrap = document.getElementById('tblBulkStatusBtns');
   if (!wrap) return;
-  const set = _tblBulkStatusSet();
-  const highlight = _tblBulkBasis === 'shipped' ? _tblBulkMigrateTarget : _tblBulkStatus;
-  wrap.innerHTML = set.map(v => {
-    const on = highlight === v;
-    return `<button type="button" onclick="_tblSetBulkStatus('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${_miStatusLabel(v)}</button>`;
-  }).join('');
+  wrap.innerHTML = `<div class="fw-dd-group">` + MI_BASIS_LIST.map(b => {
+    const set = MI_STATUS_SET_BY_BASIS[b.key];
+    const highlight = b.key === 'shipped' ? _tblBulkMigrateTarget : _tblBulkStatus;
+    const isActiveGroup = highlight != null;
+    const isOpen = _tblBulkStatusOpenGroup === b.key;
+    return `
+      <div class="fw-dd-anchor${isOpen ? ' open' : ''}">
+        <div class="fw-dd-trigger${isActiveGroup ? ' active' : ''}" onclick="_tblToggleBulkStatusPanel('${b.key}')">
+          ${isActiveGroup ? `<span class="fw-dd-dot" style="background:#6D5CE8"></span>` : ''}
+          <span>${b.label}</span>${isActiveGroup ? ` · ${_miStatusLabel(highlight)}` : ''}
+          <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+        </div>
+        <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
+          ${set.map(v => `<div class="fw-dd-opt${highlight === v ? ' on' : ''}" onclick="_tblSetBulkStatus('${b.key}','${v}')"><span class="fw-dd-dot" style="background:${highlight === v ? '#6D5CE8' : 'var(--border)'}"></span>${_miStatusLabel(v)}${highlight === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
+        </div>
+      </div>`;
+  }).join('') + `</div>`;
   const note = document.getElementById('tblBulkMigrateNote');
   if (note) {
-    if (_tblBulkBasis === 'shipped' && _tblBulkMigrateTarget) {
+    if (_tblBulkMigrateTarget) {
       note.style.display = '';
       note.textContent = `적용을 누르면 선택한 품목 전부가 "검사완료 리스트"로 이동됩니다 (${_miStatusLabel(_tblBulkMigrateTarget)})`;
     } else {
@@ -3804,29 +3809,46 @@ function _tblRenderBulkStatusBtns() {
     }
   }
 }
-function _tblSetBulkStatus(v) {
-  if (_tblBulkBasis === 'shipped') {
-    // 출고완료 탭 = 이동 의도. 진행중 탭에서 고른 값은 서로 배타적이라 비운다.
+function _tblSetBulkStatus(groupKey, v) {
+  _tblBulkBasis = groupKey;
+  if (groupKey === 'shipped') {
+    // 출고완료 그룹 = 이동 의도. 진행중 그룹에서 고른 값은 서로 배타적이라 비운다.
     _tblBulkMigrateTarget = (_tblBulkMigrateTarget === v) ? null : v;
     _tblBulkStatus = null;
   } else {
     _tblBulkStatus = (_tblBulkStatus === v) ? null : v; // 같은 걸 다시 누르면 "변경 안 함"으로
     _tblBulkMigrateTarget = null;
   }
+  _tblBulkStatusOpenGroup = null; // 고르면 접는다
   _tblRenderBulkStatusBtns();
 }
-// 블로킹 일괄 수정(요청, 2026-10-23) — 진행상태 버튼과 완전히 같은 방식.
+// 블로킹 일괄 수정(요청, 2026-10-23) — 진행상태와 같은 방식으로 드롭다운 하나로 교체.
 let _tblBulkBlocking = null;
+let _tblBulkBlockingOpen = false;
+function _tblToggleBulkBlockingPanel() {
+  _tblBulkBlockingOpen = !_tblBulkBlockingOpen;
+  _tblRenderBulkBlockingBtns();
+}
 function _tblRenderBulkBlockingBtns() {
   const wrap = document.getElementById('tblBulkBlockingBtns');
   if (!wrap) return;
-  wrap.innerHTML = QC_BLOCKING_VALUES.map(v => {
-    const on = _tblBulkBlocking === v;
-    return `<button type="button" onclick="_tblSetBulkBlocking('${v}')" style="padding:7px 12px;border-radius:9px;border:1.5px solid ${on ? '#6D5CE8' : '#e2e8f0'};background:${on ? '#6D5CE8' : '#f8fafc'};color:${on ? '#fff' : '#475569'};font-size:12px;font-weight:700;cursor:pointer;">${_qcBlockingLabel(v)}</button>`;
-  }).join('');
+  const cur = _tblBulkBlocking;
+  const color = cur ? (QC_BLOCKING_DOT[cur] || '#94a3b8') : null;
+  wrap.innerHTML = `
+    <div class="fw-dd-anchor${_tblBulkBlockingOpen ? ' open' : ''}">
+      <div class="fw-dd-trigger${cur ? ' active' : ''}" onclick="_tblToggleBulkBlockingPanel()">
+        ${cur ? `<span class="fw-dd-dot" style="background:${color}"></span>` : ''}
+        <span>${cur ? _qcBlockingLabel(cur) : '변경 안 함'}</span>
+        <i class="fa-solid fa-chevron-down fw-dd-chev"></i>
+      </div>
+      <div class="fw-dd-panel" style="display:${_tblBulkBlockingOpen ? '' : 'none'};">
+        ${QC_BLOCKING_VALUES.map(v => `<div class="fw-dd-opt${cur === v ? ' on' : ''}" onclick="_tblSetBulkBlocking('${v}')"><span class="fw-dd-dot" style="background:${QC_BLOCKING_DOT[v]}"></span>${_qcBlockingLabel(v)}${cur === v ? '<span class="fw-dd-chk">✓</span>' : ''}</div>`).join('')}
+      </div>
+    </div>`;
 }
 function _tblSetBulkBlocking(v) {
   _tblBulkBlocking = (_tblBulkBlocking === v) ? null : v;
+  _tblBulkBlockingOpen = false;
   _tblRenderBulkBlockingBtns();
 }
 
