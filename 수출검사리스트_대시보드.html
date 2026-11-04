@@ -9787,7 +9787,24 @@ function _miNormDate(raw) {
   return '';
 }
 const MI_OVERRIDE_KEY = 'qc_item_override_v1';
-function _miKey(d) { return [d.건명, d.단품코드, d.색상, d.수량].join('|'); }
+// 버그 수정(요청, 2026-11-04: "같은 차수를 또 선택 시 0개 선택됨") — 건명+단품코드+색상+
+// 수량이 시트에 완전히 똑같은 행이 2개 이상 있으면, 보고서 기능이 이 4개 값만으로
+// 품목을 구분하다 보니 서로 다른 행인데도 같은 내부 키로 인식해서 체크박스/사진/
+// 특이사항이 서로 꼬였다(하나를 체크하면 다른 하나가 풀리는 것처럼 보임). _qcTagDuplicateOccurrences가
+// 데이터를 불러올 때마다 미리 매겨둔 d._dupSeq(완전 중복일 때만 2부터 매겨짐)를 키
+// 뒤에 붙여서 서로 다른 품목으로 구분한다 — 처음 나오는 행은 그대로 둬서 기존에
+// 저장해둔 사진/상태(로컬 override, 서버 saveReportMeta 등)가 계속 그 행에 남는다.
+function _miKey(d) { return d._dupSeq ? [d.건명, d.단품코드, d.색상, d.수량].join('|') + '|#' + d._dupSeq : [d.건명, d.단품코드, d.색상, d.수량].join('|'); }
+// list(allData 또는 archiveRows)를 불러온 직후 한 번씩 호출한다 — 데이터가 바뀔 때마다
+// (새로고침·캐시 로드 등) 다시 계산해야 그사이 중복이 해소/추가된 것도 정확히 반영된다.
+function _qcTagDuplicateOccurrences(list) {
+  const seen = {};
+  (list || []).forEach(d => {
+    const base = [d.건명, d.단품코드, d.색상, d.수량].join('|');
+    const n = (seen[base] = (seen[base] || 0) + 1);
+    d._dupSeq = n > 1 ? n : undefined;
+  });
+}
 function _loadMiOverrides() {
   try { return JSON.parse(localStorage.getItem(MI_OVERRIDE_KEY)) || {}; } catch (e) { return {}; }
 }
