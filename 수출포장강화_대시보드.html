@@ -2909,7 +2909,7 @@
                     const text = await readFileAsText(file);
                     const csvRows = parseCSV(text);
                     if (i === 0) state.rawCsvRows = csvRows;
-                    const parsedData = mapCSVData(csvRows);
+                    const parsedData = mapCSVData(csvRows, file.name.includes('충주공장 재고') ? 'stock' : file.name.includes('출고 완료') ? 'shipped' : 'export');
                     datasetMap[file.name] = parsedData;
                 }
 
