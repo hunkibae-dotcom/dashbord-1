@@ -10025,6 +10025,22 @@ function _miCurrentHighlightStatus() {
   if (_miBasis === 'inprogress' && isMovable && _miMigrateTarget) return null; // 반대쪽을 고르면 이쪽은 해지
   return ('검사' in _miPendingSync) ? _miPendingSync.검사 : _miCurrent.검사;
 }
+// 그룹(진행중/출고완료)별로 따로 계산 — "미검사"처럼 두 세트에 전부 있는 값이면
+// 위 _miCurrentHighlightStatus()(지금 보고 있는 탭 기준 하나) 결과를 두 그룹 모두가
+// 자기 세트에 들어있다고 착각해서 둘 다 켜진 것처럼 보이는 버그가 있었다(요청,
+// 2026-11-04: "모든시트가 지금 켜져있는것처럼되어있는데 실제 데이터가 있는 시트만
+// 켜져있어야해"). 품목이 실제로 사는 시트(진행중 품목=진행중, 이관된 품목=출고완료)만
+// 실제 값을 보여주고, 반대쪽은 사람이 직접 이동 의도를 고르기 전엔 항상 꺼둔다.
+function _miGroupHighlightStatus(key) {
+  if (!_miCurrent) return null;
+  const isMovable = _miCurrent.source !== 'archive';
+  const realStatus = ('검사' in _miPendingSync) ? _miPendingSync.검사 : _miCurrent.검사;
+  if (isMovable) {
+    if (key === 'shipped') return _miMigrateTarget; // 직접 고르기 전엔 null
+    return _miMigrateTarget ? null : realStatus; // key === 'inprogress'
+  }
+  return (key === 'shipped') ? realStatus : null;
+}
 
 function _miRenderBasisTabs() {
   const wrap = document.getElementById('miBasisTabs');
