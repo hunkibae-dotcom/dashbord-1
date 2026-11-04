@@ -188,11 +188,11 @@
 
   <!-- ================= PKG 진행상태 ================= -->
   <div class="section">
-    <div class="section-title">③ 포장강화 — 진행상태(수출현황 그룹) <span class="badge">꽉 찬 세로열 → 컴팩트 칩</span></div>
+    <div class="section-title">③ 포장강화 — 진행상태 <span class="badge">펼쳐진 세로열 → 시트별 드롭다운 3개(접힘)</span></div>
     <div class="pair">
       <div class="card">
         <div class="card-label before">지금</div>
-        <div class="field-label">진행상태 › 수출현황 (펼쳐짐)</div>
+        <div class="field-label">진행상태 › 수출현황 (항상 펼쳐짐)</div>
         <div class="old-stack">
           <div class="old-stack-btn" style="--pkg-c:#dc2626;">미입고</div>
           <div class="old-stack-btn" style="--pkg-c:#a21caf;">회수중</div>
@@ -201,24 +201,61 @@
           <div class="old-stack-btn" style="--pkg-c:#7c3aed;">피킹</div>
           <div class="old-stack-btn" style="--pkg-c:#FBBF24;">일부입고</div>
         </div>
-        <div class="note">옵션 하나하나가 모달 전체 너비를 다 차지해서 세로로 길게 늘어지고, 글자에 비해 버튼이 과하게 넓습니다.</div>
+        <div class="note">옵션 하나하나가 모달 전체 너비를 다 차지해서 세로로 길게 늘어지고, 글자에 비해 버튼이 과하게 넓습니다. 그룹을 펼쳐도 아래로 계속 늘어납니다.</div>
       </div>
       <div class="card">
         <div class="card-label after">제안</div>
-        <div class="field-label">진행상태 › 수출현황 (펼쳐짐)</div>
-        <div class="group-wrap">
-          <div class="chip-row">
-            <div class="chip" style="--chip-c:#dc2626;"><span class="dot" style="background:#dc2626"></span>미입고</div>
-            <div class="chip" style="--chip-c:#a21caf;"><span class="dot" style="background:#a21caf"></span>회수중</div>
-            <div class="chip" style="--chip-c:#38BDF8;"><span class="dot" style="background:#38BDF8"></span>입고</div>
-            <div class="chip on" style="--chip-c:#16a34a;"><span class="dot" style="background:#16a34a"></span>출고<span class="chk">✓</span></div>
-            <div class="chip" style="--chip-c:#7c3aed;"><span class="dot" style="background:#7c3aed"></span>피킹</div>
-            <div class="chip" style="--chip-c:#FBBF24;"><span class="dot" style="background:#FBBF24"></span>일부입고</div>
-            <div class="chip" style="--chip-c:#3B82F6;"><span class="dot" style="background:#3B82F6"></span>포장완료</div>
-            <div class="chip" style="--chip-c:#0d9488;"><span class="dot" style="background:#0d9488"></span>재고활용</div>
+        <div class="field-label">진행상태</div>
+        <div class="dd-group">
+          <div class="dd-anchor" id="pkgExport">
+            <div class="dd-trigger" onclick="toggleDD2('pkgExport')">
+              <span class="sheet-label">수출현황</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip" onclick="pickGroup('pkgExport','미입고','#dc2626')"><span class="dot" style="background:#dc2626"></span>미입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','회수중','#a21caf')"><span class="dot" style="background:#a21caf"></span>회수중</div>
+                <div class="chip" onclick="pickGroup('pkgExport','입고','#38BDF8')"><span class="dot" style="background:#38BDF8"></span>입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','출고','#16a34a')"><span class="dot" style="background:#16a34a"></span>출고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','피킹','#7c3aed')"><span class="dot" style="background:#7c3aed"></span>피킹</div>
+                <div class="chip" onclick="pickGroup('pkgExport','일부입고','#FBBF24')"><span class="dot" style="background:#FBBF24"></span>일부입고</div>
+                <div class="chip" onclick="pickGroup('pkgExport','포장완료','#3B82F6')"><span class="dot" style="background:#3B82F6"></span>포장완료</div>
+                <div class="chip" onclick="pickGroup('pkgExport','재고활용','#0d9488')"><span class="dot" style="background:#0d9488"></span>재고활용</div>
+              </div>
+            </div>
+          </div>
+          <div class="dd-anchor" id="pkgShipped">
+            <div class="dd-trigger active" onclick="toggleDD2('pkgShipped')">
+              <span class="dot" style="background:#16a34a"></span>
+              <span class="sheet-label">출고완료</span> · <span class="val-text">출고</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip on" style="--chip-c:#16a34a;" onclick="pickGroup('pkgShipped','출고','#16a34a')"><span class="dot" style="background:#16a34a"></span>출고<span class="chk">✓</span></div>
+                <div class="chip" onclick="pickGroup('pkgShipped','피킹','#7c3aed')"><span class="dot" style="background:#7c3aed"></span>피킹</div>
+                <div class="chip" onclick="pickGroup('pkgShipped','미포장','#FB923C')"><span class="dot" style="background:#FB923C"></span>미포장</div>
+              </div>
+            </div>
+          </div>
+          <div class="dd-anchor" id="pkgStock">
+            <div class="dd-trigger" onclick="toggleDD2('pkgStock')">
+              <span class="sheet-label">실재고</span>
+              <i class="chev">▾</i>
+            </div>
+            <div class="dd-panel chip-panel" style="display:none;">
+              <div class="chip-row">
+                <div class="chip" onclick="pickGroup('pkgStock','미확인','#64748B')"><span class="dot" style="background:#64748B"></span>미확인</div>
+                <div class="chip" onclick="pickGroup('pkgStock','포장대기','#F59E0B')"><span class="dot" style="background:#F59E0B"></span>포장대기</div>
+                <div class="chip" onclick="pickGroup('pkgStock','포장완료','#3B82F6')"><span class="dot" style="background:#3B82F6"></span>포장완료</div>
+                <div class="chip" onclick="pickGroup('pkgStock','철물','#94A3B8')"><span class="dot" style="background:#94A3B8"></span>철물</div>
+                <div class="chip" onclick="pickGroup('pkgStock','미포장','#FB923C')"><span class="dot" style="background:#FB923C"></span>미포장</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="note">글자 길이에 맞춰 자연스럽게 줄바꿈되는 칩 형태라 훨씬 짧고 한눈에 들어옵니다. 그룹 펼치고 접는 동작(진행중/출고완료/실재고)은 그대로 유지합니다.</div>
+        <div class="note">세 버튼 다 평소엔 접혀있습니다. 지금은 "출고완료" 버튼만 초록색으로 활성이고 안에 "출고"라고 값이 보입니다 — 이 품목이 실제로 출고 완료 시트에 있다는 뜻입니다(이번에 고친 버그와 같은 원칙). 다른 버튼을 눌러 값을 고르면 그 버튼이 활성으로 바뀌고 나머지 둘은 중립으로 돌아갑니다. 눌러서 펼쳐보시고 골라보세요.</div>
       </div>
     </div>
   </div>
