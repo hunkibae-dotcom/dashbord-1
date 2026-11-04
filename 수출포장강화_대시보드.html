@@ -11386,7 +11386,7 @@
 
         function _renderPkgStatusOpts() {
             const wrap = document.getElementById('pkgStatusOpts');
-            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup);
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup, _pkgCurOrigin);
             _pkgUpdatePartialQtyVisibility();
         }
 
