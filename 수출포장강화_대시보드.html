@@ -6686,13 +6686,19 @@
             const exportSheetKey = Object.keys(datasetMap).find(k => k.includes('수출 현황'));
             const exportData = exportSheetKey ? (datasetMap[exportSheetKey] || []) : [];
             _unreceivedDetailItems = [];
+            _recoveringDetailItems = [];
             _loadReadyDetailItems = [];
             exportData.forEach(item => {
                 const s = (item.statusLabel || item.status || '').toString().replace(/\s+/g, '');
-                if (s.includes('미입고')) _unreceivedDetailItems.push(item);
+                // "미회수"(회수 요청 자체를 아직 안 함)와 "회수중"(요청은 넣었지만 아직
+                // 미입고)을 분리해서 센다(요청, 2026-11-04) — 두 값은 시트에서부터 서로
+                // 다른 진행상태 문구라 겹치지 않는다.
+                if (s.includes('회수중')) _recoveringDetailItems.push(item);
+                else if (s.includes('미입고')) _unreceivedDetailItems.push(item);
                 if (item.date && item.date !== '-' && !_pkgNoteHasShipReady(item.note)) _loadReadyDetailItems.push(item);
             });
             sv('card1UnreceivedCount', _unreceivedDetailItems.length.toLocaleString());
+            sv('card1RecoveringCount', _recoveringDetailItems.length.toLocaleString());
             sv('card1LoadReadyCount', _loadReadyDetailItems.length.toLocaleString());
         }
 
