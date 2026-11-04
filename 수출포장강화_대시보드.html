@@ -11132,7 +11132,8 @@
 
             _pkgOrigStatus = item.status || '';
             _pkgCurStatus = _pkgOrigStatus;
-            _pkgStatusOpenGroup = _pkgStatusGroupKeyFor(_pkgCurStatus);
+            _pkgCurOrigin = item._pkgOrigin || null;
+            _pkgStatusOpenGroup = _pkgStatusGroupKeyFor(_pkgCurStatus, _pkgCurOrigin);
             document.getElementById('pkgPartialQty').value = '';
             _renderPkgStatusOpts();
 
