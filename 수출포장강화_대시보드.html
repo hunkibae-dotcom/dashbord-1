@@ -2632,6 +2632,12 @@
         }
         function mapCSVData(csvRows, sheetHint) {
             const emptyStatusDefault = sheetHint === 'stock' ? '미확인' : '미입고';
+            // 버그 수정(요청, 2026-11-05: "품목수정창에서 해당시트에 있는 부분만 켜져있어야해")
+            // — 이 행이 실제로 어느 시트(수출 현황/출고 완료/충주공장 재고) 출신인지 기록해둔다.
+            // 품목수정창의 진행상태 그룹(PKG_STATUS_GROUPS)에 "출고"/"피킹"/"포장완료" 등
+            // 같은 값이 여러 그룹에 겹쳐 있어서, 이 출처 없이는 실제로 없는 시트의 그룹에도
+            // 체크 표시가 잘못 켜졌다.
+            const _pkgOrigin = sheetHint === 'stock' ? 'stock' : (sheetHint === 'shipped' ? 'shipped' : 'export');
             if (csvRows.length < 2) return [];
             let headers = csvRows[0].map(h => h ? h.toString().trim().replace(/\s+/g, '') : '');
             
