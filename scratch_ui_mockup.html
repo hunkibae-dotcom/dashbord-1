@@ -322,6 +322,29 @@ function pick2(pickedId, otherId, label, color){
   toggleDD2(pickedId);
 }
 
+// PKG — 수출현황/출고완료/실재고 중 하나를 고르면 그 버튼만 활성(값 표시)이 되고
+// 나머지는 중립으로 돌아간다(시트 셋 다 같은 .dd-group 안에 있다고 가정).
+function pickGroup(pickedId, label, color){
+  const pickedAnchor = document.getElementById(pickedId);
+  const group = pickedAnchor.closest('.dd-group');
+  group.querySelectorAll('.dd-anchor').forEach(a=>{
+    const trigger = a.querySelector('.dd-trigger');
+    const sheetLabel = trigger.querySelector('.sheet-label').textContent;
+    if (a.id === pickedId){
+      trigger.classList.add('active');
+      trigger.innerHTML = '<span class="dot" style="background:'+color+'"></span><span class="sheet-label">'+sheetLabel+'</span> · <span class="val-text">'+label+'</span><i class="chev">▾</i>';
+    } else {
+      trigger.classList.remove('active');
+      trigger.innerHTML = '<span class="sheet-label">'+sheetLabel+'</span><i class="chev">▾</i>';
+    }
+  });
+  pickedAnchor.querySelectorAll('.chip').forEach(c=>{
+    c.classList.remove('on'); c.querySelector('.chk')?.remove();
+    if (c.textContent.trim().replace('✓','') === label){ c.classList.add('on'); c.style.setProperty('--chip-c', color); c.insertAdjacentHTML('beforeend','<span class="chk">✓</span>'); }
+  });
+  toggleDD2(pickedId);
+}
+
 function pickSimple(el, ddId, label, color){
   const dd = document.getElementById(ddId);
   dd.querySelectorAll('.dd-opt').forEach(o=>{ o.classList.remove('on'); o.querySelector('.chk')?.remove(); });
