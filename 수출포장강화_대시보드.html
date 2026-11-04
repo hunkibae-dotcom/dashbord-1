@@ -11445,7 +11445,10 @@
                             signal: AbortSignal.timeout(60000)
                         }).then(r => r.json()));
                 } else {
-                    tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateStatus', code:_pkgCode, round:_pkgRound, color:_pkgColor, status:_pkgCurStatus }), '진행상태 저장'));
+                    // 미입고/재고활용/회수중처럼 "수출 현황"에만 있는 값은 updateMainStatus로,
+                    // 그 외(포장완료 등 실재고 쪽 값)는 기존처럼 updateStatus로 보낸다.
+                    const statusAction = PKG_EXPORT_ONLY_STATUSES.includes(_pkgCurStatus) ? 'updateMainStatus' : 'updateStatus';
+                    tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:statusAction, code:_pkgCode, round:_pkgRound, color:_pkgColor, status:_pkgCurStatus }), '진행상태 저장'));
                 }
                 changed.status = _pkgCurStatus;
             }
