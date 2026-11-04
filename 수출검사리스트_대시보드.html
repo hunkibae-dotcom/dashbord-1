@@ -10397,7 +10397,10 @@ function openMItemDetail(key) {
   _miRenderStatusButtons();
   // 블로킹은 진행중 품목에만 있는 칸이라(검사완료 이력 시트엔 없음) 그 경우만 카드를 보여준다.
   const miBlockingCard = document.getElementById('miBlockingCard');
-  if (miBlockingCard) miBlockingCard.style.display = (d.source === 'archive') ? 'none' : '';
+  const miStatusCard = document.getElementById('miStatusCard');
+  const _miIsArchive = d.source === 'archive';
+  if (miBlockingCard) miBlockingCard.style.display = _miIsArchive ? 'none' : '';
+  if (miStatusCard) miStatusCard.style.flex = _miIsArchive ? '1 1 100%' : '1';
   _miRenderBlockingButtons();
   document.getElementById('miReasonInput').value = d.비고 || '';
   // 날짜가 아닌 자유 텍스트("미정" 등)면 직접입력 모드로, 정상 날짜면 날짜선택
@@ -14289,22 +14292,13 @@ function onNativeScanResult(raw) {
 </div>
 
 <!-- ===== 품목 상세/수정 (모바일 리스트 항목 클릭 시) ===== -->
-<!-- 포장강화 웹 수정창(#pkgItemDetailModal)과 PC 폭을 맞춘다(요청, 2026-10-19) — 이 모달은
-     모바일 앱과 공유하는 모달이라 폭 자체는 그대로 460px를 기본값으로 두고, 화면이 넓을
-     때(PC 웹)만 미디어쿼리로 820px + 일정/규격 2단 그리드로 넓어지게 한다. 모바일 앱
-     화면(좁은 뷰포트)은 전혀 영향 없음. -->
+<!-- PC에서만 820px로 넓히고 일정/규격을 2단으로 나눴던 걸(2026-10-19) 되돌렸다(요청,
+     2026-11-04: "cbm창이 너무좁아서 이상해졌는데 일정창이 지금보면 공간낭비가심하니까") —
+     2단으로 나누면 규격/CBM 칸이 절반 너비로 눌려서 좁아지고, 일정 칸은 내용에 비해
+     카드가 너무 커져서 빈 공간만 늘어났다. 이제 화면 크기와 상관없이 항상 단일 칼럼으로
+     세로로 쌓는다(모바일 앱과 완전히 같은 레이아웃). -->
 <style>
-  /* 기본(모바일) 값이 먼저 와야 한다 — 아래 미디어쿼리와 똑같은 선택자(.mi-grid2)를
-     쓰는데, CSS는 같은 우선순위면 "나중에 적힌 게" 이긴다. 이걸 미디어쿼리 "뒤"에
-     적어뒀던 게 버그였다(2026-10-19) — PC 화면에서도 미디어쿼리 조건을 만족하는 순간
-     이 줄이 다시 덮어써서 2단 그리드가 한 번도 적용된 적이 없었다. */
   #mItemDetailModal .mi-grid2 { display: contents; }
-  @media (min-width: 900px) {
-    #mItemDetailModal .mi-modal-box { width: 620px !important; }
-    #mItemDetailModal .mi-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
-    #mItemDetailModal .mi-grid2 > div { box-sizing: border-box; }
-    #mItemDetailModal .mi-grid2 > div { margin-top: 0 !important; }
-  }
   /* 진행상태/블로킹 — 버튼열을 시트별 드롭다운으로 바꾼 시안 반영(요청, 2026-11-04:
      "버튼들이 쓸데없이 좌우로 길고 못생겼다") */
   #mItemDetailModal .fw-dd-group { display: flex; gap: 6px; flex-wrap: wrap; }
