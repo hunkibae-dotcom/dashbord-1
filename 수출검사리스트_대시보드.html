@@ -2409,6 +2409,7 @@ async function loadData(force = false) {
   if (cached) {
     archiveTotals = cached.totals;
     archiveRows = cached.rows;
+    _qcTagDuplicateOccurrences(archiveRows);
     applyMiOverrides(archiveRows);
     _rpInvalidateKeyIndex();
     renderQualityCharts();
