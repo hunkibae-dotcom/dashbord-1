@@ -9891,10 +9891,26 @@ const MI_BASIS_LIST = [
 ];
 const MI_STATUS_LABEL = { 검사: '검사완료' }; // 버튼/알약 표기만 다르게(실제 저장값은 '검사')
 let _miBasis = 'inprogress';
+// 진행중 품목(source!=='archive')에서 "출고완료" 탭의 상태를 고르는 건 실제로는
+// 구글시트의 "검사완료 이동" 메뉴처럼 그 품목을 검사완료 리스트로 옮기겠다는 뜻이다
+// (요청, 2026-11-04). null이면 "아직 아무 것도 고르지 않음" — 진행중 품목을 열었을 때
+// 출고완료 탭에 기존 값(예: 둘 다 있는 "검사")이 우연히 겹쳐서 마치 이미 거기 있는
+// 것처럼 보이던 버그를 막기 위해, 이 탭에서는 _miPendingSync.검사/item.검사를 절대
+// 보지 않고 오직 이 값만 본다.
+let _miMigrateTarget = null;
 function _miStatusSet() {
   return MI_STATUS_SET_BY_BASIS[_miBasis] || MI_STATUS_SET_INPROGRESS;
 }
 function _miStatusLabel(v) { return MI_STATUS_LABEL[v] || v || '—'; }
+// 지금 화면에 "선택됨"으로 켜져 있어야 할 값 — 탭(진행중/출고완료)과 이동 의도
+// (_miMigrateTarget) 조합에 따라 어느 쪽을 봐야 하는지가 다르다.
+function _miCurrentHighlightStatus() {
+  if (!_miCurrent) return null;
+  const isMovable = _miCurrent.source !== 'archive'; // 진행중 시트에 실제로 있는 품목인지
+  if (_miBasis === 'shipped' && isMovable) return _miMigrateTarget; // 아직 안 골랐으면 null
+  if (_miBasis === 'inprogress' && isMovable && _miMigrateTarget) return null; // 반대쪽을 고르면 이쪽은 해지
+  return ('검사' in _miPendingSync) ? _miPendingSync.검사 : _miCurrent.검사;
+}
 
 function _miRenderBasisTabs() {
   const wrap = document.getElementById('miBasisTabs');
