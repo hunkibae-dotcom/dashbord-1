@@ -2433,6 +2433,7 @@ async function loadData(force = false) {
       }
     });
     allData = results.flat().map(r => r.source ? r : { ...r, source: 'active' });
+    _qcTagDuplicateOccurrences(allData);
     applyMiOverrides(allData);
     _rpInvalidateKeyIndex();
     applyFilters();
