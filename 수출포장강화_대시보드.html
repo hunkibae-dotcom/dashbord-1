@@ -9940,7 +9940,7 @@
         // 취지).
         function _pkgBuildIpgoCandidates(grid) {
             const { iCode, iColor, iQty, startRow } = _pkgDetectOutResultHeader(grid);
-            const waiting = (state.data || []).filter(it => it.status === '미입고');
+            const waiting = (state.data || []).filter(it => it.status === '미입고' || it.status === '회수중');
             const candidates = [];
             for (let i = startRow; i < grid.length; i++) {
                 const row = grid[i];
