@@ -6248,7 +6248,9 @@
             const set = PKG_STATUS_GROUPS[b.key];
             const effectiveCur = _ieOriginStatusMap[b.key];
             const hasData = b.key in _ieOriginStatusMap;
-            const isActiveGroup = hasData && effectiveCur != null && set.includes(effectiveCur);
+            // 버그 수정(요청, 2026-11-04, PC 웹과 동일) — 실제 값이 정해진 버튼 목록에
+            // 없어도 그 시트에 실제로 데이터가 있으면 무조건 켜서 실제 값을 보여준다.
+            const isActiveGroup = hasData && effectiveCur != null && effectiveCur !== '';
             const isOpen = _ieStatusOpenGroup === b.key;
             const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748B') : null;
             return `
