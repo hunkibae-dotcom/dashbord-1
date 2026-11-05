@@ -1920,7 +1920,7 @@
             const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgConfirmNewItems', items: items, date: dateStr }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
             if (!res || res.ok === false || res.result === 'error') throw new Error((res && res.message) || '확인 처리 실패');
             const doneTuples = new Set(items.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + ((it.color&&it.color!=='-')?it.color:'')));
-            allData.forEach(d2 => { if (doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:''))) d2.memo = ''; });
+            allData.forEach(d2 => { if (doneTuples.has((d2.code||'').toUpperCase()+'|'+(d2.round||'')+'|'+((d2.color&&d2.color!=='-')?d2.color:''))) { d2.memo = ''; d2.dueChanged = false; } });
             _invalidateDataCache();
             _pkgNiSelConfirm.clear();
             pkgNiRenderAll();
