@@ -6618,10 +6618,6 @@
             // 전에는 "전체"가 강조돼서 아무것도 안 걸린 것처럼 보였다.
             activeStatusFilters = new Set(['전체']);
             document.getElementById('statusFilterLabel')?.classList.add('hidden');
-            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고','재고활용'].forEach(s => {
-                const btn = document.getElementById('sf-' + s);
-                if (btn) btn.classList.toggle('bg-slate-700/60', s === '포장대기');
-            });
             // 소스 필터는 "실재고"로 맞춘다(버그 수정, 2026-11-05: "포장대기를
             // 클릭하면 제품검색 기준 실재고가 선택된상태에서 보여줘야 정상이야") —
             // 포장대기 항목은 애초에 충주공장 재고 시트에서만 나오는 데이터라, 표시
