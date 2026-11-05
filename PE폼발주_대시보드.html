@@ -9,7 +9,7 @@
 // 잠깐 라이트 배경으로 떴다가 나중에야 다크로 바뀌는 깜빡임이 생긴다.
 try {
   const t = localStorage.getItem('pe_theme');
-  const dark = t ? t === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = t === 'dark';
   if (dark) document.documentElement.classList.add('dark');
 } catch (e) {}
 </script>
