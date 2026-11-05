@@ -3430,7 +3430,22 @@
                     const numB = parseFloat(valB);
                     if (!isNaN(numA) && !isNaN(numB)) return (numA - numB) * multiDir;
                 }
-                
+
+                // 날짜 칼럼은 문자열 그대로 비교하면 안 된다(버그 수정, 2026-11-05: "검사일
+                // 클릭하니까 순서가 뒤죽박죽" — 품질검사와 같은 문제). 직접입력 모드로
+                // "11월 10일 (예정)" 같은 자유 텍스트를 저장하면 정규화된 "YYYY-MM-DD"
+                // 값들 사이에 섞여 들어와서 문자열 비교가 엉망이 된다. normalizeDate로
+                // 한 번 더 정리해서 비교하면, 자유 텍스트(날짜 패턴이 없는 "미정" 등)는
+                // '-'가 되어 위에서처럼 한쪽 끝으로 밀리고, 실제 날짜끼리는 정확히 비교된다.
+                if (key === 'regDate' || key === 'dueDate' || key === 'date' || key === 'arriveDate') {
+                    const normA = normalizeDate(valA);
+                    const normB = normalizeDate(valB);
+                    if (normA === '-' && normB === '-') return 0;
+                    if (normA === '-') return 1;
+                    if (normB === '-') return -1;
+                    return normA.localeCompare(normB) * multiDir;
+                }
+
                 const strA = valA.toString();
                 const strB = valB.toString();
                 return strA.localeCompare(strB) * multiDir;
