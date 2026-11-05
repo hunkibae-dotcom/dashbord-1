@@ -8868,7 +8868,10 @@
             peHistory: { get key() { return _peHistSortKey; }, get asc() { return _peHistSortAsc; }, set(k, a) { _peHistSortKey = k; _peHistSortAsc = a; } }
         };
         const PKG_MODAL_FIELD_DEFS = {
-            confirm: [['round', '건명'], ['code', '단품코드'], ['country', '제품구분']],
+            // tags(변경유형) 필터 — 품질검사 "신규품목확인 > 확인"의 변경유형 필터와
+            // 같은 개념(요청, 2026-11-05). d.변경태그처럼 배열이라 _pkgFieldMatchesFilter가
+            // 따로 처리한다.
+            confirm: [['round', '건명'], ['code', '단품코드'], ['country', '제품구분'], ['tags', '변경유형']],
             missing: [['round', '건명'], ['code', '제품코드'], ['country', '제품구분']],
             type:    [['round', '건명'], ['code', '제품코드'], ['productType', '제품종류'], ['statusLabel', '진행상태']],
             barcode: [['round', '건명'], ['code', '제품코드'], ['statusLabel', '진행상태']],
