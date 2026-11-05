@@ -6666,10 +6666,6 @@
             if (!_loadReadyDetailItems || !_loadReadyDetailItems.length) return;
             activeStatusFilters = new Set(['전체']);
             document.getElementById('statusFilterLabel')?.classList.add('hidden');
-            ['전체','출고','피킹','포장완료','미포장','포장대기','일부입고','철물','미입고','재고활용'].forEach(s => {
-                const btn = document.getElementById('sf-' + s);
-                if (btn) btn.classList.remove('bg-slate-700/60');
-            });
             // 상차준비 항목도 "수출 현황"에서 온 데이터라, 소스 필터를 "입고현황"으로
             // 맞춘다(요청, 2026-11-05).
             cardRoundFilter = null;
