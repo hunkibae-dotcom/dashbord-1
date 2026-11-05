@@ -9541,9 +9541,19 @@
         // 되어야한다"). 하나씩 확인하면서 지울 거라고 해서, 처리 후에도 창은 닫지 않고
         // 지운 품목만 목록에서 빼고 계속 띄워둔다.
         async function pkgNewDeleteSelected() {
-            const list = (window._pkgNewList || []).filter(it => _pkgNewSelected.has(_pkgNewKey(it)));
+            let list = (window._pkgNewList || []).filter(it => _pkgNewSelected.has(_pkgNewKey(it)));
             if (!list.length) return;
-            if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?')) return;
+            // "삭제"는 수출 현황에서 행 자체를 지우는 되돌릴 수 없는 작업이라, 실제로
+            // 새로 들어온 게 아니라 납기만 바뀐 기존 정상 주문(납기변경 전용 항목)은
+            // 실수로 지우지 않게 여기서 걸러낸다(요청, 2026-11-05 — 신규품목확인에
+            // 납기변경이 섞이면서 생긴 위험 보강).
+            const dueOnly = list.filter(it => !_pkgIsNewItem(it));
+            list = list.filter(it => _pkgIsNewItem(it));
+            if (!list.length) {
+                alert('선택한 품목은 전부 "납기변경"만 있는 기존 주문이라 삭제할 수 없습니다.\n삭제는 "신규"로 새로 들어온 품목에만 쓸 수 있어요 — 확인 처리를 이용해주세요.');
+                return;
+            }
+            if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.' + (dueOnly.length ? ('\n(납기변경만 있는 ' + dueOnly.length + '건은 삭제 대상에서 제외됩니다.)') : '') + '\n되돌릴 수 없습니다. 계속할까요?')) return;
             const btn = document.getElementById('pkgNewDeleteBtn');
             const statusEl = document.getElementById('pkgNewStatus');
             const btnOrigHtml = btn.innerHTML;
