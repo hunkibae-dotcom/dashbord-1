@@ -13,6 +13,14 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
 // 다크모드 저장값을 최대한 일찍(바디가 그려지기도 전에) 적용 — 안 그러면 로딩 오버레이가
 // 잠깐 라이트 배경으로 떴다가 나중에야 다크로 바뀌는 깜빡임이 생긴다.
 try {
+    // 예전에 기본값이 dark였을 때 저장돼버린 값들을 한 번만 강제로 라이트로
+    // 되돌린다(요청, 2026-11-05: "다크로 설정한 값을 전부 라이트로 초기화").
+    if (!localStorage.getItem('fworkThemeResetV1')) {
+        localStorage.setItem('shell_theme', 'light');
+        localStorage.setItem('fwork_theme', 'light');
+        localStorage.setItem('pe_theme', 'light');
+        localStorage.setItem('fworkThemeResetV1', '1');
+    }
     if ((localStorage.getItem('shell_theme') || 'light') === 'dark') {
         document.documentElement.classList.add('dark');
     }
