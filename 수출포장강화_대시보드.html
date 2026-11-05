@@ -9479,6 +9479,7 @@
                     const key = _pkgNewKey(it);
                     const checked = _pkgNewSelected.has(key) ? 'checked' : '';
                     const productType = _pkgProductTypeOf(it);
+                    const tagsHtml = _pkgChangeTags(it).map(t => `<span style="font-size:10px;font-weight:800;padding:1.5px 7px;border-radius:6px;${t === 'new' ? 'background:#dcfce7;color:#15803d;' : 'background:#fef9c3;color:#a16207;'}">${PKG_TAG_LABELS[t] || t}</span>`).join(' ');
                     const shipDateNorm = normalizeDate(it.date);
                     const shipDateShown = shipDateNorm !== '-' ? shipDateNorm : '';
                     const editingShip = _pkgNewShipDateEditKey === key;
