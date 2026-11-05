@@ -4129,7 +4129,8 @@
                 const totalQty = sameDateItems.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
                 const doneQty  = sameDateItems.reduce((s, x) => {
                     const st = (x.status || '').replace(/\s+/g, '');
-                    return s + ((st.includes('포장완료') || st === '출고') ? (parseInt(x.qty) || 0) : 0);
+                    // "일부포장완료"(2026-11-05 신설)는 전부 끝난 게 아니므로 완료 수량에서 뺀다.
+                    return s + ((st === '포장완료' || st === '출고') ? (parseInt(x.qty) || 0) : 0);
                 }, 0);
                 const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
                 const el4TQ = document.getElementById('card4TotalQty');
