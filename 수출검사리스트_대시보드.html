@@ -2800,7 +2800,10 @@ function _qcBlockingLabel(v) { return QC_BLOCKING_LABELS[v] || v || '미등록';
 // 날짜를 "26. 10. 10"처럼 두 자리 연도로 줄인다(요청 2026-10-22, 웹 제품검색 표 폭
 // 조정용) — GAS가 내려주는 "2026. 10. 23" 형식만 다루면 된다.
 function _qcShortYearDate(s) {
-  const m = /^(\d{4})\.\s*(\d{1,2})\.\s*(\d{1,2})/.exec((s || '').toString().trim());
+  // parseKDate/_ymdShort와 같은 이유로 하이픈 형식("2026-10-07")도 인식한다(버그 수정,
+  // 2026-11-05) — 이게 안 되면 하이픈으로 저장된 날짜만 표 셀에 원본 그대로("2026-10-07")
+  // 나와서, 같은 칼럼 안에 서로 다른 날짜 표기가 섞여 보이고 정렬도 꼬였다.
+  const m = /^(\d{4})[.\-]\s*(\d{1,2})[.\-]\s*(\d{1,2})/.exec((s || '').toString().trim());
   if (!m) return s;
   return m[1].slice(2) + '. ' + m[2] + '. ' + m[3];
 }
