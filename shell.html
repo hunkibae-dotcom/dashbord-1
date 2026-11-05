@@ -2279,6 +2279,9 @@
         const iMemo   = fi('비고','memo','note');
         const iBarcode = fi('바코드출력','barcodeprinted');
         const iArrive = fi('입고날짜','입고일','arrivedate');
+        // doGet이 "수출 현황"에만 맨 뒤에 붙여주는 가상 칼럼(F열 납기일의 노란 배경
+        // 여부) — 신규품목확인 확인탭의 변경유형 필터용(PC 웹과 동일, 2026-11-05).
+        const iDueChg = fi('납기변경여부','duechanged');
 
         // 시트명으로 공장 구분 및 소스 태그 보완
         const st = sheetTag || '';
