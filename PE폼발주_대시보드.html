@@ -1506,7 +1506,7 @@ async function manualRefresh() {
 }
 (function () {
   const saved = localStorage.getItem('pe_theme');
-  const dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = saved === 'dark';
   applyTheme(dark);
 })();
 
