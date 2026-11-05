@@ -2337,10 +2337,11 @@
             const memo   = iMemo >= 0 && r[iMemo] ? r[iMemo].toString().trim() : '';
             const barcodePrinted = iBarcode >= 0 && r[iBarcode] ? r[iBarcode].toString().trim() : '';
             const arriveDate = iArrive >= 0 && r[iArrive] ? r[iArrive].toString().trim() : '';
+            const dueChanged = iDueChg >= 0 && (r[iDueChg] || '').toString().trim().toUpperCase() === 'Y';
             // 적재번호는 행 고유값이라 code+round로 다시 찾지 않고 매핑 시점에 그대로 들고 감
             // — 같은 품목코드가 여러 행에 걸쳐 있으면 code+round 키만으론 구분이 안 돼 마지막 값으로 겹쳐 보이는 문제가 있었음
             const pallet = srcTag === 'stock' ? (r[iPallet] || '').toString().trim() : '';
-            result.push({ code, qty, status, date, dateRaw, regDate, regDateRaw, round, dueDate, dueDateRaw, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, memo, pallet, barcodePrinted, arriveDate });
+            result.push({ code, qty, status, date, dateRaw, regDate, regDateRaw, round, dueDate, dueDateRaw, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, memo, pallet, barcodePrinted, arriveDate, dueChanged });
         }
         return result;
     }
