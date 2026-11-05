@@ -11100,6 +11100,88 @@
             return s;
         }
 
+        // ── 인식표 "적재번호" 드롭다운(여러 개 선택) ─────────────────────────
+        // 직접 입력칸은 그대로 두고(단건/자유 텍스트용), 옆에 드롭다운을 추가해서
+        // 지금 충주공장 재고에 실제로 쓰이는 적재번호 중 여러 개를 체크해서 한 번에
+        // 고를 수 있게 한다(요청, 2026-11-06: "여러장을 출력하고싶을수도있기 때문에
+        // 적재번호를 여러개 선택할 수있었으면 좋곘어"). 체크된 게 있으면 확인 버튼을
+        // 누를 때 입력칸 대신 이 목록을 쓰고, 하나씩 순서대로 같은 기존 로직으로
+        // PDF를 만들어 각각 다운로드한다 — 서버 쪽 로직은 전혀 안 바꾼다.
+        let _pkgLabelMultiPallets = [];
+        function _pkgClearLabelPalletSelection() {
+            _pkgLabelMultiPallets = [];
+            const label = document.getElementById('pkgLabelPalletDropdownLabel');
+            if (label) label.textContent = '목록에서 선택';
+        }
+        // 충주공장 재고에 지금 실제로 쓰이는 적재번호를 전부 모아 번호 순으로 정렬해서
+        // 돌려준다 — "파렛트 현황" 카드와 같은 열 감지 방식.
+        function _pkgAllPalletLabels() {
+            const stockRows = state.rawStockRows;
+            if (!stockRows || stockRows.length <= 1) return [];
+            const hdr = stockRows[0].map(h => (h || '').toString().trim());
+            let iPallet = -1;
+            hdr.forEach((h, i) => {
+                const hn = h.replace(/\s/g, '').toUpperCase();
+                if (iPallet < 0 && (hn.includes('파렛트') || hn.includes('PALET') || hn.includes('적재'))) iPallet = i;
+            });
+            if (iPallet < 0) iPallet = 10;
+            const seen = new Set();
+            for (let i = 1; i < stockRows.length; i++) {
+                const sr = stockRows[i];
+                if (!sr) continue;
+                const raw = (sr[iPallet] || '').toString().trim();
+                if (raw && raw !== '미적재') seen.add(raw);
+            }
+            return Array.from(seen).sort((a, b) => {
+                const na = parseInt(a.replace(/[^0-9]/g, ''), 10);
+                const nb = parseInt(b.replace(/[^0-9]/g, ''), 10);
+                if (!isNaN(na) && !isNaN(nb)) return na - nb;
+                return a.localeCompare(b, 'ko');
+            });
+        }
+        function _pkgToggleLabelPalletDropdown() {
+            const dd = document.getElementById('pkgLabelPalletDropdown');
+            const willOpen = dd.style.display === 'none';
+            dd.style.display = willOpen ? 'block' : 'none';
+            if (willOpen) _pkgRenderLabelPalletDropdown();
+        }
+        function _pkgRenderLabelPalletDropdown() {
+            const listEl = document.getElementById('pkgLabelPalletDropdownList');
+            const labels = _pkgAllPalletLabels();
+            if (!labels.length) {
+                listEl.innerHTML = '<div style="padding:10px 6px;color:#94a3b8;font-size:12px;text-align:center;">충주공장 재고에 적재번호가 없습니다.</div>';
+                return;
+            }
+            listEl.innerHTML = labels.map(label => {
+                const checked = _pkgLabelMultiPallets.includes(label) ? 'checked' : '';
+                return `<label style="display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer;font-size:13px;color:#1e293b;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+                    <input type="checkbox" class="pkg-label-pallet-chk" value="${_pkgEscHtml(label)}" ${checked} style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
+                    ${_pkgEscHtml(label)}
+                </label>`;
+            }).join('');
+            const allChk = document.getElementById('pkgLabelPalletSelectAll');
+            if (allChk) allChk.checked = labels.length > 0 && labels.every(l => _pkgLabelMultiPallets.includes(l));
+        }
+        function _pkgToggleLabelPalletSelectAll(checked) {
+            document.querySelectorAll('.pkg-label-pallet-chk').forEach(chk => { chk.checked = checked; });
+        }
+        function _pkgApplyLabelPalletSelection() {
+            const selected = Array.from(document.querySelectorAll('.pkg-label-pallet-chk'))
+                .filter(chk => chk.checked)
+                .map(chk => chk.value);
+            _pkgLabelMultiPallets = selected;
+            const label = document.getElementById('pkgLabelPalletDropdownLabel');
+            if (label) label.textContent = selected.length ? (selected.length + '개 선택됨') : '목록에서 선택';
+            if (selected.length) document.getElementById('pkgLabelPalletInput').value = '';
+            document.getElementById('pkgLabelPalletDropdown').style.display = 'none';
+        }
+        document.addEventListener('click', function (ev) {
+            const wrap = document.getElementById('pkgLabelPalletInputWrap');
+            const dd = document.getElementById('pkgLabelPalletDropdown');
+            if (!wrap || !dd || dd.style.display === 'none') return;
+            if (!wrap.contains(ev.target)) dd.style.display = 'none';
+        });
+
         // 선택/검색 결과로 찍힌 적재(파렛트) 값을 "제품검색 출력" 쪽 큰 제목용으로
         // 뽑는다(전부 같은 적재면 그 값, 섞여있거나 없으면 빈 칸).
         function _pkgDerivePalletTitleFromItems(items) {
