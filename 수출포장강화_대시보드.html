@@ -6612,10 +6612,8 @@
         function filterByPendingStatus() {
             if (!_pendingDetailItems || !_pendingDetailItems.length) return;
             _pendingFilterActive = true;
-            // activeStatusFilters 값 자체는 실제로 "전체"로 둬야 한다(포장대기 항목은 다른
-            // 시트에서 온 거라 이 Set으로 걸러지는 대상이 아님) — 다만 버튼 강조 표시는
-            // "포장대기"에 줘야, 지금 화면이 포장대기만 걸러서 보여주고 있다는 게 보인다.
-            // 전에는 "전체"가 강조돼서 아무것도 안 걸린 것처럼 보였다.
+            // activeStatusFilters 값 자체는 실제로 "전체"로 둬야 한다 — 포장대기 항목은
+            // 다른 시트(충주공장 재고)에서 온 거라 이 Set으로 걸러지는 대상이 아니다.
             activeStatusFilters = new Set(['전체']);
             document.getElementById('statusFilterLabel')?.classList.add('hidden');
             // 소스 필터는 "실재고"로 맞춘다(버그 수정, 2026-11-05: "포장대기를
