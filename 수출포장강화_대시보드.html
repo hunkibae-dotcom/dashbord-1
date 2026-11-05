@@ -13001,7 +13001,7 @@
     var p = new URLSearchParams(location.search);
     if(!p.get('shell')) return;
 
-    var th = p.get('theme') || 'dark';
+    var th = p.get('theme') || 'light';
     document.documentElement.setAttribute('data-theme', th);
     localStorage.setItem('fwork_theme', th);
 
