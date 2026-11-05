@@ -6649,6 +6649,11 @@
         // 필터 메커니즘(toggleStatusFilter)을 그대로 재사용한다(요청, 2026-10-27).
         function filterByUnreceivedStatus() {
             if (!_unreceivedDetailItems || !_unreceivedDetailItems.length) return;
+            // 미입고/회수중은 "수출 현황"에만 있는 값이라, 소스 필터도 "입고현황"으로
+            // 맞춰야 화면에 눌린 버튼과 실제로 보여주는 데이터 기준이 일치한다(요청,
+            // 2026-11-05: "미회수나 회수중, 상차준비 클릭 시 해당에맞게 입고현황이
+            // 체크된 상태에서 보여져야해").
+            setSourceFilter('active');
             toggleStatusFilter('미입고');
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -6656,6 +6661,7 @@
         // 회수중 클릭 → 미회수와 같은 방식, 상태값만 다르다.
         function filterByRecoveringStatus() {
             if (!_recoveringDetailItems || !_recoveringDetailItems.length) return;
+            setSourceFilter('active');
             toggleStatusFilter('회수중');
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
