@@ -8895,12 +8895,21 @@
         let _pkgColFilterOpenKey = null; // "tab|field" 또는 null(닫힘) — 한 번에 하나만 열림
         let _pkgColFilterDraft = null;   // 드롭다운이 열려있는 동안의 체크 상태(확인 전까진 미반영)
         let _pkgColFilterSearch = '';
+        // tags(변경유형)는 다른 필터 칼럼과 달리 배열이라(한 품목이 "신규"+"납기변경"을
+        // 동시에 가질 수 있음, 이론상) 값 하나만 보는 .has()로는 안 되고 배열 .some()으로
+        // 봐야 한다 — 품질검사 _qcFieldMatchesFilter와 같은 패턴(2026-11-05).
+        function _pkgFieldMatchesFilter(d, fieldName, filterSet) {
+            if (fieldName === 'tags') {
+                return _pkgChangeTags(d).some(t => filterSet.has(PKG_TAG_LABELS[t] || t));
+            }
+            return filterSet.has((d[fieldName] || '').toString());
+        }
         function _pkgModalItemsExceptField(tab, exceptField) {
             let items = PKG_MODAL_BASE_ITEMS[tab]();
             const filters = _pkgModalColFilters[tab];
             Object.keys(filters).forEach(f => {
                 if (f === exceptField || !filters[f]) return;
-                items = items.filter(d => filters[f].has((d[f] || '').toString()));
+                items = items.filter(d => _pkgFieldMatchesFilter(d, f, filters[f]));
             });
             return items;
         }
@@ -8908,12 +8917,16 @@
             const filters = _pkgModalColFilters[tab];
             return items.filter(d => Object.keys(filters).every(f => {
                 if (!filters[f]) return true;
-                return filters[f].has((d[f] || '').toString());
+                return _pkgFieldMatchesFilter(d, f, filters[f]);
             }));
         }
         function _pkgColFilterAllValues(tab, field) {
             const items = _pkgModalItemsExceptField(tab, field);
             const set = new Set();
+            if (field === 'tags') {
+                items.forEach(d => _pkgChangeTags(d).forEach(t => { const label = PKG_TAG_LABELS[t] || t; if (label) set.add(label); }));
+                return Array.from(set).sort((a, b) => a.localeCompare(b, 'ko'));
+            }
             items.forEach(d => { const v = (d[field] || '').toString().trim(); if (v) set.add(v); });
             return Array.from(set).sort((a, b) => a.localeCompare(b, 'ko'));
         }
