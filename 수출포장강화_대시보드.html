@@ -8678,11 +8678,25 @@
         function _pkgIsNewItem(it) {
             return ((it && it.note) || '').toString().trim() === '신규';
         }
+        // 납기변경(F열 노란 배경, doGet이 붙여주는 가상 칼럼 dueChanged) — "신규"와
+        // 똑같이 "확인" 탭에 올라와서 필터로 걸러볼 수 있어야 한다(요청, 2026-11-05:
+        // "포장강화 신규품목 확인의 확인에도 비슷한 필터 넣어줘" — 품질검사 변경태그
+        // 필터의 포장강화 버전).
+        function _pkgIsDueChangedItem(it) {
+            return !!(it && it.dueChanged) && it._pkgOrigin === 'export';
+        }
+        const PKG_TAG_LABELS = { new: '신규', due: '납기변경' };
+        function _pkgChangeTags(it) {
+            const tags = [];
+            if (_pkgIsNewItem(it)) tags.push('new');
+            if (_pkgIsDueChangedItem(it)) tags.push('due');
+            return tags;
+        }
         function _pkgNewKey(it) {
             return (it.code || '').toString().toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color);
         }
         function refreshPkgNewCard(rawData) {
-            window._pkgNewList = (rawData || []).filter(_pkgIsNewItem);
+            window._pkgNewList = (rawData || []).filter(it => _pkgIsNewItem(it) || _pkgIsDueChangedItem(it));
             const el = document.getElementById('pkgNewCardCnt-confirm');
             if (el) el.textContent = window._pkgNewList.length;
             // 미구성 품목/유형 선택은 상세스펙(_pkgServerSpecMap) 기준이라 신규 목록과
