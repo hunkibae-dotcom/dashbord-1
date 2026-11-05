@@ -10240,6 +10240,40 @@
                 };
             });
         }
+        // 분류(입고) 결과로 "정수량보다 적게 입고된" 신규 일부입고 후보가 나오면
+        // (pkgClassifyIpgo의 firstPartialCandidates), 바로 반영하지 않고 이 팝업으로
+        // 확인/선택을 받는다(요청, 2026-11-05: "매칭이 되었지만 수량이... 3개로
+        // 되었다면 일부만 입고되었다는 소리인데... 팝업창이 나와야해"). candidates는
+        // GAS _coreClassifyIncoming()의 firstPartialCandidates 그대로([{row, itemCode,
+        // color, orderName, originalQty, enteredQty}]) — 체크된 것만 배열로 resolve,
+        // 취소하면 null로 resolve.
+        function _pkgShowFirstPartialConfirm(candidates) {
+            return new Promise((resolve) => {
+                const listEl = document.getElementById('pkgFirstPartialConfirmList');
+                listEl.innerHTML = candidates.map((c, idx) => `
+                    <label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="pkg-firstpartial-chk" data-idx="${idx}" checked style="margin-top:3px;width:15px;height:15px;flex-shrink:0;">
+                        <div style="font-size:12.5px;line-height:1.5;">
+                            <div style="color:#1e293b;font-weight:700;">${_pkgEscHtml(c.orderName)} — ${_pkgEscHtml(c.itemCode)} / ${_pkgEscHtml(c.color || '-')}</div>
+                            <div style="color:#b45309;font-size:11.5px;">정수량 ${c.originalQty}개 중 <b>${c.enteredQty}개</b>만 입고 확인됨 (잔량 ${c.originalQty - c.enteredQty}개)</div>
+                        </div>
+                    </label>`).join('');
+                const modal = document.getElementById('pkgFirstPartialConfirmModal');
+                modal.style.display = 'flex';
+                const cleanup = () => { modal.style.display = 'none'; };
+                document.getElementById('pkgFirstPartialConfirmApplyBtn').onclick = () => {
+                    const selected = Array.from(document.querySelectorAll('.pkg-firstpartial-chk'))
+                        .filter(chk => chk.checked)
+                        .map(chk => candidates[parseInt(chk.dataset.idx, 10)]);
+                    cleanup();
+                    resolve(selected);
+                };
+                document.getElementById('pkgFirstPartialConfirmCancelBtn').onclick = () => {
+                    cleanup();
+                    resolve(null);
+                };
+            });
+        }
         // 분류(수주) 결과로 "예전에 포장강화 아니라고 지운 코드"와 같은 코드가 또
         // 들어왔을 때 보여주는 확인 팝업(요청, 2026-11-05) — 다중선택/전체선택
         // 가능. "지우기"를 누르면 체크된 것만 {code, round, color} 모양으로
