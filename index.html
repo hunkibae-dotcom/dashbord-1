@@ -1022,7 +1022,7 @@ function _navigate(url){
 
 function goDashboard(){
     var m = MENUS[_curMenu];
-    var th = document.documentElement.getAttribute('data-theme') || 'dark';
+    var th = document.documentElement.getAttribute('data-theme') || 'light';
     _navigate(m.dashboard + '?shell=1&theme=' + th + '&v=' + Date.now());
 }
 
@@ -1056,7 +1056,7 @@ function goScan(){
     if(_curMenu === 'pack' || _curMenu === 'quality'){
         /* 포장강화/품질검사: 각 대시보드 내 개선된 스캐너를 바로 열기 */
         var m = MENUS[_curMenu];
-        var th = document.documentElement.getAttribute('data-theme') || 'dark';
+        var th = document.documentElement.getAttribute('data-theme') || 'light';
         _navigate(m.dashboard + '?shell=1&theme=' + th + '&openScan=1&v=' + Date.now());
         return;
     }
@@ -1273,7 +1273,7 @@ function selectCode(el, code){
 
 function viewInDashboard(){
     if(!_selectedCode) return;
-    var th = document.documentElement.getAttribute('data-theme') || 'dark';
+    var th = document.documentElement.getAttribute('data-theme') || 'light';
     var m = MENUS[_curMenu];
     var url = m.dashboard + '?shell=1&theme=' + th + '&scan=' + encodeURIComponent(_selectedCode) + '&v=' + Date.now();
     closeScan();
