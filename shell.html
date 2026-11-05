@@ -1453,8 +1453,18 @@
         list.forEach(d => { if (!seen.has(d.code)) seen.set(d.code, d); });
         return Array.from(seen.values());
     }
-    // 확인: 수출 현황(source==='standard')에서 비고가 정확히 "신규"인 행만(코드 중복 제거 안 함).
-    function _pkgNiConfirmList() { return allData.filter(d => d.source === 'standard' && (d.memo||'').trim() === '신규'); }
+    // 확인: 수출 현황(source==='standard')에서 비고가 정확히 "신규"이거나, 납기변경
+    // (F열 노란 배경) 표시가 된 행 — PC 웹과 같은 기준(2026-11-05, "비슷한 필터 넣어줘").
+    function _pkgNiIsNewItem(d) { return (d.memo||'').trim() === '신규'; }
+    function _pkgNiIsDueChangedItem(d) { return d.source === 'standard' && !!d.dueChanged; }
+    const PKG_NI_TAG_LABELS = { new: '신규', due: '납기변경' };
+    function _pkgNiChangeTags(d) {
+        const tags = [];
+        if (_pkgNiIsNewItem(d)) tags.push('new');
+        if (_pkgNiIsDueChangedItem(d)) tags.push('due');
+        return tags;
+    }
+    function _pkgNiConfirmList() { return allData.filter(d => d.source === 'standard' && (_pkgNiIsNewItem(d) || _pkgNiIsDueChangedItem(d))); }
     // 미구성/유형선택 공통 기반: 수출 현황+출고 완료, 코드 단위로 중복 제거.
     function _pkgNiBaseCodeList() { return _pkgNiDedupByCode(allData.filter(d => d.source === 'standard' || d.source === 'shipped')); }
     // "삭제" 버튼(요청, 2026-10-30) — 시트 데이터는 건드리지 않고 목록에서만 치운다(PC
