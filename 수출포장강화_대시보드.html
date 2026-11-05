@@ -12035,7 +12035,7 @@
                     const cat = (item.country || '').replace(/\s+/g, '');
                     if (cat !== country) return;
                     const status = (item.status || '').replace(/\s+/g, '');
-                    if (!status.includes('포장완료')) return;
+                    if (status !== '포장완료') return;
                     const round = item.round || '-';
                     const code  = (item.code || '-').toUpperCase();
                     const color = item.color || '-';
