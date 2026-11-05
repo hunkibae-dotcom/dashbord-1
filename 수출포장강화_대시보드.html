@@ -4637,7 +4637,10 @@
                 // 상차준비 칼럼 자체를 없앤 대신(그 자리는 "포장일" 칼럼으로 교체) 행
                 // 배경색만으로 상차준비 여부를 보여준다. 마우스오버 시 색이 사라지지
                 // 않도록 hover 핸들러도 이 색을 기준으로 되돌린다.
-                const _isShipReadyRow = _pkgNoteHasShipReady(item.note);
+                // 출고 완료 시트로 넘어간 행은 더 이상 "상차 준비" 여부가 의미 없으므로
+                // 노란 배경을 끈다(요청, 2026-11-06: "출고 시트로넘어가면 해당 제품검색에서
+                // 상차준비완료 때문에생긴 노란색 바탕은 없애도돼").
+                const _isShipReadyRow = _pkgNoteHasShipReady(item.note) && item._pkgOrigin !== 'shipped';
                 const _shipReadyBg = 'rgba(250,204,21,.30)';
                 tr.style.cssText = 'border-bottom:1px solid #f1f5f9;transition:background .1s;cursor:pointer;' + (_isShipReadyRow ? `background:${_shipReadyBg};` : '');
                 tr.onmouseenter = function(){ this.style.background = _isShipReadyRow ? _shipReadyBg : '#f8fafc'; };
