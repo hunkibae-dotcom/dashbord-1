@@ -11021,6 +11021,8 @@
             document.getElementById('pkgLabelZoneInputWrap').style.display = 'none';
             document.getElementById('pkgLabelPrepFeedback').textContent = '';
             document.getElementById('pkgLabelPalletFeedback').textContent = '';
+            _pkgClearLabelPalletSelection();
+            document.getElementById('pkgLabelPalletDropdown').style.display = 'none';
             _pkgLabelShowStep('pkgLabelStep1');
             document.getElementById('pkgLabelModal').style.display = 'flex';
         }
