@@ -1635,6 +1635,7 @@ try {
       <span id="spuProcessCheckSelCount" style="margin-left:auto;font-size:11.5px;color:#64748b;">0건 선택</span>
       <!-- 신규등록/삭제 — 전엔 하단에 큰 버튼 하나였는데 작게 줄여 오른쪽으로 옮기고,
            삭제(목록에서만 제외, 시트는 안 건드림) 버튼을 그 옆에 추가(요청, 2026-10-29). -->
+      <button onclick="_spuProcessCheckDownloadXls()" style="padding:6px 12px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-weight:700;font-size:11.5px;cursor:pointer;flex-shrink:0;"><i class="fa-solid fa-file-arrow-down"></i> 데이터 다운로드</button>
       <button onclick="_spuProcessCheckRegisterNew()" id="spuProcessCheckRegisterBtn" disabled style="padding:6px 12px;border-radius:8px;border:none;background:#16a34a;color:#fff;font-weight:700;font-size:11.5px;cursor:pointer;opacity:.4;flex-shrink:0;">신규등록</button>
       <button onclick="_spuProcessCheckDismiss()" id="spuProcessCheckDismissBtn" disabled style="padding:6px 12px;border-radius:8px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;font-weight:700;font-size:11.5px;cursor:pointer;opacity:.4;flex-shrink:0;">삭제</button>
     </div>
@@ -11989,6 +11990,22 @@ function _spuProcessCheckRenderBody() {
     </div>`;
   }).join('') || '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:#94a3b8;">확인품목이 없습니다.</div>';
   _spuProcessCheckUpdateSelUi();
+}
+// 데이터 다운로드(요청, 2026-11-05: "확인품목창에서 데이터다운로드 버튼도만들어줘
+// 엑셀파일로다운로드해서 확인/수정하게") — 기존 검사항목목록 등에 쓰던 ExcelJS 기반
+// 공용 다운로드 함수(_qcRenderGenericXls)를 그대로 재사용한다. 검색/정렬과 무관하게
+// 확인품목 전체를 받는다.
+function _spuProcessCheckDownloadXls() {
+  const columns = [
+    { label: '건명', get: d => d.round || '-' },
+    { label: '공장', get: d => d.factory === 'cj1' ? '충주1' : '충주2' },
+    { label: '단품코드', get: d => d.code || '-' },
+    { label: '색상', get: d => d.color || '-' },
+    { label: '수량', get: d => d.qty || 0 },
+    { label: '포장일', get: d => d.packDate || '-' },
+    { label: '사유', get: d => d.reason || '-' },
+  ];
+  _qcRenderGenericXls({ columns, rows: _spuProcessCheckItems, title: '확인품목', filename: `확인품목_${new Date().toISOString().slice(0,10)}.xlsx` });
 }
 function _spuOpenProcessCheckModal() {
   _spuProcessCheckSelected = new Set();

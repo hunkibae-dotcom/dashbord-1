@@ -417,33 +417,52 @@
             <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
-                <!-- Slide 0: 신규품목 확인 — 각 탭 건수도 표시(요청, 2026-10-29: "각 단계별
-                     수량 표시가 안되어있어"). pkgNiUpdateHomeCounts()가 채운다. -->
-                <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:14px 16px 28px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;">
-                    <i class="fa-solid fa-star" style="font-size:24px;color:#FF9100;opacity:.85;"></i>
-                    <div class="label" style="font-size:14px;">신규품목 확인</div>
-                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
-                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(0,176,255,.12);color:#00B0FF;">확인 <span id="pkgNiHomeCnt-confirm">-</span></span>
-                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(220,38,38,.12);color:#F87171;">미구성 <span id="pkgNiHomeCnt-missing">-</span></span>
-                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(217,119,6,.12);color:#FBBF24;">유형 <span id="pkgNiHomeCnt-type">-</span></span>
-                        <span style="font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(22,163,74,.12);color:#4ADE80;">바코드 <span id="pkgNiHomeCnt-barcode">-</span></span>
+                <!-- Slide 0: 신규품목 확인 — PC 웹 "신규품목" 카드와 같은 행(row) 표시로 변경
+                     (요청, 2026-11-05: "앱기준 신규품목 확인의 표시를 웹 신규품목 표시처럼
+                     카드 표시를 바꿔줘"). pkgNiUpdateHomeCounts()가 각 id를 그대로 채운다. -->
+                <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:14px 16px 28px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:7px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <i class="fa-solid fa-star" style="font-size:15px;color:#FF9100;"></i>
+                            <span style="font-size:15.5px;font-weight:800;color:var(--text);">신규품목</span>
+                        </span>
+                        <span style="font-size:10px;color:var(--label);display:flex;align-items:center;gap:4px;">
+                            <i class="fa-solid fa-link" style="font-size:8px;"></i> 수출현황 시트 연동
+                        </span>
                     </div>
-                    <div style="font-size:10.5px;color:var(--label);display:flex;align-items:center;gap:4px;margin-top:2px;">눌러서 열기 <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i></div>
+                    <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text-sub);">확인</span>
+                            <span style="font-size:17px;font-weight:800;color:#00B0FF;"><span id="pkgNiHomeCnt-confirm">-</span> <span style="font-size:10.5px;font-weight:700;color:var(--label);">건</span></span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text-sub);">미구성</span>
+                            <span style="font-size:17px;font-weight:800;color:#F87171;"><span id="pkgNiHomeCnt-missing">-</span> <span style="font-size:10.5px;font-weight:700;color:var(--label);">건</span></span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text-sub);">유형</span>
+                            <span style="font-size:17px;font-weight:800;color:#FBBF24;"><span id="pkgNiHomeCnt-type">-</span> <span style="font-size:10.5px;font-weight:700;color:var(--label);">건</span></span>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:10px;">
+                            <span style="font-size:13px;font-weight:700;color:var(--text-sub);">바코드</span>
+                            <span style="font-size:17px;font-weight:800;color:#4ADE80;"><span id="pkgNiHomeCnt-barcode">-</span> <span style="font-size:10.5px;font-weight:700;color:var(--label);">건</span></span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Slide 1: 금일 작업계획 -->
                 <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;overflow:hidden;">
                     <div class="label" style="margin-bottom:9px;">금일 작업계획</div>
                     <div style="display:flex;flex-direction:column;gap:7px;">
-                        <div onclick="event.stopPropagation();openPendingSearch()" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                        <div onclick="event.stopPropagation();openPendingSearch()" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
                             <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">포장대기</span>
                             <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtPendingQty" style="font-size:16px;font-weight:800;color:#FF9100;">—</span><span style="font-size:10px;color:var(--label);">BOX</span></span>
                         </div>
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openUnreceived','미회수')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openUnreceived','미회수')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
                             <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">미회수</span>
                             <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtUnreceivedCnt" style="font-size:16px;font-weight:800;color:#F43F5E;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
                         </div>
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openLoadReady','상차준비')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:var(--icon-bg);cursor:pointer;">
+                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openLoadReady','상차준비')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
                             <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">상차준비</span>
                             <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtLoadReadyCnt" style="font-size:16px;font-weight:800;color:#38BDF8;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
                         </div>
@@ -2382,7 +2401,11 @@
             // 적재번호는 행 고유값이라 code+round로 다시 찾지 않고 매핑 시점에 그대로 들고 감
             // — 같은 품목코드가 여러 행에 걸쳐 있으면 code+round 키만으론 구분이 안 돼 마지막 값으로 겹쳐 보이는 문제가 있었음
             const pallet = srcTag === 'stock' ? (r[iPallet] || '').toString().trim() : '';
-            result.push({ code, qty, status, date, dateRaw, regDate, regDateRaw, round, dueDate, dueDateRaw, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, memo, pallet, barcodePrinted, arriveDate, dueChanged });
+            // 실제 시트 행 번호(헤더=1행 기준) — 버그 수정(요청, 2026-11-05: 파렛트 분할로
+            // 같은 코드+건명+색상이 여러 행에 걸쳐 있을 때, 적재번호 저장이 code+round+color
+            // 만으로 행을 찾아서 전부 같이 바뀌던 문제). PC 웹과 동일한 방식.
+            const _sheetRow = i + 1;
+            result.push({ code, qty, status, date, dateRaw, regDate, regDateRaw, round, dueDate, dueDateRaw, country, div, color, isDone, source: srcTag, specW, specD, specH, specG, memo, pallet, barcodePrinted, arriveDate, dueChanged, _sheetRow });
         }
         return result;
     }
@@ -2495,7 +2518,9 @@
             const totalQty  = same.reduce((s, x) => s + (parseInt(x.qty) || 0), 0);
             const doneQty   = same.reduce((s, x) => {
                 const st = (x.status || '').replace(/\s+/g,'');
-                return s + ((st.includes('포장완료') || x.isDone) ? (parseInt(x.qty) || 0) : 0);
+                // "일부포장완료"(2026-11-05 신설)는 전부 끝난 게 아니라서 완료 수량에
+                // 포함시키면 안 된다 — includes 대신 정확히 일치할 때만 완료로 센다.
+                return s + ((st === '포장완료' || x.isDone) ? (parseInt(x.qty) || 0) : 0);
             }, 0);
             const remainQty = Math.max(0, totalQty - doneQty);
             const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
@@ -3821,7 +3846,7 @@
     // 날짜까지 같이 걸면) 실제 데이터와 절대 안 맞아 매번 0건만 나왔다. 수출현황 시트의
     // "재고활용" 상태도 목록에 아예 없어서 "전체 선택"을 해도 그 항목들만 빠지고 있었음.
     const _SF_SOURCE_META = {
-        standard: { label: '수출현황', statuses: ['입고','미입고','일부입고','포장완료','출고완료','피킹','재고활용'] },
+        standard: { label: '수출현황', statuses: ['입고','미입고','회수중','생산중','일부입고','포장완료','출고완료','피킹','재고활용'] },
         shipped:  { label: '출고',     statuses: ['출고','피킹','미포장'] },
         stock:    { label: '실재고',   statuses: ['미확인','포장대기','포장완료','철물','미포장'] },
     };
@@ -4119,7 +4144,7 @@
         // 넣었고, 선택 모드에선 체크된 줄만 보라색 톤으로 덮어쓴다.
         document.getElementById('srList').innerHTML = deduped.slice(0,50).map((d, idx) => {
             const _dst = d.status || '';
-            const sc  = d.isDone ? '#00E676' : (_dst.includes('포장대기') ? '#FF9100' : (_dst.includes('포장완료') ? '#3B82F6' : (_dst.includes('입고') ? '#38BDF8' : '#64748B')));
+            const sc  = d.isDone ? '#00E676' : (_dst.includes('포장대기') ? '#FF9100' : (_dst === '일부포장완료' ? '#0EA5E9' : (_dst.includes('포장완료') ? '#3B82F6' : (_dst.includes('입고') ? '#38BDF8' : '#64748B'))));
             const _sc = (d.code||'').replace(/'/g,"&#39;");
             const _sr = (d.round||'').replace(/'/g,"&#39;");
             const _scl = (d.color||'').replace(/'/g,"&#39;");
@@ -4127,7 +4152,10 @@
             const key = _sfItemKey(d);
             const selected = _sfSelectMode && _sfSelected.has(key);
             const rowBg = selected ? 'rgba(0,176,255,.14)' : (idx % 2 === 1 ? 'var(--input-bg)' : 'transparent');
-            const clickHandler = _sfSelectMode ? `_sfToggleItem('${key.replace(/'/g,"\\'")}')` : `openItemEdit('${_sc}','${_sr}','${_scl}')`;
+            // 파렛트 분할로 code+round+color까지 똑같은 행이 2개 이상이면 이 행 번호 없이는
+            // 항상 첫 번째 행만 열렸다(버그 수정, 2026-11-05).
+            const _srow = d.source === 'stock' ? (d._sheetRow || '') : '';
+            const clickHandler = _sfSelectMode ? `_sfToggleItem('${key.replace(/'/g,"\\'")}')` : `openItemEdit('${_sc}','${_sr}','${_scl}',${_srow || 'null'})`;
             return `<div onclick="${clickHandler}" style="display:flex;align-items:center;gap:8px;padding:10px 8px;border-bottom:1px solid var(--divider);cursor:pointer;-webkit-tap-highlight-color:transparent;background:${rowBg};">
                 ${_sfSelectMode ? `<input type="checkbox" ${selected ? 'checked' : ''} style="width:16px;height:16px;flex-shrink:0;pointer-events:none;">` : ''}
                 <div style="width:50px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px;">
@@ -4235,7 +4263,8 @@
             const _hsc = (d.code||'').replace(/'/g,"&#39;");
             const _hsr = (d.round||'').replace(/'/g,"&#39;");
             const _hscl = (d.color||'').replace(/'/g,"&#39;");
-            return `<div onclick="openItemEdit('${_hsc}','${_hsr}','${_hscl}')" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--log-border);cursor:pointer;-webkit-tap-highlight-color:transparent;">
+            const _hsrow = d.source === 'stock' ? (d._sheetRow || '') : '';
+            return `<div onclick="openItemEdit('${_hsc}','${_hsr}','${_hscl}',${_hsrow || 'null'})" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--log-border);cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="min-width:0;flex:1;">
                     <div style="font-size:11px;font-weight:700;color:var(--text);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.round}</div>
                     <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">포장완료 ${d.regDate||'—'}</div>
@@ -4925,10 +4954,13 @@
     const MGMT_STATUS_DEFS = [
         { key:'입고',     label:'입고',      color:'#38BDF8', icon:'fa-right-to-bracket', match:d => d.source==='standard' && d.status.replace(/\s+/g,'')==='입고' },
         { key:'미입고',   label:'미입고',    color:'#64748B', icon:'fa-clock',            match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('미입고') },
+        { key:'회수중',   label:'회수중',    color:'#A21CAF', icon:'fa-truck-ramp-box',   match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('회수중') },
+        { key:'생산중',   label:'생산중',    color:'#6366F1', icon:'fa-industry',         match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('생산중') },
         { key:'일부입고', label:'일부 입고', color:'#F59E0B', icon:'fa-hourglass-half',   match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('일부입고') },
         { key:'재고활용', label:'재고 활용', color:'#22D3EE', icon:'fa-recycle',          match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('재고활용') },
         { key:'포장대기', label:'포장 대기', color:'#FF9100', icon:'fa-box-open',         match:d => d.source==='stock' && (d.status.replace(/\s+/g,'').includes('미확인') || d.status.replace(/\s+/g,'').includes('포장대기')) },
-        { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked',    match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('포장완료') },
+        { key:'포장완료', label:'포장 완료', color:'#00B0FF', icon:'fa-boxes-stacked',    match:d => d.source==='standard' && d.status.replace(/\s+/g,'') === '포장완료' },
+        { key:'일부포장완료', label:'일부 포장완료', color:'#0EA5E9', icon:'fa-layer-group', match:d => d.source==='standard' && d.status.replace(/\s+/g,'').includes('일부포장완료') },
         { key:'미포장',   label:'미포장',    color:'#FB923C', icon:'fa-cube',             match:d => d.source==='stock' && d.status.replace(/\s+/g,'').includes('미포장') },
         { key:'철물',     label:'철물',      color:'#94A3B8', icon:'fa-wrench',           match:d => d.source==='stock' && d.status.replace(/\s+/g,'')==='철물' },
         { key:'미적재',   label:'미적재',    color:'#F472B6', icon:'fa-box',              match:d => d.source==='stock' && d.pallet.replace(/\s+/g,'')==='미적재' },
@@ -5961,7 +5993,7 @@
             if (_mgmtTab === '피킹')     return s.includes('피킹');
             if (_mgmtTab === '포장대기') return s.includes('포장대기') || s.includes('미확인');
             if (_mgmtTab === '미확인')   return s.includes('미확인');
-            if (_mgmtTab === '포장완료') return s.includes('포장완료') && !d.isDone;
+            if (_mgmtTab === '포장완료') return s === '포장완료' && !d.isDone;
             if (_mgmtTab === '출고완료') return d.isDone && !s.includes('피킹') && !s.includes('미포장');
             if (_mgmtTab === '미입고')   return s.includes('미입고') && !s.includes('일부입고');
             if (_mgmtTab === '일부입고') return s.includes('일부입고');
@@ -5983,8 +6015,9 @@
         el.innerHTML = filtered.map((d, i, arr) => {
             const s         = d.status.replace(/\s+/g,'').toLowerCase();
             const isWaiting = s.includes('포장대기');
-            const isPacked  = s.includes('포장완료') && !d.isDone;
-            const color     = isPacked ? '#00B0FF' : (d.isDone ? '#00E676' : (isWaiting ? '#FF9100' : '#64748B'));
+            const isPacked  = s === '포장완료' && !d.isDone;
+            const isPartialPacked = s === '일부포장완료' && !d.isDone;
+            const color     = isPacked ? '#00B0FF' : (isPartialPacked ? '#0EA5E9' : (d.isDone ? '#00E676' : (isWaiting ? '#FF9100' : '#64748B')));
             const isLast    = i === arr.length - 1;
             const today     = new Date(); today.setHours(0,0,0,0);
             const dt        = d.date && d.date !== '-' ? new Date(d.date) : null;
@@ -5996,7 +6029,8 @@
             const isShipped = d.isDone && (s.includes('출고') || s.includes('피킹'));
             const _pv = isShipped ? (s.includes('피킹') ? '피킹' : '출고') : (d.pallet || '—');
             const _pc = isShipped ? (s.includes('피킹') ? '#A78BFA' : '#00E676') : '#00B0FF';
-            return `<div onclick="openItemEdit('${_sc}','${_sr}','${_scl}')" style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}cursor:pointer;-webkit-tap-highlight-color:transparent;">
+            const _srow2 = d.source === 'stock' ? (d._sheetRow || '') : '';
+            return `<div onclick="openItemEdit('${_sc}','${_sr}','${_scl}',${_srow2 || 'null'})" style="padding:12px 0;${isLast ? '' : 'border-bottom:1px solid var(--divider);'}cursor:pointer;-webkit-tap-highlight-color:transparent;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
                     <span style="font-size:12px;font-weight:800;font-family:monospace;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">${d.code || '—'}</span>
                     <span style="font-size:10px;font-weight:700;color:${color};background:${color}22;padding:2px 8px;border-radius:16px;flex-shrink:0;">${d.status}</span>
@@ -6028,6 +6062,7 @@
     let _ieCode = '', _ieRound = '', _ieColor = '';
     let _ieOrigStatus = '', _ieCurStatus = '';
     let _ieOrigPallet = '';
+    let _ieOrigSheetRow = null; // 적재번호 저장 시 행을 정확히 집어서 수정하기 위한 값(2026-11-05, PC 웹과 동일)
     let _ieOrigRegDate = '';
     let _ieOrigW = '', _ieOrigD = '', _ieOrigH = '', _ieOrigG = '';
     let _ieOrigShipDate = '', _ieOrigDueDate = '';
@@ -6042,7 +6077,7 @@
     // 실제로 온 시트(item.source: standard/stock/shipped)를 기본 기준으로 보여주되
     // 다른 기준으로도 전환해 볼 수 있게 한다.
     const PKG_STATUS_GROUPS = {
-        standard: ['미입고', '입고', '일부입고', '포장대기', '포장완료', '피킹', '출고', '재고활용'],
+        standard: ['미입고', '회수중', '생산중', '입고', '일부입고', '포장대기', '포장완료', '일부포장완료', '피킹', '출고', '재고활용'],
         stock:    ['미확인', '포장대기', '포장완료', '철물', '미포장'],
         shipped:  ['출고', '피킹', '미포장'],
     };
@@ -6052,7 +6087,7 @@
         { key: 'stock', label: '충주공장 재고' },
         { key: 'shipped', label: '출고완료' },
     ];
-    const PKG_STATUS_COLOR = { 미입고:'#DC2626', 입고:'#38BDF8', 일부입고:'#FBBF24', 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
+    const PKG_STATUS_COLOR = { 미입고:'#DC2626', 회수중:'#A21CAF', 생산중:'#6366F1', 입고:'#38BDF8', 일부입고:'#FBBF24', 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 일부포장완료:'#0EA5E9', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
     let _ieBasis = 'standard';
 
     function _ieApplyCardToggle(prefix, editing) {
@@ -6144,9 +6179,13 @@
     // color까지 넘어오면 그걸로 정확히 지목하고, 안 넘어오면(이전 호출부 호환) 예전처럼 code+round 첫 매치.
     // 같은 code+round인데 색상만 다른 행이 여러 개 있으면 색상 없이는 항상 같은(첫) 행만 열려서
     // "다른 색상 카드를 눌러도 전부 같은 항목이 열린다"는 문제가 있었다.
-    function openItemEdit(code, round, color) {
+    // sheetRow까지 넘어오면(실재고, 2026-11-05 버그 수정) 그 행을 정확히 집어서 연다 —
+    // 파렛트 분할로 code+round+color까지 완전히 똑같은 행이 2개 이상이면, 이게 없을 땐
+    // 제품검색에서 어느 카드를 눌러도 항상 "첫 번째" 행만 열려서 두 번째 행은 따로 열어
+    // 고칠 방법이 없었다("2번 항목을 눌러도 같은 화면이 뜬다"는 신고).
+    function openItemEdit(code, round, color, sheetRow) {
         _ieCode = code; _ieRound = round; _ieColor = color || '';
-        const item = allData.find(d =>
+        const item = (sheetRow ? allData.find(d => d.source === 'stock' && d._sheetRow === sheetRow) : null) || allData.find(d =>
             (d.code||'').toUpperCase() === (code||'').toUpperCase() && (d.round||'') === round &&
             (color === undefined || (d.color||'') === color)
         );
@@ -6200,6 +6239,7 @@
             _ieOrigMemo = item.memo || '';
             _ieBasis = PKG_STATUS_GROUPS[item.source] ? item.source : 'standard';
             _ieOriginStatusMap = _ieFindOriginStatusMap(code, round, color || '');
+            _ieOrigSheetRow = item.source === 'stock' ? (item._sheetRow || null) : null;
         } else {
             ['ieColor','ieCountry','ieQty','ieCodeType','ieType'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
@@ -6234,8 +6274,12 @@
         _renderIeStatus();
         _renderIeStatusView();
         const pm = _buildPalletMap();
-        // 시트엔 "적재 99" 형식으로 저장돼있는데, 숫자만 입력하기 편하도록 편집창엔 접두사 빼고 보여줌
-        _ieOrigPallet = (pm[(code||'').toUpperCase() + '|' + round] || '').replace(/^적재\s*/, '');
+        // 시트엔 "적재 99" 형식으로 저장돼있는데, 숫자만 입력하기 편하도록 편집창엔 접두사 빼고 보여줌.
+        // 버그 수정(요청, 2026-11-05) — _buildPalletMap()은 code+round만 키라 파렛트 분할로
+        // 같은 code+round(+color)가 여러 행이면 행을 구분 못 하고 마지막 값으로 덮어써버린다.
+        // 이미 정확한 행으로 찾아둔 item 자신의 pallet 값이 있으면 그걸 최우선으로 쓴다.
+        const _rawPallet = (item && item.source === 'stock') ? (item.pallet || '') : (pm[(code||'').toUpperCase() + '|' + round] || '');
+        _ieOrigPallet = _rawPallet.toString().replace(/^적재\s*/, '');
         const palInp = document.getElementById('iePallet');
         if (palInp) palInp.value = _ieOrigPallet;
         _checkIePalletExists();
@@ -6384,8 +6428,12 @@
         if (newPallet !== _ieOrigPallet) {
             // 숫자만 입력했으면 시트 형식("적재 99")에 맞춰 접두사를 붙여서 보냄 — 문자 섞인 라벨(예: A-1)은 그대로 전송
             const sendPallet = /^\d+$/.test(newPallet) ? '적재 ' + newPallet : newPallet;
+            // 파렛트 분할로 같은 코드+건명+색상이 여러 행에 걸쳐 있으면 행 번호 없이는
+            // 전부 같이 바뀌어버리므로(버그 수정, 2026-11-05, PC 웹과 동일), 있으면 같이 보낸다.
+            const ptParams = { action:'updatePallet', code:_ieCode, round:_ieRound, color:_ieColor, pallet:sendPallet };
+            if (_ieOrigSheetRow) ptParams.row = _ieOrigSheetRow;
             tasks.push(
-                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updatePallet', code:_ieCode, round:_ieRound, color:_ieColor, pallet:sendPallet }),
+                fetch(GAS_URL + '?' + new URLSearchParams(ptParams),
                     { signal: AbortSignal.timeout(15000) }).then(r => r.text())
             );
             changed.pallet = sendPallet;
