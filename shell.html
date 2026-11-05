@@ -1530,12 +1530,21 @@
             return st.asc ? av.localeCompare(bv) : bv.localeCompare(av);
         });
     }
+    // tags(변경유형)는 배열이라(신규+납기변경을 동시에 가질 수 있음) 값 하나만 보는
+    // .has()로는 안 되고 배열 .some()으로 봐야 한다 — PC 웹 _pkgFieldMatchesFilter와
+    // 같은 패턴(2026-11-05).
+    function _pkgNiFieldMatchesFilter(d, fieldName, filterSet) {
+        if (fieldName === 'tags') {
+            return _pkgNiChangeTags(d).some(t => filterSet.has(PKG_NI_TAG_LABELS[t] || t));
+        }
+        return filterSet.has((d[fieldName]||'').toString());
+    }
     function _pkgNiItemsExceptField(tab, exceptField) {
         let items = PKG_NI_BASE_ITEMS[tab]();
         const filters = _pkgNiColFilters[tab];
         Object.keys(filters).forEach(f => {
             if (f === exceptField || !filters[f]) return;
-            items = items.filter(d => filters[f].has((d[f]||'').toString()));
+            items = items.filter(d => _pkgNiFieldMatchesFilter(d, f, filters[f]));
         });
         return items;
     }
@@ -1543,12 +1552,16 @@
         const filters = _pkgNiColFilters[tab];
         return items.filter(d => Object.keys(filters).every(f => {
             if (!filters[f]) return true;
-            return filters[f].has((d[f]||'').toString());
+            return _pkgNiFieldMatchesFilter(d, f, filters[f]);
         }));
     }
     function _pkgNiColFilterAllValues(tab, field) {
         const items = _pkgNiItemsExceptField(tab, field);
         const set = new Set();
+        if (field === 'tags') {
+            items.forEach(d => _pkgNiChangeTags(d).forEach(t => { const label = PKG_NI_TAG_LABELS[t] || t; if (label) set.add(label); }));
+            return Array.from(set).sort((a,b) => a.localeCompare(b,'ko'));
+        }
         items.forEach(d => { const v = (d[field]||'').toString().trim(); if (v) set.add(v); });
         return Array.from(set).sort((a,b) => a.localeCompare(b,'ko'));
     }
