@@ -11005,13 +11005,23 @@ function _qcModalBaseItemsForTab(tab) {
   if (tab === 'drawing') return _qcDrawingItems();
   return [];
 }
+// 변경태그(d.변경태그)는 다른 필터 칼럼과 달리 배열이라(한 품목이 "납기변경"+
+// "포장변경"을 동시에 가질 수 있음) 단일 값 비교가 아니라 "체크된 라벨 중 하나라도
+// 가지고 있는지"로 판정해야 한다(요청, 2026-11-05). 아래 세 함수 모두 이 필드만
+// 특별 취급한다 — 다른 필드는 기존 로직 그대로.
+function _qcFieldMatchesFilter(d, fieldName, filterSet) {
+  if (fieldName === '변경태그') {
+    return (d.변경태그 || []).some(t => filterSet.has(QC_TAG_LABELS[t] || t));
+  }
+  return filterSet.has((d[fieldName] || '').toString());
+}
 function _qcModalItemsExceptField(tab, exceptField) {
   let items = _qcModalBaseItemsForTab(tab);
   const filters = _qcModalColFilters[tab];
   Object.keys(filters).forEach(f => {
     if (f === exceptField || !filters[f]) return;
     const fieldName = _QC_MODAL_SORT_FIELD[f];
-    items = items.filter(d => filters[f].has((d[fieldName] || '').toString()));
+    items = items.filter(d => _qcFieldMatchesFilter(d, fieldName, filters[f]));
   });
   return items;
 }
@@ -11020,14 +11030,18 @@ function _qcModalApplyColFilters(items, tab) {
   return items.filter(d => Object.keys(filters).every(f => {
     if (!filters[f]) return true;
     const fieldName = _QC_MODAL_SORT_FIELD[f];
-    return filters[f].has((d[fieldName] || '').toString());
+    return _qcFieldMatchesFilter(d, fieldName, filters[f]);
   }));
 }
 function _qcColFilterAllValues(tab, field) {
   const fieldName = _QC_MODAL_SORT_FIELD[field];
   const items = _qcModalItemsExceptField(tab, field);
   const set = new Set();
-  items.forEach(d => { const v = (d[fieldName] || '').toString().trim(); if (v) set.add(v); });
+  if (fieldName === '변경태그') {
+    items.forEach(d => (d.변경태그 || []).forEach(t => { const label = QC_TAG_LABELS[t] || t; if (label) set.add(label); }));
+  } else {
+    items.forEach(d => { const v = (d[fieldName] || '').toString().trim(); if (v) set.add(v); });
+  }
   return Array.from(set).sort((a, b) => a.localeCompare(b, 'ko'));
 }
 function _qcColFilterToggleOpen(tab, field) {
