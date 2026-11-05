@@ -1931,9 +1931,18 @@
         }
     }
     async function pkgNiDeleteNew() {
-        const list = _pkgNiConfirmList().filter(it => _pkgNiSelConfirm.has(_pkgNiKey(it)));
+        let list = _pkgNiConfirmList().filter(it => _pkgNiSelConfirm.has(_pkgNiKey(it)));
         if (!list.length) return;
-        if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.\n되돌릴 수 없습니다. 계속할까요?')) return;
+        // "삭제"는 수출 현황 행 자체를 지우는 되돌릴 수 없는 작업이라, 납기만 바뀐
+        // 기존 정상 주문(납기변경 전용 항목)은 실수로 지우지 않게 걸러낸다(PC 웹과
+        // 동일, 2026-11-05).
+        const dueOnly = list.filter(it => !_pkgNiIsNewItem(it));
+        list = list.filter(it => _pkgNiIsNewItem(it));
+        if (!list.length) {
+            alert('선택한 품목은 전부 "납기변경"만 있는 기존 주문이라 삭제할 수 없습니다.\n삭제는 "신규"로 새로 들어온 품목에만 쓸 수 있어요 — 확인 처리를 이용해주세요.');
+            return;
+        }
+        if (!confirm('선택한 ' + list.length + '건을 수출 현황 시트에서 완전히 삭제합니다.' + (dueOnly.length ? ('\n(납기변경만 있는 ' + dueOnly.length + '건은 삭제 대상에서 제외됩니다.)') : '') + '\n되돌릴 수 없습니다. 계속할까요?')) return;
         const btn = document.getElementById('pkgNiDeleteBtn');
         const orig = btn.innerHTML;
         btn.disabled = true; btn.innerHTML = '삭제 중...';
