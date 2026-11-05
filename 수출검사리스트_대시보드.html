@@ -14550,7 +14550,7 @@ function onNativeScanResult(raw) {
        바로스캔하면 소용이 없더라고"). 이제 "불러오는 중" 화면이 실제로 내려가는
        시점(데이터 준비 완료)까지 기다렸다가 연다. */
     if (p.get('openScan') === '1') {
-        history.replaceState(null, '', location.pathname + '?shell=1&theme=' + (p.get('theme') || 'dark'));
+        history.replaceState(null, '', location.pathname + '?shell=1&theme=' + (p.get('theme') || 'light'));
         _qcInitReadyPromise.then(function(){ if(typeof _openScanSmart === 'function') _openScanSmart(); });
     }
 })();
