@@ -9606,14 +9606,15 @@
                 }).then(r => r.json());
                 if (_pkgIsGasError(res)) throw new Error((res && res.message) || '확인 처리 실패');
 
-                // 즉시 반영: 확인한 품목들의 note(수출 현황 I열 "신규")를 로컬에서도 지운다
-                // (다음 전체 새로고침 전까지도 화면에 바로 안 보이도록).
+                // 즉시 반영: 확인한 품목들의 note(수출 현황 I열 "신규")와 납기변경 표시를
+                // 로컬에서도 지운다(다음 전체 새로고침 전까지도 화면에 바로 안 보이도록).
+                // 확인에는 신규뿐 아니라 납기변경 품목도 섞여 있을 수 있다(요청, 2026-11-05).
                 const doneTuples = new Set(items.map(it => (it.code || '').toUpperCase() + '|' + it.round + '|' + _pkgNormColor(it.color)));
                 Object.keys(datasetMap).forEach(k => {
                     if (!k.includes('수출 현황')) return;
                     (datasetMap[k] || []).forEach(it => {
                         const tup = (it.code || '').toUpperCase() + '|' + (it.round || '') + '|' + _pkgNormColor(it.color);
-                        if (doneTuples.has(tup)) it.note = '';
+                        if (doneTuples.has(tup)) { it.note = ''; it.dueChanged = false; }
                     });
                 });
                 _pkgNewSelected = new Set();
