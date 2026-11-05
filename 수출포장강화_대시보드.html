@@ -8143,6 +8143,7 @@
                     fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#34D399';
                     const _mapCat = sv => {
                         const s = (sv||'').toLowerCase().replace(/\s/g,'');
+                        if (s.includes('일부포장완료')) return '일부포장완료';
                         if (s.includes('포장완료')) return '포장완료';
                         if (s === '입고') return '입고';
                         if (s.includes('생산중')) return '생산중';
