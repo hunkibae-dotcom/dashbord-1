@@ -8,6 +8,14 @@ if (new URLSearchParams(location.search).get('forceDesktop') === '1') {
     document.querySelector('meta[name="viewport"]').setAttribute('content', 'width=1280');
 }
 try {
+    // 예전에 기본값이 dark였을 때 저장돼버린 값들을 한 번만 강제로 라이트로
+    // 되돌린다(요청, 2026-11-05: "다크로 설정한 값을 전부 라이트로 초기화").
+    if (!localStorage.getItem('fworkThemeResetV1')) {
+        localStorage.setItem('shell_theme', 'light');
+        localStorage.setItem('fwork_theme', 'light');
+        localStorage.setItem('pe_theme', 'light');
+        localStorage.setItem('fworkThemeResetV1', '1');
+    }
     var _fiThemeParam = new URLSearchParams(location.search).get('theme');
     var _fiWantDark = _fiThemeParam ? (_fiThemeParam === 'dark') : ((localStorage.getItem('shell_theme') || 'light') === 'dark');
     if (_fiWantDark) document.documentElement.classList.add('dark');
