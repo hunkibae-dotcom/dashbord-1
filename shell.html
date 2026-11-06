@@ -4186,6 +4186,8 @@
         _renderSrSortRow();
         if (!deduped.length) {
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">결과 없음</div>';
+            const pbarNone = document.getElementById('srPaginationBar');
+            if (pbarNone) pbarNone.style.display = 'none';
             return;
         }
         // 30건씩 페이지로 자른다 — 필터링으로 결과가 줄어 지금 페이지가 범위를
