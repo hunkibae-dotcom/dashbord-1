@@ -8678,12 +8678,18 @@
                 // 있으면 무조건 켜서 보여준다. 목록 소속 여부는 드롭다운 안 체크 표시에만 쓴다.
                 const isActiveGroup = hasData && effectiveCur != null && effectiveCur !== '';
                 const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748b') : '#475569';
+                // 품목이 실제로 그 시트에 없으면(originMap에 아예 없는 그룹) 버튼 자체를
+                // 못 열게 한다(요청, 2026-11-06, 품질검사와 동일한 이유: "품목이 실제로
+                // 있는 시트의 그룹만 클릭 가능하게"). originMap을 안 넘기는 일괄수정
+                // 모달은(여러 품목이 섞여 있어 "실제로 있는 시트"를 하나로 못 정함) 기존
+                // 그대로 전부 열 수 있게 둔다.
+                const isLocked = !!originMap && !hasData;
                 return `<div style="position:relative;${stackVertical ? 'display:block;width:100%;' : 'display:inline-block;'}max-width:100%;">
-                    <button type="button" onclick="${toggleFnName}('${g.key}')"
-                        style="display:${stackVertical ? 'flex' : 'inline-flex'};${stackVertical ? 'width:100%;box-sizing:border-box;' : ''}align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid ${isActiveGroup?c:'#e2e8f0'};background:${isActiveGroup?c+'1A':'#fff'};color:${c};font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                    <button type="button" onclick="${isLocked ? '' : `${toggleFnName}('${g.key}')`}"
+                        style="display:${stackVertical ? 'flex' : 'inline-flex'};${stackVertical ? 'width:100%;box-sizing:border-box;' : ''}align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid ${isActiveGroup?c:'#e2e8f0'};background:${isActiveGroup?c+'1A':'#fff'};color:${c};font-size:12px;font-weight:700;${isLocked ? 'cursor:not-allowed;opacity:.45;' : 'cursor:pointer;'}white-space:nowrap;">
                         ${isActiveGroup ? `<i class="fa-solid fa-circle" style="font-size:6px;color:${c};"></i>` : ''}
                         <span>${g.label}</span>${isActiveGroup ? ` · ${effectiveCur}` : ''}
-                        <i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:9px;color:#94a3b8;${stackVertical ? 'margin-left:auto;' : ''}"></i>
+                        ${isLocked ? '' : `<i class="fa-solid fa-chevron-${isOpen?'up':'down'}" style="font-size:9px;color:#94a3b8;${stackVertical ? 'margin-left:auto;' : ''}"></i>`}
                     </button>
                     ${isOpen ? `<div style="position:absolute;top:100%;left:0;margin-top:6px;border:1.5px solid #e2e8f0;border-radius:12px;background:#fff;padding:9px;box-shadow:0 10px 28px rgba(0,0,0,.14);z-index:20;">${_pkgStatusGroupOptionsHtml(g.key, curValue, onPickFnName, originMap)}</div>` : ''}
                 </div>`;
