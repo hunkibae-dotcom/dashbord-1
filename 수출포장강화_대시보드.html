@@ -11166,7 +11166,7 @@
             listEl.innerHTML = labels.map(label => {
                 const checked = _pkgLabelMultiPallets.includes(label) ? 'checked' : '';
                 return `<label style="display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer;font-size:13px;color:#1e293b;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
-                    <input type="checkbox" class="pkg-label-pallet-chk" value="${_pkgEscHtml(label)}" ${checked} style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
+                    <input type="checkbox" class="pkg-label-pallet-chk" value="${_pkgEscHtml(label)}" ${checked} onchange="_pkgSyncLabelPalletSelection()" style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
                     ${_pkgEscHtml(label)}
                 </label>`;
             }).join('');
@@ -11175,8 +11175,13 @@
         }
         function _pkgToggleLabelPalletSelectAll(checked) {
             document.querySelectorAll('.pkg-label-pallet-chk').forEach(chk => { chk.checked = checked; });
+            _pkgSyncLabelPalletSelection();
         }
-        function _pkgApplyLabelPalletSelection() {
+        // 체크박스를 누르는 즉시(요청, 2026-11-06: "체크하고 확인 누르는데... 안되는데" —
+        // 따로 눌러야 하는 "적용" 버튼을 안 누르고 바로 확인을 눌러서 선택이 하나도
+        // 반영 안 된 채였다) 선택 목록에 바로 반영한다 — 별도 "적용" 버튼 없이도 항상
+        // 최신 체크 상태와 일치하게 유지된다.
+        function _pkgSyncLabelPalletSelection() {
             const selected = Array.from(document.querySelectorAll('.pkg-label-pallet-chk'))
                 .filter(chk => chk.checked)
                 .map(chk => chk.value);
@@ -11184,6 +11189,12 @@
             const label = document.getElementById('pkgLabelPalletDropdownLabel');
             if (label) label.textContent = selected.length ? (selected.length + '개 선택됨') : '목록에서 선택';
             if (selected.length) document.getElementById('pkgLabelPalletInput').value = '';
+            const allChk = document.getElementById('pkgLabelPalletSelectAll');
+            const total = document.querySelectorAll('.pkg-label-pallet-chk').length;
+            if (allChk) allChk.checked = total > 0 && selected.length === total;
+        }
+        // 닫기 버튼 — 선택은 이미 체크할 때마다 실시간으로 반영돼 있으니 그냥 목록만 접는다.
+        function _pkgApplyLabelPalletSelection() {
             document.getElementById('pkgLabelPalletDropdown').style.display = 'none';
         }
         document.addEventListener('click', function (ev) {
