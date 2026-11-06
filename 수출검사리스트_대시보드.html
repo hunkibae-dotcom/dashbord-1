@@ -7998,6 +7998,16 @@ function runProductSearch() {
 // 다시 누르면 오름↔내림 토글 (앱 제품검색 시안 리디자인 반영, 2026-10-14).
 let _psSortKey = 'due';
 let _psSortAsc = true;
+// 페이지네이션(요청, 2026-11-06) — 30건씩 끊어서 보여주고 처음/이전/다음/끝 버튼으로
+// 넘긴다. 정렬/선택모드 토글은 페이지를 유지하고, 새 검색(runProductSearch)만 1페이지로
+// 되돌린다 — renderProductSearchResults 쪽에서 총 페이지 수를 넘는 값이면 자동으로
+// 마지막 페이지로 당겨준다(필터링으로 결과가 줄어든 경우 대비).
+let _psPage = 1;
+const PS_PAGE_SIZE = 30;
+function _psGoToPage(p) {
+  _psPage = p;
+  renderProductSearchResults(lastSearchResults);
+}
 const _PS_SORT_DEFS = [['code', '단품코드'], ['round', '건명'], ['due', '납기일'], ['pack', '포장일'], ['insp', '검사일']];
 const _PS_SORT_FIELD = { code: '단품코드', round: '건명', due: '납기일', pack: '포장일', insp: '검사일' };
 function pickPsSort(key) {
