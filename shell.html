@@ -4109,43 +4109,42 @@
         // 필터에 맞는 항목은 그대로 다 보여준다 — 재고로 넘어간 항목이라도 수출현황
         // 필터를 걸었으면 수출현황 쪽 결과에 나와야 하므로, source 기준 중복 제거는 하지 않는다.
         let deduped = filtered;
-        // 정렬 버튼을 아예 하나도 안 고른 기본 상태(요청, 2026-11-06: PC 웹 제품검색과
-        // 기준을 맞춤)는 "시트에 실제로 올라간 순서"를 보여준다 — 분류(수주)가 신규
-        // 품목을 시트 맨 아래에 추가하는 구조라, 그대로 두면 최신 건이 맨 아래로 가므로
-        // 최신이 위로 오도록 뒤집어서 보여준다(PC 웹 sortData()의 기본 정렬과 동일한 의도).
         if (!_srSortKey) {
+            // 정렬 버튼을 아예 하나도 안 고른 기본 상태(요청, 2026-11-06: PC 웹
+            // 제품검색과 기준을 맞춤)는 "시트에 실제로 올라간 순서"를 보여준다 —
+            // 분류(수주)가 신규 품목을 시트 맨 아래에 추가하는 구조라, 그대로 두면
+            // 최신 건이 맨 아래로 가므로 최신이 위로 오도록 뒤집어서 보여준다(PC 웹
+            // sortData()의 기본 정렬과 동일한 의도).
             deduped = [...deduped].reverse();
-            window._srLastDeduped = deduped;
-            renderSrResults(deduped);
-            return;
+        } else {
+            // 정렬 버튼으로 고른 기준(제품코드/건명/납기일/입고일/상차일/포장일)으로
+            // 정렬 — 날짜/문자 둘 다 값 없는 항목은 항상 맨 뒤로.
+            deduped = [...deduped].sort((a,b) => {
+                const field = _srSortKey;
+                if (field === 'code' || field === 'round') {
+                    const av = (a[field] || '').toString();
+                    const bv = (b[field] || '').toString();
+                    if (!av && !bv) return 0;
+                    if (!av) return 1;
+                    if (!bv) return -1;
+                    return _srSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+                }
+                // 버그 수정(요청, 2026-11-05: "검사일 클릭하니까 순서가 뒤죽박죽" — PC 웹
+                // 품질검사와 같은 문제). 날짜 칸에 "11/6 (예정)" 같은 자유 텍스트가 섞여
+                // 있으면 원문 그대로 비교(av < bv)해선 안 된다 — _nd()로 정규화한
+                // "YYYY-MM-DD"끼리 비교해야 실제 날짜 순서가 맞는다.
+                const normA = _nd(a[field]);
+                const normB = _nd(b[field]);
+                const av = normA || null;
+                const bv = normB || null;
+                if (av === null && bv === null) return 0;
+                if (av === null) return 1;
+                if (bv === null) return -1;
+                if (av === bv) return 0;
+                const cmp = av < bv ? -1 : 1;
+                return _srSortAsc ? cmp : -cmp;
+            });
         }
-        // 정렬 버튼으로 고른 기준(제품코드/건명/납기일/입고일/상차일/포장일)으로 정렬 —
-        // 날짜/문자 둘 다 값 없는 항목은 항상 맨 뒤로.
-        deduped = [...deduped].sort((a,b) => {
-            const field = _srSortKey;
-            if (field === 'code' || field === 'round') {
-                const av = (a[field] || '').toString();
-                const bv = (b[field] || '').toString();
-                if (!av && !bv) return 0;
-                if (!av) return 1;
-                if (!bv) return -1;
-                return _srSortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-            }
-            // 버그 수정(요청, 2026-11-05: "검사일 클릭하니까 순서가 뒤죽박죽" — PC 웹
-            // 품질검사와 같은 문제). 날짜 칸에 "11/6 (예정)" 같은 자유 텍스트가 섞여
-            // 있으면 원문 그대로 비교(av < bv)해선 안 된다 — _nd()로 정규화한
-            // "YYYY-MM-DD"끼리 비교해야 실제 날짜 순서가 맞는다.
-            const normA = _nd(a[field]);
-            const normB = _nd(b[field]);
-            const av = normA || null;
-            const bv = normB || null;
-            if (av === null && bv === null) return 0;
-            if (av === null) return 1;
-            if (bv === null) return -1;
-            if (av === bv) return 0;
-            const cmp = av < bv ? -1 : 1;
-            return _srSortAsc ? cmp : -cmp;
-        });
         window._srLastDeduped = deduped; // 전체선택/일괄수정이 "지금 화면에 보이는 결과" 기준으로 동작하게
         document.getElementById('srCount').textContent = deduped.length;
         const codeCountEl = document.getElementById('srCodeCount');
