@@ -3673,14 +3673,19 @@
     }
     let _sfPickerSource = '';  // 팝업이 지금 편집 중인 카테고리
     let _sfPickerStatuses = new Set(); // 팝업 안에서 체크 중인(아직 미적용) 상태들
-    // 검색 결과 정렬 — 제품코드/건명/납기일/상차일/포장일 중 하나를 기준으로, 버튼을
-    // 다시 누르면 오름↔내림 토글 (앱 제품검색 시안 리디자인 반영, 2026-10-14).
-    let _srSortKey = 'date';
+    // 검색 결과 정렬 — 제품코드/건명/납기일/입고일/상차일/포장일 중 하나를 기준으로,
+    // 버튼을 누를 때마다 오름→내림→초기화 순으로 돈다(요청, 2026-11-06: "필터버튼을
+    // 한번클릭하면 오름차, 두번은 내림차, 세번은초기화 되어야해" — PC 웹 제품검색의
+    // 칼럼 정렬과 동일한 3단계 토글). 기본값(필터 없음)도 PC 웹과 똑같이 "시트에 실제로
+    // 올라간 순서"를 보여줘야 해서, 처음엔 아무 칼럼도 고정 적용돼있지 않게 null로 시작한다
+    // — 전엔 "상차일 오름차순"이 항상 기본으로 켜진 채 시작해서 PC 웹과 기준이 달랐다.
+    let _srSortKey = null;
     let _srSortAsc = true;
-    const _SR_SORT_DEFS = [['code', '제품코드'], ['round', '건명'], ['dueDate', '납기일'], ['date', '상차일'], ['regDate', '포장일']];
+    const _SR_SORT_DEFS = [['code', '제품코드'], ['round', '건명'], ['dueDate', '납기일'], ['arriveDate', '입고일'], ['date', '상차일'], ['regDate', '포장일']];
     function pickSrSort(key) {
-        if (_srSortKey === key) _srSortAsc = !_srSortAsc;
-        else { _srSortKey = key; _srSortAsc = true; }
+        if (_srSortKey !== key) { _srSortKey = key; _srSortAsc = true; }
+        else if (_srSortAsc) { _srSortAsc = false; }
+        else { _srSortKey = null; _srSortAsc = true; }
         runSearch();
     }
     function _renderSrSortRow() {
