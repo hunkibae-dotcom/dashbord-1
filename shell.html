@@ -6371,6 +6371,7 @@
     }
 
     function _ieToggleStatusPanel(key) {
+        if (_ieOriginStatusMap && !(key in _ieOriginStatusMap)) return; // 방어적 가드(2026-11-06)
         if (_ieStatusOpenGroup === key) { _ieStatusOpenGroup = null; _renderIeStatus(); return; }
         _ieStatusOpenGroup = key;
         _renderIeStatus();
