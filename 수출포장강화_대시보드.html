@@ -11338,15 +11338,12 @@
             const zoneName = needsZone ? document.getElementById('pkgLabelZoneInput').value.trim() : '';
             if (needsZone && !zoneName) { fb.textContent = '구역이름을 입력해주세요. (예: B-20)'; return; }
 
-            let palletNumbers;
-            if (_pkgLabelMultiPallets.length) {
-                palletNumbers = _pkgLabelMultiPallets.slice();
-            } else {
-                const raw = document.getElementById('pkgLabelPalletInput').value;
-                const single = _pkgNormalizePalletNumber(raw);
-                if (!single) { fb.textContent = '적재번호를 입력하거나 목록에서 선택해주세요.'; return; }
-                palletNumbers = [single];
-            }
+            // 적재번호는 이제 "목록에서 선택" 드롭다운(검색/체크 + 적용) 하나로만 받는다
+            // (요청, 2026-11-06 레이아웃 변경) — 드롭다운을 열어 검색어만 입력하고
+            // "적용"을 눌러도 그 글자가 그대로 추가되므로, 체크 없이 번호만 타이핑해
+            // 바로 쓰는 기존 방식도 그대로 된다.
+            if (!_pkgLabelMultiPallets.length) { fb.textContent = '"목록에서 선택"을 눌러 적재번호를 고르거나 입력 후 "적용"을 눌러주세요.'; return; }
+            const palletNumbers = _pkgLabelMultiPallets.slice();
 
             fb.textContent = '';
             const btn = document.getElementById('pkgLabelPalletSubmitBtn');
