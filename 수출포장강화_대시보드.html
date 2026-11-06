@@ -9819,12 +9819,23 @@
                     const items = _pkgBulkItems.map(it => isIncoming
                         ? { code: it.code, round: it.round, color: it.color, qty: partialQtyByKey ? partialQtyByKey[it.key] : null }
                         : { code: it.code, round: it.round, color: it.color, status: _pkgBulkStatus });
-                    const res = await fetch(gasUrl, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: action, items: items }),
-                        signal: AbortSignal.timeout(120000)
-                    }).then(r => r.json());
-                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
+                    // 한 번에 너무 많이 보내면(특히 출고 — 파렛트 분할로 재고 쪽 행을 여러 개
+                    // 지워야 하는 품목이 많을 때) GAS 실행이 오래 걸려서 중간에 시간 초과로
+                    // 끊기고, "출고완료엔 이미 복사됐는데 수출현황 삭제까지는 못 간" 상태로
+                    // 남을 수 있다(버그 수정, 2026-11-06: "한번에 많은데이터를 출고처리시켜
+                    // 버리면서 뭔가 문제가생긴거같아"). 서버 로직은 그대로 두고, 한 번에
+                    // 보내는 개수만 작게 나눠서 순서대로 여러 번 호출한다 — 각 호출이 훨씬
+                    // 빨리 끝나서 시간 초과 위험이 크게 줄어든다.
+                    const CHUNK_SIZE = 15;
+                    for (let ci = 0; ci < items.length; ci += CHUNK_SIZE) {
+                        const chunk = items.slice(ci, ci + CHUNK_SIZE);
+                        const res = await fetch(gasUrl, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: action, items: chunk }),
+                            signal: AbortSignal.timeout(120000)
+                        }).then(r => r.json());
+                        if (_pkgIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
+                    }
                 }
 
                 if (palletRaw) {
