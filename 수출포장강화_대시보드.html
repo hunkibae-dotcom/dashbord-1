@@ -2157,6 +2157,32 @@
             });
         }
 
+        // "충주공장 재고" 시트엔 입고일 칼럼 자체가 없다 — 입고일은 "수출 현황" J열에만
+        // 있는 값이라, 실재고 탭에서 품목을 열면(= state.stockRowItems에서 온 item) 항상
+        // 빈칸으로 보였다(요청, 2026-11-06: "아예 입고일이 안적혀있는것도있어 저것도
+        // 분명 11월5일로잡았던건데" — 실제로는 수출현황 쪽엔 날짜가 있는데 실재고 쪽
+        // item 객체엔 애초에 그 칸이 없어서 안 보인 것). CBM이 재고→수출현황으로
+        // 빌려지는 backfillSpecs와 반대 방향으로, 수출현황의 입고일을 같은 code+차수를
+        // 가진 재고 항목에 빌려준다.
+        function backfillArriveDatesIntoStock() {
+            if (!state.data || !state.stockRowItems || !state.stockRowItems.length) return;
+            const dateCache = {};
+            state.data.forEach(item => {
+                if (!item.arriveDateRaw && (!item.arriveDate || item.arriveDate === '-')) return;
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                if (!dateCache[key]) dateCache[key] = { arriveDate: item.arriveDate, arriveDateRaw: item.arriveDateRaw, arriveDateDisp: item.arriveDateDisp };
+            });
+            state.stockRowItems.forEach(item => {
+                if (item.arriveDateRaw) return; // 이미 값이 있으면(혹시 나중에 재고 쪽에 칼럼이 생기면) 안 건드림
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                const cache = dateCache[key];
+                if (!cache) return;
+                item.arriveDate = cache.arriveDate;
+                item.arriveDateRaw = cache.arriveDateRaw;
+                item.arriveDateDisp = cache.arriveDateDisp;
+            });
+        }
+
         var _scanCodeHandled = false;
         function combineDatasets() {
             let combined = [];
