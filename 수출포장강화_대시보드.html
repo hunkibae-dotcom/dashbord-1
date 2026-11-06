@@ -11037,6 +11037,21 @@
             _pkgLabelShowStep('pkgLabelStep1');
             document.getElementById('pkgLabelModal').style.display = 'flex';
         }
+        // 품목수정창 헤더의 "인식표" 버튼(요청, 2026-11-06: "상세스펙버튼 왼쪽에
+        // 프린터기모양의 그림과 인식표 이름이 달린 버튼넣어서 해당 품목 인식표
+        // 출력할수있게해줘 클릭 시 똑같이 재고용으로할건지 출고용으로할건지
+        // 선택가능해야해") — 사이드바 "인식표 출력"과 똑같은 팝업을 그대로 열어서
+        // 재고용/출고용부터 똑같이 고르게 하되, 지금 보던 품목이 이미 실재고에 들어가
+        // 적재번호가 있으면 그 번호를 미리 선택해둔다(번호를 다시 찾아 체크할 필요가 없게).
+        function pkgOpenLabelModalForItem() {
+            const pallet = _pkgOrigPallet; // closePkgItemDetail()이 지우기 전에 먼저 떼어둔다
+            closePkgItemDetail();
+            pkgOpenLabelModal();
+            if (pallet && pallet !== '-') {
+                const norm = _pkgNormalizePalletNumber(pallet);
+                if (norm) { _pkgLabelMultiPallets = [norm]; _pkgUpdateLabelPalletSelectionUI(); }
+            }
+        }
         function pkgCloseLabelModal() {
             document.getElementById('pkgLabelModal').style.display = 'none';
         }
