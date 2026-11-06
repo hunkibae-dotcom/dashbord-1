@@ -813,6 +813,10 @@
             <div id="srList" style="display:flex;flex-direction:column;gap:8px;">
                 <div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색어를 입력하세요</div>
             </div>
+            <!-- 페이지네이션(요청, 2026-11-06: "리스트가 많으면 하단에 짤리는데 30개정도로
+                 제한두고 페이지화") — 예전엔 .slice(0,50)으로 조용히 51번째부터는 아예
+                 안 보여줬다. 이제 30건씩 끊고 처음/이전/다음/끝으로 넘긴다. -->
+            <div id="srPaginationBar" style="display:none;padding:10px 0 4px;"></div>
         </div>
     </div>
 
