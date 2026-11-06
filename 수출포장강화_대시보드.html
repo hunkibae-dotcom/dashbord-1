@@ -10997,8 +10997,17 @@
                     }
                     catch (e) { fb.textContent = '저장됨 (사진 반영 실패: ' + e.message + ')'; fb.style.color = '#d97706'; }
                 }
-                if (!fb.textContent.includes('실패')) { fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#16a34a'; }
-                setTimeout(() => { closePkgDefectActionEdit(); _pkgRenderDefectActionList(); }, 400);
+                // 사진 반영이 실패했을 땐 성공했을 때처럼 0.4초 뒤 창을 자동으로 닫아버리면
+                // 안 된다 — 실패 문구가 뜨자마자 창이 닫혀서 무슨 일이 있었는지 읽을 새도
+                // 없이 사라졌다(요청, 2026-11-06: "문구가 너무빠르게 지나가고 끝나서 캡쳐를
+                // 보여줄 수 없어"). 성공했을 때만 자동으로 닫고, 실패했을 땐 문구를 그대로
+                // 띄운 채 목록만 새로고침해서 사람이 직접 보고 닫게 한다.
+                if (!fb.textContent.includes('실패')) {
+                    fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#16a34a';
+                    setTimeout(() => { closePkgDefectActionEdit(); _pkgRenderDefectActionList(); }, 400);
+                } else {
+                    _pkgRenderDefectActionList();
+                }
             } catch (e) {
                 fb.textContent = '저장 실패: ' + e.message; fb.style.color = '#dc2626';
             }
