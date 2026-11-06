@@ -7985,6 +7985,7 @@ function runProductSearch() {
       return true;
     });
 
+    _psPage = 1;
     renderProductSearchResults(results);
   } catch (e) {
     console.error('runProductSearch error:', e);
@@ -7992,6 +7993,7 @@ function runProductSearch() {
     summary.innerHTML = '';
     noData.style.display = '';
     lastSearchResults = [];
+    _psPage = 1;
   }
 }
 
