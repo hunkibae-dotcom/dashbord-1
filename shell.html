@@ -4252,6 +4252,8 @@
             const qtyElErr = document.getElementById('srQtySum');
             if (qtyElErr) qtyElErr.textContent = '0';
             document.getElementById('srList').innerHTML = '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:20px 0;">검색 중 오류가 발생했습니다. 필터를 초기화해보세요.</div>';
+            const pbarCatch = document.getElementById('srPaginationBar');
+            if (pbarCatch) pbarCatch.style.display = 'none';
         }
     }
     function clearSearch() {
