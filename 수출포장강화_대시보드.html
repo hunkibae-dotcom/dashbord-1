@@ -2215,6 +2215,8 @@
 
             // 포장완료 항목의 포장일을 충주공장 재고 시트에서 업데이트
             backfillPackingDatesFromStock();
+            // 입고일은 반대로 수출현황 → 재고 항목 쪽으로 빌려준다(위 함수 설명 참고).
+            backfillArriveDatesIntoStock();
 
             // 3단계 정렬 정위치 복원을 위한 원래 데이터 인덱스 기억
             state.data.forEach((item, idx) => {
