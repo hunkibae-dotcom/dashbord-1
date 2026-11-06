@@ -4080,6 +4080,9 @@
         }
         if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey && !_sfSourceFilter && !_sfStatusFilters.size) {
             window._srLastDeduped = [];
+            _srPage = 1;
+            const pbarEmpty = document.getElementById('srPaginationBar');
+            if (pbarEmpty) pbarEmpty.style.display = 'none';
             document.getElementById('srCount').textContent = '0';
             const codeCountEl0 = document.getElementById('srCodeCount');
             if (codeCountEl0) codeCountEl0.textContent = '0';
