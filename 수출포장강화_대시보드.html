@@ -11934,6 +11934,9 @@
         }
 
         function _pkgToggleStatusGroup(key) {
+            // 품목이 실제로 없는 시트의 그룹은 못 열게 막는다(요청, 2026-11-06) — 버튼
+            // 자체의 onclick이 이미 없지만, 혹시 모를 다른 경로의 호출도 방어한다.
+            if (_pkgOriginStatusMap && !(key in _pkgOriginStatusMap)) return;
             _pkgStatusOpenGroup = (_pkgStatusOpenGroup === key) ? null : key;
             _renderPkgStatusOpts();
         }
