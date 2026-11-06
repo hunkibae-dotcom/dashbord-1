@@ -10968,7 +10968,15 @@
                 _pkgSaveDefectActionsToStorage();
                 const photosChanged = _pkgDefectPhotos.some(p => !p.fileId) || _pkgDefectRemovedFileIds.length > 0;
                 if (photosChanged) {
-                    try { await _pkgSyncDefectPhotosTask(); }
+                    try {
+                        const photoRes = await _pkgSyncDefectPhotosTask();
+                        // savePkgItemDetail과 동일한 패턴 — 서버에 올린 뒤 받은 최신 사진 목록을
+                        // state.data/filteredData의 해당 품목에도 바로 반영해야, 다음 전체
+                        // 재동기화 전에도 포장불량조치 카드가 방금 올린 사진을 바로 보여준다.
+                        const defectPhotosJson = JSON.stringify(photoRes.photos || []);
+                        const _pkgDaMatch = it => (it.code || '').toUpperCase() === (item.code || '').toUpperCase() && (it.round || '') === (item.round || '') && (it.color || '') === (item.color || '');
+                        [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgDaMatch(it)) it.defectPhotos = defectPhotosJson; }); });
+                    }
                     catch (e) { fb.textContent = '저장됨 (사진 반영 실패: ' + e.message + ')'; fb.style.color = '#d97706'; }
                 }
                 if (!fb.textContent.includes('실패')) { fb.textContent = '✓ 저장되었습니다.'; fb.style.color = '#16a34a'; }
