@@ -10560,6 +10560,16 @@ async function _miSaveWithMigration() {
   });
   _miSyncDefectPhotos(item);
 
+  // 일반 저장(saveMItemDetail)엔 있던 "검사완료일을 따로 안 골랐으면 오늘 날짜로 자동입력"
+  // 규칙이 이 이동 경로엔 빠져있었다 — 그래서 날짜를 직접 안 고르고 바로 이동시키면
+  // 진행중 시트에 검사일이 비어있는 채로 이동이 먼저 일어나(rowData로 그대로 복사)
+  // 검사완료 리스트에도 빈칸으로 들어갔다(요청, 2026-11-06: "실제시트기준 검사일이
+  // 안찍혀서 들어가져" — 일괄수정(_tblApplyBulkMigrate)엔 이미 있던 처리를 여기도 맞춘다).
+  if (destStatus === '검사' && !(pending.검사일 || item.검사일)) {
+    const _today = new Date();
+    pending.검사일 = _today.getFullYear() + '-' + String(_today.getMonth() + 1).padStart(2, '0') + '-' + String(_today.getDate()).padStart(2, '0');
+  }
+
   const fields = Object.keys(pending);
   if (fields.some(f => ['가로', '세로', '높이', '중량'].includes(f))) {
     await _postMiSync(item, {
