@@ -3686,6 +3686,29 @@
     let _srSortKey = null;
     let _srSortAsc = true;
     const _SR_SORT_DEFS = [['code', '제품코드'], ['round', '건명'], ['dueDate', '납기일'], ['arriveDate', '입고일'], ['date', '상차일'], ['regDate', '포장일']];
+    // 페이지네이션(요청, 2026-11-06) — 예전엔 .slice(0,50)으로 51번째부터는 그냥
+    // 안 보여줬다. 이제 30건씩 끊어서 처음/이전/다음/끝으로 넘긴다.
+    let _srPage = 1;
+    const SR_PAGE_SIZE = 30;
+    function _srGoToPage(p) {
+        _srPage = p;
+        runSearch();
+    }
+    function _srRenderPagination(totalCount, totalPages) {
+        const bar = document.getElementById('srPaginationBar');
+        if (!bar) return;
+        if (!totalCount || totalPages <= 1) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+        bar.style.display = 'block';
+        const btn = (label, page, disabled) => `<button ${disabled ? 'disabled' : `onclick="_srGoToPage(${page})"`} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:${disabled ? 'var(--input-bg)' : 'var(--panel)'};color:${disabled ? 'var(--label)' : 'var(--text)'};font-size:12px;font-weight:700;cursor:${disabled ? 'default' : 'pointer'};-webkit-appearance:none;">${label}</button>`;
+        bar.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+                ${btn('처음', 1, _srPage === 1)}
+                ${btn('이전', _srPage - 1, _srPage === 1)}
+                <span style="font-size:12px;font-weight:700;color:var(--text-sub);padding:0 8px;white-space:nowrap;">${_srPage} / ${totalPages} 페이지 (총 ${totalCount.toLocaleString()}건)</span>
+                ${btn('다음', _srPage + 1, _srPage === totalPages)}
+                ${btn('끝', totalPages, _srPage === totalPages)}
+            </div>`;
+    }
     function pickSrSort(key) {
         if (_srSortKey !== key) { _srSortKey = key; _srSortAsc = true; }
         else if (_srSortAsc) { _srSortAsc = false; }
