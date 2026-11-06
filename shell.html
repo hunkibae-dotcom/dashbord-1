@@ -6348,12 +6348,14 @@
             const isActiveGroup = hasData && effectiveCur != null && effectiveCur !== '';
             const isOpen = _ieStatusOpenGroup === b.key;
             const c = isActiveGroup ? (PKG_STATUS_COLOR[effectiveCur] || '#64748B') : null;
+            // 품목이 실제로 없는 시트의 그룹은 못 열게 막는다(요청, 2026-11-06, PC 웹과 동일).
+            const isLocked = !hasData;
             return `
               <div class="fw-dd-anchor${isOpen ? ' open' : ''}" style="display:block;width:100%;">
-                <div class="fw-dd-trigger" style="display:flex;width:100%;box-sizing:border-box;${isActiveGroup ? `border-color:${c};background:${c}22;color:${c};` : ''}" onclick="_ieToggleStatusPanel('${b.key}')">
+                <div class="fw-dd-trigger" style="display:flex;width:100%;box-sizing:border-box;${isActiveGroup ? `border-color:${c};background:${c}22;color:${c};` : ''}${isLocked ? 'opacity:.45;cursor:not-allowed;' : ''}" onclick="${isLocked ? '' : `_ieToggleStatusPanel('${b.key}')`}">
                   ${isActiveGroup ? `<span class="fw-dd-dot" style="background:${c}"></span>` : ''}
                   <span>${b.label}</span>${isActiveGroup ? ` · ${effectiveCur}` : ''}
-                  <i class="fa-solid fa-chevron-down fw-dd-chev" style="margin-left:auto;"></i>
+                  ${isLocked ? '' : '<i class="fa-solid fa-chevron-down fw-dd-chev" style="margin-left:auto;"></i>'}
                 </div>
                 <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
                   <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:190px;">
