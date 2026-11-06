@@ -1170,6 +1170,10 @@ try {
       <div style="font-size:13px;font-weight:500;">단품코드, 건명, 날짜, 공장으로 검색해 보세요.</div>
     </div>
   </div>
+  <!-- 페이지네이션(요청, 2026-11-06: "리스트가 많으면 하단에 짤리는데 30개정도로
+       제한두고 페이지화") — 스크롤 영역 밖(고정 하단바)에 둬서 목록이 길어도 항상
+       보이고, 스크롤해서 찾아야 하는 일이 없게 한다. -->
+  <div id="psPaginationBar" style="display:none;flex-shrink:0;padding:8px 16px;border-top:1px solid var(--border);"></div>
 </div>
 
 <!-- ===== 제품검색: 선택 품목 일괄 수정 ===== -->
