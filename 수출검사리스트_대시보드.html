@@ -8284,17 +8284,36 @@ function renderProductSearchResults(results) {
   };
 
   if (isMob) {
-    cardContainer.innerHTML = sorted.map(renderCard).join('');
+    cardContainer.innerHTML = pageItems.map((d, i) => renderCard(d, psPageStart + i)).join('');
   } else {
-    tbody.innerHTML = sorted.map(renderRow).join('');
+    tbody.innerHTML = pageItems.map((d, i) => renderRow(d, psPageStart + i)).join('');
   }
+  _psRenderPagination(sorted.length, psTotalPages);
   } catch (e) {
     console.error('renderProductSearchResults error:', e);
     tbody.innerHTML = '';
     if (cardContainer0) cardContainer0.innerHTML = '';
     summary.innerHTML = '';
     noData.style.display = '';
+    const pbarErr = document.getElementById('psPaginationBar');
+    if (pbarErr) pbarErr.style.display = 'none';
   }
+}
+// 처음/이전/다음/끝 + "N / 총M페이지" — 결과가 1페이지 이하면 바를 아예 숨긴다.
+function _psRenderPagination(totalCount, totalPages) {
+  const bar = document.getElementById('psPaginationBar');
+  if (!bar) return;
+  if (!totalCount || totalPages <= 1) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+  bar.style.display = 'flex';
+  const btn = (label, page, disabled) => `<button ${disabled ? 'disabled' : `onclick="_psGoToPage(${page})"`} style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:${disabled ? 'var(--input-bg)' : 'var(--panel)'};color:${disabled ? 'var(--label)' : 'var(--text)'};font-size:12px;font-weight:700;cursor:${disabled ? 'default' : 'pointer'};">${label}</button>`;
+  bar.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;flex-wrap:wrap;">
+      ${btn('처음', 1, _psPage === 1)}
+      ${btn('이전', _psPage - 1, _psPage === 1)}
+      <span style="font-size:12px;font-weight:700;color:var(--text-sub);padding:0 8px;white-space:nowrap;">${_psPage} / ${totalPages} 페이지 (총 ${totalCount.toLocaleString()}건)</span>
+      ${btn('다음', _psPage + 1, _psPage === totalPages)}
+      ${btn('끝', totalPages, _psPage === totalPages)}
+    </div>`;
 }
 
 // ===== 데이터 출력(CSV 내보내기) =====
