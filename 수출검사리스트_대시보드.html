@@ -8204,6 +8204,14 @@ function renderProductSearchResults(results) {
 
   if (!window._mItemMap) window._mItemMap = {};
 
+  // 30건씩 페이지로 자른다 — 필터링으로 결과가 줄어 지금 페이지가 범위를 벗어나면
+  // 마지막 페이지로 당겨준다.
+  const psTotalPages = Math.max(1, Math.ceil(sorted.length / PS_PAGE_SIZE));
+  if (_psPage > psTotalPages) _psPage = psTotalPages;
+  if (_psPage < 1) _psPage = 1;
+  const psPageStart = (_psPage - 1) * PS_PAGE_SIZE;
+  const pageItems = sorted.slice(psPageStart, psPageStart + PS_PAGE_SIZE);
+
   const renderRow = (d, idx) => {
     const statusLabel = STATUS_LABEL(d);
     const statusCls = d.검사 === '검사' ? 'pill-done' : d.검사 === '양지' ? 'pill-yangji' : d.검사 === '재투입' ? 'pill-reinspect' : d.검사 === '미투입' ? 'pill-preinput' : d.검사 === '취소' ? 'pill-cancel' : 'pill-undone';
