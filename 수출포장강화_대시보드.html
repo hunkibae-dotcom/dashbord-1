@@ -10773,6 +10773,24 @@
             if (status === '조치중') return 'background:rgba(217,119,6,.1);color:#d97706;';
             return 'background:rgba(220,38,38,.08);color:#dc2626;';
         }
+        // 포장불량조치 카드 사진 클릭 시 확대 보기 — 품질검사 분류확인창과 동일한 생각
+        // (요청, 2026-10-28: "웹이면 PC 사진뷰어, 앱이면 갤러리뷰어가 열리게"): 앱
+        // 안에서는 실제 갤러리 앱을 띄우고(원격 URL이면 먼저 받아서 데이터URL로 변환),
+        // 일반 웹에서는 새 탭에 원본을 그대로 연다.
+        async function _pkgOpenPhotoViewer(src) {
+            if (!src) return;
+            if (window.Android && typeof window.Android.isNative === 'function' && window.Android.isNative() && typeof window.Android.openImageInGallery === 'function') {
+                try {
+                    if (src.indexOf('data:') === 0) { window.Android.openImageInGallery(src); return; }
+                    const blob = await fetch(src).then(r => r.blob());
+                    const reader = new FileReader();
+                    reader.onload = () => { try { window.Android.openImageInGallery(String(reader.result)); } catch (e) {} };
+                    reader.readAsDataURL(blob);
+                    return;
+                } catch (e) { /* 실패하면 아래 새 탭 열기로 대체 */ }
+            }
+            window.open(src, '_blank');
+        }
         function _pkgDefectActionCardHtml(e) {
             const item = _pkgFindItemByKey(e.key);
             const photos = item ? _pkgParseDefectPhotos(item.defectPhotos) : [];
