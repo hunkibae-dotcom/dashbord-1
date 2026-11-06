@@ -3818,8 +3818,9 @@ function _tblRenderBulkStatusBtns() {
 }
 function _tblSetBulkStatus(groupKey, v) {
   _tblBulkBasis = groupKey;
-  if (groupKey === 'shipped') {
-    // 출고완료 그룹 = 이동 의도. 진행중 그룹에서 고른 값은 서로 배타적이라 비운다.
+  // "검사완료"는 품목수정창과 동일하게 어느 그룹에서 고르든 항상 이동 의도로 본다
+  // (요청, 2026-11-06 — 단일 품목수정창과 같은 이유).
+  if (groupKey === 'shipped' || v === '검사') {
     _tblBulkMigrateTarget = (_tblBulkMigrateTarget === v) ? null : v;
     _tblBulkStatus = null;
   } else {
