@@ -10723,8 +10723,8 @@ function setMiField(field, value) {
     _miSyncViewMirrors();
     return;
   }
-  if (field === '블로킹') _refreshMiBlockingButtons(value);
   _miPendingSync[field] = value;
+  if (field === '블로킹') _refreshMiBlockingButtons(value);
   _miSyncViewMirrors();
 }
 // 제품 수정창의 단품코드 옆 상세스펙 버튼 — 포장강화와 동일한 위치/역할(요청,
