@@ -120,6 +120,20 @@
             opacity: 0; transition: opacity 0.4s ease;
         }
         #prep.show { opacity: 1; }
+        /* 로딩 중 F가 통통 튀는 느낌(요청, 2026-11-09) — 공을 떨어뜨린 것처럼 한 번 크게
+           튀고 점점 작게 튀다가 다시 처음으로 이어지는 걸 계속 반복한다. 초기 스플래시
+           (#splash)의 F는 그대로 두고, 이 로딩 화면의 F에만 건다. */
+        #prep .spl-f { display: inline-block; animation: prepFBounce 1.15s cubic-bezier(.28,.84,.42,1) infinite; }
+        @keyframes prepFBounce {
+            0%, 100% { transform: translateY(0) scaleY(1); }
+            8%  { transform: translateY(0) scaleY(.82); }
+            28% { transform: translateY(-16px) scaleY(1.05); }
+            42% { transform: translateY(0) scaleY(.88); }
+            56% { transform: translateY(-7px) scaleY(1.02); }
+            66% { transform: translateY(0) scaleY(.94); }
+            76% { transform: translateY(-2.5px) scaleY(1.01); }
+            86% { transform: translateY(0) scaleY(1); }
+        }
         .prep-status {
             font-size: 12.5px; font-weight: 700; color: var(--sub);
             letter-spacing: 0.02em; margin-top: -8px;
