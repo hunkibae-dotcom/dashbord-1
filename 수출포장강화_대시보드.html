@@ -8901,7 +8901,14 @@
             return _pkgActiveCodeRounds()
                 .filter(it => {
                     if (!(it.round||'').trim() || it.round === '-') return false;
-                    if ((it.status||'').replace(/\s+/g,'') === '재고활용') return false;
+                    const st = (it.status||'').replace(/\s+/g,'');
+                    if (st === '재고활용') return false;
+                    // 이미 출고됐거나(출고/피킹/미포장 — 출고완료 시트 쪽 진행값) 포장이
+                    // 완전히 끝난 품목은 더 고를 PE폼 유형이 없으니 후보에서 뺀다(요청,
+                    // 2026-11-09: "출고, 또는 포장완료된 품목은 제외시켜주고"). "일부포장완료"는
+                    // 아직 남은 수량이 있어 유형 선택이 의미 있을 수 있으니 정확히 "포장완료"일
+                    // 때만 뺀다(substring이면 "일부포장완료"까지 걸려버림).
+                    if (st === '포장완료' || st === '출고' || st === '피킹' || st === '미포장') return false;
                     const spec = _pkgServerSpecMap[it.code] || {};
                     return !spec.peType;
                 })
