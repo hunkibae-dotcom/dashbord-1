@@ -1518,7 +1518,12 @@
             const s = _pkgNiSpecMap[d.code] || {};
             if (s.peType) return false;
             if (!(d.round||'').trim() || d.round === '-') return false;
-            if ((d.status||'').replace(/\s+/g,'') === '재고활용') return false;
+            const st = (d.status||'').replace(/\s+/g,'');
+            if (st === '재고활용') return false;
+            // PC 웹(수출포장강화_대시보드.html)과 반드시 같아야 함 — 이미 출고됐거나
+            // (출고/피킹/미포장) 포장이 완전히 끝난 품목은 유형 선택 후보에서 뺀다(요청,
+            // 2026-11-09). "일부포장완료"는 정확히 일치하지 않으니 안 걸러짐(의도).
+            if (st === '포장완료' || st === '출고' || st === '피킹' || st === '미포장') return false;
             return true;
         });
     }
