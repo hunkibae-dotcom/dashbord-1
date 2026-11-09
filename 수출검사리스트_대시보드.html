@@ -534,6 +534,14 @@ try {
       <span class="flex-1">현황 업데이트</span>
     </div>
 
+    <!-- 회의용 월간/연간 종합 리포트(PPTX) 생성(요청, 2026-11-09) — 포장강화와 같은
+         위치(현황 업데이트 바로 아래)에 둔다. 기존 "보고서"(품목별 검사 세부내역
+         PPTX)와는 완전히 다른 별개 기능이라 이름을 분명히 구분했다. -->
+    <div class="nav-item w-full" id="navQcReport" onclick="openQcReportModal()">
+      <i class="fa-solid fa-chart-pie w-4 text-center"></i>
+      <span class="flex-1">종합 리포트</span>
+    </div>
+
     <div class="border-t border-slate-300 my-1"></div>
 
     <button id="syncBtn" onclick="loadData(true)" class="nav-item w-full">
