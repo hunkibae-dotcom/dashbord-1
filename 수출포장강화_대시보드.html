@@ -16223,6 +16223,11 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             </div>
             <div id="pkgMissingSpecDateFilterRow" style="flex-shrink:0;"></div>
             <div id="pkgMissingSpecBody" style="overflow-y:auto;flex:1;min-height:0;padding:2px;"></div>
+            <!-- 일괄 적용 푸터(요청, 2026-11-09) — 여러 행에서 값을 고르면 여기 버튼으로 한 번에 반영 -->
+            <div id="pkgMissingSpecApplyBar" style="display:none;align-items:center;justify-content:space-between;gap:10px;flex-shrink:0;margin-top:8px;padding:10px 12px;border-top:1px solid #e2e8f0;background:#f8fafc;border-radius:0 0 10px 10px;">
+                <span id="pkgMissingSpecApplyCount" style="font-size:12.5px;font-weight:700;color:#334155;">0건 선택됨</span>
+                <button id="pkgMissingSpecApplyBtn" onclick="_pkgMissingSpecApplyAll()" disabled style="padding:9px 20px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-size:13px;font-weight:700;cursor:pointer;opacity:.5;"><i class="fa-solid fa-check"></i> 적용</button>
+            </div>
         </div>
 
         <!-- 탭3: 유형 선택 (제품종류·높이는 있지만 PE폼 유형이 비어있음) -->
