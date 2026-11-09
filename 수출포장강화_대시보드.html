@@ -5145,7 +5145,12 @@
                     { label: '총 출고수량', value: grandTotal.toLocaleString() + ' BOX', color: RPT_ACCENT },
                     { label: '제품구분 수', value: cats.length + '개', color: RPT_ACCENT2 },
                     { label: '최다 구분: ' + cats[topIdx], value: catTotals[topIdx].toLocaleString() + ' BOX', color: '10B981' }
-                ]
+                ],
+                // 요청(2026-11-09): "각 그래프마다 수량이안써있어서... 잘좀 추려서 적어줘" —
+                // 제품구분이 많아(보통 5~6개) 막대마다 숫자를 찍으면 더 지저분해지므로,
+                // 차트 오른쪽에 구분별 합계를 정확한 숫자로 따로 적어준다. cats와 순서를
+                // 그대로 맞춰야 색상 점이 차트의 막대 색과 일치한다.
+                sideTotals: cats.map((c, i) => ({ label: c, value: catTotals[i].toLocaleString() + ' BOX' }))
             });
         }
 
