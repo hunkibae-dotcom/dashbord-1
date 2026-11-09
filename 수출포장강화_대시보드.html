@@ -4897,6 +4897,274 @@
             return '';
         }
 
+        // ══════════════ 종합 리포트(PPTX) ══════════════
+        // 회의용 월간/연간 종합 리포트를 한 번에 생성(요청, 2026-11-09). 품질검사의 기존
+        // "보고서"(generateReportPptx, 수출검사리스트_대시보드.html)가 이미 pptxgenjs@3.12.0을
+        // 쓰고 있어 같은 라이브러리를 그대로 빌려 쓰되, 그 기능은 품목별 표/사진 슬라이드만
+        // 만들어서 원형/막대 차트(addChart)는 여기서 처음 쓴다.
+        function _pkgLoadPptxGenJS(cb) {
+            if (window.PptxGenJS) { cb(); return; }
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+            s.onload = cb;
+            s.onerror = function () { alert('PPTX 라이브러리 로드 실패 — 네트워크를 확인해주세요.'); _rptResetDownloadBtn(); };
+            document.head.appendChild(s);
+        }
+
+        // ── 기간 모델 — 월간: 그 달의 "일자별" 버킷, 년간: 그 해의 "월별" 버킷 ──────
+        function _rptBuckets(mode, year, month) {
+            if (mode === 'monthly') {
+                const daysInMonth = new Date(year, month, 0).getDate(); // month는 1-based
+                return Array.from({ length: daysInMonth }, (_, i) => {
+                    const d = i + 1;
+                    return { label: d + '일', match: (ds) => { const p = ds.split('-'); return +p[0] === year && +p[1] === month && +p[2] === d; } };
+                });
+            }
+            return Array.from({ length: 12 }, (_, i) => {
+                const m = i + 1;
+                return { label: m + '월', match: (ds) => { const p = ds.split('-'); return +p[0] === year && +p[1] === m; } };
+            });
+        }
+        // 전체 기간(월 전체 또는 해 전체) 매칭 — 합계/표/비율용.
+        function _rptInPeriod(dateStr, mode, year, month) {
+            const d = normalizeDate(dateStr);
+            if (!d || d === '-') return false;
+            const p = d.split('-');
+            if (+p[0] !== year) return false;
+            if (mode === 'monthly' && +p[1] !== month) return false;
+            return true;
+        }
+
+        // ── 공용 슬라이드 빌더 ───────────────────────────────────────────
+        const RPT_COLOR_SET = ['2a78d6', 'eb6834', '1baf7a', 'eda100', 'e87ba4', '008300', '4a3aa7', 'e34948'];
+        function _rptAddCoverSlide(pptx, title, periodLabel) {
+            const now = new Date();
+            const todayLabel = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+            const slide = pptx.addSlide();
+            slide.background = { color: '0F172A' };
+            slide.addText(title, { x: 0.8, y: 2.6, w: 11.7, h: 1.2, fontSize: 40, bold: true, color: 'FFFFFF', fontFace: 'Malgun Gothic' });
+            slide.addText(periodLabel, { x: 0.8, y: 3.8, w: 11.7, h: 0.6, fontSize: 18, color: '94A3B8', fontFace: 'Malgun Gothic' });
+            slide.addText('생성일 ' + todayLabel, { x: 0.8, y: 6.7, w: 11.7, h: 0.4, fontSize: 11, color: '64748B', fontFace: 'Malgun Gothic' });
+        }
+        function _rptAddTitleBar(slide, title) {
+            slide.addText(title, { x: 0.5, y: 0.3, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: '1E293B', fontFace: 'Malgun Gothic' });
+        }
+        function _rptAddBarSlide(pptx, title, categories, series, opts) {
+            const slide = pptx.addSlide();
+            _rptAddTitleBar(slide, title);
+            const chartData = series.map(s => ({ name: s.name, labels: categories, values: s.values }));
+            slide.addChart(pptx.ChartType.bar, chartData, Object.assign({
+                x: 0.5, y: 1.1, w: 12.3, h: 6.0,
+                barDir: 'col', barGrouping: series.length > 1 ? 'clustered' : 'standard',
+                showLegend: series.length > 1, legendPos: 'b',
+                showValue: series.length === 1,
+                chartColors: RPT_COLOR_SET,
+                catAxisLabelFontSize: 10, valAxisLabelFontSize: 10, dataLabelFontSize: 9
+            }, opts || {}));
+        }
+        function _rptAddPieSlide(pptx, title, labels, values, opts) {
+            const slide = pptx.addSlide();
+            _rptAddTitleBar(slide, title);
+            slide.addChart(pptx.ChartType.pie, [{ name: title, labels: labels, values: values }], Object.assign({
+                x: 2.9, y: 1.1, w: 7.5, h: 6.0,
+                showLegend: true, legendPos: 'r',
+                showPercent: true, dataLabelFontSize: 11,
+                chartColors: RPT_COLOR_SET
+            }, opts || {}));
+        }
+        function _rptAddTableSlide(pptx, title, columns, rows, opts) {
+            const slide = pptx.addSlide();
+            _rptAddTitleBar(slide, title);
+            const header = columns.map(c => ({ text: c.label, options: { bold: true, color: 'FFFFFF', fill: { color: '334155' }, fontSize: 11, align: 'center' } }));
+            const body = rows.map(r => columns.map(c => ({ text: (c.get(r) ?? '').toString(), options: { fontSize: 10.5, align: c.align || 'left' } })));
+            slide.addTable([header, ...body], Object.assign({
+                x: 0.5, y: 1.1, w: 12.3, h: Math.min(6.0, 0.4 + 0.32 * (body.length + 1)),
+                colW: columns.map(c => c.w || (12.3 / columns.length)),
+                border: { type: 'solid', color: 'E2E8F0', pt: 0.5 },
+                autoPage: true
+            }, opts || {}));
+        }
+        function _rptAddEmptySlide(pptx, title) {
+            const slide = pptx.addSlide();
+            _rptAddTitleBar(slide, title);
+            slide.addText('해당 기간에 데이터가 없습니다.', { x: 0.5, y: 3.2, w: 12.3, h: 1, align: 'center', fontSize: 16, color: '94A3B8', fontFace: 'Malgun Gothic' });
+        }
+
+        // ── 콘텐츠1: 누적 포장실적(강화수량) — 포장일(regDate) 기준 ──────────
+        function _rptAddPackingSlide(pptx, mode, year, month) {
+            const buckets = _rptBuckets(mode, year, month);
+            const vals = buckets.map(() => 0);
+            (state.data || []).forEach(item => {
+                if (!_pkgIsReinforcedItem(item)) return;
+                const d = normalizeDate(item.regDate);
+                if (!d || d === '-') return;
+                const idx = buckets.findIndex(b => b.match(d));
+                if (idx < 0) return;
+                vals[idx] += parseInt(item.qty) || 0;
+            });
+            const total = vals.reduce((a, b) => a + b, 0);
+            if (!total) { _rptAddEmptySlide(pptx, '누적 포장실적(강화수량)'); return; }
+            _rptAddBarSlide(pptx, '누적 포장실적(강화수량) — 합계 ' + total.toLocaleString() + ' BOX', buckets.map(b => b.label), [{ name: '강화수량', values: vals }]);
+        }
+
+        // ── 콘텐츠2: 제품별 실적(출고기준) — 상차일(date) 기준, 제품구분별 ──────
+        function _rptAddProductPerfSlide(pptx, mode, year, month) {
+            const buckets = _rptBuckets(mode, year, month);
+            const catMap = {};
+            (state.data || []).forEach(item => {
+                if (!_pkgIsShippedItem(item)) return;
+                const d = normalizeDate(item.date);
+                if (!d || d === '-') return;
+                const idx = buckets.findIndex(b => b.match(d));
+                if (idx < 0) return;
+                const cat = (item.country || '').toString().replace(/\s+/g, '');
+                if (!cat || cat === '미구성' || cat === 'DOMESTIC') return;
+                if (!catMap[cat]) catMap[cat] = buckets.map(() => 0);
+                catMap[cat][idx] += parseInt(item.qty) || 0;
+            });
+            const cats = Object.keys(catMap).sort();
+            if (!cats.length) { _rptAddEmptySlide(pptx, '제품별 실적(출고기준)'); return; }
+            _rptAddBarSlide(pptx, '제품별 실적(출고기준)', buckets.map(b => b.label), cats.map(c => ({ name: c, values: catMap[c] })));
+        }
+
+        // ── 콘텐츠3(신규): 출고 유형 비율 — 정상포장출고/미포장출고/피킹 ─────────
+        function _rptAddShipTypeRatioSlide(pptx, mode, year, month) {
+            const counts = { '정상포장출고': 0, '미포장출고': 0, '피킹': 0 };
+            (state.data || []).forEach(item => {
+                if (!_pkgIsShippedItem(item)) return;
+                if (!_rptInPeriod(item.date, mode, year, month)) return;
+                if (item.status === '미포장') counts['미포장출고']++;
+                else if (item.status === '피킹') counts['피킹']++;
+                else counts['정상포장출고']++; // '출고'/'출고완료'
+            });
+            const labels = Object.keys(counts), values = labels.map(l => counts[l]);
+            const total = values.reduce((a, b) => a + b, 0);
+            if (!total) { _rptAddEmptySlide(pptx, '출고 유형 비율'); return; }
+            _rptAddPieSlide(pptx, '출고 유형 비율 — 총 ' + total.toLocaleString() + '건', labels, values);
+        }
+
+        // ── 콘텐츠4: PE폼 사용현황 — 발주일자 기준 ─────────────────────────
+        // peOrderRows는 다른 <script> 블록(peLoadAll 등)에 let으로 선언돼있어 여기서 직접
+        // 못 읽는다 — 그 블록에 추가해둔 접근자 _rptGetPeOrderRows()로 빌려온다.
+        async function _rptAddPeFoamSlides(pptx, mode, year, month) {
+            await peLoadAll();
+            const rows = (_rptGetPeOrderRows() || []).filter(r => _rptInPeriod(r.date, mode, year, month));
+            if (!rows.length) { _rptAddEmptySlide(pptx, 'PE폼 사용현황'); return; }
+            const typeMap = {};
+            rows.forEach(r => { const t = r.type || '기타'; typeMap[t] = (typeMap[t] || 0) + (parseFloat(r.qty) || 0); });
+            const types = Object.keys(typeMap);
+            _rptAddBarSlide(pptx, 'PE폼 사용현황 — 유형별 발주수량', types, [{ name: '수량', values: types.map(t => typeMap[t]) }]);
+            const statMap = {};
+            rows.forEach(r => { const s = r.stat || '미지정'; statMap[s] = (statMap[s] || 0) + 1; });
+            const stats = Object.keys(statMap);
+            _rptAddPieSlide(pptx, 'PE폼 발주 상태 비율 — 총 ' + rows.length + '건', stats, stats.map(s => statMap[s]));
+        }
+
+        // ── 콘텐츠5: 포장불량조치 현황 — 등록/수정 시각(updatedAt) 기준 ────────
+        async function _rptAddDefectActionSlides(pptx, mode, year, month) {
+            await _pkgFetchDefectActions();
+            const entries = Object.values(_pkgDefectActions).filter(e => {
+                if (!e.updatedAt) return false;
+                const d = new Date(e.updatedAt);
+                const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                return _rptInPeriod(ds, mode, year, month);
+            });
+            if (!entries.length) { _rptAddEmptySlide(pptx, '포장불량조치 현황'); return; }
+            const typeMap = {};
+            entries.forEach(e => (e.types || []).forEach(t => { typeMap[t] = (typeMap[t] || 0) + 1; }));
+            const types = Object.keys(typeMap);
+            if (types.length) _rptAddBarSlide(pptx, '포장불량조치 현황 — 불량유형별 건수(총 ' + entries.length + '건)', types, [{ name: '건수', values: types.map(t => typeMap[t]) }]);
+            const statMap = { 미조치: 0, 조치중: 0, 조치완료: 0 };
+            entries.forEach(e => { const s = e.status || '미조치'; statMap[s] = (statMap[s] || 0) + 1; });
+            const doneRate = entries.length ? Math.round(statMap['조치완료'] / entries.length * 100) : 0;
+            _rptAddPieSlide(pptx, '포장불량조치 상태 비율 — 조치완료율 ' + doneRate + '%', Object.keys(statMap), Object.values(statMap));
+        }
+
+        // ── 모달/다운로드 흐름 ───────────────────────────────────────────
+        let _rptMode = 'monthly';
+        function _rptApplyModeBtnStyle(el, on) {
+            if (!el) return;
+            el.style.border = on ? '1.5px solid #0284c7' : '1.5px solid #e2e8f0';
+            el.style.background = on ? 'rgba(2,132,199,.08)' : '#fff';
+            el.style.color = on ? '#0284c7' : '#64748b';
+        }
+        function _rptSetMode(mode) {
+            _rptMode = mode;
+            _rptApplyModeBtnStyle(document.getElementById('rptMonthlyBtn'), mode === 'monthly');
+            _rptApplyModeBtnStyle(document.getElementById('rptYearlyBtn'), mode === 'yearly');
+            const mw = document.getElementById('rptMonthPickerWrap'), yw = document.getElementById('rptYearPickerWrap');
+            if (mw) mw.style.display = mode === 'monthly' ? 'block' : 'none';
+            if (yw) yw.style.display = mode === 'yearly' ? 'block' : 'none';
+        }
+        function openPkgReportModal() {
+            const now = new Date();
+            const yearSel = document.getElementById('rptYearSelect');
+            if (yearSel && !yearSel.dataset.inited) {
+                const curY = now.getFullYear();
+                let opts = '';
+                for (let y = curY; y >= curY - 4; y--) opts += `<option value="${y}">${y}년</option>`;
+                yearSel.innerHTML = opts;
+                yearSel.dataset.inited = '1';
+            }
+            const monthInput = document.getElementById('rptMonthInput');
+            if (monthInput && !monthInput.value) monthInput.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+            _rptSetMode('monthly');
+            document.getElementById('pkgReportModal').style.display = 'flex';
+        }
+        function closePkgReportModal() {
+            document.getElementById('pkgReportModal').style.display = 'none';
+        }
+        function _rptResetDownloadBtn() {
+            const btn = document.getElementById('rptDownloadBtn');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-download"></i> 다운로드'; }
+        }
+        async function pkgGenerateReport() {
+            const btn = document.getElementById('rptDownloadBtn');
+            const mode = _rptMode;
+            let year, month;
+            if (mode === 'monthly') {
+                const v = (document.getElementById('rptMonthInput').value || '').trim();
+                if (!v) { alert('연-월을 선택해주세요.'); return; }
+                const p = v.split('-'); year = parseInt(p[0]); month = parseInt(p[1]);
+            } else {
+                year = parseInt(document.getElementById('rptYearSelect').value);
+            }
+            const sections = {
+                packing: document.getElementById('rptChk_packing').checked,
+                product: document.getElementById('rptChk_product').checked,
+                shipType: document.getElementById('rptChk_shipType').checked,
+                pefoam: document.getElementById('rptChk_pefoam').checked,
+                defect: document.getElementById('rptChk_defect').checked
+            };
+            if (!Object.values(sections).some(Boolean)) { alert('포함할 콘텐츠를 하나 이상 선택해주세요.'); return; }
+
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
+
+            _pkgLoadPptxGenJS(async function () {
+                try {
+                    const pptx = new PptxGenJS();
+                    pptx.defineLayout({ name: 'WIDE_REPORT', width: 13.33, height: 7.5 });
+                    pptx.layout = 'WIDE_REPORT';
+                    const periodLabel = mode === 'monthly' ? (year + '년 ' + month + '월') : (year + '년(연간)');
+                    _rptAddCoverSlide(pptx, '포장강화 종합 리포트', periodLabel);
+                    if (sections.packing) _rptAddPackingSlide(pptx, mode, year, month);
+                    if (sections.product) _rptAddProductPerfSlide(pptx, mode, year, month);
+                    if (sections.shipType) _rptAddShipTypeRatioSlide(pptx, mode, year, month);
+                    if (sections.pefoam) await _rptAddPeFoamSlides(pptx, mode, year, month);
+                    if (sections.defect) await _rptAddDefectActionSlides(pptx, mode, year, month);
+                    const fname = '포장강화 종합리포트_' + periodLabel.replace(/\s+/g, '') + '.pptx';
+                    await pptx.writeFile({ fileName: fname });
+                    _rptResetDownloadBtn();
+                    closePkgReportModal();
+                } catch (e) {
+                    alert('생성 실패: ' + ((e && e.message) || e));
+                    _rptResetDownloadBtn();
+                }
+            });
+        }
+
         function buildProdCmpDataAndInit() {
             _prodCmpCatDateQtyMap = {};
             function parseQty(v) { return v ? (parseInt(v.toString().replace(/[^0-9]/g, '')) || 0) : 0; }
