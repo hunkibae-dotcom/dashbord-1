@@ -1205,13 +1205,25 @@ function renderOrders() {
       </div>
       ${canReceive ? `
       <div class="quick-action">
-        ${r.stat === '발주' ? `<span class="qa-btn muted" onclick="toggleDatePanel('dp_${i}','부분입고')">부분입고</span>` : ''}
-        <span class="qa-btn confirm" onclick="toggleDatePanel('dp_${i}','입고완료')"><i class="fa-solid fa-box-open"></i> 입고완료</span>
+        <span class="qa-btn muted" onclick="toggleReceivePanel('qp_${i}')"><i class="fa-solid fa-clipboard-check"></i> 입고 체크</span>
+        <span class="qa-btn confirm" onclick="toggleReceivePanel('fp_${i}')"><i class="fa-solid fa-box-open"></i> 전수량입고완료</span>
       </div>
-      <div class="date-panel" id="dp_${i}" data-pending-status="입고완료">
-        <span id="dpLabel_${i}">입고일</span>
-        <input type="date" id="dpdate_${i}" value="${today}">
-        <button onclick="confirmReceive('${r.ordNo}',document.getElementById('dp_${i}').dataset.pendingStatus,document.getElementById('dpdate_${i}').value,'dp_${i}',${r.row || 'null'})">확정</button>
+      <!-- 입고 체크 — 이번에 실제로 들어온 수량을 적으면, 주문수량과 비교해 서버가
+           부분입고/입고완료를 자동 판정한다(요청, 2026-11-09: "따로 수량을 적어서
+           정수량아닐 시 부분입고처리됨"). -->
+      <div class="date-panel" id="qp_${i}">
+        <span>입고일</span>
+        <input type="date" id="qpdate_${i}" value="${today}">
+        <span>수량</span>
+        <input type="number" id="qpqty_${i}" min="1" placeholder="${_pePartialHint(r)}" style="max-width:90px;">
+        <button onclick="confirmReceiveQty('${r.ordNo}',${r.row || 'null'},document.getElementById('qpdate_${i}').value,document.getElementById('qpqty_${i}').value,false,'qp_${i}')">확정</button>
+      </div>
+      <!-- 전수량입고완료 — 나머지 전부가 들어온 경우, 수량 입력 없이 날짜만 확정한다. -->
+      <div class="date-panel" id="fp_${i}">
+        <span>입고일</span>
+        <input type="date" id="fpdate_${i}" value="${today}">
+        <button class="today-btn" onclick="document.getElementById('fpdate_${i}').value='${today}'">금일</button>
+        <button onclick="confirmReceiveQty('${r.ordNo}',${r.row || 'null'},document.getElementById('fpdate_${i}').value,null,true,'fp_${i}')">확정</button>
       </div>` : ''}
     </div>`;
   }).join('');
