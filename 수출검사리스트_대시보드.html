@@ -7862,7 +7862,6 @@ async function qcGenerateReport() {
   const sections = {
     progress: document.getElementById('qrptChk_progress').checked,
     chart: document.getElementById('qrptChk_chart').checked,
-    blocking: document.getElementById('qrptChk_blocking').checked,
     fieldDefect: document.getElementById('qrptChk_fieldDefect').checked,
     shipRatio: document.getElementById('qrptChk_shipRatio').checked,
     factoryRatio: document.getElementById('qrptChk_factoryRatio').checked,
@@ -7886,7 +7885,6 @@ async function qcGenerateReport() {
       const tocTitles = [];
       if (sections.progress) tocTitles.push('검사 진행현황 요약(공장별)');
       if (sections.chart) tocTitles.push('누적 검사실적 차트');
-      if (sections.blocking) tocTitles.push('블로킹 현황');
       if (sections.fieldDefect) tocTitles.push('현장검사 하자 현황');
       if (sections.shipRatio) tocTitles.push('공장별 검사완료·미검사 출고 비율');
       if (sections.factoryRatio) tocTitles.push('1·2공장 제품 검사비율');
