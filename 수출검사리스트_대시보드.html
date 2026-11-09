@@ -7893,7 +7893,6 @@ async function qcGenerateReport() {
       _rptAddTocSlide(pptx, tocTitles);
       if (sections.progress) _qrptAddProgressSlide(pptx);
       if (sections.chart) _qrptAddChartSlide(pptx, mode, year, month);
-      if (sections.blocking) _qrptAddBlockingSlide(pptx);
       if (sections.fieldDefect) await _qrptAddFieldDefectSlides(pptx, mode, year, month);
       if (sections.shipRatio) _qrptAddShipRatioSlide(pptx, mode, year, month);
       if (sections.factoryRatio) _qrptAddFactoryRatioSlide(pptx, mode, year, month);
