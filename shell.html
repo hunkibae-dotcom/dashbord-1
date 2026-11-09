@@ -2015,46 +2015,121 @@
         const dateRowEl = document.getElementById('pkgNiDateFilterRow-missing');
         if (dateRowEl) dateRowEl.innerHTML = _pkgNiDateFilterRowHtml('missing');
         const list = _pkgNiDisplayList('missing');
+        const listCodes = new Set(list.map(it => it.code));
+        Object.keys(_pkgNiMissingDrafts).forEach(c => { if (!listCodes.has(c)) delete _pkgNiMissingDrafts[c]; });
+        _pkgNiRefreshApplyBar('missing');
         const body = document.getElementById('pkgNiBody-missing');
         if (!list.length) { body.innerHTML = '<div style="text-align:center;padding:30px 0;font-size:12.5px;color:var(--text-sub);">미구성 품목이 없습니다.</div>'; return; }
         body.innerHTML = list.map(it => {
             const s = _pkgNiSpecMap[it.code] || {};
+            const draft = _pkgNiMissingDrafts[it.code];
+            const staged = !!draft;
             const rid = 'pkgNiMs_' + it.code.replace(/[^A-Z0-9]/g,'_');
             const country = it.country || it.div || '';
-            return `<div style="padding:9px 8px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:6px;">
+            const curPt = draft ? draft.productType : (s.productType||'');
+            const curBh = draft ? draft.boxHeight : (s.boxHeight||'');
+            return `<div style="padding:9px 8px;border:1px solid var(--border);border-radius:10px;display:flex;flex-direction:column;gap:6px;${staged ? 'background:rgba(2,132,199,.08);' : ''}">
                 <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                     <span>${it.round||'-'}</span>
                     <span style="font-family:ui-monospace,monospace;font-weight:600;color:var(--text-sub);font-size:11.5px;">${it.code}</span>
                     ${country ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef3c7;color:#b45309;">${country}</span>` : ''}
+                    ${staged ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#0284c7;color:#fff;">적용대기</span>` : ''}
                     <button type="button" onclick="_pkgNiMissingDismiss('${it.code}')" title="목록에서만 치우기(시트는 그대로 둠)" style="margin-left:auto;width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;cursor:pointer;padding:0;-webkit-appearance:none;"><i class="fa-solid fa-xmark" style="font-size:9.5px;"></i></button>
                 </div>
                 <div style="display:flex;gap:6px;">
-                    <input id="${rid}_pt" type="text" placeholder="제품종류" value="${s.productType||''}" style="flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
-                    <input id="${rid}_bh" type="text" placeholder="PE폼 높이" value="${s.boxHeight||''}" style="width:90px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
-                    <button onclick="pkgNiSaveMissingSpec('${it.code}')" id="${rid}_saveBtn" style="flex-shrink:0;padding:0 12px;border-radius:8px;border:none;background:#0284c7;color:#fff;font-weight:700;font-size:12px;cursor:pointer;-webkit-appearance:none;">저장</button>
+                    <input id="${rid}_pt" type="text" placeholder="제품종류" value="${curPt}" oninput="_pkgNiStageMissing('${it.code}')" style="flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
+                    <input id="${rid}_bh" type="text" placeholder="PE폼 높이" value="${curBh}" oninput="_pkgNiStageMissing('${it.code}')" style="width:90px;flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:12px;background:var(--input-bg,#fff);color:var(--text);">
                 </div>
             </div>`;
         }).join('');
     }
-    async function pkgNiSaveMissingSpec(code) {
+    // 여러 항목을 골라두고 한 번에 적용(요청, 2026-11-09: PC 웹 포장강화와 동일하게
+    // 맞춤) — 값을 고치는 즉시 서버로 안 보내고 code별로 기억해뒀다가, 하단 "적용"
+    // 버튼으로 한꺼번에 보낸다. 여기는(PC 웹과 달리) 행을 접었다 펼치는 아코디언이
+    // 없어서 입력칸이 항상 DOM에 남아있으므로 재렌더로 값이 날아가는 문제는 없지만,
+    // draft로 통일해두면 적용 시점에 일관되게 읽을 수 있고 배경색으로 바로 표시된다.
+    let _pkgNiMissingDrafts = {}; // code -> {productType, boxHeight}
+    let _pkgNiTypeDrafts = {}; // code -> peType 문자열
+    function _pkgNiStageMissing(code) {
         const rid = 'pkgNiMs_' + code.replace(/[^A-Z0-9]/g,'_');
-        const productType = (document.getElementById(rid + '_pt').value || '').trim();
-        const boxHeight = (document.getElementById(rid + '_bh').value || '').trim();
-        if (!productType && !boxHeight) return;
-        // 반영 중 로딩 표시(요청, 2026-10-29: "확인누르면 반영중 로딩표시도좀 하고").
-        const btn = document.getElementById(rid + '_saveBtn');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+        const ptEl = document.getElementById(rid + '_pt');
+        if (!ptEl) return;
+        const bhEl = document.getElementById(rid + '_bh');
+        const productType = (ptEl.value || '').trim();
+        const boxHeight = (bhEl ? bhEl.value : '').trim();
+        if (!productType && !boxHeight) delete _pkgNiMissingDrafts[code];
+        else _pkgNiMissingDrafts[code] = { productType, boxHeight };
+        _pkgNiRefreshApplyBar('missing');
+        const row = ptEl.closest('div[style*="border-radius:10px"]');
+        if (row) row.style.background = (code in _pkgNiMissingDrafts) ? 'rgba(2,132,199,.08)' : '';
+    }
+    function _pkgNiRefreshApplyBar(tab) {
+        const bar = document.getElementById('pkgNiApplyBar-' + tab);
+        const btn = document.getElementById('pkgNiApplyBtn-' + tab);
+        const cnt = document.getElementById('pkgNiApplyCount-' + tab);
+        if (!bar || !btn || !cnt) return;
+        const drafts = tab === 'missing' ? _pkgNiMissingDrafts : _pkgNiTypeDrafts;
+        const n = Object.keys(drafts).length;
+        bar.style.display = n ? 'flex' : 'none';
+        cnt.textContent = n + '건 선택됨';
+        btn.disabled = !n;
+        btn.style.opacity = n ? '1' : '.4';
+    }
+    async function _pkgNiApplyMissingOne(code) {
+        const draft = _pkgNiMissingDrafts[code];
+        if (!draft) return true; // 대상이 아니면 실패로 안 침
+        const { productType, boxHeight } = draft;
+        if (!productType && !boxHeight) return true;
         const payload = { action: 'updateProductSpec', code: code };
         if (productType) payload.productType = productType;
         if (boxHeight) payload.boxHeight = boxHeight;
+        try {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }).then(r => r.json());
+            if (res && res.result === 'error') return false;
+        } catch (e) { return false; }
         _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code: code }, productType ? { productType } : {}, boxHeight ? { boxHeight } : {});
         _pkgNiPersistSpecCache();
-        try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload), signal: AbortSignal.timeout(20000) }); } catch (e) {}
+        return true;
+    }
+    async function _pkgNiApplyTypeOne(code) {
+        const type = _pkgNiTypeDrafts[code];
+        if (!type) return true;
+        try {
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateProductPeType', code: code, peType: type }), signal: AbortSignal.timeout(20000) }).then(r => r.json());
+            if (res && res.result === 'error') return false;
+        } catch (e) { return false; }
+        _pkgNiSpecMap[code] = Object.assign({}, _pkgNiSpecMap[code], { code, peType: type });
+        _pkgNiPersistSpecCache();
+        return true;
+    }
+    const PKG_NI_BULK_CONCURRENCY = 5;
+    async function _pkgNiApplyAll(tab) {
+        const drafts = tab === 'missing' ? _pkgNiMissingDrafts : _pkgNiTypeDrafts;
+        const codes = Object.keys(drafts);
+        if (!codes.length) return;
+        const btn = document.getElementById('pkgNiApplyBtn-' + tab);
+        const orig = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...(0/' + codes.length + ')';
+        let done = 0, failed = 0, idx = 0;
+        async function worker() {
+            while (idx < codes.length) {
+                const code = codes[idx++];
+                const ok = tab === 'missing' ? await _pkgNiApplyMissingOne(code) : await _pkgNiApplyTypeOne(code);
+                if (ok) delete drafts[code]; else failed++;
+                done++;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...(' + done + '/' + codes.length + ')';
+            }
+        }
+        await Promise.all(Array.from({ length: Math.min(PKG_NI_BULK_CONCURRENCY, codes.length) }, worker));
+        btn.innerHTML = orig;
         pkgNiRenderAll();
+        if (failed) alert(failed + '건은 반영에 실패했습니다 — 다시 시도해주세요.');
     }
 
     // 유형 선택 탭의 "상세스펙" 인라인 저장(요청, 2026-10-29) — pkgNiSaveMissingSpec과
-    // 같은 서버 액션(updateProductSpec)을 쓴다. id 접두사만 다르다(pkgNiTs_).
+    // 같은 서버 액션(updateProductSpec)을 쓴다. id 접두사만 다르다(pkgNiTs_). 이건
+    // 메인 유형 선택과 별개(상세스펙 보조 수정)라 그대로 즉시저장으로 둔다.
     async function _pkgNiSaveTypeSpec(code) {
         const rid = 'pkgNiTs_' + code.replace(/[^A-Z0-9]/g,'_');
         const productType = (document.getElementById(rid + '_pt').value || '').trim();
