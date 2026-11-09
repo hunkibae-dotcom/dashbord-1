@@ -16944,5 +16944,41 @@ function onNativeScanResult(raw) {
 })();
 </script>
 
+<!-- ── 종합 리포트(PPTX) 생성 모달(요청, 2026-11-09) ───────────────────── -->
+<div id="pkgReportModal" onclick="if(event.target===this)closePkgReportModal()"
+    style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;width:560px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="padding:22px 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:30px;height:30px;border-radius:9px;background:rgba(2,132,199,.08);color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:14px;"><i class="fa-solid fa-file-powerpoint"></i></span>
+                <div style="font-size:15px;font-weight:800;color:#1e293b;">종합 리포트 생성</div>
+            </div>
+            <button onclick="closePkgReportModal()" style="width:28px;height:28px;border-radius:8px;background:#f8fafc;border:none;color:#64748b;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="padding:20px 26px 26px;display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">기간</div>
+                <div style="display:flex;gap:6px;margin-bottom:10px;">
+                    <button id="rptMonthlyBtn" type="button" onclick="_rptSetMode('monthly')" style="flex:1;padding:9px 0;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;">월간</button>
+                    <button id="rptYearlyBtn" type="button" onclick="_rptSetMode('yearly')" style="flex:1;padding:9px 0;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;">년간</button>
+                </div>
+                <div id="rptMonthPickerWrap"><input type="month" id="rptMonthInput" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:13px;"></div>
+                <div id="rptYearPickerWrap" style="display:none;"><select id="rptYearSelect" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:13px;"></select></div>
+            </div>
+            <div>
+                <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">포함할 콘텐츠</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="rptChk_packing" checked style="width:16px;height:16px;"> 누적 포장실적(강화수량)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="rptChk_product" checked style="width:16px;height:16px;"> 제품별 실적(출고기준)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="rptChk_shipType" checked style="width:16px;height:16px;"> 출고 유형 비율(정상포장/미포장/피킹)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="rptChk_pefoam" checked style="width:16px;height:16px;"> PE폼 사용현황</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="rptChk_defect" checked style="width:16px;height:16px;"> 포장불량조치 현황</label>
+                </div>
+            </div>
+            <button id="rptDownloadBtn" onclick="pkgGenerateReport()" style="padding:11px;border-radius:10px;border:none;background:#0284c7;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-download"></i> 다운로드</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
