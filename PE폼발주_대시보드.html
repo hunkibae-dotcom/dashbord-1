@@ -535,7 +535,10 @@ function fi(headers, ...aliases) {
 // 좋겠어") — 뒤로가기→F.WORK 초기화면→재진입을 반복해도 캐시가 있으면 네트워크를 다시
 // 안 탄다. sessionStorage라 앱이 실제로 종료될 때만 비워진다. force=true면 건너뛰고
 // 실제로 다시 받아온다 — 새로고침 버튼과 발주/소요 등록·상태변경 직후 호출부가 그렇게 쓴다.
-const PE_DATA_CACHE_KEY = 'pe_data_cache_v1';
+// v1 → v2: 발주이력(PE_LOG) 응답에 실제 시트 행 번호(_row)가 새로 추가되면서 데이터
+// 모양이 바뀌었다 — 옛 버전으로 캐시된 세션이 새 코드와 섞이면 행 번호 자리에 엉뚱한
+// 값(발주번호 등)이 들어가 버튼이 깨지므로, 버전을 올려 옛 캐시를 강제로 무시한다.
+const PE_DATA_CACHE_KEY = 'pe_data_cache_v2';
 async function loadAll(force) {
   document.getElementById('orderList').innerHTML = '<div class="center-loading"><i class="fa-solid fa-spinner fa-spin"></i>불러오는 중...</div>';
   try {
