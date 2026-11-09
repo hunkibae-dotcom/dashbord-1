@@ -163,6 +163,9 @@ try {
   .date-panel span{font-size:11px;font-weight:700;color:var(--text-sub);flex-shrink:0;}
   .date-panel input{flex:1;min-width:0;background:var(--input-bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-size:12.5px;color:var(--text);font-family:inherit;}
   .date-panel button{flex-shrink:0;background:linear-gradient(135deg,var(--amber2),var(--amber));color:#1a0f00;border:none;border-radius:10px;padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer;}
+  /* "금일" 버튼 — 날짜를 오늘로 한 번에 채우는 보조 버튼이라, 확정(주 액션)과 헷갈리지
+     않게 톤을 낮춘다(요청, 2026-11-09: "금일 날짜 버튼을 따로만들어줘"). */
+  .date-panel button.today-btn{background:var(--icon-bg);color:var(--text-sub);border:1px solid var(--border);}
 
   /* 예전 아코디언(펼침) 구조일 때 안에서 펼쳐지는 내용을 둥근 모서리로 잘라내려고
      overflow:hidden을 뒀는데, 모달 방식으로 바꾸면서 펼침 구조 자체가 없어져 더 이상
