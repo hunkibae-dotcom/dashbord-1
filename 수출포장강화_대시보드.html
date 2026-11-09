@@ -6960,6 +6960,9 @@
             updateSortHeaders();
             // 상태 드롭다운 초기화
             toggleStatusFilter('전체');
+            // 제품종류 드롭다운 초기화
+            activePtypeFilters = new Set(['전체']);
+            _syncPtypeFilterUI();
             // 소스 필터 초기화
             _activeSourceFilter = 'all';
             ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
