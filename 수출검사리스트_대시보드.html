@@ -7465,6 +7465,452 @@ function _todayLabel() {
   return String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
 }
 
+// ══════════════ 종합 리포트(PPTX) ══════════════
+// 회의용 월간/연간 종합 리포트(요청, 2026-11-09). 포장강화 대시보드에서 먼저 만든
+// 뒤 "초등학생이 만든 것 같다"는 지적으로 다듬은 디자인(표지/목차/헤더띠/페이지번호/
+// KPI카드/도넛차트+카드형 범례)을 그대로 재사용한다 — 서로 다른 파일(<script> 블록도
+// 당연히 별개)이라 상수·함수 이름이 겹쳐도 충돌 없이 각자 독립적으로 동작한다.
+const RPT_INK = '0F172A', RPT_SUB = '64748B', RPT_LINE = 'E2E8F0', RPT_BG = 'F8FAFC';
+const RPT_ACCENT = '6D5CE8', RPT_ACCENT2 = '0EA5E9'; // 품질검사는 보라(#6D5CE8) 톤을 기본 악센트로(이 대시보드의 포인트 컬러와 통일)
+const RPT_PALETTE = ['6D5CE8', '0EA5E9', '10B981', 'F59E0B', 'EF4444', '8B5CF6', 'EC4899', '14B8A6'];
+const RPT_FONT = 'Malgun Gothic';
+let _rptPageNo = 0;
+
+function _qrptLoadPptxGenJS(cb) {
+  if (window.PptxGenJS) { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+  s.onload = cb;
+  s.onerror = function () { alert('PPTX 라이브러리 로드 실패 — 네트워크를 확인해주세요.'); _qrptResetDownloadBtn(); };
+  document.head.appendChild(s);
+}
+
+// ── 기간 모델 — 월간: 그 달의 "일자별" 버킷, 년간: 그 해의 "월별" 버킷 ──────
+function _rptBuckets(mode, year, month) {
+  if (mode === 'monthly') {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => {
+      const d = i + 1;
+      return { label: d + '일', match: (ds) => { const p = ds.split('-'); return +p[0] === year && +p[1] === month && +p[2] === d; } };
+    });
+  }
+  return Array.from({ length: 12 }, (_, i) => {
+    const m = i + 1;
+    return { label: m + '월', match: (ds) => { const p = ds.split('-'); return +p[0] === year && +p[1] === m; } };
+  });
+}
+function _rptInPeriod(dateStr, mode, year, month) {
+  const d = _qcIsoDate(dateStr);
+  if (!d) return false;
+  const p = d.split('-');
+  if (+p[0] !== year) return false;
+  if (mode === 'monthly' && +p[1] !== month) return false;
+  return true;
+}
+
+// ── 공용 슬라이드 빌더 ───────────────────────────────────────────
+function _rptAddCoverSlide(pptx, title, periodLabel, eyebrow) {
+  const now = new Date();
+  const todayLabel = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+  const slide = pptx.addSlide();
+  slide.background = { color: RPT_INK };
+  slide.addShape(pptx.ShapeType.rect, { x: 9.9, y: 0, w: 3.43, h: 7.5, fill: { color: '1A1433' }, line: { type: 'none' } });
+  slide.addShape(pptx.ShapeType.rect, { x: 9.9, y: 0, w: 0.07, h: 7.5, fill: { color: RPT_ACCENT }, line: { type: 'none' } });
+  slide.addShape(pptx.ShapeType.rect, { x: 0.8, y: 2.62, w: 0.55, h: 0.08, fill: { color: RPT_ACCENT2 }, line: { type: 'none' } });
+  slide.addText((eyebrow || 'MONTHLY REPORT').toUpperCase(), { x: 0.8, y: 2.82, w: 8.6, h: 0.4, fontSize: 12.5, bold: true, color: RPT_ACCENT2, charSpacing: 3, fontFace: RPT_FONT });
+  slide.addText(title, { x: 0.8, y: 3.22, w: 8.6, h: 1.3, fontSize: 38, bold: true, color: 'FFFFFF', fontFace: RPT_FONT });
+  slide.addText(periodLabel, { x: 0.8, y: 4.42, w: 8.6, h: 0.5, fontSize: 17, color: '94A3B8', fontFace: RPT_FONT });
+  slide.addText('생성일 ' + todayLabel, { x: 0.8, y: 6.85, w: 8.6, h: 0.35, fontSize: 10.5, color: '64748B', fontFace: RPT_FONT });
+}
+function _rptAddTocSlide(pptx, sectionTitles) {
+  const slide = _rptNewSlide(pptx, '목차', 'CONTENTS');
+  sectionTitles.forEach((t, i) => {
+    const y = 1.5 + i * 0.68;
+    slide.addText(String(i + 1).padStart(2, '0'), { x: 0.6, y: y, w: 0.9, h: 0.5, fontSize: 18, bold: true, color: RPT_ACCENT, fontFace: RPT_FONT });
+    slide.addShape(pptx.ShapeType.line, { x: 1.6, y: y + 0.25, w: 10.2, h: 0, line: { color: RPT_LINE, width: 1 } });
+    slide.addText(t, { x: 1.7, y: y, w: 9.8, h: 0.5, fontSize: 15, bold: true, color: RPT_INK, valign: 'middle', fontFace: RPT_FONT });
+  });
+}
+function _rptNewSlide(pptx, title, eyebrow) {
+  _rptPageNo++;
+  const slide = pptx.addSlide();
+  slide.background = { color: 'FFFFFF' };
+  slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.08, fill: { color: RPT_ACCENT }, line: { type: 'none' } });
+  if (eyebrow) slide.addText(eyebrow.toUpperCase(), { x: 0.55, y: 0.3, w: 9, h: 0.3, fontSize: 10.5, bold: true, color: RPT_ACCENT, charSpacing: 2, fontFace: RPT_FONT });
+  slide.addText(title, { x: 0.5, y: eyebrow ? 0.56 : 0.34, w: 11.3, h: 0.6, fontSize: 21, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+  slide.addShape(pptx.ShapeType.line, { x: 0.5, y: 1.22, w: 12.33, h: 0, line: { color: RPT_LINE, width: 1 } });
+  slide.addText(String(_rptPageNo).padStart(2, '0'), { x: 12.53, y: 7.12, w: 0.6, h: 0.3, fontSize: 10, color: RPT_SUB, align: 'right', fontFace: RPT_FONT });
+  return slide;
+}
+function _rptAddKpiTiles(pptx, slide, tiles, x, y, totalW, h) {
+  const gap = 0.22;
+  const w = (totalW - gap * (tiles.length - 1)) / tiles.length;
+  tiles.forEach((t, i) => {
+    const tx = x + i * (w + gap);
+    const c = t.color || RPT_ACCENT;
+    slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: y, w: w, h: h, rectRadius: 0.08, fill: { color: RPT_BG }, line: { color: RPT_LINE, width: 0.75 } });
+    slide.addShape(pptx.ShapeType.rect, { x: tx, y: y, w: 0.06, h: h, fill: { color: c }, line: { type: 'none' } });
+    slide.addText(t.label, { x: tx + 0.2, y: y + 0.12, w: w - 0.34, h: 0.3, fontSize: 10.5, bold: true, color: RPT_SUB, fontFace: RPT_FONT });
+    slide.addText(t.value, { x: tx + 0.2, y: y + 0.42, w: w - 0.34, h: h - 0.52, fontSize: 19, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+  });
+}
+function _rptAddBarSlide(pptx, title, categories, series, opts) {
+  opts = opts || {};
+  const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+  const chartY = opts.kpis ? 2.55 : 1.45;
+  const chartH = opts.kpis ? 4.55 : 5.65;
+  if (opts.kpis) _rptAddKpiTiles(pptx, slide, opts.kpis, 0.5, 1.4, 12.33, 1.0);
+  const chartData = series.map(s => ({ name: s.name, labels: categories, values: s.values }));
+  slide.addChart(pptx.ChartType.bar, chartData, {
+    x: 0.5, y: chartY, w: 12.33, h: chartH,
+    barDir: 'col', barGrouping: series.length > 1 ? 'clustered' : 'standard',
+    barGapWidthPct: 35,
+    showLegend: series.length > 1, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
+    showValue: series.length === 1, dataLabelFontSize: 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
+    chartColors: RPT_PALETTE,
+    catAxisLabelFontSize: 9.5, catAxisLabelColor: RPT_SUB, catAxisLineColor: RPT_LINE,
+    valAxisLabelFontSize: 9.5, valAxisLabelColor: RPT_SUB, valAxisLineColor: RPT_LINE,
+    valGridLine: { color: 'F1F5F9', style: 'solid', size: 0.75 },
+    catGridLine: { style: 'none' },
+    fontFace: RPT_FONT
+  });
+}
+function _rptAddDonutSlide(pptx, title, labels, values, opts) {
+  opts = opts || {};
+  const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+  const total = values.reduce((a, b) => a + (b || 0), 0);
+  slide.addChart(pptx.ChartType.doughnut, [{ name: title, labels: labels, values: values }], {
+    x: 0.6, y: 1.45, w: 6.3, h: 5.5,
+    holeSize: 62,
+    showLegend: false,
+    showPercent: false,
+    chartColors: RPT_PALETTE,
+    dataBorder: { pt: 2, color: 'FFFFFF' }
+  });
+  if (opts.centerLabel) {
+    slide.addText(opts.centerLabel.value, { x: 0.6, y: 3.75, w: 6.3, h: 0.6, align: 'center', fontSize: 27, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+    slide.addText(opts.centerLabel.label, { x: 0.6, y: 4.35, w: 6.3, h: 0.35, align: 'center', fontSize: 11, color: RPT_SUB, fontFace: RPT_FONT });
+  }
+  const legendX = 7.25, legendW = 5.55;
+  slide.addText('항목별 비율', { x: legendX, y: 1.45, w: legendW, h: 0.35, fontSize: 11, bold: true, color: RPT_SUB, charSpacing: 1, fontFace: RPT_FONT });
+  labels.forEach((lb, i) => {
+    const ly = 2.0 + i * 0.82;
+    const pct = total ? Math.round((values[i] / total) * 100) : 0;
+    slide.addShape(pptx.ShapeType.rect, { x: legendX, y: ly + 0.06, w: 0.2, h: 0.2, fill: { color: RPT_PALETTE[i % RPT_PALETTE.length] }, line: { type: 'none' } });
+    slide.addText(String(lb), { x: legendX + 0.32, y: ly - 0.04, w: legendW - 1.7, h: 0.32, fontSize: 13.5, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+    slide.addText((values[i] || 0).toLocaleString() + '건 · ' + pct + '%', { x: legendX + 0.32, y: ly + 0.28, w: legendW - 1.7, h: 0.3, fontSize: 10.5, color: RPT_SUB, fontFace: RPT_FONT });
+  });
+}
+// 두 도넛(공장별)을 한 슬라이드에 나란히 — "1공장/2공장 각각" 원형차트 요청에 맞춤.
+function _rptAddTwinDonutSlide(pptx, title, groups, opts) {
+  opts = opts || {};
+  const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+  const halfW = 5.9;
+  groups.forEach((g, gi) => {
+    const x0 = 0.5 + gi * (halfW + 0.5);
+    slide.addText(g.title, { x: x0, y: 1.4, w: halfW, h: 0.35, fontSize: 13, bold: true, color: RPT_INK, align: 'center', fontFace: RPT_FONT });
+    slide.addChart(pptx.ChartType.doughnut, [{ name: g.title, labels: g.labels, values: g.values }], {
+      x: x0 + halfW / 2 - 2.1, y: 1.85, w: 4.2, h: 3.9,
+      holeSize: 58, showLegend: false, showPercent: false,
+      chartColors: RPT_PALETTE, dataBorder: { pt: 2, color: 'FFFFFF' }
+    });
+    const total = g.values.reduce((a, b) => a + (b || 0), 0);
+    const pct = total ? Math.round((g.values[0] / total) * 100) : 0;
+    slide.addText(pct + '%', { x: x0, y: 2.95, w: halfW, h: 0.6, align: 'center', fontSize: 24, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+    slide.addText(g.centerSub || '', { x: x0, y: 3.55, w: halfW, h: 0.35, align: 'center', fontSize: 10, color: RPT_SUB, fontFace: RPT_FONT });
+    g.labels.forEach((lb, i) => {
+      const ly = 5.95 + i * 0.4;
+      slide.addShape(pptx.ShapeType.rect, { x: x0 + 0.3, y: ly + 0.04, w: 0.16, h: 0.16, fill: { color: RPT_PALETTE[i % RPT_PALETTE.length] }, line: { type: 'none' } });
+      slide.addText(String(lb) + '  ' + (g.values[i] || 0).toLocaleString() + '건', { x: x0 + 0.54, y: ly - 0.05, w: halfW - 0.8, h: 0.3, fontSize: 10.5, color: RPT_INK, fontFace: RPT_FONT });
+    });
+  });
+}
+function _rptAddTableSlide(pptx, title, columns, rows, opts) {
+  opts = opts || {};
+  const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+  const header = columns.map(c => ({ text: c.label, options: { bold: true, color: 'FFFFFF', fill: { color: RPT_INK }, fontSize: 11, align: c.align || 'center', valign: 'middle', fontFace: RPT_FONT } }));
+  const body = rows.map((r, ri) => columns.map(c => ({ text: (c.get(r) ?? '').toString(), options: { fontSize: 10, align: c.align || 'left', fill: { color: ri % 2 ? RPT_BG : 'FFFFFF' }, color: RPT_INK, valign: 'middle', fontFace: RPT_FONT } })));
+  slide.addTable([header, ...body], Object.assign({
+    x: 0.5, y: 1.45, w: 12.33, h: Math.min(5.6, 0.42 + 0.32 * (body.length + 1)),
+    colW: columns.map(c => c.w || (12.33 / columns.length)),
+    border: { type: 'solid', color: RPT_LINE, pt: 0.5 },
+    autoPage: true
+  }, opts.tableOpts || {}));
+}
+function _rptAddEmptySlide(pptx, title, eyebrow) {
+  const slide = _rptNewSlide(pptx, title, eyebrow);
+  slide.addText('해당 기간에 데이터가 없습니다.', { x: 0.5, y: 3.3, w: 12.33, h: 1, align: 'center', fontSize: 16, color: '94A3B8', fontFace: RPT_FONT });
+}
+
+// ── 콘텐츠A: 검사 진행현황 요약(공장별) — 현재 전체 스냅샷(기간 필터 없음) ──────
+function _qrptAddProgressSlide(pptx) {
+  const pool = [...(allData || []), ...(archiveRows || [])];
+  if (!pool.length) { _rptAddEmptySlide(pptx, '검사 진행현황 요약', 'INSPECTION PROGRESS'); return; }
+  const byFactory = { cj1: {}, cj2: {} };
+  const statusTotals = {};
+  pool.forEach(d => {
+    const st = d.검사 || '미검사';
+    statusTotals[st] = (statusTotals[st] || 0) + 1;
+    const f = d.공장 === 'cj2' ? 'cj2' : 'cj1';
+    byFactory[f][st] = (byFactory[f][st] || 0) + 1;
+  });
+  const statKeys = Object.keys(statusTotals).sort((a, b) => statusTotals[b] - statusTotals[a]);
+  const cj1Total = pool.filter(d => d.공장 !== 'cj2').length;
+  const cj2Total = pool.length - cj1Total;
+  _rptAddBarSlide(pptx, '검사 진행현황 요약(공장별)', statKeys, [
+    { name: '충주1', values: statKeys.map(s => byFactory.cj1[s] || 0) },
+    { name: '충주2', values: statKeys.map(s => byFactory.cj2[s] || 0) }
+  ], {
+    eyebrow: 'INSPECTION PROGRESS',
+    kpis: [
+      { label: '전체 건수', value: pool.length.toLocaleString() + '건', color: RPT_ACCENT },
+      { label: '충주1', value: cj1Total.toLocaleString() + '건', color: RPT_ACCENT2 },
+      { label: '충주2', value: cj2Total.toLocaleString() + '건', color: '10B981' }
+    ]
+  });
+}
+
+// ── 콘텐츠B: 누적 검사실적 차트 — 검사일 기준, 검사완료("검사")만 ──────────
+function _qrptAddChartSlide(pptx, mode, year, month) {
+  const buckets = _rptBuckets(mode, year, month);
+  const vals = buckets.map(() => 0);
+  [...(allData || []), ...(archiveRows || [])].forEach(d => {
+    if (d.검사 !== '검사') return;
+    const ds = _qcIsoDate(d.검사일);
+    if (!ds) return;
+    const idx = buckets.findIndex(b => b.match(ds));
+    if (idx < 0) return;
+    vals[idx]++;
+  });
+  const total = vals.reduce((a, b) => a + b, 0);
+  if (!total) { _rptAddEmptySlide(pptx, '누적 검사실적 차트', 'INSPECTION TREND'); return; }
+  const avg = Math.round(total / (vals.filter(v => v > 0).length || 1));
+  const maxIdx = vals.indexOf(Math.max(...vals));
+  _rptAddBarSlide(pptx, '누적 검사실적 차트', buckets.map(b => b.label), [{ name: '검사완료', values: vals }], {
+    eyebrow: 'INSPECTION TREND',
+    kpis: [
+      { label: '검사완료 합계', value: total.toLocaleString() + '건', color: RPT_ACCENT },
+      { label: '평균(기록 있는 날 기준)', value: avg.toLocaleString() + '건', color: RPT_ACCENT2 },
+      { label: '최고 ' + buckets[maxIdx].label, value: vals[maxIdx].toLocaleString() + '건', color: '10B981' }
+    ]
+  });
+}
+
+// ── 콘텐츠C: 블로킹 현황 — 현재 전체 스냅샷(블로킹엔 날짜 칸이 없음) ─────────
+function _qrptAddBlockingSlide(pptx) {
+  const pool = [...(allData || []).filter(d => d.source !== 'archive'), ...(archiveRows || []).map(() => null).filter(Boolean)];
+  // 검사완료 이력(archiveRows)엔 블로킹 칸 자체가 없다(기존 화면 로직과 동일한 전제) — 진행중만 집계.
+  const counts = {}; QC_BLOCKING_VALUES.forEach(v => counts[v] = 0);
+  (allData || []).forEach(d => { if (d.source === 'archive') return; const v = QC_BLOCKING_VALUES.includes(d.블로킹) ? d.블로킹 : '미등록'; counts[v]++; });
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  if (!total) { _rptAddEmptySlide(pptx, '블로킹 현황', 'BLOCKING STATUS'); return; }
+  const doneRate = Math.round((counts['검사완료'] / total) * 100);
+  _rptAddDonutSlide(pptx, '블로킹 현황', QC_BLOCKING_VALUES, QC_BLOCKING_VALUES.map(v => counts[v]), {
+    eyebrow: 'BLOCKING STATUS',
+    centerLabel: { value: doneRate + '%', label: '블로킹 검사완료 비율 · 총 ' + total.toLocaleString() + '건' }
+  });
+}
+
+// ── 콘텐츠D: 현장검사 하자 현황 — 별도 시트(현장검사_대시보드.html)의 GAS를
+// 그대로 재사용한다. 같은 사이트(origin)라 localStorage의 'fi_gas_url'을 그대로
+// 읽을 수 있어, 그 대시보드를 열지 않고도 바로 조회 가능하다.
+async function _qrptFetchFieldInspectItems() {
+  const url = localStorage.getItem('fi_gas_url') || '';
+  if (!url) return [];
+  try {
+    const res = await fetch(url + '?' + new URLSearchParams({ action: 'list' }), { signal: AbortSignal.timeout(20000) });
+    const json = await res.json();
+    if (json.status !== 'success') return [];
+    return json.items || [];
+  } catch (e) { return []; }
+}
+async function _qrptAddFieldDefectSlides(pptx, mode, year, month) {
+  const items = (await _qrptFetchFieldInspectItems()).filter(d => _rptInPeriod(d.date, mode, year, month));
+  if (!items.length) { _rptAddEmptySlide(pptx, '현장검사 하자 현황', 'FIELD INSPECTION'); return; }
+  const typeMap = {};
+  items.forEach(d => (d.types || []).forEach(t => { typeMap[t] = (typeMap[t] || 0) + 1; }));
+  const types = Object.keys(typeMap);
+  const statMap = { 미조치: 0, 조치중: 0, 조치완료: 0 };
+  items.forEach(d => { const s = d.status || '미조치'; statMap[s] = (statMap[s] || 0) + 1; });
+  const doneRate = Math.round((statMap['조치완료'] / items.length) * 100);
+  if (types.length) {
+    _rptAddBarSlide(pptx, '현장검사 하자 현황 — 유형별 건수', types, [{ name: '건수', values: types.map(t => typeMap[t]) }], {
+      eyebrow: 'FIELD INSPECTION',
+      kpis: [
+        { label: '총 등록건수', value: items.length.toLocaleString() + '건', color: RPT_ACCENT },
+        { label: '조치완료율', value: doneRate + '%', color: '10B981' },
+        { label: '미조치', value: (statMap['미조치'] || 0).toLocaleString() + '건', color: 'EF4444' }
+      ]
+    });
+  }
+  _rptAddDonutSlide(pptx, '현장검사 조치상태 비율', Object.keys(statMap), Object.values(statMap), {
+    eyebrow: 'FIELD INSPECTION',
+    centerLabel: { value: doneRate + '%', label: '조치완료율 · 총 ' + items.length.toLocaleString() + '건' }
+  });
+}
+
+// ── 콘텐츠E: 공장별 검사완료·미검사 출고 비율 — 출고완료 이력(archiveRows) 기준,
+// 검사일이 기간 안에 드는 건만, 공장별로 각각 도넛 ──────────────────────────
+function _qrptAddShipRatioSlide(pptx, mode, year, month) {
+  const rows = (archiveRows || []).filter(d => _rptInPeriod(d.검사일, mode, year, month));
+  if (!rows.length) { _rptAddEmptySlide(pptx, '공장별 검사완료·미검사 출고 비율', 'SHIPMENT INSPECTION RATE'); return; }
+  function ratioFor(factoryKey) {
+    const list = rows.filter(d => (d.공장 === 'cj2') === (factoryKey === 'cj2'));
+    const done = list.filter(d => d.검사 === '검사').length;
+    const other = list.length - done;
+    return { labels: ['검사완료', '미검사 출고'], values: [done, other], total: list.length };
+  }
+  const cj1 = ratioFor('cj1'), cj2 = ratioFor('cj2');
+  _rptAddTwinDonutSlide(pptx, '공장별 검사완료·미검사 출고 비율', [
+    { title: '충주1공장 · 총 ' + cj1.total.toLocaleString() + '건', labels: cj1.labels, values: cj1.values, centerSub: '검사완료 비율' },
+    { title: '충주2공장 · 총 ' + cj2.total.toLocaleString() + '건', labels: cj2.labels, values: cj2.values, centerSub: '검사완료 비율' }
+  ], { eyebrow: 'SHIPMENT INSPECTION RATE' });
+}
+
+// ── 콘텐츠F: 1·2공장 제품 검사비율 — 기간 내 검사완료 물량의 공장별 비중 ──────
+function _qrptAddFactoryRatioSlide(pptx, mode, year, month) {
+  const rows = [...(allData || []), ...(archiveRows || [])].filter(d => d.검사 === '검사' && _rptInPeriod(d.검사일, mode, year, month));
+  if (!rows.length) { _rptAddEmptySlide(pptx, '1·2공장 제품 검사비율', 'FACTORY SHARE'); return; }
+  const cj1 = rows.filter(d => d.공장 !== 'cj2').length;
+  const cj2 = rows.length - cj1;
+  _rptAddDonutSlide(pptx, '1·2공장 제품 검사비율', ['충주1공장', '충주2공장'], [cj1, cj2], {
+    eyebrow: 'FACTORY SHARE',
+    centerLabel: { value: Math.round((cj1 / rows.length) * 100) + '%', label: '충주1공장 비중 · 총 ' + rows.length.toLocaleString() + '건' }
+  });
+}
+
+// ── 콘텐츠G: 내수건·수출건 비율 — 기간 내 검사완료 물량의 건명 기준 판정 ──────
+function _qrptAddDomesticSlide(pptx, mode, year, month) {
+  const rows = [...(allData || []), ...(archiveRows || [])].filter(d => d.검사 === '검사' && _rptInPeriod(d.검사일, mode, year, month));
+  if (!rows.length) { _rptAddEmptySlide(pptx, '내수건·수출건 비율', 'DOMESTIC VS EXPORT'); return; }
+  const domestic = rows.filter(d => _spuIsDomesticRound(d.건명)).length;
+  const exportCnt = rows.length - domestic;
+  _rptAddDonutSlide(pptx, '내수건·수출건 비율', ['수출건', '내수건'], [exportCnt, domestic], {
+    eyebrow: 'DOMESTIC VS EXPORT',
+    centerLabel: { value: Math.round((exportCnt / rows.length) * 100) + '%', label: '수출건 비율 · 총 ' + rows.length.toLocaleString() + '건' }
+  });
+}
+
+// ── 콘텐츠H: 선택 기간의 품질검사 하자 및 주요 특이사항 — 검사일 기준, 비고/
+// 불량사진이 있는 품목만, 표로 ───────────────────────────────────────
+function _qrptAddNotesSlide(pptx, mode, year, month) {
+  const rows = [...(allData || []), ...(archiveRows || [])].filter(d => {
+    if (!_rptInPeriod(d.검사일, mode, year, month)) return false;
+    return !!((d.비고 || '').toString().trim() || (d.불량사진 || '').toString().trim());
+  });
+  if (!rows.length) { _rptAddEmptySlide(pptx, '품질검사 하자 및 주요 특이사항', 'NOTES & ISSUES'); return; }
+  const LIMIT = 40;
+  const shown = rows.slice(0, LIMIT);
+  _rptAddTableSlide(pptx, '품질검사 하자 및 주요 특이사항' + (rows.length > LIMIT ? ' (상위 ' + LIMIT + '건, 총 ' + rows.length + '건 중)' : ' (총 ' + rows.length + '건)'), [
+    { label: '건명', get: r => r.건명, w: 2.6 },
+    { label: '단품코드', get: r => r.단품코드, w: 2.0 },
+    { label: '색상', get: r => r.색상, w: 1.1, align: 'center' },
+    { label: '비고 / 특이사항', get: r => (r.비고 || '').toString().replace(/\n/g, ' '), w: 6.63 }
+  ], shown, { eyebrow: 'NOTES & ISSUES' });
+}
+
+// ── 모달/다운로드 흐름 ───────────────────────────────────────────
+let _qrptMode = 'monthly';
+function _qrptApplyModeBtnStyle(el, on) {
+  if (!el) return;
+  el.style.border = on ? '1.5px solid #6D5CE8' : '1.5px solid #e2e8f0';
+  el.style.background = on ? 'rgba(109,92,222,.08)' : '#fff';
+  el.style.color = on ? '#6D5CE8' : '#64748b';
+}
+function _qrptSetMode(mode) {
+  _qrptMode = mode;
+  _qrptApplyModeBtnStyle(document.getElementById('qrptMonthlyBtn'), mode === 'monthly');
+  _qrptApplyModeBtnStyle(document.getElementById('qrptYearlyBtn'), mode === 'yearly');
+  const mw = document.getElementById('qrptMonthPickerWrap'), yw = document.getElementById('qrptYearPickerWrap');
+  if (mw) mw.style.display = mode === 'monthly' ? 'block' : 'none';
+  if (yw) yw.style.display = mode === 'yearly' ? 'block' : 'none';
+}
+function openQcReportModal() {
+  const now = new Date();
+  const yearSel = document.getElementById('qrptYearSelect');
+  if (yearSel && !yearSel.dataset.inited) {
+    const curY = now.getFullYear();
+    let opts = '';
+    for (let y = curY; y >= curY - 4; y--) opts += `<option value="${y}">${y}년</option>`;
+    yearSel.innerHTML = opts;
+    yearSel.dataset.inited = '1';
+  }
+  const monthInput = document.getElementById('qrptMonthInput');
+  if (monthInput && !monthInput.value) monthInput.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  _qrptSetMode('monthly');
+  document.getElementById('qcReportModal').style.display = 'flex';
+}
+function closeQcReportModal() {
+  document.getElementById('qcReportModal').style.display = 'none';
+}
+function _qrptResetDownloadBtn() {
+  const btn = document.getElementById('qrptDownloadBtn');
+  if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-download"></i> 다운로드'; }
+}
+async function qcGenerateReport() {
+  const btn = document.getElementById('qrptDownloadBtn');
+  const mode = _qrptMode;
+  let year, month;
+  if (mode === 'monthly') {
+    const v = (document.getElementById('qrptMonthInput').value || '').trim();
+    if (!v) { alert('연-월을 선택해주세요.'); return; }
+    const p = v.split('-'); year = parseInt(p[0]); month = parseInt(p[1]);
+  } else {
+    year = parseInt(document.getElementById('qrptYearSelect').value);
+  }
+  const sections = {
+    progress: document.getElementById('qrptChk_progress').checked,
+    chart: document.getElementById('qrptChk_chart').checked,
+    blocking: document.getElementById('qrptChk_blocking').checked,
+    fieldDefect: document.getElementById('qrptChk_fieldDefect').checked,
+    shipRatio: document.getElementById('qrptChk_shipRatio').checked,
+    factoryRatio: document.getElementById('qrptChk_factoryRatio').checked,
+    domestic: document.getElementById('qrptChk_domestic').checked,
+    notes: document.getElementById('qrptChk_notes').checked
+  };
+  if (!Object.values(sections).some(Boolean)) { alert('포함할 콘텐츠를 하나 이상 선택해주세요.'); return; }
+
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 생성 중...';
+
+  _qrptLoadPptxGenJS(async function () {
+    try {
+      const pptx = new PptxGenJS();
+      pptx.defineLayout({ name: 'WIDE_REPORT', width: 13.33, height: 7.5 });
+      pptx.layout = 'WIDE_REPORT';
+      const periodLabel = mode === 'monthly' ? (year + '년 ' + month + '월') : (year + '년(연간)');
+      _rptPageNo = 0;
+      _rptAddCoverSlide(pptx, '품질검사 종합 리포트', periodLabel, 'QUALITY INSPECTION · MONTHLY REPORT');
+      const tocTitles = [];
+      if (sections.progress) tocTitles.push('검사 진행현황 요약(공장별)');
+      if (sections.chart) tocTitles.push('누적 검사실적 차트');
+      if (sections.blocking) tocTitles.push('블로킹 현황');
+      if (sections.fieldDefect) tocTitles.push('현장검사 하자 현황');
+      if (sections.shipRatio) tocTitles.push('공장별 검사완료·미검사 출고 비율');
+      if (sections.factoryRatio) tocTitles.push('1·2공장 제품 검사비율');
+      if (sections.domestic) tocTitles.push('내수건·수출건 비율');
+      if (sections.notes) tocTitles.push('품질검사 하자 및 주요 특이사항');
+      _rptAddTocSlide(pptx, tocTitles);
+      if (sections.progress) _qrptAddProgressSlide(pptx);
+      if (sections.chart) _qrptAddChartSlide(pptx, mode, year, month);
+      if (sections.blocking) _qrptAddBlockingSlide(pptx);
+      if (sections.fieldDefect) await _qrptAddFieldDefectSlides(pptx, mode, year, month);
+      if (sections.shipRatio) _qrptAddShipRatioSlide(pptx, mode, year, month);
+      if (sections.factoryRatio) _qrptAddFactoryRatioSlide(pptx, mode, year, month);
+      if (sections.domestic) _qrptAddDomesticSlide(pptx, mode, year, month);
+      if (sections.notes) _qrptAddNotesSlide(pptx, mode, year, month);
+      const fname = '품질검사 종합리포트_' + periodLabel.replace(/\s+/g, '') + '.pptx';
+      await pptx.writeFile({ fileName: fname });
+      _qrptResetDownloadBtn();
+      closeQcReportModal();
+    } catch (e) {
+      alert('생성 실패: ' + ((e && e.message) || e));
+      _qrptResetDownloadBtn();
+    }
+  });
+}
+
 // 실제 "수출건 검사 세부내역" 양식을 표 모양 그대로 도형+텍스트로 재현한다 — pptxgenjs의
 // addTable은 셀 안에 이미지를 못 넣어서, 표처럼 보이도록 테두리 있는 텍스트박스를 좌표
 // 계산해서 늘어놓고, 검사사진 칸에만 addImage로 사진을 얹는 방식을 썼다.
