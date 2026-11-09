@@ -14094,6 +14094,11 @@ async function peLoadAll() {
     }
 }
 
+// "종합 리포트" 기능(다른 <script> 블록, 1890~12632줄)에서 PE폼 발주이력을 읽을 수 있게 —
+// peOrderRows는 let으로 선언돼 있어 다른 <script> 블록에서는 안 보인다(함수 선언만 전역
+// window에 올라간다). 이 접근자 함수 하나만 추가해서 건드리지 않고 빌려 쓴다.
+function _rptGetPeOrderRows() { return peOrderRows; }
+
 async function openPkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.remove('hidden');
     const ov = document.getElementById('peInitLoadingOverlay');
