@@ -14705,5 +14705,45 @@ function onNativeScanResult(raw) {
   </div>
 </div>
 
+<!-- ── 종합 리포트(PPTX) 생성 모달(요청, 2026-11-09) — 포장강화 대시보드와 동일한
+     구조·스타일(월간/년간 선택 → 콘텐츠 체크박스 전체선택 → 다운로드). ───────── -->
+<div id="qcReportModal" onclick="if(event.target===this)closeQcReportModal()"
+    style="display:none;position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+    <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;width:580px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18);">
+        <div style="padding:22px 26px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e2e8f0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:30px;height:30px;border-radius:9px;background:rgba(109,92,222,.08);color:#6D5CE8;display:flex;align-items:center;justify-content:center;font-size:14px;"><i class="fa-solid fa-chart-pie"></i></span>
+                <div style="font-size:15px;font-weight:800;color:#1e293b;">종합 리포트 생성</div>
+            </div>
+            <button onclick="closeQcReportModal()" style="width:28px;height:28px;border-radius:8px;background:#f8fafc;border:none;color:#64748b;cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="padding:20px 26px 26px;display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">기간</div>
+                <div style="display:flex;gap:6px;margin-bottom:10px;">
+                    <button id="qrptMonthlyBtn" type="button" onclick="_qrptSetMode('monthly')" style="flex:1;padding:9px 0;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;">월간</button>
+                    <button id="qrptYearlyBtn" type="button" onclick="_qrptSetMode('yearly')" style="flex:1;padding:9px 0;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;background:#fff;">년간</button>
+                </div>
+                <div id="qrptMonthPickerWrap"><input type="month" id="qrptMonthInput" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:13px;"></div>
+                <div id="qrptYearPickerWrap" style="display:none;"><select id="qrptYearSelect" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:9px;padding:9px 12px;font-size:13px;"></select></div>
+            </div>
+            <div>
+                <div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:.04em;margin-bottom:8px;">포함할 콘텐츠</div>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_progress" checked style="width:16px;height:16px;"> 검사 진행현황 요약(공장별)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_chart" checked style="width:16px;height:16px;"> 누적 검사실적 차트</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_blocking" checked style="width:16px;height:16px;"> 블로킹 현황</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_fieldDefect" checked style="width:16px;height:16px;"> 현장검사 하자 현황</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_shipRatio" checked style="width:16px;height:16px;"> 공장별 검사완료·미검사 출고 비율</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_factoryRatio" checked style="width:16px;height:16px;"> 1·2공장 제품 검사비율</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_domestic" checked style="width:16px;height:16px;"> 내수건·수출건 비율</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#334155;cursor:pointer;"><input type="checkbox" id="qrptChk_notes" checked style="width:16px;height:16px;"> 품질검사 하자 및 주요 특이사항</label>
+                </div>
+            </div>
+            <button id="qrptDownloadBtn" onclick="qcGenerateReport()" style="padding:11px;border-radius:10px;border:none;background:#6D5CE8;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fa-solid fa-download"></i> 다운로드</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
