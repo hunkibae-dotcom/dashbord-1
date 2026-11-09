@@ -10295,13 +10295,21 @@
 
                 if (_pkgBulkStatus) {
                     const isIncoming = (_pkgBulkStatus === '입고' || _pkgBulkStatus === '일부입고');
+                    const isShipOut = (_pkgBulkStatus === '출고' || _pkgBulkStatus === '피킹');
                     // 버그 수정(요청, 2026-11-04로 "회수중" 추가하며 발견) — 미입고/재고활용/
                     // 회수중처럼 "수출 현황"에만 있는 값을 예전처럼 pkgProcessShipOut으로
                     // 보내면, 그 함수가 "출고"가 아닌 상태는 전부 "출고"로 덮어써서 실제로
                     // 품목이 출고 완료로 옮겨져 버렸다(의도와 전혀 다른 결과). 이 세 값은
                     // 반드시 pkgUpdateMainStatusBatch(수출 현황 H열만 갱신)로 보낸다.
                     const isExportOnly = PKG_EXPORT_ONLY_STATUSES.includes(_pkgBulkStatus);
-                    const action = isIncoming ? 'pkgProcessIncoming' : (isExportOnly ? 'pkgUpdateMainStatusBatch' : 'pkgProcessShipOut');
+                    // 버그 수정(요청, 2026-11-09: "실재고를 미확인에서 포장완료로 바꾸면...
+                    // 적용하면 출고로 넘어가지는 버그") — "포장완료"/"철물"/"미확인"/
+                    // "포장대기"/"미포장"처럼 이동이 필요 없는 실재고 상태는 isIncoming도
+                    // isExportOnly도 아니라서 예전엔 그냥 else로 떨어져 pkgProcessShipOut
+                    // (실제 출고 이동!)으로 잘못 보내지고 있었다 — isShipOut일 때만 그
+                    // 액션을 쓰고, 나머지는 단일수정의 updateStatus와 같은 새 배치 액션
+                    // (pkgUpdateStatusBatch)으로 보낸다.
+                    const action = isIncoming ? 'pkgProcessIncoming' : (isShipOut ? 'pkgProcessShipOut' : (isExportOnly ? 'pkgUpdateMainStatusBatch' : 'pkgUpdateStatusBatch'));
                     const items = _pkgBulkItems.map(it => isIncoming
                         ? { code: it.code, round: it.round, color: it.color, qty: partialQtyByKey ? partialQtyByKey[it.key] : null }
                         : { code: it.code, round: it.round, color: it.color, status: _pkgBulkStatus });
