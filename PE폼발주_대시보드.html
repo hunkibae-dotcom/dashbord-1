@@ -561,8 +561,12 @@ async function loadAll(force) {
             iUnit = fi(h, '단위'), iType = fi(h, '유형'), iStat = fi(h, '상태'),
             iIn = fi(h, '입고일'), iUser = fi(h, '발주자'), iSite = fi(h, '사업장'),
             iWh = fi(h, '반입창고'), iNote = fi(h, '비고'), iLead = fi(h, '리드타임(일)');
+      // row — 버그 수정(요청, 2026-11-09): 한 발주번호에 품목이 여러 줄 걸쳐 있을 때,
+      // 발주번호만으로 상태를 바꾸면 늘 그 발주번호의 "첫 줄"만 바뀌는 문제가 있었다.
+      // 재고(stockRows)와 같은 방식으로 실제 시트 행 번호(r[0], 서버가 붙여줌)를 들고
+      // 있다가, 상태 변경 요청에 그대로 실어 보내 정확히 이 줄만 바뀌게 한다.
       orderRows = logTable.slice(1).filter(r => r[iOrd]).map(r => ({
-        ordNo: r[iOrd] || '', date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
+        row: r[0], ordNo: r[iOrd] || '', date: r[iDate] || '', code: r[iCode] || '', name: r[iName] || '',
         spec: r[iSpec] || '', qty: r[iQty] || 0, unit: r[iUnit] || '', type: r[iType] || '',
         stat: r[iStat] || '', in: r[iIn] || '', user: r[iUser] || '', site: r[iSite] || '',
         wh: r[iWh] || '', note: r[iNote] || '', lead: r[iLead] || ''
