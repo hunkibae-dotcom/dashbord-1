@@ -8996,7 +8996,14 @@
         function _pkgStatusGroupsHtml(curValue, onPickFnName, toggleFnName, openKey, originMap, stackVertical) {
             return `<div style="display:flex;${stackVertical ? 'flex-direction:column;' : 'flex-wrap:wrap;'}gap:6px;">` + PKG_STATUS_GROUPS.map(g => {
                 const isOpen = g.key === openKey;
-                const effectiveCur = originMap ? originMap[g.key] : curValue;
+                // 버그 수정(요청, 2026-11-09: "일괄 수정창에서는 입고로바꾸면... 3시트
+                // 모두 이상하게 선택이되는데") — originMap이 없는 일괄수정 모달에서는
+                // curValue(선택한 상태 하나)를 그대로 모든 그룹에 똑같이 보여주고
+                // 있었다. "입고"는 수출현황 그룹에만 있는 값인데 실재고/출고완료
+                // 탭에도 "·입고"가 같이 떠버렸다 — 그 값이 실제로 속한 그룹에서만
+                // 보여주게 고친다(값이 여러 그룹에 겹치는 출고/피킹 등은 겹친 그룹
+                // 전부에 보이는 게 맞다 — _pkgStatusGroupKeyFor의 겹침 처리와 같은 생각).
+                const effectiveCur = originMap ? originMap[g.key] : (g.statuses.includes(curValue) ? curValue : null);
                 const hasData = originMap ? (g.key in originMap) : true;
                 // 버그 수정(요청, 2026-11-04, 품질검사와 동일한 문제) — 실제 값이 이 그룹의
                 // 정해진 버튼 목록에 없어도(예외적인 상태값), 이 그룹에 실제로 데이터가
