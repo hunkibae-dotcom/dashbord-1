@@ -5514,10 +5514,18 @@ function _rpFilteredRows() {
 // 그대로라 _reportChecked/_reportSelected 등 기존 선택·저장 로직은 전혀 안 건드려도
 // 된다 — 화면에 그 행들이 안 보일 뿐이다. allData/archiveRows 원본 객체는 절대
 // 수정하지 않고 대표 행만 얕은 복사해서 표시용 라벨(_rpGroupLabel)을 덧붙인다.
+// 버그 수정(요청, 2026-11-09: "검색하나밖에안되고 내가 찾는 항목의 건명이아니야") —
+// 단품코드+색상만 보고 묶다 보니, 몇 년 터울로 완전히 다른 수주에서 우연히 같은
+// 코드+색상을 또 쓴 경우까지 "같은 차수가 쪼개진 것"으로 오인해서 하나로 합쳐버렸다
+// (2025년 건 NY-143/25와 2026년 건 FAM-58/26이 합쳐져서, 찾던 2026년 건이 목록에서
+// 아예 사라지고 대표로 뽑힌 2025년 건만 보임). 진짜 같은 차수가 쪼개진 거라면 납기일도
+// 같은 해에 몰려있기 마련이라, 납기일의 "연도"까지 같아야만 묶는다.
 function _rpGroupByCodeColor(rows) {
-  const groups = new Map(); // key(단품코드|색상) -> 원본 행 배열(먼저 나온 순서 보존)
+  const groups = new Map(); // key(단품코드|색상|납기년도) -> 원본 행 배열(먼저 나온 순서 보존)
   rows.forEach(d => {
-    const key = (d.단품코드 || '') + '|' + (d.색상 || '');
+    const dueDt = parseKDate(d.납기일);
+    const dueYear = dueDt ? dueDt.getFullYear() : 'nodate';
+    const key = (d.단품코드 || '') + '|' + (d.색상 || '') + '|' + dueYear;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(d);
   });
