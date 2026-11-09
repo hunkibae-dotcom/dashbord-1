@@ -3427,6 +3427,140 @@
             }
         }
 
+        // 제품종류 필터(요청, 2026-11-09: "제품검색에서... 제품종류를 뜻하는 그림 아이콘
+        // 버튼하나 만들어서 클릭 시 제품 종류필터를 키는거야 구글시트처럼") — 위
+        // 상태(status) 드롭다운과 완전히 같은 구글시트 필터 패턴(draft→확인/취소)을
+        // 그대로 재사용한다. 제품종류는 품목 자체(수출현황/충주공장재고 행)가 아니라
+        // 상세스펙 시트(_pkgServerSpecMap, 코드 기준)에 저장돼 있어서, 코드로 조회해 온다.
+        let activePtypeFilters = new Set(['전체']);
+        let _pkgPtypeDraft = null;
+        function _pkgItemProductType(item) {
+            const code = (item && item.code || '').toString().trim().toUpperCase();
+            const spec = _pkgServerSpecMap[code];
+            const t = spec && spec.productType ? spec.productType.toString().trim() : '';
+            return t || '미지정';
+        }
+        // 지금 표에 실제로 보이는 품목들(state.data+실재고)을 기준으로 종류 목록을 만든다 —
+        // PKG_PRODUCT_TYPES 순서를 우선하고, 거기 없는 값(직접입력으로 적어둔 값)은 뒤에
+        // 가나다순으로, "미지정"은 맨 끝에 둔다.
+        function _pkgPtypeListForSource() {
+            const seen = new Set();
+            const all = (state.data || []).concat(state.stockRowItems || []);
+            all.forEach(item => seen.add(_pkgItemProductType(item)));
+            const list = Array.from(seen);
+            list.sort((a, b) => {
+                if (a === '미지정') return 1;
+                if (b === '미지정') return -1;
+                const ia = PKG_PRODUCT_TYPES.indexOf(a), ib = PKG_PRODUCT_TYPES.indexOf(b);
+                if (ia === -1 && ib === -1) return a.localeCompare(b, 'ko');
+                if (ia === -1) return 1;
+                if (ib === -1) return -1;
+                return ia - ib;
+            });
+            return list;
+        }
+        function togglePtypeDropdown(e) {
+            e.stopPropagation();
+            const dd = document.getElementById('ptypeDropdown');
+            const arrow = document.getElementById('ptypeDropdownArrow');
+            const isOpen = !dd.classList.contains('hidden');
+            if (isOpen) {
+                _pkgPtypeDraft = null;
+            } else {
+                const list = _pkgPtypeListForSource();
+                _pkgPtypeDraft = activePtypeFilters.has('전체') ? new Set(list) : new Set(Array.from(activePtypeFilters).filter(v => list.includes(v)));
+                _pkgRenderPtypeDraftList();
+            }
+            dd.classList.toggle('hidden');
+            arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+        }
+        function _pkgRenderPtypeDraftList() {
+            const dd = document.getElementById('ptypeDropdown');
+            if (!dd || !_pkgPtypeDraft) return;
+            const list = _pkgPtypeListForSource();
+            const q = (document.getElementById('pkgPtypeSearchInput')?.value || '').trim().toLowerCase();
+            const visible = list.filter(s => s.toLowerCase().includes(q));
+            const rowsHtml = visible.map(s => {
+                const checked = _pkgPtypeDraft.has(s);
+                return `<label style="display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;color:#334155;">
+                    <input type="checkbox" ${checked ? 'checked' : ''} onchange="_pkgPtypeDraftToggle(${JSON.stringify(s)}, this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#16A34A;flex-shrink:0;">
+                    <span>${s}</span>
+                </label>`;
+            }).join('') || '<div style="padding:14px 12px;color:#94a3b8;font-size:12px;text-align:center;">일치하는 항목이 없습니다</div>';
+            dd.innerHTML = `
+                <div style="padding:10px 12px 6px;display:flex;align-items:center;gap:6px;font-size:11.5px;">
+                    <button onclick="_pkgPtypeDraftSelectAll()" style="background:none;border:none;color:#2563eb;font-weight:700;cursor:pointer;padding:0;">모두 선택</button>
+                    <span style="color:#cbd5e1;">-</span>
+                    <button onclick="_pkgPtypeDraftClearAll()" style="background:none;border:none;color:#2563eb;font-weight:700;cursor:pointer;padding:0;">지우기</button>
+                    <span style="color:#94a3b8;font-weight:600;margin-left:auto;" id="pkgPtypeDraftCount"></span>
+                </div>
+                <div style="padding:0 12px 8px;">
+                    <div style="position:relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:#94a3b8;"></i>
+                        <input type="text" id="pkgPtypeSearchInput" oninput="_pkgRenderPtypeDraftList()" placeholder="검색" style="width:100%;padding:6px 10px 6px 26px;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;outline:none;box-sizing:border-box;">
+                    </div>
+                </div>
+                <div style="max-height:220px;overflow-y:auto;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:4px 0;">${rowsHtml}</div>
+                <div style="padding:10px 12px;display:flex;gap:8px;justify-content:flex-end;">
+                    <button onclick="_pkgPtypeCancelDropdown()" style="padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:12.5px;font-weight:700;cursor:pointer;">취소</button>
+                    <button onclick="_pkgPtypeConfirmDropdown()" style="padding:6px 14px;border-radius:8px;border:none;background:#16A34A;color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;">확인</button>
+                </div>`;
+            const cnt = document.getElementById('pkgPtypeDraftCount');
+            if (cnt) cnt.textContent = visible.filter(s => _pkgPtypeDraft.has(s)).length + '/' + visible.length + ' 표시';
+        }
+        function _pkgPtypeDraftToggle(s, checked) {
+            if (!_pkgPtypeDraft) return;
+            if (checked) _pkgPtypeDraft.add(s); else _pkgPtypeDraft.delete(s);
+            const cnt = document.getElementById('pkgPtypeDraftCount');
+            if (cnt) {
+                const list = _pkgPtypeListForSource();
+                const q = (document.getElementById('pkgPtypeSearchInput')?.value || '').trim().toLowerCase();
+                const visible = list.filter(v => v.toLowerCase().includes(q));
+                cnt.textContent = visible.filter(v => _pkgPtypeDraft.has(v)).length + '/' + visible.length + ' 표시';
+            }
+        }
+        function _pkgPtypeDraftSelectAll() {
+            if (!_pkgPtypeDraft) return;
+            _pkgPtypeListForSource().forEach(s => _pkgPtypeDraft.add(s));
+            _pkgRenderPtypeDraftList();
+        }
+        function _pkgPtypeDraftClearAll() {
+            if (!_pkgPtypeDraft) return;
+            _pkgPtypeDraft.clear();
+            _pkgRenderPtypeDraftList();
+        }
+        function _pkgPtypeCancelDropdown() {
+            _pkgPtypeDraft = null;
+            document.getElementById('ptypeDropdown')?.classList.add('hidden');
+            const arrow = document.getElementById('ptypeDropdownArrow');
+            if (arrow) arrow.style.transform = '';
+        }
+        function _pkgPtypeConfirmDropdown() {
+            if (_pkgPtypeDraft) {
+                const list = _pkgPtypeListForSource();
+                activePtypeFilters = (_pkgPtypeDraft.size >= list.length) ? new Set(['전체']) : new Set(_pkgPtypeDraft);
+            }
+            _pkgPtypeDraft = null;
+            document.getElementById('ptypeDropdown')?.classList.add('hidden');
+            const arrow = document.getElementById('ptypeDropdownArrow');
+            if (arrow) arrow.style.transform = '';
+            _syncPtypeFilterUI();
+            applyFilters();
+        }
+        function _syncPtypeFilterUI() {
+            const label = document.getElementById('ptypeFilterLabel');
+            if (!label) return;
+            if (activePtypeFilters.has('전체')) {
+                label.classList.add('hidden');
+            } else {
+                const list = Array.from(activePtypeFilters);
+                label.className = 'font-bold';
+                label.style.color = '#0ea5e9';
+                label.textContent = list.length > 1 ? (list[0] + ' 외 ' + (list.length - 1)) : (list[0] || '없음');
+                label.classList.remove('hidden');
+            }
+        }
+
         // 드롭다운 외부 클릭 시 닫기(= 취소, 구글시트와 동일 — draft는 그대로 버려짐)
         document.addEventListener('click', function() {
             const dd = document.getElementById('statusDropdown');
@@ -3434,6 +3568,13 @@
                 dd.classList.add('hidden');
                 document.getElementById('statusDropdownArrow').style.transform = '';
                 _pkgStatusDraft = null;
+            }
+            const pdd = document.getElementById('ptypeDropdown');
+            if (pdd && !pdd.classList.contains('hidden')) {
+                pdd.classList.add('hidden');
+                const arrow = document.getElementById('ptypeDropdownArrow');
+                if (arrow) arrow.style.transform = '';
+                _pkgPtypeDraft = null;
             }
         });
 
