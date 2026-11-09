@@ -7698,7 +7698,6 @@ function _qrptAddChartSlide(pptx, mode, year, month) {
 
 // ── 콘텐츠C: 블로킹 현황 — 현재 전체 스냅샷(블로킹엔 날짜 칸이 없음) ─────────
 function _qrptAddBlockingSlide(pptx) {
-  const pool = [...(allData || []).filter(d => d.source !== 'archive'), ...(archiveRows || []).map(() => null).filter(Boolean)];
   // 검사완료 이력(archiveRows)엔 블로킹 칸 자체가 없다(기존 화면 로직과 동일한 전제) — 진행중만 집계.
   const counts = {}; QC_BLOCKING_VALUES.forEach(v => counts[v] = 0);
   (allData || []).forEach(d => { if (d.source === 'archive') return; const v = QC_BLOCKING_VALUES.includes(d.블로킹) ? d.블로킹 : '미등록'; counts[v]++; });
