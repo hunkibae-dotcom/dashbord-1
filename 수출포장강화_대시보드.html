@@ -9065,7 +9065,7 @@
             document.getElementById('pkgBulkCountLabel').textContent = `선택된 품목 ${_pkgBulkItems.length}건`;
             // 지난번에 "직접입력"으로 바꿔둔 채 닫았을 수 있어 매번 날짜선택 모드로 되돌린다
             // (일괄수정은 전체 동일 적용값이라 기존 값 프리필이 없음 — 항상 빈 날짜선택부터 시작).
-            ['pkgBulkDueDate', 'pkgBulkShipDate', 'pkgBulkArriveDate'].forEach(id => {
+            ['pkgBulkDueDate', 'pkgBulkShipDate', 'pkgBulkArriveDate', 'pkgBulkRegDate'].forEach(id => {
                 _pkgSetDateFieldMode(id, id + 'ModeBtn', '');
             });
             document.getElementById('pkgBulkPallet').value = '';
