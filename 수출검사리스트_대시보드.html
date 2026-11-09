@@ -7712,20 +7712,6 @@ function _qrptAddChartSlide(pptx, mode, year, month) {
   });
 }
 
-// ── 콘텐츠C: 블로킹 현황 — 현재 전체 스냅샷(블로킹엔 날짜 칸이 없음) ─────────
-function _qrptAddBlockingSlide(pptx) {
-  // 검사완료 이력(archiveRows)엔 블로킹 칸 자체가 없다(기존 화면 로직과 동일한 전제) — 진행중만 집계.
-  const counts = {}; QC_BLOCKING_VALUES.forEach(v => counts[v] = 0);
-  (allData || []).forEach(d => { if (d.source === 'archive') return; const v = QC_BLOCKING_VALUES.includes(d.블로킹) ? d.블로킹 : '미등록'; counts[v]++; });
-  const total = Object.values(counts).reduce((a, b) => a + b, 0);
-  if (!total) { _rptAddEmptySlide(pptx, '블로킹 현황', 'BLOCKING STATUS'); return; }
-  const doneRate = Math.round((counts['검사완료'] / total) * 100);
-  _rptAddDonutSlide(pptx, '블로킹 현황', QC_BLOCKING_VALUES, QC_BLOCKING_VALUES.map(v => counts[v]), {
-    eyebrow: 'BLOCKING STATUS',
-    centerLabel: { value: doneRate + '%', label: '블로킹 검사완료 비율 · 총 ' + total.toLocaleString() + '건' }
-  });
-}
-
 // ── 콘텐츠D: 현장검사 하자 현황 — 별도 시트(현장검사_대시보드.html)의 GAS를
 // 그대로 재사용한다. 같은 사이트(origin)라 localStorage의 'fi_gas_url'을 그대로
 // 읽을 수 있어, 그 대시보드를 열지 않고도 바로 조회 가능하다.
