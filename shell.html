@@ -4158,7 +4158,7 @@
         const visible = list.filter(s => s.toLowerCase().includes(q));
         document.getElementById('sfPtypeModalList').innerHTML = visible.map(s => {
             const active = _sfPtypeDraft.has(s);
-            return `<button onclick="toggleSfPtypeDraftItem(${JSON.stringify(s)})" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
+            return `<button onclick="toggleSfPtypeDraftItem('${s.replace(/'/g,"\\'")}')" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
                 <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? '#00B0FF' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#0B0F19;"></i>' : ''}</span>
                 ${s}
             </button>`;
