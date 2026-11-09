@@ -1232,6 +1232,13 @@
                     <button onclick="pkgOpenBulkModal()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
                         <i class="fa-solid fa-pen"></i> 수정
                     </button>
+                    <div style="position:relative;">
+                        <button id="pkgPtypeFilterBtn" onclick="togglePtypeDropdown(event)" title="제품 종류로 필터(구글시트 필터 방식)" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'">
+                            <i class="fa-solid fa-shapes"></i> 제품종류 <span id="ptypeFilterLabel" class="font-bold hidden" style="color:#0ea5e9;"></span>
+                            <i class="fa-solid fa-chevron-down" style="font-size:9px;" id="ptypeDropdownArrow"></i>
+                        </button>
+                        <div id="ptypeDropdown" class="hidden absolute left-0 top-full mt-1 z-50" style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.11);width:220px;text-align:left;" onclick="event.stopPropagation()"></div>
+                    </div>
                     <button onclick="pkgOpenLabelModal()" style="border:1px solid #e2e8f0;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:600;color:#475569;background:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background .15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'" title="적재번호로 수출 표준품 인식표 PDF 생성">
                         <i class="fa-solid fa-tag"></i> 인식표 출력
                     </button>
