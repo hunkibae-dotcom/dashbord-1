@@ -3538,7 +3538,10 @@
         function _pkgPtypeConfirmDropdown() {
             if (_pkgPtypeDraft) {
                 const list = _pkgPtypeListForSource();
-                activePtypeFilters = (_pkgPtypeDraft.size >= list.length) ? new Set(['전체']) : new Set(_pkgPtypeDraft);
+                // 전부 체크(=전체)든, 실수로 전부 해제(0개)든 둘 다 "필터 없음"으로 본다 —
+                // 0개 상태로 확인을 누르면 표가 영원히 0건으로 굳어버리는 함정이 되는 걸
+                // 막는다(요청, 2026-11-09: "제품종류 필터 적용해도 아무것도 검색이안되는데").
+                activePtypeFilters = (_pkgPtypeDraft.size === 0 || _pkgPtypeDraft.size >= list.length) ? new Set(['전체']) : new Set(_pkgPtypeDraft);
             }
             _pkgPtypeDraft = null;
             document.getElementById('ptypeDropdown')?.classList.add('hidden');
