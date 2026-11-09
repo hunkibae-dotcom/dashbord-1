@@ -9686,7 +9686,14 @@
         // 있던 "확인" 버튼을 없애고, 여러 행을 동시에 펼쳐서 값만 골라두면(바로 서버로
         // 안 보냄) 하단 푸터의 "적용" 버튼 한 번으로 전부 모아 보낸다.
         let _pkgMissingSpecEditCodes = new Set();
-        let _pkgMissingSpecStaged = new Set(); // 값을 고른(=적용 대상인) 코드들
+        // 버그 수정(요청, 2026-11-09: "적용을 누르면 적용완료되었다고 뜨지만 그대로
+        // 화면에 남아있고... 종류를 뭘선택했는지 안떠있고") — 예전엔 "골랐는지 여부"만
+        // Set으로 기억하고 실제 값은 DOM에만 의존했는데, 다른 행을 펼치면
+        // renderPkgMissingSpecList() 전체가 다시 그려지면서 이미 고른 값도 전부
+        // 빈칸으로 초기화돼버렸다(서버엔 반영 안 된 값이라 적용 시점엔 빈 값만 보내져서
+        // 아무 일도 안 일어난 것). 이제 고른 값 자체를 code별로 들고 있다가, 다시 그릴
+        // 때마다 그 값으로 미리 채운다 — 어느 행을 펼치든/접든 값이 안 날아간다.
+        let _pkgMissingSpecDrafts = {}; // code -> {selVal, productType, boxHeight}
         function renderPkgMissingSpecList() {
             const body = document.getElementById('pkgMissingSpecBody');
             const sortBtnsEl = document.getElementById('pkgMissingSpecSortBtns');
@@ -9697,7 +9704,7 @@
             const list = _pkgMissingSpecDisplayList();
             // 지금 화면에 없는 코드(필터로 가려졌거나 이미 처리됨)는 다음 적용 대상에서도 뺀다.
             const listCodes = new Set(list.map(it => it.code));
-            Array.from(_pkgMissingSpecStaged).forEach(c => { if (!listCodes.has(c)) _pkgMissingSpecStaged.delete(c); });
+            Object.keys(_pkgMissingSpecDrafts).forEach(c => { if (!listCodes.has(c)) delete _pkgMissingSpecDrafts[c]; });
             _pkgMissingSpecRefreshApplyBar();
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">미구성 품목이 없습니다.</div>';
@@ -9706,9 +9713,14 @@
             body.innerHTML = list.map(it => {
                 const spec = _pkgServerSpecMap[it.code] || {};
                 const editing = _pkgMissingSpecEditCodes.has(it.code);
-                const staged = _pkgMissingSpecStaged.has(it.code);
+                const draft = _pkgMissingSpecDrafts[it.code];
+                const staged = !!draft;
                 const rowId = _pkgMissingRowId('pms', it.code);
                 const isCustomType = spec.productType && PKG_PRODUCT_TYPES.indexOf(spec.productType) < 0;
+                // 고른 값이 있으면(draft) 그걸 우선 보여주고, 없으면 서버에 저장된 값을 보여준다.
+                const curSelVal = draft ? draft.selVal : (isCustomType ? '__custom__' : (spec.productType || ''));
+                const curCustomVal = draft ? (draft.selVal === '__custom__' ? draft.productType : '') : (isCustomType ? spec.productType : '');
+                const curHeightVal = draft ? draft.boxHeight : (spec.boxHeight || '');
                 return `<div style="border-bottom:1px solid #f1f5f9;${staged ? 'background:#f0f9ff;' : ''}">
                     <div style="display:flex;align-items:center;gap:10px;padding:9px 8px;cursor:pointer;" onclick="_pkgMissingSpecToggle('${_jsAttr(it.code)}')">
                         <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
@@ -9717,7 +9729,7 @@
                                 <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.code)}', event)">${it.code}</span>
                                 ${it.country ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef3c7;color:#b45309;">${it.country}</span>` : ''}
                                 ${!spec.productType ? '<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#fef2f2;color:#dc2626;">제품종류 없음</span>' : `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#eff6ff;color:#2563eb;">${spec.productType}</span>`}
-                                ${staged ? '<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#0284c7;color:#fff;"><i class="fa-solid fa-check"></i> 적용 대기</span>' : ''}
+                                ${staged ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#0284c7;color:#fff;"><i class="fa-solid fa-check"></i> 적용 대기: ${_jsAttr(draft.productType || '')}${draft.boxHeight ? ' / 높이 ' + _jsAttr(draft.boxHeight) : ''}</span>` : ''}
                             </div>
                         </div>
                         <button type="button" onclick="event.stopPropagation();_pkgMissingSpecDismiss('${_jsAttr(it.code)}')" title="목록에서만 치우기(시트는 그대로 둠)" style="width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #fecaca;background:#fef2f2;color:#dc2626;cursor:pointer;padding:0;"><i class="fa-solid fa-xmark" style="font-size:10px;"></i></button>
@@ -9727,12 +9739,12 @@
                         <div style="display:flex;align-items:center;gap:8px;">
                             <select id="${rowId}_sel" onchange="_pkgMissingSpecSelChange('${_jsAttr(it.code)}', this.value)" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
                                 <option value="">제품종류 선택</option>
-                                ${PKG_PRODUCT_TYPES.map(t => `<option value="${t}" ${spec.productType === t ? 'selected' : ''}>${t}</option>`).join('')}
-                                <option value="__custom__" ${isCustomType ? 'selected' : ''}>직접입력</option>
+                                ${PKG_PRODUCT_TYPES.map(t => `<option value="${t}" ${curSelVal === t ? 'selected' : ''}>${t}</option>`).join('')}
+                                <option value="__custom__" ${curSelVal === '__custom__' ? 'selected' : ''}>직접입력</option>
                             </select>
-                            <input type="text" id="${rowId}_custom" placeholder="제품 종류 직접 입력" value="${isCustomType ? _jsAttr(spec.productType) : ''}" oninput="_pkgMissingSpecStage('${_jsAttr(it.code)}')" class="${isCustomType ? '' : 'hidden'}" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                            <input type="text" id="${rowId}_custom" placeholder="제품 종류 직접 입력" value="${_jsAttr(curCustomVal)}" oninput="_pkgMissingSpecStage('${_jsAttr(it.code)}')" class="${curSelVal === '__custom__' ? '' : 'hidden'}" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
                         </div>
-                        <input type="text" id="${rowId}_height" placeholder="PE폼 높이" value="${_jsAttr(spec.boxHeight || '')}" oninput="_pkgMissingSpecStage('${_jsAttr(it.code)}')" style="border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
+                        <input type="text" id="${rowId}_height" placeholder="PE폼 높이" value="${_jsAttr(curHeightVal)}" oninput="_pkgMissingSpecStage('${_jsAttr(it.code)}')" style="border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
                     </div>` : ''}
                 </div>`;
             }).join('');
@@ -9747,24 +9759,30 @@
             if (custom) custom.classList.toggle('hidden', val !== '__custom__');
             _pkgMissingSpecStage(code);
         }
-        // 값을 고르는(바꾸는) 순간마다 "적용 대상"으로만 표시해두고, 실제 서버 반영은
-        // 하단 "적용" 버튼을 눌렀을 때 한꺼번에 한다 — 값 자체는 이 행이 펼쳐진 채로
-        // DOM에 그대로 남아있으므로(여러 행을 동시에 펼쳐둘 수 있음) 적용 시점에 다시
-        // 읽어오면 된다.
+        // 값을 고르는(바꾸는) 순간마다 실제 값을 code별로 저장해둔다(draft) — 실제 서버
+        // 반영은 하단 "적용" 버튼을 눌렀을 때 한꺼번에 한다. 목록 전체를 다시 그리면
+        // 입력 중인 포커스가 날아가니, 여기서는 배지/배경만 가볍게 갱신한다.
         function _pkgMissingSpecStage(code) {
-            _pkgMissingSpecStaged.add(code);
-            _pkgMissingSpecRefreshApplyBar();
-            // 뱃지만 가볍게 갱신 — 목록 전체를 다시 그리면 입력 중인 포커스가 날아간다.
             const rowId = _pkgMissingRowId('pms', code);
             const sel = document.getElementById(rowId + '_sel');
-            if (sel) { const row = sel.closest('div[style*="border-bottom"]'); if (row) row.style.background = '#f0f9ff'; }
+            if (!sel) return;
+            const custom = document.getElementById(rowId + '_custom');
+            const heightInput = document.getElementById(rowId + '_height');
+            const selVal = sel.value;
+            const productType = selVal === '__custom__' ? (custom ? custom.value.trim() : '') : selVal;
+            const boxHeight = heightInput ? heightInput.value.trim() : '';
+            if (!productType && !boxHeight) delete _pkgMissingSpecDrafts[code];
+            else _pkgMissingSpecDrafts[code] = { selVal, productType, boxHeight };
+            _pkgMissingSpecRefreshApplyBar();
+            const row = sel.closest('div[style*="border-bottom"]');
+            if (row) row.style.background = (code in _pkgMissingSpecDrafts) ? '#f0f9ff' : '';
         }
         function _pkgMissingSpecRefreshApplyBar() {
             const bar = document.getElementById('pkgMissingSpecApplyBar');
             const btn = document.getElementById('pkgMissingSpecApplyBtn');
             const cnt = document.getElementById('pkgMissingSpecApplyCount');
             if (!bar || !btn || !cnt) return;
-            const n = _pkgMissingSpecStaged.size;
+            const n = Object.keys(_pkgMissingSpecDrafts).length;
             bar.style.display = n ? 'flex' : 'none';
             cnt.textContent = n + '건 선택됨';
             btn.disabled = !n;
@@ -9772,16 +9790,10 @@
         }
         // 실제로 서버에 한 건 반영 — 성공하면 true, 실패하면 false(적용 대기 표시는 그대로 남겨서 재시도 가능).
         async function _pkgMissingSpecApplyOne(code) {
-            const rowId = _pkgMissingRowId('pms', code);
-            const sel = document.getElementById(rowId + '_sel');
-            const custom = document.getElementById(rowId + '_custom');
-            const heightInput = document.getElementById(rowId + '_height');
-            // 행이 접혀있어 DOM에 없으면(펼치지 않고 지나간 경우는 없지만 방어적으로)
-            // 건너뛴다 — staged엔 남겨서 사람이 다시 펼쳐 채우게 한다.
-            if (!sel) return null;
-            const productType = sel.value === '__custom__' ? (custom ? custom.value.trim() : '') : sel.value;
-            const boxHeight = heightInput ? heightInput.value.trim() : '';
-            if (!productType && !boxHeight) return null; // 아무것도 안 고른 채 펼치기만 했으면 대상 아님
+            const draft = _pkgMissingSpecDrafts[code];
+            if (!draft) return null;
+            const productType = draft.productType, boxHeight = draft.boxHeight;
+            if (!productType && !boxHeight) return null;
             const payload = { action: 'updateProductSpec', code: code };
             if (productType) payload.productType = productType;
             if (boxHeight) payload.boxHeight = boxHeight;
@@ -9801,7 +9813,7 @@
         // 포장불량조치 사진 일괄반영 때와 같은 이유), 끝나면 성공한 것만 목록에서
         // 사라지고 실패한 것만 "적용 대기" 상태로 남는다.
         async function _pkgMissingSpecApplyAll() {
-            const codes = Array.from(_pkgMissingSpecStaged);
+            const codes = Object.keys(_pkgMissingSpecDrafts);
             if (!codes.length) return;
             const btn = document.getElementById('pkgMissingSpecApplyBtn');
             const origHtml = btn.innerHTML;
@@ -9813,7 +9825,7 @@
                 while (idx < codes.length) {
                     const code = codes[idx++];
                     const ok = await _pkgMissingSpecApplyOne(code);
-                    if (ok === true) { _pkgMissingSpecStaged.delete(code); _pkgMissingSpecEditCodes.delete(code); }
+                    if (ok === true) { delete _pkgMissingSpecDrafts[code]; _pkgMissingSpecEditCodes.delete(code); }
                     else if (ok === false) failed++;
                     done++;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중... (' + done + '/' + codes.length + ')';
@@ -9828,7 +9840,7 @@
 
         // ── 탭3: 유형 선택(제품종류·높이는 있지만 PE폼 유형 누락) ──────────
         let _pkgMissingTypeEditCodes = new Set();
-        let _pkgMissingTypeStaged = new Set();
+        let _pkgMissingTypeDrafts = {}; // code -> peType 문자열(위 미구성 탭과 같은 이유로 draft화)
         const PKG_PE_TYPE_OPTIONS = ['일자형', '코너형', '패드형', '롤형'];
         function renderPkgMissingTypeList() {
             const body = document.getElementById('pkgMissingTypeBody');
@@ -9839,7 +9851,7 @@
             document.getElementById('pkgNewTabCnt-type').textContent = _pkgMissingTypeList().length;
             const list = _pkgMissingTypeDisplayList();
             const listCodes = new Set(list.map(it => it.code));
-            Array.from(_pkgMissingTypeStaged).forEach(c => { if (!listCodes.has(c)) _pkgMissingTypeStaged.delete(c); });
+            Object.keys(_pkgMissingTypeDrafts).forEach(c => { if (!listCodes.has(c)) delete _pkgMissingTypeDrafts[c]; });
             _pkgMissingTypeRefreshApplyBar();
             if (!list.length) {
                 body.innerHTML = '<div style="padding:34px 10px;text-align:center;font-size:13px;color:#94a3b8;">유형을 고를 품목이 없습니다.</div>';
@@ -9847,7 +9859,8 @@
             }
             body.innerHTML = list.map(it => {
                 const editing = _pkgMissingTypeEditCodes.has(it.code);
-                const staged = _pkgMissingTypeStaged.has(it.code);
+                const draftType = _pkgMissingTypeDrafts[it.code] || '';
+                const staged = !!draftType;
                 const rowId = _pkgMissingRowId('pmt', it.code);
                 return `<div style="border-bottom:1px solid #f1f5f9;${staged ? 'background:#f0f9ff;' : ''}">
                     <div style="display:flex;align-items:center;gap:10px;padding:9px 8px;cursor:pointer;" onclick="_pkgMissingTypeToggle('${_jsAttr(it.code)}')">
@@ -9855,7 +9868,7 @@
                             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                                 <span style="font-size:13.5px;font-weight:700;color:#1e293b;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.round)}', event)">${it.round || '-'}</span>
                                 <button onclick="event.stopPropagation();_pkgMissingTypeOpenSpec('${_jsAttr(it.code)}')" title="상세스펙으로 이동" style="width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:999px;border:1px solid #c7d2fe;background:#eef2ff;color:#4338ca;cursor:pointer;padding:0;"><i class="fa-solid fa-ruler-combined" style="font-size:9.5px;"></i></button>
-                                ${staged ? '<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#0284c7;color:#fff;"><i class="fa-solid fa-check"></i> 적용 대기</span>' : ''}
+                                ${staged ? `<span style="font-size:10px;font-weight:700;padding:1.5px 7px;border-radius:6px;background:#0284c7;color:#fff;"><i class="fa-solid fa-check"></i> 적용 대기: ${_jsAttr(draftType)}</span>` : ''}
                             </div>
                             <div style="font-size:11.5px;color:#64748b;display:flex;gap:9px;flex-wrap:wrap;align-items:center;">
                                 <span style="font-family:ui-monospace,monospace;cursor:pointer;border-bottom:1px dashed #cbd5e1;" onclick="event.stopPropagation();copyCellText('${_jsAttr(it.code)}', event)">${it.code}</span>
@@ -9870,7 +9883,7 @@
                     ${editing ? `<div style="padding:4px 8px 12px;display:flex;align-items:center;gap:8px;background:#f8fafc;">
                         <select id="${rowId}_sel" onchange="_pkgMissingTypeStage('${_jsAttr(it.code)}')" style="flex:1;min-width:0;border:1px solid #e2e8f0;border-radius:8px;padding:7px 8px;font-size:12.5px;">
                             <option value="">PE폼 유형 선택</option>
-                            ${PKG_PE_TYPE_OPTIONS.map(t => `<option value="${t}">${t}</option>`).join('')}
+                            ${PKG_PE_TYPE_OPTIONS.map(t => `<option value="${t}" ${draftType === t ? 'selected' : ''}>${t}</option>`).join('')}
                         </select>
                     </div>` : ''}
                 </div>`;
@@ -9883,27 +9896,27 @@
         }
         function _pkgMissingTypeStage(code) {
             const sel = document.getElementById(_pkgMissingRowId('pmt', code) + '_sel');
-            if (!sel || !sel.value) return;
-            _pkgMissingTypeStaged.add(code);
+            if (!sel) return;
+            if (!sel.value) delete _pkgMissingTypeDrafts[code];
+            else _pkgMissingTypeDrafts[code] = sel.value;
             _pkgMissingTypeRefreshApplyBar();
             const row = sel.closest('div[style*="border-bottom"]');
-            if (row) row.style.background = '#f0f9ff';
+            if (row) row.style.background = (code in _pkgMissingTypeDrafts) ? '#f0f9ff' : '';
         }
         function _pkgMissingTypeRefreshApplyBar() {
             const bar = document.getElementById('pkgMissingTypeApplyBar');
             const btn = document.getElementById('pkgMissingTypeApplyBtn');
             const cnt = document.getElementById('pkgMissingTypeApplyCount');
             if (!bar || !btn || !cnt) return;
-            const n = _pkgMissingTypeStaged.size;
+            const n = Object.keys(_pkgMissingTypeDrafts).length;
             bar.style.display = n ? 'flex' : 'none';
             cnt.textContent = n + '건 선택됨';
             btn.disabled = !n;
             btn.style.opacity = n ? '1' : '.5';
         }
         async function _pkgMissingTypeApplyOne(code) {
-            const sel = document.getElementById(_pkgMissingRowId('pmt', code) + '_sel');
-            if (!sel || !sel.value) return null;
-            const type = sel.value;
+            const type = _pkgMissingTypeDrafts[code];
+            if (!type) return null;
             const existingSpec = _pkgServerSpecMap[code] || {};
             const boxHeight = existingSpec.boxHeight || '';
             const peUrl = _pkgGasUrl();
@@ -9923,7 +9936,7 @@
             return true;
         }
         async function _pkgMissingTypeApplyAll() {
-            const codes = Array.from(_pkgMissingTypeStaged);
+            const codes = Object.keys(_pkgMissingTypeDrafts);
             if (!codes.length) return;
             const btn = document.getElementById('pkgMissingTypeApplyBtn');
             const origHtml = btn.innerHTML;
@@ -9935,7 +9948,7 @@
                 while (idx < codes.length) {
                     const code = codes[idx++];
                     const ok = await _pkgMissingTypeApplyOne(code);
-                    if (ok === true) { _pkgMissingTypeStaged.delete(code); _pkgMissingTypeEditCodes.delete(code); }
+                    if (ok === true) { delete _pkgMissingTypeDrafts[code]; _pkgMissingTypeEditCodes.delete(code); }
                     else if (ok === false) failed++;
                     done++;
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중... (' + done + '/' + codes.length + ')';
