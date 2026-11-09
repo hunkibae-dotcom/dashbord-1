@@ -16442,7 +16442,7 @@ async function peExportOrderXlsx(ordNo, meta, items) {
             <div id="pkgBulkPartialQtyRows" style="display:flex;flex-direction:column;gap:8px;"></div>
         </div>
 
-        <div style="margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+        <div style="margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
             <div>
                 <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
                     <span style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;">납기일 (전체 동일 적용, 비워두면 변경 안 함)</span>
@@ -16465,6 +16465,14 @@ async function peExportOrderXlsx(ordNo, meta, items) {
                     <button type="button" id="pkgBulkArriveDateModeBtn" onclick="_pkgToggleDateInputMode('pkgBulkArriveDate','pkgBulkArriveDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;"><i class="fa-solid fa-keyboard"></i></button>
                 </div>
                 <input id="pkgBulkArriveDate" type="date"
+                    style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
+            </div>
+            <div>
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:8px;">
+                    <span style="font-size:12px;font-weight:700;color:#64748b;letter-spacing:.04em;">포장완료일 (전체 동일 적용, 비워두면 변경 안 함)</span>
+                    <button type="button" id="pkgBulkRegDateModeBtn" onclick="_pkgToggleDateInputMode('pkgBulkRegDate','pkgBulkRegDateModeBtn')" title="직접입력으로 전환" style="width:14px;height:14px;padding:0;border:none;background:transparent;color:#94a3b8;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;"><i class="fa-solid fa-keyboard"></i></button>
+                </div>
+                <input id="pkgBulkRegDate" type="date"
                     style="width:100%;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 14px;font-size:14px;color:#1e293b;outline:none;box-sizing:border-box;">
             </div>
         </div>
