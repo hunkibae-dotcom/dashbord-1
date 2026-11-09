@@ -2459,6 +2459,9 @@
             return s.includes('포장대기') || s.includes('미확인') || s.includes('미입고') || s.includes('입고');
         });
         const unreceived = allData.filter(d => d.source === 'standard' && d.status.replace(/\s+/g,'').includes('미입고'));
+        // 회수중/생산중(요청, 2026-11-09: PC 웹 금일 작업계획 카드와 항목을 맞춤).
+        const recovering = allData.filter(d => d.source === 'standard' && d.status.replace(/\s+/g,'').includes('회수중'));
+        const producting = allData.filter(d => d.source === 'standard' && d.status.replace(/\s+/g,'').includes('생산중'));
         const loadReady = allData.filter(d => {
             if (d.source !== 'standard') return false;
             if (!d.date || d.date === '-') return false;
