@@ -3806,6 +3806,7 @@
                     const matchesColor = !colorQuery || _normSearchText(item.color || '').toLowerCase().includes(colorQuery);
                     const matchesNote = !noteQuery || _normSearchText(item.note || '').toLowerCase().includes(noteQuery);
                     const matchesStatus = activeStatusFilters.has('전체') || activeStatusFilters.has(item.status) || activeStatusFilters.has(item.statusLabel);
+                    const matchesPtype = activePtypeFilters.has('전체') || activePtypeFilters.has(_pkgItemProductType(item));
                     let matchesPallet = true;
                     if (palletQuery) {
                         const _isS = item.status === '출고' || item.status === '피킹';
@@ -3840,7 +3841,7 @@
                         cardRoundFilter.has(_cardRoundKey(item.round, 'date', item.date)) ||
                         cardRoundFilter.has(_cardRoundKey(item.round, 'dueDate', item.dueDate));
 
-                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesNote && matchesStatus && matchesPallet && matchesSource && matchesCardRound;
+                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesNote && matchesStatus && matchesPtype && matchesPallet && matchesSource && matchesCardRound;
                 });
 
                 sortData();
