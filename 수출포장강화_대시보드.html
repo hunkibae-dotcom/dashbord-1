@@ -8821,8 +8821,10 @@
         }
         function openPkgNewModal() {
             _pkgNewSelected = new Set();
-            _pkgMissingSpecEditCode = null;
-            _pkgMissingTypeEditCode = null;
+            _pkgMissingSpecEditCodes.clear();
+            _pkgMissingTypeEditCodes.clear();
+            _pkgMissingSpecStaged.clear();
+            _pkgMissingTypeStaged.clear();
             _pkgBarcodeSelectMode = false;
             _pkgBarcodeSelected = new Set();
             // 칼럼 필터/날짜 필터도 검색칸처럼 모달을 새로 열 때마다 초기화한다(요청,
