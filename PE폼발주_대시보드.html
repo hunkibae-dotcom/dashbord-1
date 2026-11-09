@@ -1232,43 +1232,53 @@ function renderOrders() {
   }).join('');
 }
 
-// 버그 수정(요청, 2026-11-09: "부분입고 버튼을 눌러도 입고완료로 처리되는 느낌") — 예전엔
-// "부분입고"/"입고완료" 두 버튼이 똑같은 패널을 열기만 하고, 패널의 "확정" 버튼은 상태를
-// '입고완료'로 고정해서 보냈다 — 그래서 "부분입고"를 눌러도 실제로는 늘 입고완료로
-// 처리됐다. 이제 어느 버튼으로 열었는지(status)를 패널에 저장해두고, 확정 버튼이 그
-// 값을 그대로 읽어 보낸다.
-function toggleDatePanel(id, status) {
+// 재설계(요청, 2026-11-09: "하단엔 현재 진행중인 표시만 해주고, 입고체크 버튼을 따로
+// 만들어서 수량을 적게, 전수량입고완료 버튼도 따로") — 예전엔 "부분입고"/"입고완료"
+// 두 버튼이 같은 패널을 열어 상태값만 골라 보냈는데, 이제 "입고 체크"(수량을 직접
+// 적어서 서버가 부분/완료를 자동 판정)와 "전수량입고완료"(날짜만 확정, 나머지 전량)로
+// 분리했다. 같은 카드의 두 패널이 동시에 열려 있으면 헷갈리니 하나를 열면 반대쪽은
+// 닫는다(패널 id가 'qp_3'/'fp_3'처럼 카드 번호를 공유해서 서로를 찾는다).
+function toggleReceivePanel(id) {
   const panel = document.getElementById(id);
   if (!panel) return;
-  if (status) {
-    panel.dataset.pendingStatus = status;
-    const label = document.getElementById(id.replace('dp_', 'dpLabel_'));
-    if (label) label.textContent = status === '부분입고' ? '부분입고일' : '입고일';
-  }
-  panel.classList.toggle('open');
+  const siblingId = id.startsWith('qp_') ? id.replace('qp_', 'fp_') : id.replace('fp_', 'qp_');
+  const sibling = document.getElementById(siblingId);
+  const willOpen = !panel.classList.contains('open');
+  if (sibling) sibling.classList.remove('open');
+  panel.classList.toggle('open', willOpen);
 }
 
-async function confirmReceive(ordNo, status, date, panelId, row) {
+// "입고 체크" 수량 입력칸의 힌트 — 비고에 이미 남아있는 "정N 부M 부분입고" 표시를
+// 읽어 지금까지 들어온 수량/주문수량을 보여준다(서버가 같은 정규식으로 다시 읽어
+// 누적 판정하므로, 여기선 참고용 표시일 뿐이다).
+function _pePartialHint(r) {
+  const m = (r.note || '').match(/부([\d.]+)[^\d]*부분입고/);
+  const prior = m ? parseFloat(m[1]) : 0;
+  const remain = Math.max((r.qty || 0) - prior, 0);
+  return (prior > 0 ? prior.toLocaleString() + '/' + (r.qty || 0).toLocaleString() + ' 입고됨 · ' : '') + '최대 ' + remain.toLocaleString();
+}
+
+async function confirmReceiveQty(ordNo, row, date, qty, isFull, panelId) {
   const panel = document.getElementById(panelId);
+  const btn = panel ? panel.querySelector('button:last-child') : null;
+  if (!isFull && (!qty || Number(qty) <= 0)) { showToast('입고 수량을 입력해주세요'); return; }
+  const origLabel = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '처리 중...'; }
   try {
-    const params = { action: 'updateOrderStatus', ordNo, status, date };
-    // row — 버그 수정(요청, 2026-11-09): 한 발주번호에 품목이 여러 줄 걸쳐 있을 때 이
-    // 값이 없으면 서버가 그 발주번호의 "첫 줄"만 찾아 바꾼다(발주이력 상태뿐 아니라
-    // 재고 자동등록도 엉뚱한 품목으로 들어간다) — 실제 시트 행 번호를 같이 보내 정확히
-    // 지금 이 카드의 줄만 바뀌게 한다.
+    const params = { action: 'updateOrderReceive', ordNo, date };
+    // row — 한 발주번호에 품목이 여러 줄 걸쳐 있을 때 이 값이 없으면 서버가 그
+    // 발주번호의 "첫 줄"만 찾아 바꾼다 — 실제 시트 행 번호를 같이 보내 정확히 지금
+    // 이 카드의 줄만 바뀌게 한다.
     if (row) params.row = row;
+    if (isFull) params.isFull = '1'; else params.qty = qty;
     const qs = new URLSearchParams(params);
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
     const json = await res.json().catch(() => null);
     if (json && json.status === 'success') {
-      // "입고완료"로 바뀌면 서버가 구글시트 메뉴의 [재고 등록]과 동일하게 재고 시트에
-      // 자동으로 한 줄을 추가한다 — 목록을 다시 불러와야 재고현황에 바로 반영된다.
-      if (json.stockRegistered) {
-        showToast('입고완료 처리 및 재고 등록 완료');
-      } else if (status === '입고완료' && json.stockReason === 'already_in_stock') {
-        showToast('상태 변경 완료 (이미 재고에 등록된 건입니다)');
+      if (json.newStatus === '입고완료') {
+        showToast(json.stockRegistered ? '입고완료 처리 및 재고 등록 완료' : '입고완료 처리 완료');
       } else {
-        showToast('상태가 "' + status + '"(으)로 변경됐습니다');
+        showToast('부분입고로 처리됐습니다 (' + (json.cumulative || 0).toLocaleString() + '/' + (json.orderQty || 0).toLocaleString() + ')');
       }
       await loadAll(true);
     } else {
@@ -1278,6 +1288,7 @@ async function confirmReceive(ordNo, status, date, panelId, row) {
     showToast('네트워크 오류로 저장 실패');
   }
   if (panel) panel.classList.remove('open');
+  if (btn) { btn.disabled = false; btn.textContent = origLabel || '확정'; }
 }
 
 function openOrderDetail(ordNo) {
