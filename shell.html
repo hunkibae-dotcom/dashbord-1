@@ -4312,7 +4312,7 @@
                 specialChip.style.display = 'none';
             }
         }
-        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey && !_sfSourceFilter && !_sfStatusFilters.size) {
+        if (!anyManualFilter && !_schRoundFilterSet && !_kpiPendingFilterActive && !_mgmtCatKey && !_sfSourceFilter && !_sfStatusFilters.size && !_sfPtypeFilters.size) {
             window._srLastDeduped = [];
             _srPage = 1;
             const pbarEmpty = document.getElementById('srPaginationBar');
@@ -4368,6 +4368,7 @@
             }
             if (_sfSourceFilter && d.source !== _sfSourceFilter) return false;
             if (_sfStatusFilters.size && !_sfStatusFilters.has(d.status || '')) return false;
+            if (_sfPtypeFilters.size && !_sfPtypeFilters.has(_sfItemProductType(d))) return false;
             return true;
         });
         // 필터에 맞는 항목은 그대로 다 보여준다 — 재고로 넘어간 항목이라도 수출현황
