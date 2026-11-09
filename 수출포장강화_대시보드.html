@@ -10188,7 +10188,7 @@
 
         function _pkgRenderBulkStatusOpts() {
             const wrap = document.getElementById('pkgBulkStatusOpts');
-            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgBulkStatus, '_pkgSelectBulkStatus', '_pkgToggleBulkStatusGroup', _pkgBulkStatusOpenGroup);
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgBulkStatus, '_pkgSelectBulkStatus', '_pkgToggleBulkStatusGroup', _pkgBulkStatusOpenGroup, null, false, _pkgMigrationPreviewEntry(_pkgBulkStatus));
             _pkgRenderBulkPartialQtyRows();
         }
 
