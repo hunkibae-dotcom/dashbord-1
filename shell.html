@@ -4115,6 +4115,95 @@
         _updateSfSourceButtons();
         runSearch();
     }
+    // 제품종류 필터(요청, 2026-11-09: "제품검색에서... 수정버튼 오른쪽에 제품종류를 뜻하는
+    // 그림 아이콘 버튼하나 만들어서 클릭 시 제품 종류필터를 키는거야 구글시트처럼") — PC 웹
+    // 대시보드의 구글시트 필터 패턴(draft→적용/초기화)을 그대로 따르되, 앱은 공간이 좁아
+    // 드롭다운 대신 센터 모달(sfSourceModal과 같은 방식)로 띄운다. 제품종류는 품목 자체가
+    // 아니라 상세스펙 시트(_pkgNiSpecMap, 코드 기준)에 저장돼 있어서 코드로 조회한다.
+    const _SF_PTYPE_ORDER = ['상판', '덕트커버', '캐비닛', '넉다운(스크류O)', '넉다운(스크류X)', '도어', '서랍', '철물', '거울', '베이스', '가림판'];
+    let _sfPtypeFilters = new Set();
+    let _sfPtypeDraft = new Set();
+    function _sfItemProductType(d) {
+        const code = (d && d.code || '').toString().trim().toUpperCase();
+        const spec = _pkgNiSpecMap[code];
+        const t = spec && spec.productType ? spec.productType.toString().trim() : '';
+        return t || '미지정';
+    }
+    function _sfPtypeList() {
+        const seen = new Set();
+        (allData || []).forEach(d => seen.add(_sfItemProductType(d)));
+        const list = Array.from(seen);
+        list.sort((a, b) => {
+            if (a === '미지정') return 1;
+            if (b === '미지정') return -1;
+            const ia = _SF_PTYPE_ORDER.indexOf(a), ib = _SF_PTYPE_ORDER.indexOf(b);
+            if (ia === -1 && ib === -1) return a.localeCompare(b, 'ko');
+            if (ia === -1) return 1;
+            if (ib === -1) return -1;
+            return ia - ib;
+        });
+        return list;
+    }
+    function openSfPtypePicker() {
+        _sfPtypeDraft = new Set(_sfPtypeFilters);
+        const search = document.getElementById('sfPtypeSearchInput');
+        if (search) search.value = '';
+        _renderSfPtypeList();
+        document.getElementById('sfPtypeModal').style.display = 'flex';
+        _armBackTrap();
+    }
+    function _renderSfPtypeList() {
+        const list = _sfPtypeList();
+        const q = (document.getElementById('sfPtypeSearchInput')?.value || '').trim().toLowerCase();
+        const visible = list.filter(s => s.toLowerCase().includes(q));
+        document.getElementById('sfPtypeModalList').innerHTML = visible.map(s => {
+            const active = _sfPtypeDraft.has(s);
+            return `<button onclick="toggleSfPtypeDraftItem(${JSON.stringify(s)})" style="display:flex;align-items:center;gap:10px;text-align:left;padding:11px 14px;border-radius:10px;border:1px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? 'rgba(0,176,255,.12)' : 'var(--icon-bg)'};color:${active ? '#00B0FF' : 'var(--text)'};font-size:13.5px;font-weight:${active ? '800' : '600'};cursor:pointer;-webkit-appearance:none;">
+                <span style="width:16px;height:16px;border-radius:5px;border:2px solid ${active ? '#00B0FF' : 'var(--border)'};background:${active ? '#00B0FF' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${active ? '<i class="fa-solid fa-check" style="font-size:9px;color:#0B0F19;"></i>' : ''}</span>
+                ${s}
+            </button>`;
+        }).join('') || '<div style="font-size:12px;color:var(--text-sub);text-align:center;padding:14px 0;">일치하는 항목이 없습니다</div>';
+        _updateSfPtypeAllBtn();
+    }
+    function toggleSfPtypeDraftItem(s) {
+        if (_sfPtypeDraft.has(s)) _sfPtypeDraft.delete(s); else _sfPtypeDraft.add(s);
+        _renderSfPtypeList();
+    }
+    function toggleSfPtypeAll() {
+        const list = _sfPtypeList();
+        const allSelected = _sfPtypeDraft.size === list.length;
+        _sfPtypeDraft = allSelected ? new Set() : new Set(list);
+        _renderSfPtypeList();
+    }
+    function _updateSfPtypeAllBtn() {
+        const list = _sfPtypeList();
+        const btn = document.getElementById('sfPtypeAllBtn');
+        if (!btn) return;
+        btn.textContent = (_sfPtypeDraft.size && _sfPtypeDraft.size === list.length) ? '전체 해제' : '전체 선택';
+    }
+    function closeSfPtypePicker() {
+        document.getElementById('sfPtypeModal').style.display = 'none';
+    }
+    function _sfPtypeClear() {
+        _sfPtypeDraft = new Set();
+        _renderSfPtypeList();
+    }
+    function applySfPtypePicker() {
+        _sfPtypeFilters = new Set(_sfPtypeDraft);
+        closeSfPtypePicker();
+        _updateSfPtypeButton();
+        runSearch();
+    }
+    function _updateSfPtypeButton() {
+        const dot = document.getElementById('sfPtypeDot');
+        const btn = document.getElementById('sfPtypeBtn');
+        const has = _sfPtypeFilters.size > 0;
+        if (dot) dot.style.display = has ? 'block' : 'none';
+        if (btn) {
+            btn.style.borderColor = has ? '#00B0FF' : 'var(--border)';
+            btn.style.background  = has ? 'rgba(0,176,255,.1)' : 'var(--icon-bg)';
+        }
+    }
     function openSfDatePicker() {
         document.getElementById('sfDateModal').style.display = 'flex';
         _armBackTrap();
