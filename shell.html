@@ -2471,6 +2471,8 @@
         const sv = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
         sv('mgmtPendingQty', pending.reduce((s,d)=>s+d.qty,0).toLocaleString() || '0');
         sv('mgmtUnreceivedCnt', unreceived.length.toLocaleString());
+        sv('mgmtRecoveringCnt', recovering.length.toLocaleString());
+        sv('mgmtProductingCnt', producting.length.toLocaleString());
         sv('mgmtLoadReadyCnt', loadReady.length.toLocaleString());
     }
 
