@@ -6699,6 +6699,14 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        // 생산중 클릭 → 회수중/미회수와 같은 방식, 상태값만 다르다(요청, 2026-11-09).
+        function filterByProductingStatus() {
+            if (!_productingDetailItems || !_productingDetailItems.length) return;
+            setSourceFilter('active');
+            toggleStatusFilter('생산중');
+            const tableEl = document.getElementById('tablePanel');
+            if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         // 상차준비 클릭 → "상차일이 입력돼 있다"는 기존 상태 필터로는 못 거르는 조건이라,
         // 포장대기와 같은 방식(미리 계산해둔 목록을 그대로 테이블에 꽂는다)으로 처리한다.
         function filterByLoadReadyStatus() {
