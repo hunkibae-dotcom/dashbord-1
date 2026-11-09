@@ -5281,7 +5281,15 @@
                     pptx.defineLayout({ name: 'WIDE_REPORT', width: 13.33, height: 7.5 });
                     pptx.layout = 'WIDE_REPORT';
                     const periodLabel = mode === 'monthly' ? (year + '년 ' + month + '월') : (year + '년(연간)');
-                    _rptAddCoverSlide(pptx, '포장강화 종합 리포트', periodLabel);
+                    _rptPageNo = 0;
+                    _rptAddCoverSlide(pptx, '포장강화 종합 리포트', periodLabel, 'PACKAGING · MONTHLY REPORT');
+                    const tocTitles = [];
+                    if (sections.packing) tocTitles.push('누적 포장실적(강화수량)');
+                    if (sections.product) tocTitles.push('제품별 실적(출고기준)');
+                    if (sections.shipType) tocTitles.push('출고 유형 비율');
+                    if (sections.pefoam) tocTitles.push('PE폼 사용현황');
+                    if (sections.defect) tocTitles.push('포장불량조치 현황');
+                    _rptAddTocSlide(pptx, tocTitles);
                     if (sections.packing) _rptAddPackingSlide(pptx, mode, year, month);
                     if (sections.product) _rptAddProductPerfSlide(pptx, mode, year, month);
                     if (sections.shipType) _rptAddShipTypeRatioSlide(pptx, mode, year, month);
