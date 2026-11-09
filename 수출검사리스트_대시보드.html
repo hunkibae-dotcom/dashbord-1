@@ -7554,19 +7554,25 @@ function _rptAddKpiTiles(pptx, slide, tiles, x, y, totalW, h) {
     slide.addText(t.value, { x: tx + 0.2, y: y + 0.42, w: w - 0.34, h: h - 0.52, fontSize: 19, bold: true, color: RPT_INK, fontFace: RPT_FONT });
   });
 }
+// 디자인 수정(요청, 2026-11-09, 포장강화와 동일) — 시리즈 1~2개면 막대 위에 숫자를
+// 그대로 찍고, 3개를 넘으면 막대 라벨 대신 opts.sideTotals로 넘긴 "구분별 합계"를
+// 차트 오른쪽에 카드형 리스트로 따로 보여준다(너무 빽빽해지는 것 방지).
 function _rptAddBarSlide(pptx, title, categories, series, opts) {
   opts = opts || {};
   const slide = _rptNewSlide(pptx, title, opts.eyebrow);
   const chartY = opts.kpis ? 2.55 : 1.45;
   const chartH = opts.kpis ? 4.55 : 5.65;
   if (opts.kpis) _rptAddKpiTiles(pptx, slide, opts.kpis, 0.5, 1.4, 12.33, 1.0);
+  const hasSideTotals = !!(opts.sideTotals && opts.sideTotals.length);
+  const chartW = hasSideTotals ? 8.5 : 12.33;
+  const manySeries = series.length > 2;
   const chartData = series.map(s => ({ name: s.name, labels: categories, values: s.values }));
   slide.addChart(pptx.ChartType.bar, chartData, {
-    x: 0.5, y: chartY, w: 12.33, h: chartH,
+    x: 0.5, y: chartY, w: chartW, h: chartH,
     barDir: 'col', barGrouping: series.length > 1 ? 'clustered' : 'standard',
     barGapWidthPct: 35,
-    showLegend: series.length > 1, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
-    showValue: series.length === 1, dataLabelFontSize: 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
+    showLegend: series.length > 1 && !hasSideTotals, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
+    showValue: !manySeries, dataLabelFontSize: series.length > 1 ? 8 : 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
     chartColors: RPT_PALETTE,
     catAxisLabelFontSize: 9.5, catAxisLabelColor: RPT_SUB, catAxisLineColor: RPT_LINE,
     valAxisLabelFontSize: 9.5, valAxisLabelColor: RPT_SUB, valAxisLineColor: RPT_LINE,
@@ -7574,6 +7580,16 @@ function _rptAddBarSlide(pptx, title, categories, series, opts) {
     catGridLine: { style: 'none' },
     fontFace: RPT_FONT
   });
+  if (hasSideTotals) {
+    const sx = 9.15, sw = 3.68;
+    slide.addText('구분별 합계', { x: sx, y: chartY, w: sw, h: 0.3, fontSize: 11, bold: true, color: RPT_SUB, charSpacing: 1, fontFace: RPT_FONT });
+    opts.sideTotals.forEach((t, i) => {
+      const ly = chartY + 0.42 + i * ((chartH - 0.5) / opts.sideTotals.length);
+      slide.addShape(pptx.ShapeType.rect, { x: sx, y: ly + 0.05, w: 0.16, h: 0.16, fill: { color: RPT_PALETTE[i % RPT_PALETTE.length] }, line: { type: 'none' } });
+      slide.addText(t.label, { x: sx + 0.26, y: ly - 0.04, w: sw - 0.3, h: 0.3, fontSize: 11.5, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+      slide.addText(t.value, { x: sx + 0.26, y: ly + 0.25, w: sw - 0.3, h: 0.28, fontSize: 10, color: RPT_SUB, fontFace: RPT_FONT });
+    });
+  }
 }
 function _rptAddDonutSlide(pptx, title, labels, values, opts) {
   opts = opts || {};
