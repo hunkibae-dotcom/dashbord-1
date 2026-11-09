@@ -5006,19 +5006,28 @@
         // 막대차트 — opts.kpis(요약 카드), opts.eyebrow를 추가로 받는다. 바 간격을
         // 좁혀 두껍게(barGapWidthPct), 격자/축 선을 옅게 해서 차트 자체가 더 정제돼
         // 보이게 했다.
+        // 버그/디자인 수정(요청, 2026-11-09: "제품별 실적은 각 그래프마다 수량이안써있어서
+        // 직관적이지못하고 애매하니까") — 시리즈가 1~2개면 막대 위에 숫자를 그대로
+        // 찍어주고, 3개를 넘으면(예: 제품구분 6개 × 12개월) 막대마다 숫자를 찍으면
+        // 오히려 더 지저분해져서, 대신 opts.sideTotals로 넘긴 "구분별 합계"를 차트
+        // 오른쪽에 카드형 리스트로 따로 보여준다 — 숫자 자체는 더 정확하고 읽기 쉽게,
+        // 차트는 추이 비교에만 집중하게 한다.
         function _rptAddBarSlide(pptx, title, categories, series, opts) {
             opts = opts || {};
             const slide = _rptNewSlide(pptx, title, opts.eyebrow);
             const chartY = opts.kpis ? 2.55 : 1.45;
             const chartH = opts.kpis ? 4.55 : 5.65;
             if (opts.kpis) _rptAddKpiTiles(pptx, slide, opts.kpis, 0.5, 1.4, 12.33, 1.0);
+            const hasSideTotals = !!(opts.sideTotals && opts.sideTotals.length);
+            const chartW = hasSideTotals ? 8.5 : 12.33;
+            const manySeries = series.length > 2;
             const chartData = series.map(s => ({ name: s.name, labels: categories, values: s.values }));
             slide.addChart(pptx.ChartType.bar, chartData, {
-                x: 0.5, y: chartY, w: 12.33, h: chartH,
+                x: 0.5, y: chartY, w: chartW, h: chartH,
                 barDir: 'col', barGrouping: series.length > 1 ? 'clustered' : 'standard',
                 barGapWidthPct: 35,
-                showLegend: series.length > 1, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
-                showValue: series.length === 1, dataLabelFontSize: 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
+                showLegend: series.length > 1 && !hasSideTotals, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
+                showValue: !manySeries, dataLabelFontSize: series.length > 1 ? 8 : 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
                 chartColors: RPT_PALETTE,
                 catAxisLabelFontSize: 10, catAxisLabelColor: RPT_SUB, catAxisLineColor: RPT_LINE,
                 valAxisLabelFontSize: 9.5, valAxisLabelColor: RPT_SUB, valAxisLineColor: RPT_LINE,
@@ -5026,6 +5035,16 @@
                 catGridLine: { style: 'none' },
                 fontFace: RPT_FONT
             });
+            if (hasSideTotals) {
+                const sx = 9.15, sw = 3.68;
+                slide.addText('구분별 합계', { x: sx, y: chartY, w: sw, h: 0.3, fontSize: 11, bold: true, color: RPT_SUB, charSpacing: 1, fontFace: RPT_FONT });
+                opts.sideTotals.forEach((t, i) => {
+                    const ly = chartY + 0.42 + i * ((chartH - 0.5) / opts.sideTotals.length);
+                    slide.addShape(pptx.ShapeType.rect, { x: sx, y: ly + 0.05, w: 0.16, h: 0.16, fill: { color: RPT_PALETTE[i % RPT_PALETTE.length] }, line: { type: 'none' } });
+                    slide.addText(t.label, { x: sx + 0.26, y: ly - 0.04, w: sw - 0.3, h: 0.3, fontSize: 11.5, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+                    slide.addText(t.value, { x: sx + 0.26, y: ly + 0.25, w: sw - 0.3, h: 0.28, fontSize: 10, color: RPT_SUB, fontFace: RPT_FONT });
+                });
+            }
         }
         // 도넛차트 — 예전엔 평범한 파이차트에 기본 범례만 붙어있어서 가장 "초등학생"
         // 느낌이 심했던 부분. 가운데 구멍에 핵심 지표(예: 조치완료율)를 큼직하게 띄우고,
