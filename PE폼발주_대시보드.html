@@ -1214,12 +1214,32 @@ function renderOrders() {
   }).join('');
 }
 
-function toggleDatePanel(id) { document.getElementById(id).classList.toggle('open'); }
+// 버그 수정(요청, 2026-11-09: "부분입고 버튼을 눌러도 입고완료로 처리되는 느낌") — 예전엔
+// "부분입고"/"입고완료" 두 버튼이 똑같은 패널을 열기만 하고, 패널의 "확정" 버튼은 상태를
+// '입고완료'로 고정해서 보냈다 — 그래서 "부분입고"를 눌러도 실제로는 늘 입고완료로
+// 처리됐다. 이제 어느 버튼으로 열었는지(status)를 패널에 저장해두고, 확정 버튼이 그
+// 값을 그대로 읽어 보낸다.
+function toggleDatePanel(id, status) {
+  const panel = document.getElementById(id);
+  if (!panel) return;
+  if (status) {
+    panel.dataset.pendingStatus = status;
+    const label = document.getElementById(id.replace('dp_', 'dpLabel_'));
+    if (label) label.textContent = status === '부분입고' ? '부분입고일' : '입고일';
+  }
+  panel.classList.toggle('open');
+}
 
-async function confirmReceive(ordNo, status, date, panelId) {
+async function confirmReceive(ordNo, status, date, panelId, row) {
   const panel = document.getElementById(panelId);
   try {
-    const qs = new URLSearchParams({ action: 'updateOrderStatus', ordNo, status, date });
+    const params = { action: 'updateOrderStatus', ordNo, status, date };
+    // row — 버그 수정(요청, 2026-11-09): 한 발주번호에 품목이 여러 줄 걸쳐 있을 때 이
+    // 값이 없으면 서버가 그 발주번호의 "첫 줄"만 찾아 바꾼다(발주이력 상태뿐 아니라
+    // 재고 자동등록도 엉뚱한 품목으로 들어간다) — 실제 시트 행 번호를 같이 보내 정확히
+    // 지금 이 카드의 줄만 바뀌게 한다.
+    if (row) params.row = row;
+    const qs = new URLSearchParams(params);
     const res = await fetch(GAS_URL_PE + '?' + qs.toString(), { signal: AbortSignal.timeout(15000) });
     const json = await res.json().catch(() => null);
     if (json && json.status === 'success') {
