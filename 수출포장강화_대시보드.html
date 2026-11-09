@@ -12443,8 +12443,22 @@
 
         function _renderPkgStatusOpts() {
             const wrap = document.getElementById('pkgStatusOpts');
-            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup, _pkgOriginStatusMap, true);
+            wrap.innerHTML = _pkgStatusGroupsHtml(_pkgCurStatus, 'selectPkgStatus', '_pkgToggleStatusGroup', _pkgStatusOpenGroup, _pkgPreviewOriginMap(), true);
             _pkgUpdatePartialQtyVisibility();
+        }
+        // 저장 전에도 "입고/일부입고→실재고 미확인", "출고/피킹→출고완료"로 어떻게
+        // 넘어갈지 미리 보여준다(요청, 2026-11-09). 아직 실제로 그 시트에 데이터가
+        // 생긴 게 아니므로(_pkgStatusGroupsHtml 쪽에서 계속 클릭은 막아둠) 실제
+        // _pkgOriginStatusMap은 안 건드리고, 그릴 때만 쓰는 사본에 표시만 끼워 넣는다.
+        function _pkgPreviewOriginMap() {
+            if (!PKG_MIGRATION_STATUSES.includes(_pkgCurStatus)) return _pkgOriginStatusMap;
+            const isIncoming = (_pkgCurStatus === '입고' || _pkgCurStatus === '일부입고');
+            const previewGroup = isIncoming ? 'stock' : 'shipped';
+            const previewValue = isIncoming ? '미확인' : _pkgCurStatus;
+            if (previewGroup in _pkgOriginStatusMap) return _pkgOriginStatusMap; // 이미 실제 데이터가 있으면 미리보기 필요 없음
+            const map = Object.assign({}, _pkgOriginStatusMap);
+            map[previewGroup] = { preview: true, value: previewValue };
+            return map;
         }
 
         function _pkgToggleStatusGroup(key) {
