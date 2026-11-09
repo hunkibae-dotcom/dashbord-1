@@ -10278,6 +10278,20 @@
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '입고일 반영 실패');
                 }
 
+                // 포장완료일(요청, 2026-11-09: "포장강화 일괄 수정창에서 포장완료일이없어
+                // 추가해줘") — 재고/출고완료 시트에 쓰는 칸이라 진행상태 변경(이동)보다
+                // 먼저 반영해둬야, 출고로 넘어가는 경우에도 그 값이 그대로 따라간다
+                // (_coreShipOut이 재고 행의 포장완료일을 그대로 복사해감).
+                if (regDate) {
+                    const items = _pkgBulkItems.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                    const res = await fetch(gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'pkgUpdateRegDateBatch', items: items, regDate: regDate }),
+                        signal: AbortSignal.timeout(60000)
+                    }).then(r => r.json());
+                    if (_pkgIsGasError(res)) throw new Error((res && res.message) || '포장완료일 반영 실패');
+                }
+
                 // 상차 준비완료 일괄 체크(요청, 2026-10-28) — 상태변경으로 "수출 현황"
                 // 행이 지워지기 전에 먼저 반영한다. 품목마다 기존 비고 내용은 그대로
                 // 두고 "상차 준비완료" 문구만 추가한다(_pkgNoteWithShipReady).
