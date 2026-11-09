@@ -4941,59 +4941,136 @@
             return true;
         }
 
-        // ── 공용 슬라이드 빌더 ───────────────────────────────────────────
-        const RPT_COLOR_SET = ['2a78d6', 'eb6834', '1baf7a', 'eda100', 'e87ba4', '008300', '4a3aa7', 'e34948'];
-        function _rptAddCoverSlide(pptx, title, periodLabel) {
+        // ── 공용 슬라이드 빌더(디자인 전면 개편, 요청 2026-11-09: "지금 무슨 초등학생이
+        // 만든거같아" — 흰 배경에 제목+차트 하나뿐이던 구성을 표지/목차/헤더띠/페이지
+        // 번호/KPI 카드/도넛차트+범례 카드 같은 "실제 발표자료" 구성 요소로 다시 짰다) ──
+        const RPT_INK = '0F172A', RPT_SUB = '64748B', RPT_LINE = 'E2E8F0', RPT_BG = 'F8FAFC';
+        const RPT_ACCENT = '4F46E5', RPT_ACCENT2 = '0EA5E9';
+        const RPT_PALETTE = ['4F46E5', '0EA5E9', '10B981', 'F59E0B', 'EF4444', '8B5CF6', 'EC4899', '14B8A6'];
+        const RPT_FONT = 'Malgun Gothic';
+        let _rptPageNo = 0; // 리포트 생성 시작할 때마다 0으로 리셋(pkgGenerateReport 참고)
+
+        function _rptAddCoverSlide(pptx, title, periodLabel, eyebrow) {
             const now = new Date();
             const todayLabel = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
             const slide = pptx.addSlide();
-            slide.background = { color: '0F172A' };
-            slide.addText(title, { x: 0.8, y: 2.6, w: 11.7, h: 1.2, fontSize: 40, bold: true, color: 'FFFFFF', fontFace: 'Malgun Gothic' });
-            slide.addText(periodLabel, { x: 0.8, y: 3.8, w: 11.7, h: 0.6, fontSize: 18, color: '94A3B8', fontFace: 'Malgun Gothic' });
-            slide.addText('생성일 ' + todayLabel, { x: 0.8, y: 6.7, w: 11.7, h: 0.4, fontSize: 11, color: '64748B', fontFace: 'Malgun Gothic' });
+            slide.background = { color: RPT_INK };
+            // 우측 장식 블록 + 악센트 세로줄 — 빈 흰 배경 대신 "진짜 발표자료" 느낌을 주는 최소한의 장치.
+            slide.addShape(pptx.ShapeType.rect, { x: 9.9, y: 0, w: 3.43, h: 7.5, fill: { color: '141B33' }, line: { type: 'none' } });
+            slide.addShape(pptx.ShapeType.rect, { x: 9.9, y: 0, w: 0.07, h: 7.5, fill: { color: RPT_ACCENT }, line: { type: 'none' } });
+            slide.addShape(pptx.ShapeType.rect, { x: 0.8, y: 2.62, w: 0.55, h: 0.08, fill: { color: RPT_ACCENT2 }, line: { type: 'none' } });
+            slide.addText((eyebrow || 'MONTHLY REPORT').toUpperCase(), { x: 0.8, y: 2.82, w: 8.6, h: 0.4, fontSize: 12.5, bold: true, color: RPT_ACCENT2, charSpacing: 3, fontFace: RPT_FONT });
+            slide.addText(title, { x: 0.8, y: 3.22, w: 8.6, h: 1.3, fontSize: 38, bold: true, color: 'FFFFFF', fontFace: RPT_FONT });
+            slide.addText(periodLabel, { x: 0.8, y: 4.42, w: 8.6, h: 0.5, fontSize: 17, color: '94A3B8', fontFace: RPT_FONT });
+            slide.addText('생성일 ' + todayLabel, { x: 0.8, y: 6.85, w: 8.6, h: 0.35, fontSize: 10.5, color: '64748B', fontFace: RPT_FONT });
         }
-        function _rptAddTitleBar(slide, title) {
-            slide.addText(title, { x: 0.5, y: 0.3, w: 12.3, h: 0.6, fontSize: 22, bold: true, color: '1E293B', fontFace: 'Malgun Gothic' });
+        // 목차 — 선택한 콘텐츠만 번호 매겨서 보여준다("초등학생이 만든 것 같다"는 지적에
+        // 디테일을 더하는 가장 쉬운 방법: 표지 바로 뒤에 구성 안내 한 장 추가).
+        function _rptAddTocSlide(pptx, sectionTitles) {
+            const slide = _rptNewSlide(pptx, '목차', 'CONTENTS');
+            sectionTitles.forEach((t, i) => {
+                const y = 1.65 + i * 0.78;
+                slide.addText(String(i + 1).padStart(2, '0'), { x: 0.6, y: y, w: 0.9, h: 0.55, fontSize: 20, bold: true, color: RPT_ACCENT, fontFace: RPT_FONT });
+                slide.addShape(pptx.ShapeType.line, { x: 1.6, y: y + 0.28, w: 10.2, h: 0, line: { color: RPT_LINE, width: 1 } });
+                slide.addText(t, { x: 1.7, y: y, w: 9.8, h: 0.55, fontSize: 16, bold: true, color: RPT_INK, valign: 'middle', fontFace: RPT_FONT });
+            });
         }
+        // 모든 콘텐츠 슬라이드가 공유하는 뼈대 — 상단 악센트 띠 + 눈에 띄는 영문 라벨(eyebrow)
+        // + 제목 + 구분선 + 우하단 페이지 번호. _rptAddBarSlide/_rptAddDonutSlide/
+        // _rptAddTableSlide/_rptAddEmptySlide가 전부 이걸 통해 슬라이드를 만든다.
+        function _rptNewSlide(pptx, title, eyebrow) {
+            _rptPageNo++;
+            const slide = pptx.addSlide();
+            slide.background = { color: 'FFFFFF' };
+            slide.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: 13.33, h: 0.08, fill: { color: RPT_ACCENT }, line: { type: 'none' } });
+            if (eyebrow) slide.addText(eyebrow.toUpperCase(), { x: 0.55, y: 0.3, w: 9, h: 0.3, fontSize: 10.5, bold: true, color: RPT_ACCENT, charSpacing: 2, fontFace: RPT_FONT });
+            slide.addText(title, { x: 0.5, y: eyebrow ? 0.56 : 0.34, w: 11.3, h: 0.6, fontSize: 21, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+            slide.addShape(pptx.ShapeType.line, { x: 0.5, y: 1.22, w: 12.33, h: 0, line: { color: RPT_LINE, width: 1 } });
+            slide.addText(String(_rptPageNo).padStart(2, '0'), { x: 12.53, y: 7.12, w: 0.6, h: 0.3, fontSize: 10, color: RPT_SUB, align: 'right', fontFace: RPT_FONT });
+            return slide;
+        }
+        // KPI 요약 카드 — 차트 위쪽에 "합계/평균/최고" 같은 핵심 숫자를 바로 눈에 띄게
+        // 보여준다(이게 없으면 차트만 덩그러니 있어서 "초등학생" 느낌이 났던 핵심 원인).
+        function _rptAddKpiTiles(pptx, slide, tiles, x, y, totalW, h) {
+            const gap = 0.22;
+            const w = (totalW - gap * (tiles.length - 1)) / tiles.length;
+            tiles.forEach((t, i) => {
+                const tx = x + i * (w + gap);
+                const c = t.color || RPT_ACCENT;
+                slide.addShape(pptx.ShapeType.roundRect, { x: tx, y: y, w: w, h: h, rectRadius: 0.08, fill: { color: RPT_BG }, line: { color: RPT_LINE, width: 0.75 } });
+                slide.addShape(pptx.ShapeType.rect, { x: tx, y: y, w: 0.06, h: h, fill: { color: c }, line: { type: 'none' } });
+                slide.addText(t.label, { x: tx + 0.2, y: y + 0.12, w: w - 0.34, h: 0.3, fontSize: 10.5, bold: true, color: RPT_SUB, fontFace: RPT_FONT });
+                slide.addText(t.value, { x: tx + 0.2, y: y + 0.42, w: w - 0.34, h: h - 0.52, fontSize: 19, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+            });
+        }
+        // 막대차트 — opts.kpis(요약 카드), opts.eyebrow를 추가로 받는다. 바 간격을
+        // 좁혀 두껍게(barGapWidthPct), 격자/축 선을 옅게 해서 차트 자체가 더 정제돼
+        // 보이게 했다.
         function _rptAddBarSlide(pptx, title, categories, series, opts) {
-            const slide = pptx.addSlide();
-            _rptAddTitleBar(slide, title);
+            opts = opts || {};
+            const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+            const chartY = opts.kpis ? 2.55 : 1.45;
+            const chartH = opts.kpis ? 4.55 : 5.65;
+            if (opts.kpis) _rptAddKpiTiles(pptx, slide, opts.kpis, 0.5, 1.4, 12.33, 1.0);
             const chartData = series.map(s => ({ name: s.name, labels: categories, values: s.values }));
-            slide.addChart(pptx.ChartType.bar, chartData, Object.assign({
-                x: 0.5, y: 1.1, w: 12.3, h: 6.0,
+            slide.addChart(pptx.ChartType.bar, chartData, {
+                x: 0.5, y: chartY, w: 12.33, h: chartH,
                 barDir: 'col', barGrouping: series.length > 1 ? 'clustered' : 'standard',
-                showLegend: series.length > 1, legendPos: 'b',
-                showValue: series.length === 1,
-                chartColors: RPT_COLOR_SET,
-                catAxisLabelFontSize: 10, valAxisLabelFontSize: 10, dataLabelFontSize: 9
-            }, opts || {}));
+                barGapWidthPct: 35,
+                showLegend: series.length > 1, legendPos: 'b', legendFontSize: 10, legendColor: RPT_SUB,
+                showValue: series.length === 1, dataLabelFontSize: 9.5, dataLabelColor: RPT_SUB, dataLabelPosition: 'outEnd',
+                chartColors: RPT_PALETTE,
+                catAxisLabelFontSize: 10, catAxisLabelColor: RPT_SUB, catAxisLineColor: RPT_LINE,
+                valAxisLabelFontSize: 9.5, valAxisLabelColor: RPT_SUB, valAxisLineColor: RPT_LINE,
+                valGridLine: { color: 'F1F5F9', style: 'solid', size: 0.75 },
+                catGridLine: { style: 'none' },
+                fontFace: RPT_FONT
+            });
         }
-        function _rptAddPieSlide(pptx, title, labels, values, opts) {
-            const slide = pptx.addSlide();
-            _rptAddTitleBar(slide, title);
-            slide.addChart(pptx.ChartType.pie, [{ name: title, labels: labels, values: values }], Object.assign({
-                x: 2.9, y: 1.1, w: 7.5, h: 6.0,
-                showLegend: true, legendPos: 'r',
-                showPercent: true, dataLabelFontSize: 11,
-                chartColors: RPT_COLOR_SET
-            }, opts || {}));
+        // 도넛차트 — 예전엔 평범한 파이차트에 기본 범례만 붙어있어서 가장 "초등학생"
+        // 느낌이 심했던 부분. 가운데 구멍에 핵심 지표(예: 조치완료율)를 큼직하게 띄우고,
+        // 오른쪽엔 색상 점+값+비율로 된 카드형 범례를 직접 그려서 한눈에 들어오게 했다.
+        function _rptAddDonutSlide(pptx, title, labels, values, opts) {
+            opts = opts || {};
+            const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+            const total = values.reduce((a, b) => a + (b || 0), 0);
+            slide.addChart(pptx.ChartType.doughnut, [{ name: title, labels: labels, values: values }], {
+                x: 0.6, y: 1.45, w: 6.3, h: 5.5,
+                holeSize: 62,
+                showLegend: false,
+                showPercent: false,
+                chartColors: RPT_PALETTE,
+                dataBorder: { pt: 2, color: 'FFFFFF' }
+            });
+            if (opts.centerLabel) {
+                slide.addText(opts.centerLabel.value, { x: 0.6, y: 3.75, w: 6.3, h: 0.6, align: 'center', fontSize: 27, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+                slide.addText(opts.centerLabel.label, { x: 0.6, y: 4.35, w: 6.3, h: 0.35, align: 'center', fontSize: 11, color: RPT_SUB, fontFace: RPT_FONT });
+            }
+            const legendX = 7.25, legendW = 5.55;
+            slide.addText('항목별 비율', { x: legendX, y: 1.45, w: legendW, h: 0.35, fontSize: 11, bold: true, color: RPT_SUB, charSpacing: 1, fontFace: RPT_FONT });
+            labels.forEach((lb, i) => {
+                const ly = 2.0 + i * 0.82;
+                const pct = total ? Math.round((values[i] / total) * 100) : 0;
+                slide.addShape(pptx.ShapeType.rect, { x: legendX, y: ly + 0.06, w: 0.2, h: 0.2, fill: { color: RPT_PALETTE[i % RPT_PALETTE.length] }, line: { type: 'none' } });
+                slide.addText(String(lb), { x: legendX + 0.32, y: ly - 0.04, w: legendW - 1.7, h: 0.32, fontSize: 13.5, bold: true, color: RPT_INK, fontFace: RPT_FONT });
+                slide.addText((values[i] || 0).toLocaleString() + '건 · ' + pct + '%', { x: legendX + 0.32, y: ly + 0.28, w: legendW - 1.7, h: 0.3, fontSize: 10.5, color: RPT_SUB, fontFace: RPT_FONT });
+            });
         }
         function _rptAddTableSlide(pptx, title, columns, rows, opts) {
-            const slide = pptx.addSlide();
-            _rptAddTitleBar(slide, title);
-            const header = columns.map(c => ({ text: c.label, options: { bold: true, color: 'FFFFFF', fill: { color: '334155' }, fontSize: 11, align: 'center' } }));
-            const body = rows.map(r => columns.map(c => ({ text: (c.get(r) ?? '').toString(), options: { fontSize: 10.5, align: c.align || 'left' } })));
+            opts = opts || {};
+            const slide = _rptNewSlide(pptx, title, opts.eyebrow);
+            const header = columns.map(c => ({ text: c.label, options: { bold: true, color: 'FFFFFF', fill: { color: RPT_INK }, fontSize: 11, align: c.align || 'center', valign: 'middle', fontFace: RPT_FONT } }));
+            const body = rows.map((r, ri) => columns.map(c => ({ text: (c.get(r) ?? '').toString(), options: { fontSize: 10.5, align: c.align || 'left', fill: { color: ri % 2 ? RPT_BG : 'FFFFFF' }, color: RPT_INK, valign: 'middle', fontFace: RPT_FONT } })));
             slide.addTable([header, ...body], Object.assign({
-                x: 0.5, y: 1.1, w: 12.3, h: Math.min(6.0, 0.4 + 0.32 * (body.length + 1)),
-                colW: columns.map(c => c.w || (12.3 / columns.length)),
-                border: { type: 'solid', color: 'E2E8F0', pt: 0.5 },
+                x: 0.5, y: 1.45, w: 12.33, h: Math.min(5.6, 0.42 + 0.34 * (body.length + 1)),
+                colW: columns.map(c => c.w || (12.33 / columns.length)),
+                border: { type: 'solid', color: RPT_LINE, pt: 0.5 },
                 autoPage: true
-            }, opts || {}));
+            }, opts.tableOpts || {}));
         }
-        function _rptAddEmptySlide(pptx, title) {
-            const slide = pptx.addSlide();
-            _rptAddTitleBar(slide, title);
-            slide.addText('해당 기간에 데이터가 없습니다.', { x: 0.5, y: 3.2, w: 12.3, h: 1, align: 'center', fontSize: 16, color: '94A3B8', fontFace: 'Malgun Gothic' });
+        function _rptAddEmptySlide(pptx, title, eyebrow) {
+            const slide = _rptNewSlide(pptx, title, eyebrow);
+            slide.addText('해당 기간에 데이터가 없습니다.', { x: 0.5, y: 3.3, w: 12.33, h: 1, align: 'center', fontSize: 16, color: '94A3B8', fontFace: RPT_FONT });
         }
 
         // ── 콘텐츠1: 누적 포장실적(강화수량) — 포장일(regDate) 기준 ──────────
@@ -5009,8 +5086,18 @@
                 vals[idx] += parseInt(item.qty) || 0;
             });
             const total = vals.reduce((a, b) => a + b, 0);
-            if (!total) { _rptAddEmptySlide(pptx, '누적 포장실적(강화수량)'); return; }
-            _rptAddBarSlide(pptx, '누적 포장실적(강화수량) — 합계 ' + total.toLocaleString() + ' BOX', buckets.map(b => b.label), [{ name: '강화수량', values: vals }]);
+            if (!total) { _rptAddEmptySlide(pptx, '누적 포장실적(강화수량)', 'PACKAGING PERFORMANCE'); return; }
+            const nonZero = vals.filter(v => v > 0);
+            const avg = Math.round(total / (nonZero.length || 1));
+            const maxIdx = vals.indexOf(Math.max(...vals));
+            _rptAddBarSlide(pptx, '누적 포장실적(강화수량)', buckets.map(b => b.label), [{ name: '강화수량', values: vals }], {
+                eyebrow: 'PACKAGING PERFORMANCE',
+                kpis: [
+                    { label: '합계', value: total.toLocaleString() + ' BOX', color: RPT_ACCENT },
+                    { label: '평균(기록 있는 날 기준)', value: avg.toLocaleString() + ' BOX', color: RPT_ACCENT2 },
+                    { label: '최고 ' + buckets[maxIdx].label, value: vals[maxIdx].toLocaleString() + ' BOX', color: '10B981' }
+                ]
+            });
         }
 
         // ── 콘텐츠2: 제품별 실적(출고기준) — 상차일(date) 기준, 제품구분별 ──────
@@ -5029,8 +5116,18 @@
                 catMap[cat][idx] += parseInt(item.qty) || 0;
             });
             const cats = Object.keys(catMap).sort();
-            if (!cats.length) { _rptAddEmptySlide(pptx, '제품별 실적(출고기준)'); return; }
-            _rptAddBarSlide(pptx, '제품별 실적(출고기준)', buckets.map(b => b.label), cats.map(c => ({ name: c, values: catMap[c] })));
+            if (!cats.length) { _rptAddEmptySlide(pptx, '제품별 실적(출고기준)', 'PRODUCT PERFORMANCE'); return; }
+            const catTotals = cats.map(c => catMap[c].reduce((a, b) => a + b, 0));
+            const grandTotal = catTotals.reduce((a, b) => a + b, 0);
+            const topIdx = catTotals.indexOf(Math.max(...catTotals));
+            _rptAddBarSlide(pptx, '제품별 실적(출고기준)', buckets.map(b => b.label), cats.map(c => ({ name: c, values: catMap[c] })), {
+                eyebrow: 'PRODUCT PERFORMANCE',
+                kpis: [
+                    { label: '총 출고수량', value: grandTotal.toLocaleString() + ' BOX', color: RPT_ACCENT },
+                    { label: '제품구분 수', value: cats.length + '개', color: RPT_ACCENT2 },
+                    { label: '최다 구분: ' + cats[topIdx], value: catTotals[topIdx].toLocaleString() + ' BOX', color: '10B981' }
+                ]
+            });
         }
 
         // ── 콘텐츠3(신규): 출고 유형 비율 — 정상포장출고/미포장출고/피킹 ─────────
@@ -5045,8 +5142,12 @@
             });
             const labels = Object.keys(counts), values = labels.map(l => counts[l]);
             const total = values.reduce((a, b) => a + b, 0);
-            if (!total) { _rptAddEmptySlide(pptx, '출고 유형 비율'); return; }
-            _rptAddPieSlide(pptx, '출고 유형 비율 — 총 ' + total.toLocaleString() + '건', labels, values);
+            if (!total) { _rptAddEmptySlide(pptx, '출고 유형 비율', 'SHIPMENT TYPE'); return; }
+            const normalRate = Math.round((counts['정상포장출고'] / total) * 100);
+            _rptAddDonutSlide(pptx, '출고 유형 비율', labels, values, {
+                eyebrow: 'SHIPMENT TYPE',
+                centerLabel: { value: normalRate + '%', label: '정상포장출고 비율 · 총 ' + total.toLocaleString() + '건' }
+            });
         }
 
         // ── 콘텐츠4: PE폼 사용현황 — 발주일자 기준 ─────────────────────────
@@ -5055,15 +5156,29 @@
         async function _rptAddPeFoamSlides(pptx, mode, year, month) {
             await peLoadAll();
             const rows = (_rptGetPeOrderRows() || []).filter(r => _rptInPeriod(r.date, mode, year, month));
-            if (!rows.length) { _rptAddEmptySlide(pptx, 'PE폼 사용현황'); return; }
+            if (!rows.length) { _rptAddEmptySlide(pptx, 'PE폼 사용현황', 'PE FOAM USAGE'); return; }
             const typeMap = {};
             rows.forEach(r => { const t = r.type || '기타'; typeMap[t] = (typeMap[t] || 0) + (parseFloat(r.qty) || 0); });
             const types = Object.keys(typeMap);
-            _rptAddBarSlide(pptx, 'PE폼 사용현황 — 유형별 발주수량', types, [{ name: '수량', values: types.map(t => typeMap[t]) }]);
+            const totalQty = types.reduce((a, t) => a + typeMap[t], 0);
+            const topType = types.reduce((best, t) => (!best || typeMap[t] > typeMap[best]) ? t : best, null);
+            _rptAddBarSlide(pptx, 'PE폼 사용현황 — 유형별 발주수량', types, [{ name: '수량', values: types.map(t => typeMap[t]) }], {
+                eyebrow: 'PE FOAM USAGE',
+                kpis: [
+                    { label: '총 발주건수', value: rows.length.toLocaleString() + '건', color: RPT_ACCENT },
+                    { label: '총 발주수량', value: totalQty.toLocaleString(), color: RPT_ACCENT2 },
+                    { label: '최다 유형', value: topType || '-', color: '10B981' }
+                ]
+            });
             const statMap = {};
             rows.forEach(r => { const s = r.stat || '미지정'; statMap[s] = (statMap[s] || 0) + 1; });
             const stats = Object.keys(statMap);
-            _rptAddPieSlide(pptx, 'PE폼 발주 상태 비율 — 총 ' + rows.length + '건', stats, stats.map(s => statMap[s]));
+            const doneCnt = statMap['입고완료'] || 0;
+            const doneRate2 = rows.length ? Math.round(doneCnt / rows.length * 100) : 0;
+            _rptAddDonutSlide(pptx, 'PE폼 발주 상태 비율', stats, stats.map(s => statMap[s]), {
+                eyebrow: 'PE FOAM USAGE',
+                centerLabel: { value: doneRate2 + '%', label: '입고완료 비율 · 총 ' + rows.length.toLocaleString() + '건' }
+            });
         }
 
         // ── 콘텐츠5: 포장불량조치 현황 — 등록/수정 시각(updatedAt) 기준 ────────
@@ -5075,15 +5190,27 @@
                 const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                 return _rptInPeriod(ds, mode, year, month);
             });
-            if (!entries.length) { _rptAddEmptySlide(pptx, '포장불량조치 현황'); return; }
+            if (!entries.length) { _rptAddEmptySlide(pptx, '포장불량조치 현황', 'DEFECT ACTION'); return; }
             const typeMap = {};
             entries.forEach(e => (e.types || []).forEach(t => { typeMap[t] = (typeMap[t] || 0) + 1; }));
             const types = Object.keys(typeMap);
-            if (types.length) _rptAddBarSlide(pptx, '포장불량조치 현황 — 불량유형별 건수(총 ' + entries.length + '건)', types, [{ name: '건수', values: types.map(t => typeMap[t]) }]);
             const statMap = { 미조치: 0, 조치중: 0, 조치완료: 0 };
             entries.forEach(e => { const s = e.status || '미조치'; statMap[s] = (statMap[s] || 0) + 1; });
             const doneRate = entries.length ? Math.round(statMap['조치완료'] / entries.length * 100) : 0;
-            _rptAddPieSlide(pptx, '포장불량조치 상태 비율 — 조치완료율 ' + doneRate + '%', Object.keys(statMap), Object.values(statMap));
+            if (types.length) {
+                _rptAddBarSlide(pptx, '포장불량조치 현황 — 불량유형별 건수', types, [{ name: '건수', values: types.map(t => typeMap[t]) }], {
+                    eyebrow: 'DEFECT ACTION',
+                    kpis: [
+                        { label: '총 등록건수', value: entries.length.toLocaleString() + '건', color: RPT_ACCENT },
+                        { label: '조치완료율', value: doneRate + '%', color: '10B981' },
+                        { label: '미조치', value: (statMap['미조치'] || 0).toLocaleString() + '건', color: 'EF4444' }
+                    ]
+                });
+            }
+            _rptAddDonutSlide(pptx, '포장불량조치 상태 비율', Object.keys(statMap), Object.values(statMap), {
+                eyebrow: 'DEFECT ACTION',
+                centerLabel: { value: doneRate + '%', label: '조치완료율 · 총 ' + entries.length.toLocaleString() + '건' }
+            });
         }
 
         // ── 모달/다운로드 흐름 ───────────────────────────────────────────
