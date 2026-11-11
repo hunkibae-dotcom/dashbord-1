@@ -2214,6 +2214,26 @@
             });
         }
 
+        // 특이사항(비고)도 입고일과 같은 이유로 반대 방향 백필이 필요하다 — "충주공장
+        // 재고" 시트엔 비고 칼럼 자체가 없어서, 실재고/적재 탭에서 품목을 열면(=
+        // state.stockRowItems에서 온 item) 특이사항이 항상 빈칸으로 보였다(요청 버그
+        // 수정, 2026-11-11: "특이사항도 안보이는거같아").
+        function backfillNotesIntoStock() {
+            if (!state.data || !state.stockRowItems || !state.stockRowItems.length) return;
+            const noteCache = {};
+            state.data.forEach(item => {
+                if (!item.note) return;
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                if (!noteCache[key]) noteCache[key] = item.note;
+            });
+            state.stockRowItems.forEach(item => {
+                if (item.note) return; // 이미 값이 있으면(혹시 나중에 재고 쪽에 칼럼이 생기면) 안 건드림
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                const cache = noteCache[key];
+                if (cache) item.note = cache;
+            });
+        }
+
         var _scanCodeHandled = false;
         function combineDatasets() {
             let combined = [];
