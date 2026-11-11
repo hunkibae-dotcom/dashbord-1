@@ -2392,21 +2392,42 @@
             const keyNoColor = (s.code||'').toUpperCase() + '|' + s.round;
             if (!idx[keyNoColor]) idx[keyNoColor] = s;
         });
+        // "수출 현황" 시트에만 있는 입고일/비고(특이사항)도 반대 방향으로 되먹인다 — 충주공장
+        // 재고 시트는 이 두 칸이 아예 없어서(헤더 자체에 없음), 품목수정창을 실재고 쪽 행으로
+        // 열면(_sheetRow로 콕 집어 여는 경우 등) 입고일·특이사항이 항상 빈칸으로 보였다
+        // (요청 버그 수정, 2026-11-11: "품목수정창에서 해당 품목이 언제입고된건지 포장언제
+        // 했는지 날짜가안적혀있어 특이사항도 안보이는거같아"). 위 stock→item 방향(규격·적재·
+        // 포장일)과 같은 패턴으로, 이번엔 standard(수출현황)→item 방향으로 채운다.
+        const stdIdx = {};
+        allData.forEach(s => {
+            if (s.source !== 'standard' || !s.code || !s.round) return;
+            const keyFull = (s.code||'').toUpperCase() + '|' + s.round + '|' + (s.color||'');
+            if (!stdIdx[keyFull]) stdIdx[keyFull] = s;
+            const keyNoColor = (s.code||'').toUpperCase() + '|' + s.round;
+            if (!stdIdx[keyNoColor]) stdIdx[keyNoColor] = s;
+        });
         allData.forEach(it => {
             if (!it.code || !it.round) return;
             const s = idx[(it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')] ||
                       idx[(it.code||'').toUpperCase() + '|' + it.round];
-            if (!s || s === it) return;
-            if (s.pallet) it.pallet = s.pallet;
-            if (s.specW) it.specW = s.specW;
-            if (s.specD) it.specD = s.specD;
-            if (s.specH) it.specH = s.specH;
-            if (s.specG) it.specG = s.specG;
-            // regDate만 바꾸고 regDateRaw(품목수정창이 실제로 읽는 값)는 안 바꾸면,
-            // 포장일이 충주공장 재고에서 합쳐져 들어온 품목은 품목수정창에서 다시
-            // 빈칸으로 보인다(요청, 2026-11-02 — PC웹 입고현황 탭의 같은 문제를
-            // 고치면서 같이 확인).
-            if (s.regDate && s.regDate !== '-') { it.regDate = s.regDate; it.regDateRaw = s.regDateRaw || s.regDate; }
+            if (s && s !== it) {
+                if (s.pallet) it.pallet = s.pallet;
+                if (s.specW) it.specW = s.specW;
+                if (s.specD) it.specD = s.specD;
+                if (s.specH) it.specH = s.specH;
+                if (s.specG) it.specG = s.specG;
+                // regDate만 바꾸고 regDateRaw(품목수정창이 실제로 읽는 값)는 안 바꾸면,
+                // 포장일이 충주공장 재고에서 합쳐져 들어온 품목은 품목수정창에서 다시
+                // 빈칸으로 보인다(요청, 2026-11-02 — PC웹 입고현황 탭의 같은 문제를
+                // 고치면서 같이 확인).
+                if (s.regDate && s.regDate !== '-') { it.regDate = s.regDate; it.regDateRaw = s.regDateRaw || s.regDate; }
+            }
+            const std = stdIdx[(it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')] ||
+                        stdIdx[(it.code||'').toUpperCase() + '|' + it.round];
+            if (std && std !== it) {
+                if (!it.arriveDate) it.arriveDate = std.arriveDate;
+                if (!it.memo) it.memo = std.memo;
+            }
         });
     }
 
