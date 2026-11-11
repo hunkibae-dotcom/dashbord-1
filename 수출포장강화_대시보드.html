@@ -2166,10 +2166,15 @@
                 }
             }
 
-            // 상태가 포장완료인 항목의 regDate를 충주공장 재고의 포장일로 교체
+            // regDate를 충주공장 재고의 포장일로 교체 — 예전엔 "이 항목(수출현황 기준)의
+            // 상태가 이미 포장완료일 때만" 적용했는데, 수출현황과 충주공장재고는 상태가
+            // 서로 다른 시점에 갱신될 수 있어(품목수정창이 두 그룹 상태를 따로 보여주는
+            // 이유와 같음) 충주공장재고 쪽은 이미 포장완료인데 수출현황 쪽 상태가 아직
+            // 안 따라온 경우 포장일이 안 보이는 문제가 있었다(요청 버그 수정, 2026-11-11:
+            // "포장언제했는지 날짜가안적혀있어" — 수출현황 상태="입고"인데 충주공장재고
+            // 상태="포장완료"인 품목). 이 코드가 가진 "실제 포장일이 있는 품목만" 조건
+            // (stockDateMap[key] 존재)만으로 충분히 안전하므로 상태 조건은 없앤다.
             state.data.forEach(item => {
-                const isPackingComplete = (item.status === '포장완료') || (item.statusLabel === '포장완료');
-                if (!isPackingComplete) return;
                 const key = (item.round || '') + '|' + (item.code || '');
                 if (stockDateMap[key]) {
                     item.regDate = stockDateMap[key];
