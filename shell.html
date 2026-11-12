@@ -2416,11 +2416,14 @@
                 if (s.specD) it.specD = s.specD;
                 if (s.specH) it.specH = s.specH;
                 if (s.specG) it.specG = s.specG;
-                // regDate만 바꾸고 regDateRaw(품목수정창이 실제로 읽는 값)는 안 바꾸면,
-                // 포장일이 충주공장 재고에서 합쳐져 들어온 품목은 품목수정창에서 다시
-                // 빈칸으로 보인다(요청, 2026-11-02 — PC웹 입고현황 탭의 같은 문제를
-                // 고치면서 같이 확인).
-                if (s.regDate && s.regDate !== '-') { it.regDate = s.regDate; it.regDateRaw = s.regDateRaw || s.regDate; }
+                // 버그 수정(요청, 2026-11-12: "포장대기인데 포장일에 11/17... 상차일에
+                // 맞춰서 자꾸 저렇게되는느낌") — s.regDate는 mapRows()에서 "실제 포장일이
+                // 없으면 상차일로 대신 보여주는 근사치"라서(표용 값), 이 조건을 s.regDate로
+                // 걸면 아직 포장 전이라 포장일이 진짜로 비어있는 품목도 상차일이 있다는
+                // 이유만으로 걸려서 regDateRaw(품목수정창이 실제로 읽는 값)에 그 근사치가
+                // 그대로 들어가 버렸다 — "포장완료도 아닌데 포장일이 상차일과 똑같이 보임"의
+                // 원인. 진짜 포장일이 있을 때만(s.regDateRaw) 합친다.
+                if (s.regDateRaw && s.regDateRaw !== '-') { it.regDate = s.regDateRaw; it.regDateRaw = s.regDateRaw; }
             }
             const std = stdIdx[(it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')] ||
                         stdIdx[(it.code||'').toUpperCase() + '|' + it.round];
