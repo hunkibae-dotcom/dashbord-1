@@ -3214,6 +3214,11 @@ function applyFilters() {
     let display = allItems.filter(matchRow);
     if (factoryTab !== 'all') display = display.filter(d => d.공장 === factoryTab);
     if (sourceTab !== 'all') display = display.filter(d => d.source === sourceTab);
+    // 건명/단품코드/납기일/포장일/검사일 구글시트 스타일 체크박스 필터(요청, 2026-11-13).
+    // 체크리스트 후보값은 이 필터 적용 "직전"(다른 필터는 전부 걸린 뒤) 목록 기준이어야
+    // 한다.
+    _qcMainPreColFilterList = display;
+    display = _qcModalApplyColFilters(display, 'main');
     display = sortByKey(display, tableSortKey, tableSortDir);
     displayedRows = display;
 
