@@ -4925,7 +4925,7 @@
                 if (item.pallet === undefined) {
                     item.pallet = _isShipped
                         ? (item.status === '피킹' ? '피킹' : '출고')
-                        : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || '-');
+                        : (_palletMap[(item.code||'').toUpperCase() + '|' + (item.round||'') + '|' + (item.color||'')] || '-');
                 } else if (!item.pallet) {
                     item.pallet = '-';
                 }
