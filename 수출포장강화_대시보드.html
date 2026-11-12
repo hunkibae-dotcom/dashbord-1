@@ -10794,8 +10794,20 @@
                 setTimeout(() => {
                     pkgCloseBulkModal();
                     pkgExitMultiSelectMode();
-                    syncWithGoogleSheets(false);
-                }, 600);
+                    if (_pkgBulkMigrated) {
+                        // 입고/출고/피킹으로 시트 간 실제 이동이 있었으면(단일수정의
+                        // migrationResult와 같은 이유) 전체 재동기화로 정확하게 맞춘다.
+                        syncWithGoogleSheets(false);
+                        return;
+                    }
+                    // 그 외엔 위에서 이미 화면 데이터를 다 고쳐뒀으니, 단일수정과 같은
+                    // 방식으로 표/KPI/차트만 즉시 다시 그린다 — 전체 재동기화를 기다리지 않는다.
+                    const exactCode = (document.getElementById('productCodeFilter')?.value || '').trim();
+                    if (exactCode) renderProductDetailTable(exactCode);
+                    else renderTable();
+                    updateKPIs();
+                    renderCharts();
+                }, 300);
             } catch (e) {
                 fb.textContent = '처리 실패: ' + (e.message || '오류'); fb.style.color = '#dc2626';
             } finally {
