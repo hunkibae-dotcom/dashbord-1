@@ -1043,10 +1043,9 @@ try {
                   </div>
                 </th>
                 <th class="text-center py-2 font-semibold" style="position:relative;">
-                  <div class="inline-flex items-center gap-1 cursor-pointer hover:text-slate-600 select-none" onclick="toggleBlockingDropdown(event)">
-                    <span id="blockingColLabel">블로킹</span>
-                    <i class="fa-solid fa-chevron-down text-[9px]" id="blockingColChevron"></i>
-                  </div>
+                  <button type="button" id="blockingColBtn" onclick="toggleBlockingDropdown(event)" style="border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-filter" style="font-size:8px;"></i><span id="blockingColLabel">블로킹</span>
+                  </button>
                   <!-- 구글시트 필터 스타일(요청, 2026-10-22) — 검사상태 칼럼과 동일한 방식. -->
                   <div id="blockingColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 text-left" style="width:200px;" onclick="event.stopPropagation()">
                     <div style="padding:10px 12px 6px;display:flex;align-items:center;gap:6px;font-size:11.5px;">
