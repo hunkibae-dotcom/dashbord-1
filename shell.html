@@ -6608,7 +6608,7 @@
         // 버그 수정(요청, 2026-11-05) — _buildPalletMap()은 code+round만 키라 파렛트 분할로
         // 같은 code+round(+color)가 여러 행이면 행을 구분 못 하고 마지막 값으로 덮어써버린다.
         // 이미 정확한 행으로 찾아둔 item 자신의 pallet 값이 있으면 그걸 최우선으로 쓴다.
-        const _rawPallet = (item && item.source === 'stock') ? (item.pallet || '') : (pm[(code||'').toUpperCase() + '|' + round] || '');
+        const _rawPallet = (item && item.source === 'stock') ? (item.pallet || '') : (pm[(code||'').toUpperCase() + '|' + round + '|' + (color||'')] || '');
         _ieOrigPallet = _rawPallet.toString().replace(/^적재\s*/, '');
         const palInp = document.getElementById('iePallet');
         if (palInp) palInp.value = _ieOrigPallet;
