@@ -14769,6 +14769,7 @@ const PE_SHEET_MST = 'PE폼 품목마스터';
 const PE_SHEET_USE = 'PE폼 소요';
 
 let peOrderRows = [], peStockRows = [], peMasterRows = [], peUsageRows = [];
+let peSheetForm = null; // 구글시트 "PE폼 발주서" 고정 템플릿의 현재 내용(크로스 수정용)
 let pePnInited = false;
 
 function peFi(headers, ...aliases) {
