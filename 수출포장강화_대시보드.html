@@ -15854,8 +15854,10 @@ async function peRegisterOrder() {
             document.getElementById('peSaveFormatOrdNo').textContent = '발주번호 ' + json.ordNo + ' · 품목 ' + items.length + '종';
             document.getElementById('peSaveFormatModal').style.display = 'flex';
             peClearDraft();
-            peInitOrderForm();
+            // 서버가 addOrder 성공 시 "PE폼 발주서" 시트도 같이 비우므로, 먼저 최신
+            // (비워진) 시트 내용을 받아온 뒤 폼을 다시 그려야 빈 상태가 정확히 반영된다.
             await peLoadAll();
+            peInitOrderForm();
         } else {
             peShowToast('저장 실패: ' + (json && json.message || '알 수 없는 오류'));
         }
