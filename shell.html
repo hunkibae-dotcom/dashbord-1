@@ -3976,7 +3976,11 @@
     }
     async function _sfApplyBulkEdit() {
         const status = _sfBulkStatus;
-        const regDate = (document.getElementById('sfBulkRegDate').value || '').trim();
+        // 단일 수정창(saveItemEdit)과 같은 기준 — 포장완료로 바꾸는데 포장완료일을
+        // 따로 안 골랐으면 오늘 날짜로 자동 채운다(요청, 원래 발주서 추가 때 같이
+        // 들어갔어야 했는데 빠졌던 부분).
+        let regDate = (document.getElementById('sfBulkRegDate').value || '').trim();
+        if (status === '포장완료' && !regDate) regDate = todayStr();
         const arriveDate = (document.getElementById('sfBulkArriveDate').value || '').trim();
         const palletRaw = (document.getElementById('sfBulkPallet').value || '').trim();
         const resultEl = document.getElementById('sfBulkResult');
