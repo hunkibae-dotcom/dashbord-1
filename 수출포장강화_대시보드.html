@@ -3881,6 +3881,12 @@
                     return matchesDate && matchesRound && matchesCode && matchesColor && matchesNote && matchesStatus && matchesPtype && matchesPallet && matchesSource && matchesCardRound;
                 });
 
+                // 건명/제품코드/날짜(3칸) 구글시트 스타일 체크박스 필터(요청, 2026-11-13) —
+                // 다른 필터가 전부 걸린 뒤의 목록을 먼저 저장해두고(체크리스트 후보값 계산용),
+                // 그 목록에 이 칼럼 필터까지 마저 적용한다.
+                state._pkgMainPreColFilterList = state.filteredData;
+                state.filteredData = _pkgModalApplyColFilters(state.filteredData, 'main');
+
                 sortData();
 
                 // 예전엔 제품코드 입력칸에 정확히 일치하는 코드를 치면 바로 상세스펙 이력
