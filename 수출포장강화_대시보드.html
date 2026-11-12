@@ -14806,8 +14806,11 @@ async function openPkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.remove('hidden');
     const ov = document.getElementById('peInitLoadingOverlay');
     if (ov) ov.style.display = 'flex';
-    await peLoadAll();
-    if (!pePnInited) { pePnInited = true; peInitOrderForm(); }
+    const loaded = await peLoadAll();
+    // 데이터를 못 불러온 채로 발주서 폼을 초기화해버리면 품목마스터가 비어있는
+    // 상태로 "초기화 완료" 처리가 되어, 이후 다시 열어도 영영 채워지지 않는
+    // 문제가 있었다 — 실제로 불러오기에 성공했을 때만 초기화를 1회 진행한다.
+    if (loaded && !pePnInited) { pePnInited = true; peInitOrderForm(); }
 }
 function closePkgPeFoamView() {
     document.getElementById('pkgPeFoamView').classList.add('hidden');
