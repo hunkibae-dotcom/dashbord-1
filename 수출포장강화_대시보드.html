@@ -10717,6 +10717,9 @@
                 if (_pkgBulkStatus) {
                     const isIncoming = (_pkgBulkStatus === '입고' || _pkgBulkStatus === '일부입고');
                     const isShipOut = (_pkgBulkStatus === '출고' || _pkgBulkStatus === '피킹');
+                    // 입고/출고/피킹은 시트 간 실제 이동이 일어나므로(단일수정의 migrationResult와
+                    // 같은 이유) 화면 낱개 patch로는 못 맞춘다 — 이때만 전체 재동기화에 맡긴다.
+                    if (isIncoming || isShipOut) _pkgBulkMigrated = true;
                     // 버그 수정(요청, 2026-11-04로 "회수중" 추가하며 발견) — 미입고/재고활용/
                     // 회수중처럼 "수출 현황"에만 있는 값을 예전처럼 pkgProcessShipOut으로
                     // 보내면, 그 함수가 "출고"가 아닌 상태는 전부 "출고"로 덮어써서 실제로
