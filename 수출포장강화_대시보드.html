@@ -10641,6 +10641,19 @@
                         signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '납기일/상차일 반영 실패');
+                    // 즉시 반영(요청, 여러 번: "저장버튼을 누르는 즉시 바로 대시보드화면에
+                    // 적용되어 바뀌어야해") — 단일 품목 수정창(savePkgItemDetail)과 같은
+                    // 방식으로, 전체 재동기화를 기다리지 않고 지금 보이는 화면 데이터를
+                    // 바로 고친다.
+                    const bulkTuples1 = new Set(_pkgBulkItems.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')));
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return;
+                        arr.forEach(it => {
+                            const tup = (it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + _pkgNormColor(it.color);
+                            if (!bulkTuples1.has(tup)) return;
+                            if (shipDate) it.date = shipDate;
+                            if (dueDate) it.dueDate = dueDate;
+                        });
+                    });
                 }
 
                 // 입고일도 납기일/상차일과 같은 이유로 상태 변경보다 먼저 반영한다 —
