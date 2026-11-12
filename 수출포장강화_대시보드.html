@@ -15667,14 +15667,23 @@ function peInitOrderForm() {
     const draftRows = (draft && draft.rows) || [];
     draftRows.forEach(dr => {
         const r = peMasterRows.find(x => x.code === dr.code);
-        if (!r) return; // 품목마스터에서 코드가 사라졌으면 건너뜀
         const id = peAddGridRow();
         const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
-        tr.querySelector('.pe-sheet-name-input').value = r.name;
         tr.querySelector('.pe-sheet-qty-input').value = dr.qty || '';
         tr.querySelector('.pe-sheet-note-input').value = dr.note || '';
-        peGridSelections[id] = r;
-        peGridFillRow(id, r);
+        if (r) {
+            tr.querySelector('.pe-sheet-name-input').value = r.name;
+            peGridSelections[id] = r;
+            peGridFillRow(id, r);
+        } else {
+            // 품목마스터에서 코드가 사라졌어도(개명·삭제 등) 입력해둔 수량/비고까지 조용히
+            // 날리지 않는다(요청 버그 수정, 2026-11-12: "자꾸 초기화 되어있는데") — 자재명
+            // 선택만 다시 해달라고 표시해두고, 코드는 비고에 남겨 무슨 품목이었는지 알 수
+            // 있게 한다.
+            tr.querySelector('.pe-sheet-name-input').value = '';
+            tr.querySelector('.pe-sheet-name-input').placeholder = '(코드 ' + dr.code + ') 자재명 다시 선택';
+            peGridFillRow(id, null);
+        }
     });
     while (document.querySelectorAll('#peGridBody .pe-grid-row').length < 15) peAddGridRow();
     peUpdateSum();
