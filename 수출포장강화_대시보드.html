@@ -15777,7 +15777,7 @@ function peInitOrderForm() {
             // 선택만 다시 해달라고 표시해두고, 코드는 비고에 남겨 무슨 품목이었는지 알 수
             // 있게 한다.
             tr.querySelector('.pe-sheet-name-input').value = '';
-            tr.querySelector('.pe-sheet-name-input').placeholder = '(코드 ' + dr.code + ') 자재명 다시 선택';
+            tr.querySelector('.pe-sheet-name-input').placeholder = '(' + (dr.name || ('코드 ' + dr.code)) + ') 자재명 다시 선택';
             peGridFillRow(id, null);
         }
     });
