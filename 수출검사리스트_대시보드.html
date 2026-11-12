@@ -11546,6 +11546,14 @@ function _qcModalSortBtnsHtml(tab) {
   const defs = _QC_MODAL_FIELD_DEFS[tab] || _QC_MODAL_SORT_DEFS;
   return defs.map(([k, label]) => _qcColFilterBtnHtml(tab, k, label)).join('') + _qcModalCalBtnHtml(tab);
 }
+// 메인 제품검색 표 헤더(요청, 2026-11-13) — 건명/단품코드/납기일/포장일/검사일, 이
+// 5칸은 각자 독립된 <th>라서 _qcModalSortBtnsHtml처럼 한 줄로 안 몰아 그리고 칸마다 채운다.
+function _qcRenderMainColButtons() {
+  _QC_MODAL_FIELD_DEFS.main.forEach(([k, label]) => {
+    const th = document.getElementById('qcMainColTh-' + k);
+    if (th) th.innerHTML = _qcColFilterBtnHtml('main', k, label);
+  });
+}
 
 // ─── 건명/단품코드 — 구글시트 칼럼 필터처럼(요청, 2026-10-29: "확인,등록,도면출력여부
 // 단계에서 건명,단품코드를 구글시트 필터처럼바꿔줘") 정렬(오름/내림)과 값별 체크박스
