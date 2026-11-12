@@ -10754,6 +10754,9 @@
                         }).then(r => r.json());
                         if (_pkgIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
                     }
+                    if (!_pkgBulkMigrated) {
+                        _pkgBulkPatchLocal(it => { it.status = _pkgBulkStatus; it.statusLabel = _pkgBulkStatus; });
+                    }
                 }
 
                 if (palletRaw) {
