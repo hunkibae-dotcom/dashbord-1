@@ -10670,6 +10670,7 @@
                         signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '입고일 반영 실패');
+                    _pkgBulkPatchLocal(it => { it.arriveDate = arriveDate; });
                 }
 
                 // 포장완료일(요청, 2026-11-09: "포장강화 일괄 수정창에서 포장완료일이없어
