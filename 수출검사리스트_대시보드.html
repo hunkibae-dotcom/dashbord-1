@@ -3059,10 +3059,11 @@ function _qcUpdateBlockingColLabel() {
   if (!label) return;
   const total = QC_BLOCKING_VALUES.length;
   const n = blockingColFilters.size;
-  if (n >= total) { label.textContent = '블로킹'; return; }
-  if (n === 0) { label.textContent = '전체 제외됨'; return; }
+  if (n >= total) { label.textContent = '블로킹'; _qcSetColBtnActive('blockingColBtn', false); return; }
+  if (n === 0) { label.textContent = '전체 제외됨'; _qcSetColBtnActive('blockingColBtn', true); return; }
   const included = QC_BLOCKING_VALUES.filter(v => blockingColFilters.has(v));
   label.textContent = included.length > 1 ? (_qcBlockingLabel(included[0]) + ' 외 ' + (included.length - 1) + '개') : _qcBlockingLabel(included[0]);
+  _qcSetColBtnActive('blockingColBtn', true);
 }
 function toggleBlockingDropdown(e) {
   e.stopPropagation();
