@@ -11525,6 +11525,22 @@ const _QC_MODAL_SORT_STATE = {
   notify:  { get key()  { return _qcNotifySortKey;  }, get asc()  { return _qcNotifySortAsc;  }, set(k, a) { _qcNotifySortKey = k; _qcNotifySortAsc = a; }, render: () => qcNotifyRender() },
   confirm: { get key()  { return _qcNewSortKey;     }, get asc()  { return _qcNewSortAsc;     }, set(k, a) { _qcNewSortKey = k; _qcNewSortAsc = a; }, render: () => qcNewRenderList() },
   drawing: { get key()  { return _qcDrawingSortKey; }, get asc()  { return _qcDrawingSortAsc; }, set(k, a) { _qcDrawingSortKey = k; _qcDrawingSortAsc = a; }, render: () => qcDrawingRender() },
+  // 메인 표는 새 정렬 상태를 따로 안 만들고 기존 헤더 클릭 정렬(tableSortKey/tableSortDir/
+  // sortByKey — 날짜 비교까지 이미 정확히 처리됨)을 그대로 재사용한다.
+  main: {
+    get key() {
+      if (tableSortKey === '건명') return 'round';
+      if (tableSortKey === '단품코드') return 'code';
+      return tableSortKey;
+    },
+    get asc() { return tableSortDir === 'asc'; },
+    set(k, a) {
+      tableSortKey = _QC_MODAL_SORT_FIELD[k] || k;
+      tableSortDir = a ? 'asc' : 'desc';
+      updateSortIcons('sortIcon', tableSortKey, tableSortDir);
+    },
+    render: () => { applyFilters(); _qcRenderMainColButtons(); }
+  }
 };
 function _qcModalSortBtnsHtml(tab) {
   const defs = _QC_MODAL_FIELD_DEFS[tab] || _QC_MODAL_SORT_DEFS;
