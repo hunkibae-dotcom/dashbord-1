@@ -15563,14 +15563,48 @@ function peSaveDraft() {
     clearTimeout(_peDraftTimer);
     _peDraftTimer = setTimeout(_peDoSaveDraft, 250);
 }
+// 구글시트 "PE폼 발주서" 크로스 수정(요청, 2026-11-12) — 지금 그리드에 선택돼 있는
+// 품목만 {자재명,사업장,수량,비고}로 추려서 보낸다. 코드/색상/유형/규격상세/단위는
+// 전부 시트 쪽 수식이 자재명+사업장으로 다시 계산하므로 보내지 않는다.
+function _peBuildFormRowsForSheet() {
+    const rows = [];
+    document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
+        const sel = peGridSelections[tr.dataset.id];
+        if (!sel) return;
+        rows.push({
+            name: sel.name, site: sel.site,
+            qty: tr.querySelector('.pe-sheet-qty-input').value,
+            note: tr.querySelector('.pe-sheet-note-input').value
+        });
+    });
+    return rows;
+}
+async function _pePushFormToSheet() {
+    try {
+        const body = {
+            action: 'saveOrderForm',
+            date: document.getElementById('peOrdDate').value,
+            user: document.getElementById('peOrdUser').value,
+            due: document.getElementById('peOrdDue').value,
+            wh: peGetWhValue(),
+            rows: _peBuildFormRowsForSheet()
+        };
+        const res = await fetch(peGasUrl(), { method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(20000) });
+        const json = await res.json().catch(() => null);
+        return !!(json && json.status === 'success');
+    } catch (e) { return false; }
+}
 // "임시저장" 버튼(요청, 2026-11-12: "등록버튼이지금보면 엄청길잖아 작게만들고 왼쪽에
-// 임시저장이라는 버튼을 따로만들고 임시저장클릭 시... 그대로 항상 유지시키게해줘") —
-// 입력할 때마다 조용히 자동 저장되던 것과 같은 저장소(PE_DRAFT_KEY)를 그대로 쓰되,
-// 디바운스를 기다리지 않고 그 자리에서 바로 저장하고 토스트로 확인해준다.
-function peManualSaveDraft() {
+// 임시저장이라는 버튼을 따로만들고 임시저장클릭 시... 그대로 항상 유지시키게해줘", 이어서
+// "구글시트 발주서랑 서로 연동 크로스 수정가능 했으면 좋겠어") — 로컬(PE_DRAFT_KEY)엔
+// 그 자리에서 바로 저장해 토스트로 확인해주고, 구글시트의 "PE폼 발주서"에도 같은
+// 내용을 밀어넣어 둘이 어긋나지 않게 한다(새로고침/재진입하면 시트 쪽이 기준이 됨).
+async function peManualSaveDraft() {
     clearTimeout(_peDraftTimer);
     const n = _peDoSaveDraft();
     peShowToast(n > 0 ? '임시저장 완료 (품목 ' + n + '종)' : '임시저장 완료 (입력된 품목 없음)');
+    const ok = await _pePushFormToSheet();
+    if (!ok) peShowToast('⚠ 구글시트 동기화는 실패했지만 로컬엔 저장됨');
 }
 function peLoadDraft() {
     try {
