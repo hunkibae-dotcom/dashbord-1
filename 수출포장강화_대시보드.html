@@ -15469,25 +15469,36 @@ function peGetWhValue() {
 
 // ── 초안 자동 저장/복원 ──
 let _peDraftTimer = null;
+function _peDoSaveDraft() {
+    const rows = [];
+    document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
+        const sel = peGridSelections[tr.dataset.id];
+        if (!sel) return;
+        rows.push({ code: sel.code, qty: tr.querySelector('.pe-sheet-qty-input').value, note: tr.querySelector('.pe-sheet-note-input').value });
+    });
+    const draft = {
+        date: document.getElementById('peOrdDate').value,
+        user: document.getElementById('peOrdUser').value,
+        due: document.getElementById('peOrdDue').value,
+        whSel: document.getElementById('peOrdWhSel').value,
+        whCustom: document.getElementById('peOrdWh').value,
+        rows
+    };
+    try { safeLocalStorage.setItem(PE_DRAFT_KEY, JSON.stringify(draft)); } catch (e) {}
+    return rows.length;
+}
 function peSaveDraft() {
     clearTimeout(_peDraftTimer);
-    _peDraftTimer = setTimeout(() => {
-        const rows = [];
-        document.querySelectorAll('#peGridBody .pe-grid-row').forEach(tr => {
-            const sel = peGridSelections[tr.dataset.id];
-            if (!sel) return;
-            rows.push({ code: sel.code, qty: tr.querySelector('.pe-sheet-qty-input').value, note: tr.querySelector('.pe-sheet-note-input').value });
-        });
-        const draft = {
-            date: document.getElementById('peOrdDate').value,
-            user: document.getElementById('peOrdUser').value,
-            due: document.getElementById('peOrdDue').value,
-            whSel: document.getElementById('peOrdWhSel').value,
-            whCustom: document.getElementById('peOrdWh').value,
-            rows
-        };
-        try { safeLocalStorage.setItem(PE_DRAFT_KEY, JSON.stringify(draft)); } catch (e) {}
-    }, 250);
+    _peDraftTimer = setTimeout(_peDoSaveDraft, 250);
+}
+// "임시저장" 버튼(요청, 2026-11-12: "등록버튼이지금보면 엄청길잖아 작게만들고 왼쪽에
+// 임시저장이라는 버튼을 따로만들고 임시저장클릭 시... 그대로 항상 유지시키게해줘") —
+// 입력할 때마다 조용히 자동 저장되던 것과 같은 저장소(PE_DRAFT_KEY)를 그대로 쓰되,
+// 디바운스를 기다리지 않고 그 자리에서 바로 저장하고 토스트로 확인해준다.
+function peManualSaveDraft() {
+    clearTimeout(_peDraftTimer);
+    const n = _peDoSaveDraft();
+    peShowToast(n > 0 ? '임시저장 완료 (품목 ' + n + '종)' : '임시저장 완료 (입력된 품목 없음)');
 }
 function peLoadDraft() {
     try {
