@@ -9836,6 +9836,15 @@
         function _pkgModalFieldBtnsHtml(tab) {
             return PKG_MODAL_FIELD_DEFS[tab].map(([k, label]) => _pkgColFilterBtnHtml(tab, k, label)).join('') + _pkgModalCalBtnHtml(tab);
         }
+        // 메인 제품검색 표 헤더(요청, 2026-11-13) — 건명/제품코드/납기일/포장일/상차일,
+        // 이 5칸은 각자 독립된 <th>라서(한 줄로 안 몰려있음) _pkgModalFieldBtnsHtml처럼
+        // 한 번에 안 그리고 칸마다 따로 채운다.
+        function _pkgRenderMainColButtons() {
+            PKG_MODAL_FIELD_DEFS.main.forEach(([k, label]) => {
+                const th = document.getElementById('pkgMainColTh-' + k);
+                if (th) th.innerHTML = _pkgColFilterBtnHtml('main', k, label);
+            });
+        }
         // 발주번호/발주일자 칼럼 — 값별 체크박스 필터 없이 단순 3단계 정렬만(요청,
         // 2026-10-30: "클릭 시 오름차 클릭시 내림차 클릭시 초기화"). 코드~상태 칼럼의
         // 구글시트 필터와 같은 정렬 상태(PKG_MODAL_SORT_STATE.peHistory)를 공유한다 —
