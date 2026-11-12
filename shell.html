@@ -5684,20 +5684,28 @@
         const i = hdr.findIndex(h => h.includes('파렛트') || h.includes('PALET') || h.includes('적재'));
         return i >= 0 ? i : 10;
     }
+    // 버그 수정(요청, 2026-11-12: "YBD0018AJ코드가 두개 보이는데... OCY색상의 1개를
+    // 적재 47번으로 지정했는데 WW색상인 항목이 같이 적재 47번으로... 코드가 동일해서
+    // 그런건진") — code+round만 키로 쓰면 같은 code+round를 공유하는 다른 색상 품목
+    // (심지어 충주공장재고엔 실제로 없는, 아직 생산중/미회수인 품목)까지 같은
+    // 적재번호로 보여버린다. 색상도 같이 키에 넣어 정확히 그 색상의 실제 재고 행만
+    // 찾게 한다.
     function _buildPalletMap() {
         const map = {};
         if (!rawStockRows || rawStockRows.length <= 1) return map;
         const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
         const iC  = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
         const iR  = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+        const iCol = hdr.findIndex(h => h.replace(/\s/g,'').includes('색상'));
         const iP  = _stockPalletColIndex();
         for (let i = 1; i < rawStockRows.length; i++) {
             const r = rawStockRows[i];
             if (!r || r.every(c => !c || !c.toString().trim())) continue;
             const code   = (r[iC >= 0 ? iC : 1] || '').toString().trim().toUpperCase();
             const round  = (r[iR >= 0 ? iR : 4] || '').toString().trim();
+            const color  = (iCol >= 0 ? (r[iCol] || '') : '').toString().trim();
             const pallet = (r[iP] || '').toString().trim();
-            if (code && pallet) map[code + '|' + round] = pallet;
+            if (code && pallet) map[code + '|' + round + '|' + color] = pallet;
         }
         return map;
     }
