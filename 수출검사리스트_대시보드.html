@@ -1013,10 +1013,13 @@ try {
                 <th class="text-left py-2 pr-3 font-semibold" style="position:relative;" id="qcMainColTh-포장일"></th>
                 <th class="text-left py-2 pr-3 font-semibold" style="position:relative;" id="qcMainColTh-검사일"></th>
                 <th class="text-center py-2 font-semibold" style="position:relative;">
-                  <div class="inline-flex items-center gap-1 cursor-pointer hover:text-slate-600 select-none" onclick="toggleInspectDropdown(event)">
-                    <span id="inspectColLabel">검사상태</span>
-                    <i class="fa-solid fa-chevron-down text-[9px]" id="inspectColChevron"></i>
-                  </div>
+                  <!-- 버튼 모양을 건명/단품코드 등 구글시트 필터 칼럼과 통일(요청, 2026-11-13:
+                       "검사상태와 블로킹은 필터화가되어있지만 칼럼의 모양이 다른 필터와
+                       다른데 통일좀시켜줘 건명처럼") — 로직(드롭다운 내용)은 그대로 두고
+                       트리거 버튼만 같은 알약 모양 + 필터 아이콘으로 바꾼다. -->
+                  <button type="button" id="inspectColBtn" onclick="toggleInspectDropdown(event)" style="border:1px solid #e2e8f0;border-radius:16px;padding:3px 10px;font-size:10.5px;font-weight:700;cursor:pointer;background:#f8fafc;color:#64748b;display:inline-flex;align-items:center;gap:3px;">
+                    <i class="fa-solid fa-filter" style="font-size:8px;"></i><span id="inspectColLabel">검사상태</span>
+                  </button>
                   <!-- 구글시트 필터 스타일(요청, 2026-10-22) — 기본은 전부 체크(=전체 표시), 빼고 싶은
                        것만 체크 해제. "확인"을 눌러야 실제로 적용되고 "취소"/바깥 클릭이면 그대로 버려진다. -->
                   <div id="inspectColDropdown" class="hidden absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 text-left" style="width:230px;" onclick="event.stopPropagation()">
