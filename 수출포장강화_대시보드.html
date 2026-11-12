@@ -14841,6 +14841,11 @@ async function peLoadAll() {
             }));
         } else peUsageRows = [];
 
+        // 구글시트 "PE폼 발주서" 고정 템플릿과 크로스 수정(요청, 2026-11-12) — 열거나
+        // 새로고침할 때마다 시트 쪽 최신 내용을 받아둔다. peInitOrderForm()이 이걸
+        // 우선 쓰고(없으면 예전처럼 로컬 임시저장분으로 대체).
+        peSheetForm = json._peForm || null;
+
         document.getElementById('peSub').textContent = '발주 ' + peOrderRows.length + '건 · 품목마스터 ' + peMasterRows.length + '종';
         peRenderDashboard();
         peRenderHistory();
