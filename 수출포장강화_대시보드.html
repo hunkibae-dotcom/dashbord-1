@@ -2229,12 +2229,16 @@
             const noteCache = {};
             state.data.forEach(item => {
                 if (!item.note) return;
-                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                // 코드+건명만으로는 색상이 다른 항목끼리 비고가 섞인다(버그 수정, 2026-11-12:
+                // "상차준비완료 반영이 안되는거같아" — 사실은 반영은 됐는데, 색상이 다른
+                // 항목의 비고가 여기로 잘못 빌려와서 화면에서 뒤섞여 보인 것이었다) — 색상도
+                // 키에 넣는다.
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim() + '|' + (item.color || '').trim();
                 if (!noteCache[key]) noteCache[key] = item.note;
             });
             state.stockRowItems.forEach(item => {
                 if (item.note) return; // 이미 값이 있으면(혹시 나중에 재고 쪽에 칼럼이 생기면) 안 건드림
-                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim() + '|' + (item.color || '').trim();
                 const cache = noteCache[key];
                 if (cache) item.note = cache;
             });
