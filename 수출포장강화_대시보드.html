@@ -4775,6 +4775,7 @@
             const tbody = document.getElementById('tableBody');
             const cardsWrap = document.getElementById('tableCardsMobile');
             tbody.innerHTML = '';
+            _pkgRenderMainColButtons();
             // "다음 적재" 배지는 표 카테고리/검색 결과와 무관하게 항상 최신으로 유지한다
             // (어떤 카테고리를 보고 있든, 결과가 0건이든 다음에 쓸 적재번호는 똑같으므로) —
             // 아래 여러 early-return 분기 하나하나에 넣는 대신 맨 앞에서 한 번만 호출한다.
