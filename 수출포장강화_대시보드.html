@@ -4142,12 +4142,16 @@
                 const _dph = state.rawStockRows[0].map(h => (h||'').toString().trim());
                 const _dpiC = _dph.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
                 const _dpiR = _dph.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                // 색상도 키에 넣는다 — 버그 수정(요청, 2026-11-12: 같은 code+차수를 공유하는
+                // 다른 색상 품목이 같은 적재번호로 잘못 보이던 문제, renderTable()의 _palletMap과 동일).
+                const _dpiCol = _dph.findIndex(h => h.replace(/\s/g,'').includes('색상'));
                 for (let _dpi = 1; _dpi < state.rawStockRows.length; _dpi++) {
                     const _dpr = state.rawStockRows[_dpi]; if (!_dpr) continue;
                     const _c = (_dpr[_dpiC >= 0 ? _dpiC : 1] || '').toString().trim().toUpperCase();
                     const _r = (_dpr[_dpiR >= 0 ? _dpiR : 4] || '').toString().trim();
+                    const _col = (_dpiCol >= 0 ? (_dpr[_dpiCol] || '') : '').toString().trim();
                     const _v = (_dpr[10] || '').toString().trim();
-                    if (_c && _v) _dtPM[_c + '|' + _r] = _v;
+                    if (_c && _v) _dtPM[_c + '|' + _r + '|' + _col] = _v;
                 }
             }
             matchedList.forEach(it => {
@@ -4159,7 +4163,7 @@
                 // 때만(undefined) 원본에서 새로 조회한다.
                 const _isS = it.status === '출고' || it.status === '피킹';
                 if (it.pallet === undefined) {
-                    it.pallet = _isS ? (it.status === '피킹' ? '피킹' : '출고') : (_dtPM[(it.code||'').toUpperCase() + '|' + (it.round||'')] || '-');
+                    it.pallet = _isS ? (it.status === '피킹' ? '피킹' : '출고') : (_dtPM[(it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + (it.color||'')] || '-');
                 } else if (!it.pallet) {
                     it.pallet = '-';
                 }
