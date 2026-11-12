@@ -5734,7 +5734,7 @@
         if (!val) { warnEl.style.display = 'none'; return; }
         const norm = /^\d+$/.test(val) ? '적재 ' + val : val;
         const pm = _buildPalletMap();
-        const myKey = (_ieCode || '').toUpperCase() + '|' + _ieRound;
+        const myKey = (_ieCode || '').toUpperCase() + '|' + _ieRound + '|' + (_ieColor || '');
         const exists = Object.keys(pm).some(k => k !== myKey && pm[k] === norm);
         if (exists) {
             warnEl.textContent = `현재 입력한 적재 ${val}은 기존에 적재되어있는 번호입니다.`;
