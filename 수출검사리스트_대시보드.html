@@ -2919,20 +2919,31 @@ function setColInspect(val) {
   if (dd) dd.classList.add('hidden');
   applyFilters();
 }
+// 건명 등 구글시트 필터 칼럼(_qcColFilterBtnHtml)과 같은 "활성화되면 보라색 알약"
+// 스타일을 쓴다 — 전부 포함(필터 없음과 같은 뜻)이면 평상시 스타일로 되돌린다.
+function _qcSetColBtnActive(btnId, active) {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.style.background = active ? '#6D5CE8' : '#f8fafc';
+    btn.style.color = active ? '#fff' : '#64748b';
+    btn.style.border = active ? 'none' : '1px solid #e2e8f0';
+}
 function _qcUpdateInspectColLabel() {
   const label = document.getElementById('inspectColLabel');
   if (!label) return;
   if (colInspectSpecialFilter) {
     label.textContent = (QC_COL_INSPECT_LABELS[colInspectSpecialFilter] || '검사상태') + ' ✓';
+    _qcSetColBtnActive('inspectColBtn', true);
     return;
   }
   const total = QC_COL_INSPECT_DROPDOWN_VALUES.length;
   const n = colInspectFilters.size;
-  if (n >= total) { label.textContent = '검사상태'; return; }
-  if (n === 0) { label.textContent = '전체 제외됨'; return; }
+  if (n >= total) { label.textContent = '검사상태'; _qcSetColBtnActive('inspectColBtn', false); return; }
+  if (n === 0) { label.textContent = '전체 제외됨'; _qcSetColBtnActive('inspectColBtn', true); return; }
   const included = QC_COL_INSPECT_DROPDOWN_VALUES.filter(v => colInspectFilters.has(v));
   const first = QC_COL_INSPECT_LABELS[included[0]];
   label.textContent = included.length > 1 ? (first + ' 외 ' + (included.length - 1) + '개') : first;
+  _qcSetColBtnActive('inspectColBtn', true);
 }
 // 시트 필터(sourceTab)가 바뀌면 드롭다운이 열려있는 동안이라도 목록을 다시 그린다.
 function _qcSyncInspectDropdownVisibility() {
