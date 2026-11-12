@@ -15758,7 +15758,11 @@ function peInitOrderForm() {
     peGridSeq = 0; peGridSelections = {};
     const draftRows = (draft && draft.rows) || [];
     draftRows.forEach(dr => {
-        const r = peMasterRows.find(x => x.code === dr.code);
+        // 시트 쪽 발주서에서 읽어온 줄은 code가 비었을 수 있다(자재명+사업장 조합이
+        // 품목마스터에 없어 수식이 못 찾은 경우) — 그럴 땐 이름+사업장으로 한 번 더
+        // 찾아본다.
+        const r = peMasterRows.find(x => x.code === dr.code) ||
+                  (dr.name ? peMasterRows.find(x => x.name === dr.name && (!dr.site || x.site === dr.site)) : null);
         const id = peAddGridRow();
         const tr = document.querySelector('#peGridBody .pe-grid-row[data-id="' + id + '"]');
         tr.querySelector('.pe-sheet-qty-input').value = dr.qty || '';
