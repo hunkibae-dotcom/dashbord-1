@@ -10588,7 +10588,11 @@
             const shipDate = (document.getElementById('pkgBulkShipDate').value || '').trim();
             const dueDate = (document.getElementById('pkgBulkDueDate').value || '').trim();
             const arriveDate = (document.getElementById('pkgBulkArriveDate').value || '').trim();
-            const regDate = (document.getElementById('pkgBulkRegDate').value || '').trim();
+            // 단일 수정창(savePkgItemDetail)과 같은 기준(요청, 2026-11-09 발주서 추가 때
+            // 같이 들어갔어야 했는데 빠졌던 부분) — 포장완료로 바꾸는데 포장완료일을
+            // 따로 안 골랐으면 오늘 날짜로 자동 채운다.
+            let regDate = (document.getElementById('pkgBulkRegDate').value || '').trim();
+            if (_pkgBulkStatus === '포장완료' && !regDate) regDate = normalizeDate(new Date());
             const palletRaw = (document.getElementById('pkgBulkPallet').value || '').trim();
             const peTypeRaw = (document.getElementById('pkgBulkPeType').value || '').trim();
             const shipReadyChecked = document.getElementById('pkgBulkShipReadyChk').checked;
