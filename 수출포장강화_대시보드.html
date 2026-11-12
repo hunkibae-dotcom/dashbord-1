@@ -10633,6 +10633,7 @@
             // 전체 재동기화(syncWithGoogleSheets)를 기다리지 않고 지금 보이는 화면 데이터를
             // 바로 고친다. 시트 간 실제 이동이 생기는 입고/출고/피킹만 예외(아래에서 계속
             // 전체 재동기화에 맡김).
+            let _pkgBulkMigrated = false;
             const _pkgBulkTuples = new Set(_pkgBulkItems.map(it => (it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')));
             function _pkgBulkPatchLocal(fn) {
                 [state.data, state.filteredData].forEach(arr => { if (!arr) return;
