@@ -15725,8 +15725,28 @@ function peUpdateSum() {
     document.getElementById('peSumLabel').textContent = '합계 (품목 ' + filled + '종)';
     document.getElementById('peSumQty').textContent = totalQty.toLocaleString();
 }
+// 구글시트 "PE폼 발주서" 읽기 결과({date,user,due,wh,rows:[{code,name,site,qty,note}]})를
+// 기존 로컬 임시저장(draft) 모양으로 바꾼다 — peInitOrderForm()의 복원 로직을 그대로
+// 재사용하기 위함(요청, 2026-11-12: 크로스 수정).
+function _peSheetFormToDraft(sf) {
+    if (!sf) return null;
+    const whPresets = ['충주 1공장', '충주 2공장'];
+    const wh = (sf.wh || '').trim();
+    const whSel = whPresets.includes(wh) ? wh : (wh ? '__custom__' : '충주 1공장');
+    return {
+        date: sf.date || '',
+        user: sf.user || '',
+        due: /^\d{4}-\d{2}-\d{2}$/.test(sf.due || '') ? sf.due : '', // "최단 시일 내" 같은 문구는 날짜칸에 못 넣으니 비워둠
+        whSel: whSel,
+        whCustom: whSel === '__custom__' ? wh : '',
+        rows: (sf.rows || []).map(r => ({ code: r.code || '', name: r.name || '', site: r.site || '', qty: r.qty, note: r.note || '' }))
+    };
+}
 function peInitOrderForm() {
-    const draft = peLoadDraft();
+    // 시트 쪽에 실제로 적힌 품목이 있으면 그걸 우선 보여준다(크로스 수정의 핵심) —
+    // 없으면 예전처럼 이 브라우저의 로컬 임시저장분을 쓴다.
+    const sheetDraft = _peSheetFormToDraft(peSheetForm);
+    const draft = (sheetDraft && sheetDraft.rows.length) ? sheetDraft : peLoadDraft();
     document.getElementById('peOrdDate').value = (draft && draft.date) || new Date().toISOString().slice(0, 10);
     document.getElementById('peOrdUser').value = (draft && draft.user) || '';
     document.getElementById('peOrdDue').value = (draft && draft.due) || '';
