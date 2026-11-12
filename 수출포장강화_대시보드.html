@@ -10702,6 +10702,16 @@
                         signal: AbortSignal.timeout(60000)
                     }).then(r => r.json());
                     if (_pkgIsGasError(res)) throw new Error((res && res.message) || '상차 준비완료 반영 실패');
+                    // 품목마다 비고 내용이 서로 달라서(기존 내용 보존) 공용 헬퍼 대신
+                    // 각자의 계산된 note를 그대로 적용한다.
+                    const noteByTuple = {};
+                    noteItems.forEach(ni => { noteByTuple[(ni.code||'').toUpperCase() + '|' + ni.round + '|' + (ni.color||'')] = ni.note; });
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return;
+                        arr.forEach(it => {
+                            const tup = (it.code||'').toUpperCase() + '|' + (it.round||'') + '|' + _pkgNormColor(it.color);
+                            if (tup in noteByTuple) it.note = noteByTuple[tup];
+                        });
+                    });
                 }
 
                 if (_pkgBulkStatus) {
