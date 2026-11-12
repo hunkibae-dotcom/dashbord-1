@@ -3850,7 +3850,7 @@
                         // item.pallet이 이미 있으면(충주공장 재고 행 자신의 실제 값) 그걸 그대로
                         // 쓰고, 없는 시트(수출 현황/출고 완료) 항목만 기존 code+차수 조회값으로.
                         const _pv = item.pallet !== undefined ? item.pallet
-                            : (_isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'')] || ''));
+                            : (_isS ? item.status : (_pfMap[(item.code||'').toUpperCase() + '|' + (item.round||'') + '|' + (item.color||'')] || ''));
                         matchesPallet = _normSearchText(_pv).toLowerCase().includes(palletQuery);
                     }
 
