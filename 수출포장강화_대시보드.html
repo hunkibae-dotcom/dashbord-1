@@ -2204,12 +2204,14 @@
             const dateCache = {};
             state.data.forEach(item => {
                 if (!item.arriveDateRaw && (!item.arriveDate || item.arriveDate === '-')) return;
-                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                // 코드+건명만으로는 색상이 다른 항목끼리 값이 섞인다(YBD0018AJ 적재번호
+                // 섞임 버그와 같은 원인) — 색상도 키에 넣는다.
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim() + '|' + (item.color || '').trim();
                 if (!dateCache[key]) dateCache[key] = { arriveDate: item.arriveDate, arriveDateRaw: item.arriveDateRaw, arriveDateDisp: item.arriveDateDisp };
             });
             state.stockRowItems.forEach(item => {
                 if (item.arriveDateRaw) return; // 이미 값이 있으면(혹시 나중에 재고 쪽에 칼럼이 생기면) 안 건드림
-                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim();
+                const key = (item.code || '').toLowerCase().trim() + '|' + (item.round || '').trim() + '|' + (item.color || '').trim();
                 const cache = dateCache[key];
                 if (!cache) return;
                 item.arriveDate = cache.arriveDate;
