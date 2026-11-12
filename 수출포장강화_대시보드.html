@@ -2150,17 +2150,21 @@
             });
             if (iRound < 0) iRound = 1;
             if (iCode  < 0) iCode  = 2;
+            // 코드+건명이 같아도 색상이 다른 항목끼리 포장일이 서로 섞여 보이던 버그
+            // (YBD0018AJ 적재번호 섞임 버그와 같은 원인)와 같은 이유로 색상도 키에 넣는다.
+            const iColor = hdr.findIndex(h => h.replace(/\s/g,'').includes('색상') || h.replace(/\s/g,'').includes('컬러'));
 
-            // round|code → 가장 최근 포장일 맵 구성
+            // round|code|color → 가장 최근 포장일 맵 구성
             const stockDateMap = {};
             for (let i = 1; i < stockRows.length; i++) {
                 const row = stockRows[i];
                 if (!row || !row.some(c => c && c.toString().trim())) continue;
                 const round    = (row[iRound] || '').toString().trim();
                 const code     = (row[iCode]  || '').toString().trim().toUpperCase();
+                const color    = (iColor >= 0 ? (row[iColor] || '') : '').toString().trim();
                 const packDate = normalizeDate((row[7] || '').toString().trim()); // H열=포장일
                 if (!round || !code || !packDate || packDate === '-') continue;
-                const key = round + '|' + code;
+                const key = round + '|' + code + '|' + color;
                 if (!stockDateMap[key] || packDate > stockDateMap[key]) {
                     stockDateMap[key] = packDate;
                 }
