@@ -6740,14 +6740,43 @@
         const peChanged = newPeType !== _ieOrigPeType || newPeSpec !== _ieOrigPeSpec;
         const tasks = [];
         const changed = {};
+        let migrated = false; // 입고/일부입고/출고/피킹처럼 시트 간 실제 이동이 필요한 경우
         // 기준(수출현황/충주공장 재고/출고완료)마다 진행상태를 실제로 쓰는 시트·칸이
         // 다르다(요청, 2026-10-15) — 그 기준에 맞는 액션으로만 보낸다.
+        // 버그 수정(요청, 2026-11-13: "미입고에서 입고로바꿔도 실재고에 안들어가지고") —
+        // updateMainStatus는 "수출 현황" 시트의 상태 칸만 고치는 단순 액션이라, 입고/
+        // 일부입고/출고/피킹처럼 품목이 다른 시트(충주공장 재고/출고 완료)로 실제
+        // 이동해야 하는 상태는 그걸로 처리하면 안 된다. PC 웹의 savePkgItemDetail처럼
+        // 그 네 상태만 전용 액션(pkgProcessIncoming/pkgProcessShipOut)으로 보낸다.
         if (_ieCurStatus && _ieCurStatus !== _ieOrigStatus) {
-            const statusAction = _ieBasis === 'standard' ? 'updateMainStatus' : _ieBasis === 'shipped' ? 'updateShippedStatus' : 'updateStatus';
-            tasks.push(
-                fetch(GAS_URL + '?' + new URLSearchParams({ action:statusAction, code:_ieCode, round:_ieRound, color:_ieColor, status:_ieCurStatus }),
-                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
-            );
+            const isIncoming = (_ieCurStatus === '입고' || _ieCurStatus === '일부입고');
+            const isShipOut = (_ieCurStatus === '출고' || _ieCurStatus === '피킹');
+            if (isIncoming && _ieCurStatus === '일부입고') {
+                // 일부입고는 실제 입고 수량을 같이 받아야 하는데 단일 품목 수정창엔 아직
+                // 그 입력칸이 없다(일괄수정엔 있음) — 잘못된 수량으로 처리되는 것보다
+                // 명확히 막고 일괄수정으로 안내한다.
+                if (fb) { fb.textContent = '일부입고는 아직 단일 수정에서 지원하지 않습니다. 제품검색에서 다중선택(일괄수정)으로 처리해주세요.'; fb.style.color = '#FF4444'; }
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
+                return;
+            }
+            if (isIncoming || isShipOut) {
+                migrated = true;
+                const migAction = isIncoming ? 'pkgProcessIncoming' : 'pkgProcessShipOut';
+                const migItem = isIncoming
+                    ? { code: _ieCode, round: _ieRound, color: _ieColor, qty: null }
+                    : { code: _ieCode, round: _ieRound, color: _ieColor, status: _ieCurStatus };
+                tasks.push(
+                    fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: migAction, items: [migItem] }), signal: AbortSignal.timeout(30000) })
+                        .then(r => r.json())
+                        .then(res => { if (res && res.result === 'error') throw new Error(res.message || '처리 중 오류가 발생했습니다.'); return res; })
+                );
+            } else {
+                const statusAction = _ieBasis === 'standard' ? 'updateMainStatus' : _ieBasis === 'shipped' ? 'updateShippedStatus' : 'updateStatus';
+                tasks.push(
+                    fetch(GAS_URL + '?' + new URLSearchParams({ action:statusAction, code:_ieCode, round:_ieRound, color:_ieColor, status:_ieCurStatus }),
+                        { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+                );
+            }
             changed.status = _ieCurStatus;
         }
         if (newShipDate !== _ieOrigShipDate || newDueDate !== _ieOrigDueDate) {
