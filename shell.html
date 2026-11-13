@@ -6768,7 +6768,7 @@
                 tasks.push(
                     fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: migAction, items: [migItem] }), signal: AbortSignal.timeout(30000) })
                         .then(r => r.json())
-                        .then(res => { if (res && res.result === 'error') throw new Error(res.message || '처리 중 오류가 발생했습니다.'); return res; })
+                        .then(res => { if (!res || res.ok === false) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.'); return res; })
                 );
             } else {
                 const statusAction = _ieBasis === 'standard' ? 'updateMainStatus' : _ieBasis === 'shipped' ? 'updateShippedStatus' : 'updateStatus';
