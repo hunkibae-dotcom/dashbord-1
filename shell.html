@@ -6861,7 +6861,9 @@
             // code+round만으로는 같은 건명에 색상만 다른 행이 여러 개일 때 항상 첫 번째 행만
             // 골라져서 엉뚱한 항목이 갱신된 것처럼 보였다 — color까지 같이 맞춰서 정확한 행만 찾는다.
             const _ieMatch = it => (it.code||'').toUpperCase() === _ieCode.toUpperCase() && (it.round||'') === _ieRound && (it.color||'') === _ieColor;
-            if (changed.status) {
+            // 입고/출고 등으로 실제 이동했으면(migrated) 화면의 낱개 patch로는 못 맞춘다
+            // (수출현황→충주공장재고/출고완료로 행 자체가 옮겨감) — 아래에서 전체 재조회로 맞춘다.
+            if (changed.status && !migrated) {
                 [allData, stockData].forEach(arr => { if (!arr) return;
                     arr.forEach(it => { if (_ieMatch(it)) it.status = changed.status; });
                 });
