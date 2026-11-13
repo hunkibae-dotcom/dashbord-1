@@ -6922,8 +6922,13 @@
             // 바뀐 뒤라, 방금 고친 내용이 다음 재진입에서 옛 캐시로 되돌아간 것처럼 보인다.
             _invalidateDataCache();
             if (fb) { fb.textContent = '✓ 저장 완료'; fb.style.color = '#00E676'; }
-            setTimeout(() => {
+            setTimeout(async () => {
                 closeItemEdit();
+                if (migrated) {
+                    // 수출현황→충주공장재고(입고) 또는 →출고완료(출고/피킹)로 실제 행이
+                    // 옮겨갔으므로, 서버에서 다시 받아와야 실재고/출고완료 쪽에 정확히 보인다.
+                    await loadData(true);
+                }
                 // renderMgmtModal()만으론 지금 열린 관리 목록만 새로 그려지고, 홈 화면의
                 // KPI/일정/작업이력/차트 등은 그대로 예전 값으로 남아있었다 — 웹 대시보드의
                 // updateKPIs()+renderCharts() 수정과 같은 이유로 renderAll()도 같이 부른다.
