@@ -13308,6 +13308,16 @@ function _roundNameHtml(round, factoryKey) {
   const esc = r.replace(/'/g, "\\'");
   return `<span onclick="openRoundMergeDetail('${esc}','${factoryKey}',event)" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">${r}</span>`;
 }
+// 건명 옆 작은 버튼(요청, 2026-11-16: "건명 외 N차수인 항목은 다 버튼을 만들어줘 확인
+// 단계에서나 등록단계에서나 도면단계에서나 전부다") — 신규품목확인 모달의 세 탭
+// (확인/등록/도면출력여부) 목록에서, 건명이 "...외N차수"로 병합된 항목이면 건명
+// 글자를 클릭하는 대신 옆에 따로 작은 아이콘 버튼을 둬서 포함된 차수 상세를 바로
+// 열 수 있게 한다(_roundNameHtml과 같은 openRoundMergeDetail을 그대로 재사용).
+function _qcRoundDetailBtnHtml(round, factoryKey) {
+  if (!_isMergedRoundName(round)) return '';
+  const esc = (round || '').replace(/'/g, "\\'");
+  return `<button type="button" onclick="openRoundMergeDetail('${esc}','${factoryKey}',event)" title="포함된 차수 상세보기/복사" style="flex-shrink:0;width:18px;height:18px;border:none;border-radius:5px;background:#EEF2FF;color:#6366F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i></button>`;
+}
 // 서버(Apps Script)의 _parseMergeNote()와 동일한 규칙으로 파싱한다 —
 // 형식: "포함된 차수:\n건명 | N개 | yyyy-MM-dd"
 function _parseMergeNoteClient(noteText) {
