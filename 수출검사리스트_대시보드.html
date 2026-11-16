@@ -11982,7 +11982,18 @@ function qcOpenNewItemsModal() {
     confirm: { field: null, from: '', to: '' },
     drawing: { field: null, from: '', to: '' }
   };
-  _qcModalColFilters = { notify: { round: null, code: null }, confirm: { round: null, code: null }, drawing: { round: null, code: null, bom: null, status: null } };
+  // 버그 수정(요청, 2026-11-16: "중간중간마다 저문구뜨면서 작동을 안하는데" —
+  // "Cannot read properties of undefined (reading 'factory')") — 이 모달을 열 때마다
+  // _qcModalColFilters 전체를 새 객체로 통째로 바꿔서, 메인 표용으로 추가해둔 'main'
+  // 키가 여기 없으면 사라져버렸다. 그 뒤 메인 표의 공장/건명/코드/BOM/날짜 칼럼
+  // 필터 버튼을 누르면 _qcModalColFilters.main이 undefined라 그 프로퍼티(예: factory)를
+  // 읽으려다 바로 이 에러가 났다 — 'main'도 같이 들고 있어야 한다.
+  _qcModalColFilters = {
+    notify: { round: null, code: null, tags: null },
+    confirm: { round: null, code: null },
+    drawing: { round: null, code: null, bom: null, status: null },
+    main: { factory: null, round: null, code: null, bom: null, 납기일: null, 포장일: null, 검사일: null }
+  };
   _qcColFilterOpenKey = null; _qcColFilterDraft = null;
 
   _qcNotifyFac = 'all'; _qcNotifySelected = new Set();
