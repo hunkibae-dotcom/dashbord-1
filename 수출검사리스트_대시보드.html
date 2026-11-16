@@ -2186,7 +2186,10 @@ try {
 </div>
 
 <!-- ===== "...외N차수" 병합 건명 상세 (시트 셀 메모에서 조회) ===== -->
-<div id="roundMergeModal" style="display:none;position:fixed;inset:0;z-index:120;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeRoundMergeModal()">
+<!-- z-index 120 → 305(요청 버그 수정, 2026-11-16: "상세창이 신규품목 확인창의 뒤에나와서
+     안보여") — 이 모달을 여는 곳이 신규품목확인(z-[210])처럼 다른 모달 "안"에서도
+     열리게 된 뒤로는, 그 모달들보다 항상 위에 떠야 한다. -->
+<div id="roundMergeModal" style="display:none;position:fixed;inset:0;z-index:305;background:rgba(0,0,0,.45);align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeRoundMergeModal()">
   <div style="background:var(--panel);border-radius:18px;width:100%;max-width:360px;max-height:80vh;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.25);">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
       <div style="min-width:0;">
