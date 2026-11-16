@@ -11408,8 +11408,14 @@ let _qcNotifyFac = 'all';
 let _qcNotifySelected = new Set();
 // "신규"(new)는 "등록" 탭에서 이미 보이므로 "확인" 탭에서는 뺀다(요청, 2026-10-29:
 // "신규품목확인의 확인단계에서 신규는 제외해줘 어차피 등록에서 볼수있으니까").
+// 버그 수정(요청, 2026-11-16: "확인단계와 등록단계에서 겹치는게있는데 신규와 파수
+// 추가됨인데 둘다 등록에만 뜨면되고") — 변경태그엔 'new'만 없으면 통과시켰는데,
+// "신규 차수 추가됨"(비고에 "차수"가 포함된 신규) 품목은 변경태그에 'new'가 아니라
+// 다른 태그(예: 수량변경)가 같이 붙어서 이 조건을 통과해 확인 탭에도 같이 보였다.
+// d.신규(비고의 "신규"/"신규 차수 추가됨" 문구로 판정하는 플래그, 등록 탭의 기준과
+// 동일)가 서 있으면 태그 종류와 상관없이 확인 탭에서는 전부 뺀다.
 function _qcNotifyItems() {
-  const items = allData.filter(d => d.변경태그 && d.변경태그.some(t => t !== 'new'));
+  const items = allData.filter(d => !d.신규 && d.변경태그 && d.변경태그.some(t => t !== 'new'));
   return _qcNotifyFac === 'all' ? items : items.filter(d => d.공장 === _qcNotifyFac);
 }
 function _qcNotifyRenderChips() {
