@@ -13375,10 +13375,13 @@ async function openRoundMergeDetail(round, factoryKey, event) {
     listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--label);font-size:12.5px;">등록된 상세 메모가 없습니다.</div>';
     return;
   }
+  // 복사 가능(요청, 2026-11-16: "상세 차수 확인/복사 가능하게") — 줄을 클릭하면 이
+  // 코드베이스의 다른 칸들과 같은 방식(copyCellText)으로 건명이 복사된다.
   listEl.innerHTML = items.map(it => `
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;">
+    <div onclick="copyCellText('${_jsAttr(it.orderName)}', event)" title="클릭하여 복사" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;">
       <span style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.orderName}</span>
       <span style="font-size:11.5px;color:var(--text-sub);white-space:nowrap;flex-shrink:0;">${it.qty}개 · ${it.deliveryDate || '납기 미정'}</span>
+      <i class="fa-regular fa-copy" style="font-size:11px;color:var(--label);flex-shrink:0;"></i>
     </div>
   `).join('');
 }
