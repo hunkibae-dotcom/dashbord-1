@@ -9767,11 +9767,16 @@
             _pkgColFilterSearch = v;
             _pkgColFilterRerenderPanel();
         }
+        // 버그 수정(요청, 2026-11-18: "검색란에 검색할때 한글자를 입력할때마다 검색이
+        // 멈춰서 한번 입력할때마다 검색란을 계속클릭해야하는 오류") — 예전엔 검색어를
+        // 한 글자 칠 때마다 패널 전체(검색창 포함)를 outerHTML로 통째로 새로 그려서,
+        // 매번 새 <input> 요소가 생기며 포커스가 날아갔다. 이제 체크리스트 부분만
+        // innerHTML로 다시 그리고, 검색창 자체는 손대지 않는다.
         function _pkgColFilterRerenderPanel() {
             if (!_pkgColFilterOpenKey) return;
             const [tab, field] = _pkgColFilterOpenKey.split('|');
-            const el = document.getElementById('pkgColFilterPanel_' + tab + '_' + field);
-            if (el) el.outerHTML = _pkgColFilterPanelHtml(tab, field);
+            const el = document.getElementById('pkgColFilterList_' + tab + '_' + field);
+            if (el) el.innerHTML = _pkgColFilterListHtml(tab, field);
         }
         function _pkgColFilterApply(tab, field) {
             const allValues = _pkgColFilterAllValues(tab, field);
