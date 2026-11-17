@@ -11721,18 +11721,23 @@ function _qcColFilterBtnHtml(tab, field, label) {
     ${isOpen ? _qcColFilterPanelHtml(tab, field) : ''}
   </span>`;
 }
-function _qcColFilterPanelHtml(tab, field) {
+// 체크리스트 부분만 따로 뽑아둔다 — 검색어 입력 등으로 다시 그릴 때 이 함수 결과만
+// innerHTML로 갈아끼우고, 검색창 <input> 자체는 건드리지 않기 위함.
+function _qcColFilterListHtml(tab, field) {
   const allValues = _qcColFilterAllValues(tab, field);
   const q = _qcColFilterSearch.toLowerCase();
   const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
   const draft = _qcColFilterDraft || new Set(allValues);
-  const checklistHtml = shown.map(v => {
+  return shown.map(v => {
     const checked = draft.has(v) ? 'checked' : '';
     return `<label style="display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:12px;color:#334155;cursor:pointer;">
       <input type="checkbox" ${checked} onchange="_qcColFilterToggleVal('${_jsAttr(v)}')" style="cursor:pointer;flex-shrink:0;">
       <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v}</span>
     </label>`;
   }).join('') || '<div style="padding:10px;text-align:center;color:#94a3b8;font-size:11.5px;">값이 없습니다</div>';
+}
+function _qcColFilterPanelHtml(tab, field) {
+  const allValues = _qcColFilterAllValues(tab, field);
   return `<div id="qcColFilterPanel_${tab}_${field}" onclick="event.stopPropagation();" style="position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15);width:200px;z-index:50;overflow:hidden;">
     <div onclick="_qcColFilterSortPick('${tab}','${field}','asc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 오름차순</div>
     <div onclick="_qcColFilterSortPick('${tab}','${field}','desc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:#334155;cursor:pointer;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">정렬, 내림차순</div>
@@ -11742,7 +11747,7 @@ function _qcColFilterPanelHtml(tab, field) {
         <span style="cursor:pointer;color:#94a3b8;" onclick="_qcColFilterClearAll()">지우기</span>
       </div>
       <input type="text" value="${_jsAttr(_qcColFilterSearch)}" oninput="_qcColFilterSetSearch(this.value)" placeholder="검색" style="width:100%;box-sizing:border-box;border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;margin-bottom:6px;">
-      <div style="max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;">${checklistHtml}</div>
+      <div id="qcColFilterList_${tab}_${field}" style="max-height:160px;overflow-y:auto;border:1px solid #f1f5f9;border-radius:6px;">${_qcColFilterListHtml(tab, field)}</div>
     </div>
     <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid #f1f5f9;">
       <button onclick="_qcColFilterCancel('${tab}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid #e2e8f0;background:#fff;color:#64748b;font-size:11.5px;font-weight:700;cursor:pointer;">취소</button>
