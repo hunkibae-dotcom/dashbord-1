@@ -1730,18 +1730,23 @@
             ${isOpen ? _pkgNiColFilterPanelHtml(tab, field) : ''}
         </span>`;
     }
-    function _pkgNiColFilterPanelHtml(tab, field) {
+    // 체크리스트 부분만 따로 뽑아둔다 — 검색어 입력 등으로 다시 그릴 때 이 함수
+    // 결과만 innerHTML로 갈아끼우고, 검색창 <input> 자체는 건드리지 않기 위함.
+    function _pkgNiColFilterListHtml(tab, field) {
         const allValues = _pkgNiColFilterAllValues(tab, field);
         const q = _pkgNiColFilterSearch.toLowerCase();
         const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
         const draft = _pkgNiColFilterDraft || new Set(allValues);
-        const checklistHtml = shown.map(v => {
+        return shown.map(v => {
             const checked = draft.has(v) ? 'checked' : '';
             return `<label style="display:flex;align-items:center;gap:6px;padding:4px 10px;font-size:12px;color:var(--text);cursor:pointer;">
                 <input type="checkbox" ${checked} onchange="_pkgNiColFilterToggleVal(this.parentElement.dataset.v)" data-v="${v.replace(/"/g,'&quot;')}" style="cursor:pointer;flex-shrink:0;">
                 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${v}</span>
             </label>`;
         }).join('') || '<div style="padding:10px;text-align:center;color:var(--text-sub);font-size:11.5px;">값이 없습니다</div>';
+    }
+    function _pkgNiColFilterPanelHtml(tab, field) {
+        const allValues = _pkgNiColFilterAllValues(tab, field);
         return `<div id="pkgNiColFilterPanel_${tab}_${field}" onclick="event.stopPropagation();" style="position:absolute;top:100%;left:0;margin-top:4px;background:var(--panel,var(--bg));border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.25);width:190px;z-index:50;overflow:hidden;">
             <div onclick="_pkgNiColFilterSortPick('${tab}','${field}','asc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;">정렬, 오름차순</div>
             <div onclick="_pkgNiColFilterSortPick('${tab}','${field}','desc')" style="padding:9px 12px;font-size:12.5px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);">정렬, 내림차순</div>
@@ -1751,7 +1756,7 @@
                     <span style="cursor:pointer;color:var(--text-sub);" onclick="_pkgNiColFilterClearAll()">지우기</span>
                 </div>
                 <input type="text" value="${_pkgNiColFilterSearch.replace(/"/g,'&quot;')}" oninput="_pkgNiColFilterSetSearch(this.value)" placeholder="검색" style="width:100%;box-sizing:border-box;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:11.5px;outline:none;margin-bottom:6px;background:var(--bg);color:var(--text);">
-                <div style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;">${checklistHtml}</div>
+                <div id="pkgNiColFilterList_${tab}_${field}" style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;">${_pkgNiColFilterListHtml(tab, field)}</div>
             </div>
             <div style="display:flex;gap:6px;padding:8px 12px;border-top:1px solid var(--border);">
                 <button onclick="_pkgNiColFilterCancel('${tab}')" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-sub);font-size:11.5px;font-weight:700;cursor:pointer;-webkit-appearance:none;">취소</button>
