@@ -3547,7 +3547,7 @@ function renderFactoryPanels(data) {
         <span class="h-8 rounded-full ${barColor} justify-self-center"></span>
         <div class="min-w-0">
           <div class="flex items-center gap-2">
-            <span class="text-[15px] font-bold text-slate-800 truncate" title="${d.건명}">${_roundNameHtml(d.건명, d.공장)}</span>
+            <span class="text-[15px] font-bold text-slate-800 truncate" title="${d.건명}">${_roundNameHtml(d)}</span>
             <span class="code-tag shrink-0" style="font-size:13.5px;font-weight:800;color:var(--text);font-family:'Inter','Noto Sans KR',sans-serif;">${d.단품코드 || '—'}</span>
           </div>
           <div class="text-[12px] text-slate-400 truncate mt-0.5">${d.단품명칭 || '—'}</div>
@@ -3646,7 +3646,7 @@ function renderTable(data) {
       <td class="py-2.5 pr-3">
         <span class="px-2 py-0.5 rounded-md text-[11px] font-bold ${factoryBadgeCls}">${d.공장명}</span>
       </td>
-      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${(d.건명||'').replace(/"/g,'&quot;')}"><span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d.건명, d.공장)}</span></td>
+      <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${(d.건명||'').replace(/"/g,'&quot;')}"><span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d)}</span></td>
       <td class="py-2.5 pr-3 font-mono text-slate-500 text-[13.5px]">${d.단품코드 ? `<span class="cursor-pointer text-accent-600 hover:underline" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>` : '—'}</td>
       <td class="py-2.5 pr-3 text-slate-600 max-w-[140px] truncate text-[12.5px]" title="${(d.단품명칭||'').replace(/"/g,'&quot;')}"><span class="cursor-pointer" title="클릭하여 복사" onclick="copyCellText('${_jsAttr(d.단품명칭)}', event)">${d.단품명칭 || '—'}</span></td>
       <td class="py-2.5 pr-3 text-center"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600">${d.색상 || '—'}</span></td>
@@ -11801,7 +11801,7 @@ function qcNotifyRender() {
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
             ${tagsHtml}
             <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
-            ${_qcRoundDetailBtnHtml(d.건명, d.공장)}
+            ${_qcRoundDetailBtnHtml(d)}
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
             <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
@@ -11928,7 +11928,7 @@ function qcDrawingRender() {
             ${bomBadge}
             ${inspectBadge}
             <span class="text-[13.5px] font-bold text-red-600 cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${d.건명}</span>
-            ${_qcRoundDetailBtnHtml(d.건명, d.공장)}
+            ${_qcRoundDetailBtnHtml(d)}
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
             <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
@@ -12091,7 +12091,7 @@ function qcNewRenderList() {
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded ${facCls}">${facLabel}</span>
             <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-50 text-amber-600">${newTag}</span>
             <span class="text-[13.5px] font-bold text-slate-800 cursor-pointer border-b border-dashed border-slate-300" onclick="qcNewCopyRound('${_jsAttr(key)}', event)">${roundDisplay}</span>
-            ${_qcRoundDetailBtnHtml(d.건명, d.공장)}
+            ${_qcRoundDetailBtnHtml(d)}
           </div>
           <div class="text-[11.5px] text-slate-500 flex gap-2 flex-wrap">
             <span class="font-mono cursor-pointer border-b border-dashed border-slate-300" onclick="copyCellText('${_jsAttr(d.단품코드)}', event)">${d.단품코드}</span>
@@ -13501,7 +13501,7 @@ function renderMobileFactoryPanels() {
       return `<div class="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0 cursor-pointer" onclick="openMItemDetail('${mik}')" style="-webkit-tap-highlight-color:transparent;">
         <div class="w-1 rounded-full shrink-0 self-stretch" style="background:${barColor};min-height:32px;"></div>
         <div class="flex-1 min-w-0" style="text-align:left;">
-          <div class="text-[15px] font-bold text-slate-800 truncate">${_roundNameHtml(d.건명, d.공장)}</div>
+          <div class="text-[15px] font-bold text-slate-800 truncate">${_roundNameHtml(d)}</div>
           <div class="mt-0.5 flex items-center flex-wrap" style="gap:5px;">
             <span class="code-tag" style="font-size:13px;font-weight:800;color:var(--text);">${d.단품코드 || '—'}</span>
             <span class="text-[11.5px] text-slate-400">${d.색상 || '—'} · ${d.수량 || 0}개</span>
@@ -13699,7 +13699,7 @@ function renderMobileList() {
       <div style="flex:1;padding:14px 14px 13px;min-width:0;">
         <div class="flex items-start justify-between mb-2.5">
           <div style="flex:1;min-width:0;margin-right:10px;">
-            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;"><span class="cursor-pointer" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d.건명, d.공장)}</span></div>
+            <div class="font-extrabold text-slate-900 truncate" style="font-size:15px;letter-spacing:-0.2px;"><span class="cursor-pointer" onclick="copyCellText('${_jsAttr(d.건명)}', event)">${_roundNameHtml(d)}</span></div>
             <div class="text-slate-400 truncate" style="font-size:12px;margin-top:3px;cursor:pointer;" onclick="_toggleTextExpand(this,event)" title="클릭하여 전체 명칭 보기"><span onclick="copyCellText('${_jsAttr(d.단품명칭)}', event)" title="클릭하여 복사">${d.단품명칭 || '—'}</span></div>
           </div>
           <span class="pill ${pillCls} shrink-0" style="font-size:10.5px;"><i class="fa-solid ${pillIcon}" style="font-size:9px;"></i> ${pillText}</span>
