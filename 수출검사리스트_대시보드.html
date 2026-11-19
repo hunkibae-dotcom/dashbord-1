@@ -2653,10 +2653,12 @@ function parseRows(rows, factory) {
       // "출력" 버튼 / "신규품목 확인 > 확인" 탭용 — GAS getActive가 실제 칼럼들 뒤에
       // 덧붙여 보내는 값들이라(요청, 2026-10-22), 고정 인덱스가 아니라 배열 맨 끝에서
       // 읽어야 시트에 칼럼이 늘어나도 안전하다. 순서: [...기존칼럼, 도면미출력(bool),
-      // 변경태그(배열: new/due/pack/bom), 변경이전값({bom?,due?,pack?} — 바뀌기 전 값)].
-      도면미출력: row[row.length - 3] === true,
-      변경태그: row[row.length - 2] || [],
-      변경이전값: row[row.length - 1] || {},
+      // 변경태그(배열: new/due/pack/bom), 변경이전값({bom?,due?,pack?} — 바뀌기 전 값),
+      // 건명 셀 메모(병합("...외N차수") 행이면 "포함된 차수:\n..." 문자열, 아니면 "")].
+      도면미출력: row[row.length - 4] === true,
+      변경태그: row[row.length - 3] || [],
+      변경이전값: row[row.length - 2] || {},
+      _mergeNoteRaw: row[row.length - 1] || '',
     });
   }
   return result;
@@ -8142,6 +8144,13 @@ function generateReportPptx() {
       const fname = `수출건 검사 세부내역${dateLabel}(${factoryLabel}-${keys.length}품목).pptx`;
       pptx.writeFile({ fileName: fname }).then(function() {
         _rpResetGenBtn();
+        // 요청(2026-11-19): "방금 생성한 품목을 작성완료 처리할까요?" 물어보고, 예하면
+        // 그 품목들을 작성완료 처리, 아니오면 그대로 둔다 — 이미 작성완료인 품목까지
+        // 다시 물어볼 필요는 없으니 아직 작성완료가 아닌 것만 센다/대상으로 한다.
+        const toMarkWritten = keys.filter(k => _reportSelected[k] && !_reportSelected[k].written);
+        if (toMarkWritten.length && confirm('방금 생성한 ' + toMarkWritten.length + '개 품목을 작성완료 처리할까요?')) {
+          toMarkWritten.forEach(k => toggleReportWritten(k, true));
+        }
         if (failedPhotoItems.length) {
           _rpShowErrorBanner(
             failedPhotoItems.length + '개 사진을 받아오지 못해 빈칸으로 들어갔습니다: ' + failedPhotoItems.slice(0, 3).join(', ') + (failedPhotoItems.length > 3 ? ' 외' : ''),
