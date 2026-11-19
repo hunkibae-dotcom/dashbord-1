@@ -11736,7 +11736,10 @@ function _qcColFilterBtnHtml(tab, field, label) {
 function _qcColFilterListHtml(tab, field) {
   const allValues = _qcColFilterAllValues(tab, field);
   const q = _qcColFilterSearch.toLowerCase();
-  const shown = q ? allValues.filter(v => v.toLowerCase().includes(q)) : allValues;
+  // 건명(round) 칼럼은 검색어가 병합 라벨("FAM외2차수") 안에 포함된 개별 차수와도
+  // 맞으면 그 라벨을 체크리스트에 보여준다(요청, 2026-11-20 — 위 _qcRoundMatchesQuery
+  // 와 같은 이유: 묶인 차수가 풀린 상태로 검색돼야 정확히 필터링된다).
+  const shown = q ? allValues.filter(v => field === 'round' ? _qcRoundMatchesQuery(v, q) : v.toLowerCase().includes(q)) : allValues;
   const draft = _qcColFilterDraft || new Set(allValues);
   return shown.map(v => {
     const checked = draft.has(v) ? 'checked' : '';
