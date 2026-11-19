@@ -3171,7 +3171,7 @@ function applyFilters() {
     return true;
   }
   function matchRow(d) {
-    if (roundSearch && !(d.건명||'').toLowerCase().includes(roundSearch)) return false;
+    if (roundSearch && !_qcRoundMatchesQuery(d.건명, roundSearch)) return false;
     if (codeSearch && !(d.단품코드||'').toLowerCase().includes(codeSearch) &&
         !(d.단품명칭||'').toLowerCase().includes(codeSearch)) return false;
     if (colorSearch && !(d.색상||'').toLowerCase().includes(colorSearch)) return false;
