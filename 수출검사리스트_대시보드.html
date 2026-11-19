@@ -13326,28 +13326,33 @@ async function _spuLoadStatus() {
 
 // ── "...외N차수" 병합 건명 상세 ─────────────────────────────
 // 구글시트에서 여러 차수를 하나의 건명으로 병합할 때 그 내역을 셀 메모(포함된
-// 차수: ...)로 남겨두는데, 이 메모는 시트 값이 아니라 메타데이터라서 지금까지
-// 앱/웹 어디에도 노출되지 않고 있었다. doGet에 getMergeNote 액션을 추가해서
-// 클릭 시점에만 조회하고(항상 미리 불러오면 느려짐), 같은 건명은 세션 내에서
-// 캐시해서 다시 클릭해도 재조회하지 않는다.
+// 차수: ...)로 남겨두는데, 이 메모는 시트 값이 아니라 메타데이터라서 한동안
+// 앱/웹 어디에도 노출되지 않았었다. 처음엔 doGet에 getMergeNote 액션을 따로 만들어
+// 클릭 시점에만 조회했는데(항상 미리 불러오면 느려질까봐), 그 액션이 시트를 처음부터
+// 다시 훑어서 가끔 타임아웃이 났다(요청 버그 수정, 2026-11-20: "건명 외n차수
+// 클릭하니까 포함된차수가 불러오기 실패할때가있으니"). 이제 getActive 응답 자체에
+// 이 메모를 같이 실어 보내므로(건명 검색이 포함된 차수까지 찾게 하려고 어차피
+// 필요해진 데이터, 요청 2026-11-20), 이미 불러와 있는 데이터에서 바로 찾아 쓰고
+// 네트워크 요청을 아예 안 한다 — 느려질 걱정도, 타임아웃도 없다. 혹시 옛 캐시 등
+// 이 메모가 없는 경우에 한해서만 예전 방식(getMergeNote)으로 보완 조회한다.
 function _isMergedRoundName(round) {
   return !!(round && /외\d+차수$/.test(round.toString().trim()));
 }
-function _roundNameHtml(round, factoryKey) {
-  const r = round || '—';
+function _roundNameHtml(d) {
+  const r = (d && d.건명) || '—';
   if (!_isMergedRoundName(r)) return r;
-  const esc = r.replace(/'/g, "\\'");
-  return `<span onclick="openRoundMergeDetail('${esc}','${factoryKey}',event)" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">${r}</span>`;
+  const key = _jsAttr(_qcNewKey(d));
+  return `<span onclick="openRoundMergeDetail('${key}',event)" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;">${r}</span>`;
 }
 // 건명 옆 작은 버튼(요청, 2026-11-16: "건명 외 N차수인 항목은 다 버튼을 만들어줘 확인
 // 단계에서나 등록단계에서나 도면단계에서나 전부다") — 신규품목확인 모달의 세 탭
 // (확인/등록/도면출력여부) 목록에서, 건명이 "...외N차수"로 병합된 항목이면 건명
 // 글자를 클릭하는 대신 옆에 따로 작은 아이콘 버튼을 둬서 포함된 차수 상세를 바로
 // 열 수 있게 한다(_roundNameHtml과 같은 openRoundMergeDetail을 그대로 재사용).
-function _qcRoundDetailBtnHtml(round, factoryKey) {
-  if (!_isMergedRoundName(round)) return '';
-  const esc = (round || '').replace(/'/g, "\\'");
-  return `<button type="button" onclick="openRoundMergeDetail('${esc}','${factoryKey}',event)" title="포함된 차수 상세보기/복사" style="flex-shrink:0;width:18px;height:18px;border:none;border-radius:5px;background:#EEF2FF;color:#6366F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i></button>`;
+function _qcRoundDetailBtnHtml(d) {
+  if (!d || !_isMergedRoundName(d.건명)) return '';
+  const key = _jsAttr(_qcNewKey(d));
+  return `<button type="button" onclick="openRoundMergeDetail('${key}',event)" title="포함된 차수 상세보기/복사" style="flex-shrink:0;width:18px;height:18px;border:none;border-radius:5px;background:#EEF2FF;color:#6366F1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"><i class="fa-solid fa-layer-group" style="font-size:9px;"></i></button>`;
 }
 // 서버(Apps Script)의 _parseMergeNote()와 동일한 규칙으로 파싱한다 —
 // 형식: "포함된 차수:\n건명 | N개 | yyyy-MM-dd"
@@ -13365,32 +13370,47 @@ function _parseMergeNoteClient(noteText) {
   });
   return items.length > 0 ? items : null;
 }
-const _roundMergeCache = {}; // 'factoryKey|round' → 파싱된 items (세션 내 재조회 방지)
-async function openRoundMergeDetail(round, factoryKey, event) {
+// 공장+건명+단품코드+색상(_qcNewKey)으로 지금 불러와 있는 데이터에서 정확히 그 행을
+// 찾는다 — "FAM외2차수"처럼 같은 병합 라벨이 서로 다른 제품에 우연히 똑같이 붙을 수
+// 있어서, 건명 텍스트만으로 찾으면 엉뚱한 행의 메모를 보여줄 수 있다(예전
+// getMergeNote 액션이 가진 한계이기도 함).
+function _qcFindItemByKey(key) {
+  return allData.find(d => _qcNewKey(d) === key) || archiveRows.find(d => _qcNewKey(d) === key) || null;
+}
+const _roundMergeCache = {}; // 'factoryKey|round' → 파싱된 items (예전 방식 보완 조회 전용 캐시)
+async function openRoundMergeDetail(key, event) {
   if (event) { event.stopPropagation(); event.preventDefault(); }
   const modal = document.getElementById('roundMergeModal');
   const titleEl = document.getElementById('roundMergeModalTitle');
   const listEl = document.getElementById('roundMergeModalList');
   if (!modal || !titleEl || !listEl) return;
+  const found = _qcFindItemByKey(key);
+  const round = (found && found.건명) || key.split('|')[1] || '';
+  const factoryKey = (found && found.공장) || key.split('|')[0] || '';
   titleEl.textContent = round;
   listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--label);font-size:12.5px;"><i class="fa-solid fa-spinner fa-spin"></i> 불러오는 중...</div>';
   modal.style.display = 'flex';
-  const cacheKey = factoryKey + '|' + round;
-  let items = _roundMergeCache[cacheKey];
+
+  let items = found && found._mergeNoteRaw ? _parseMergeNoteClient(found._mergeNoteRaw) : undefined;
   if (items === undefined) {
-    const url = _gasUrlForFactory(factoryKey);
-    if (!url) {
-      listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">시트 연동 URL이 설정되지 않았습니다.</div>';
-      return;
-    }
-    try {
-      const res = await fetch(url + '?action=getMergeNote&round=' + encodeURIComponent(round), { signal: AbortSignal.timeout(15000) });
-      const json = await res.json();
-      items = (json && json.status === 'success') ? _parseMergeNoteClient(json.note) : null;
-      _roundMergeCache[cacheKey] = items;
-    } catch (e) {
-      listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">불러오기 실패: ' + e.message + '</div>';
-      return;
+    // 이미 불러온 데이터에 메모가 없는 경우(옛 캐시 등)에만 예전 방식으로 보완 조회한다.
+    const cacheKey = factoryKey + '|' + round;
+    items = _roundMergeCache[cacheKey];
+    if (items === undefined) {
+      const url = _gasUrlForFactory(factoryKey);
+      if (!url) {
+        listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">시트 연동 URL이 설정되지 않았습니다.</div>';
+        return;
+      }
+      try {
+        const res = await fetch(url + '?action=getMergeNote&round=' + encodeURIComponent(round), { signal: AbortSignal.timeout(15000) });
+        const json = await res.json();
+        items = (json && json.status === 'success') ? _parseMergeNoteClient(json.note) : null;
+        _roundMergeCache[cacheKey] = items;
+      } catch (e) {
+        listEl.innerHTML = '<div style="text-align:center;padding:20px 0;color:#F87171;font-size:12.5px;">불러오기 실패: ' + e.message + '</div>';
+        return;
+      }
     }
   }
   if (!items || !items.length) {
