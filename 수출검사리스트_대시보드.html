@@ -3142,6 +3142,7 @@ function setQcDateField(field) {
 }
 
 function applyFilters() {
+  _qcBuildMergedLabelIndex();
   const roundSearch  = (document.getElementById('fRound')?.value  || '').toLowerCase().trim();
   const codeSearch   = (document.getElementById('fCode')?.value   || '').toLowerCase().trim();
   const colorSearch  = (document.getElementById('fColor')?.value  || '').toLowerCase().trim();
