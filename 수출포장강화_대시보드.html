@@ -3984,6 +3984,7 @@
                     const matchesNote = !noteQuery || _normSearchText(item.note || '').toLowerCase().includes(noteQuery);
                     const matchesStatus = activeStatusFilters.has('전체') || activeStatusFilters.has(item.status) || activeStatusFilters.has(item.statusLabel);
                     const matchesPtype = activePtypeFilters.has('전체') || activePtypeFilters.has(_pkgItemProductType(item));
+                    const matchesPcat = activePcatFilters.has('전체') || activePcatFilters.has(_pkgItemProductCat(item));
                     let matchesPallet = true;
                     if (palletQuery) {
                         const _isS = item.status === '출고' || item.status === '피킹';
@@ -4018,7 +4019,7 @@
                         cardRoundFilter.has(_cardRoundKey(item.round, 'date', item.date)) ||
                         cardRoundFilter.has(_cardRoundKey(item.round, 'dueDate', item.dueDate));
 
-                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesNote && matchesStatus && matchesPtype && matchesPallet && matchesSource && matchesCardRound;
+                    return matchesDate && matchesRound && matchesCode && matchesColor && matchesNote && matchesStatus && matchesPtype && matchesPcat && matchesPallet && matchesSource && matchesCardRound;
                 });
 
                 // 건명/제품코드/날짜(3칸) 구글시트 스타일 체크박스 필터(요청, 2026-11-13) —
