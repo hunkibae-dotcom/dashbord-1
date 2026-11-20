@@ -13342,33 +13342,20 @@ async function _spuLoadStatus() {
 function _isMergedRoundName(round) {
   return !!(round && /외\d+차수$/.test(round.toString().trim()));
 }
-// 건명 검색/필터가 "FAM외2차수" 같은 병합 라벨 안에 실제로 포함된 개별 차수(예:
+// 건명 검색이 "FAM외2차수" 같은 병합 라벨 안에 실제로 포함된 개별 차수(예:
 // FAM-183/26)까지 찾게 한다(요청, 2026-11-20: "fam-183... 묶인차수가 풀린상태에서
-// 검색이되야 내가 정확하게 필터링이되는거니"). applyFilters()가 매번 호출해서
-// allData 기준으로 다시 만든다 — 데이터 양이 적어(병합 행 자체가 소수) 비용이
-// 거의 없다. 라벨("FAM외2차수")이 서로 다른 제품에 우연히 똑같이 붙을 수 있어서
-// (앞서 발견한 getMergeNote의 한계와 같은 이유) 검색 용도로는 그 라벨을 쓰는 모든
-// 행의 포함 차수를 합쳐서 보여준다 — 정확한 상세 내역은 각 행의 상세보기 버튼으로.
-let _qcMergedLabelConstituents = {}; // 건명(병합 라벨) -> 그 라벨을 쓰는 모든 행의 포함 차수 이름 배열
-function _qcBuildMergedLabelIndex() {
-  const idx = {};
-  allData.forEach(d => {
-    if (!d._mergeNoteRaw || !_isMergedRoundName(d.건명)) return;
-    const items = _parseMergeNoteClient(d._mergeNoteRaw);
-    if (!items) return;
-    if (!idx[d.건명]) idx[d.건명] = [];
-    items.forEach(it => idx[d.건명].push(it.orderName));
-  });
-  _qcMergedLabelConstituents = idx;
-}
-// 건명 하나가 검색어를 "직접" 포함하거나, 병합 라벨이면 그 안의 차수 중 하나라도
-// 포함하면 true.
-function _qcRoundMatchesQuery(round, q) {
+// 검색이되야 내가 정확하게 필터링이되는거니"). 반드시 "이 행 자신의" 메모만
+// 확인한다 — 버그 수정(요청, 2026-11-20: "fam-183을 입력했을때... 선택하면
+// 다른차수도 같이검색이되는데") — 같은 "FAM외2차수" 라벨이 서로 다른 제품(전혀
+// 무관한 다른 차수들)에 우연히 똑같이 붙을 수 있어서, 라벨 텍스트 기준으로 그
+// 라벨을 쓰는 모든 행의 포함 차수를 합쳐서 봐버리면 전혀 상관없는 행까지 걸려버린다.
+function _qcRoundMatchesQuery(d, q) {
   if (!q) return true;
-  const r = (round || '').toLowerCase();
+  const r = (d.건명 || '').toLowerCase();
   if (r.includes(q)) return true;
-  const constituents = _qcMergedLabelConstituents[round];
-  return !!(constituents && constituents.some(name => name.toLowerCase().includes(q)));
+  if (!d._mergeNoteRaw) return false;
+  const items = _parseMergeNoteClient(d._mergeNoteRaw);
+  return !!(items && items.some(it => it.orderName.toLowerCase().includes(q)));
 }
 function _roundNameHtml(d) {
   const r = (d && d.건명) || '—';
