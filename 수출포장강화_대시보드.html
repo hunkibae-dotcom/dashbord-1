@@ -7158,6 +7158,9 @@
             // 제품종류 드롭다운 초기화
             activePtypeFilters = new Set(['전체']);
             _syncPtypeFilterUI();
+            // 제품구분 드롭다운 초기화
+            activePcatFilters = new Set(['전체']);
+            _syncPcatFilterUI();
             // 소스 필터 초기화
             _activeSourceFilter = 'all';
             ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
