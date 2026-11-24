@@ -12562,6 +12562,12 @@
             const wrap = document.getElementById('pkgLabelPalletInputWrap');
             const dd = document.getElementById('pkgLabelPalletDropdown');
             if (!wrap || !dd || dd.style.display === 'none') return;
+            // 건명/수량 수정 팝업(pkgLabelItemEditModal)은 이 드롭다운 바깥에 별도로 떠
+            // 있어서, 그 팝업 안(취소/저장 버튼 포함)을 눌러도 "바깥 클릭"으로 오인해
+            // 드롭다운이 접혀버렸다(요청, 2026-11-24: "취소누르면 초기 출력화면으로
+            // 돌아가지는데 검색창 그대로 띄워지게해줘") — 그 팝업 영역 클릭은 무시한다.
+            const itemEditModal = document.getElementById('pkgLabelItemEditModal');
+            if (itemEditModal && itemEditModal.contains(ev.target)) return;
             if (!wrap.contains(ev.target)) dd.style.display = 'none';
         });
 
