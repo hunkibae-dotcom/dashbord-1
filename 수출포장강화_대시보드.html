@@ -12309,19 +12309,41 @@
                 btn.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,.08)' : 'none';
             });
         }
-        // 건명/제품코드 검색 대상 — 충주공장 재고(state.stockRowItems)에서 적재번호가
-        // 실제로 찍힌 행만 모은다(미적재는 아직 인식표를 뽑을 적재번호가 없으니 제외).
-        // 부분포장 등으로 같은 코드+색상+적재가 여러 행에 쪼개져 있으면 한 번만 보여준다.
+        // 건명/제품코드 검색 대상 — 실재고(충주공장 재고)가 아니라 제품검색 표와 같은
+        // 수출 현황(+출고 완료) 기준으로 보여준다(요청, 2026-11-24: "건명/제품코드검색은
+        // 실재고가아닌 수출현황기준이고"). 건명·수량은 여기(state.data) 값을 그대로 쓰고,
+        // 적재번호만 충주공장 재고 쪽에서 code+건명+색상으로 빌려온다(_dtPM과 동일한
+        // 조회 방식) — 아직 적재번호가 없는 품목은 뽑을 인식표가 없으니 제외한다.
+        function _pkgLabelItemPalletMap() {
+            const map = {};
+            if (state.rawStockRows && state.rawStockRows.length > 1) {
+                const hdr = state.rawStockRows[0].map(h => (h || '').toString().trim());
+                const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
+                const iR = hdr.findIndex(h => h.replace(/\s/g,'').includes('수주건명') || h.replace(/\s/g,'').includes('건명'));
+                const iCol = hdr.findIndex(h => h.replace(/\s/g,'').includes('색상'));
+                for (let i = 1; i < state.rawStockRows.length; i++) {
+                    const row = state.rawStockRows[i]; if (!row) continue;
+                    const c = (row[iC >= 0 ? iC : 1] || '').toString().trim().toUpperCase();
+                    const r = (row[iR >= 0 ? iR : 4] || '').toString().trim();
+                    const col = (iCol >= 0 ? (row[iCol] || '') : '').toString().trim();
+                    const v = (row[10] || '').toString().trim();
+                    if (c && v) map[c + '|' + r + '|' + col] = v;
+                }
+            }
+            return map;
+        }
         function _pkgLabelItemSearchSource() {
+            const palletMap = _pkgLabelItemPalletMap();
             const seen = new Set();
             const out = [];
-            (state.stockRowItems || []).forEach(it => {
-                const p = (it.pallet || '').toString().trim();
+            (state.data || []).forEach(it => {
+                const key0 = (it.code || '').toUpperCase().trim() + '|' + (it.round || '').trim() + '|' + (it.color || '').trim();
+                const p = (palletMap[key0] || '').toString().trim();
                 if (!p || p === '미적재' || p === '-') return;
-                const key = (it.round || '') + '|' + (it.code || '') + '|' + (it.color || '') + '|' + p;
+                const key = key0 + '|' + p;
                 if (seen.has(key)) return;
                 seen.add(key);
-                out.push(it);
+                out.push({ ...it, pallet: p });
             });
             out.sort((a, b) => (a.round || '').localeCompare(b.round || '', 'ko') || (a.code || '').localeCompare(b.code || '', 'ko'));
             return out;
