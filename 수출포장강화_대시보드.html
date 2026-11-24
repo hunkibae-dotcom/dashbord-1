@@ -12177,6 +12177,8 @@
             document.getElementById('pkgLabelPrepFeedback').textContent = '';
             document.getElementById('pkgLabelPalletFeedback').textContent = '';
             _pkgClearLabelPalletSelection();
+            _pkgLabelPalletSearchMode = 'pallet';
+            _pkgSyncLabelModeButtons();
             document.getElementById('pkgLabelPalletDropdown').style.display = 'none';
             _pkgLabelShowStep('pkgLabelStep1');
             document.getElementById('pkgLabelModal').style.display = 'flex';
