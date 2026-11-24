@@ -12391,7 +12391,7 @@
                     <input type="checkbox" class="pkg-label-item-chk" value="${_pkgEscHtml(it._itemKey)}" ${checked} onchange="_pkgOnLabelItemCheckChange(this)" style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
                     <span style="flex:1;min-width:0;">
                         <div style="font-size:12.5px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_pkgEscHtml(it.round || '-')} <span style="color:#94a3b8;font-weight:500;">· ${_pkgEscHtml(it.code || '-')}</span></div>
-                        <div style="font-size:11px;color:#64748b;">${_pkgEscHtml(it.color || '-')} · ${_pkgEscHtml(it.qty != null && it.qty !== '' ? it.qty : '-')}개 · ${_pkgEscHtml(pallet)}</div>
+                        <div style="font-size:11px;color:#64748b;">${_pkgEscHtml(it.color || '-')} · ${_pkgEscHtml(it.qty != null && it.qty !== '' ? it.qty : '-')}개 · ${pallet ? _pkgEscHtml(pallet) : '<span style="color:#f59e0b;">미적재</span>'}</div>
                     </span>
                     <button type="button" onclick="event.stopPropagation();event.preventDefault();_pkgOpenLabelItemEdit(${idx})" title="건명/수량 수정" style="flex-shrink:0;width:26px;height:26px;border-radius:7px;border:1px solid #e2e8f0;background:#fff;color:#7c3aed;cursor:pointer;display:flex;align-items:center;justify-content:center;">
                         <i class="fa-solid fa-pen" style="font-size:11px;"></i>
