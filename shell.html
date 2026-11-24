@@ -6420,6 +6420,7 @@
     let _ieOrigPallet = '';
     let _ieOrigSheetRow = null; // 적재번호 저장 시 행을 정확히 집어서 수정하기 위한 값(2026-11-05, PC 웹과 동일)
     let _ieOrigRegDate = '';
+    let _ieOrigQty = 0;
     let _ieOrigW = '', _ieOrigD = '', _ieOrigH = '', _ieOrigG = '';
     let _ieOrigShipDate = '', _ieOrigDueDate = '';
     let _ieOrigArriveDate = ''; // 입고일(요청, 2026-10-29: "품목수정창에 입고일이 없어 추가해줘")
@@ -6598,9 +6599,12 @@
             _ieOriginStatusMap = _ieFindOriginStatusMap(code, round, color || '');
             _ieOrigSheetRow = item.source === 'stock' ? (item._sheetRow || null) : null;
         } else {
-            ['ieColor','ieCountry','ieQty','ieCodeType','ieType'].forEach(id => {
+            ['ieColor','ieCountry','ieCodeType','ieType'].forEach(id => {
                 const el = document.getElementById(id); if (el) el.textContent = '—';
             });
+            const ieQtyInput0 = document.getElementById('ieQtyInput');
+            if (ieQtyInput0) ieQtyInput0.value = '';
+            _ieOrigQty = 0;
             _ieOrigRegDate = ''; _ieOrigShipDate = ''; _ieOrigDueDate = ''; _ieOrigArriveDate = '';
             const ieRegDateInp = document.getElementById('ieRegDate');
             if (ieRegDateInp) ieRegDateInp.value = '';
