@@ -12695,6 +12695,32 @@
                 await _pkgGenerateShipLabelPdf(res);
             }
         }
+        // 건명/제품코드 모드에서 임시로 고친 품목이 있는 적재번호 전용 — 실재고를
+        // 다시 조회하지 않고, 지금 화면의(수정 반영된) 품목 목록을 그대로 서버에
+        // 넘겨 인식표를 만든다("선택 모드"가 이미 쓰던 pkgPrintStockLabelSelected/
+        // pkgPrintShipLabelSelected 액션 재사용 — 구글시트엔 아무것도 안 쓰고 인식표
+        // 템플릿 시트만 채워 PDF로 내보내는 액션이라 임시 출력 용도에 딱 맞는다).
+        async function _pkgRunOneLabelPrintFromItems(palletNumber, items, zoneName) {
+            if (_pkgLabelState.kind === 'stock') {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST', body: JSON.stringify({ action: 'pkgPrintStockLabelSelected', palletNumber: palletNumber, items: items }),
+                    signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고용 인식표 생성에 실패했습니다.');
+                await _pkgGenerateStockLabelPdf(res);
+            } else {
+                const body = {
+                    action: 'pkgPrintShipLabelSelected', palletNumber: palletNumber,
+                    labelType: _pkgLabelState.shipType, customRound: _pkgLabelState.customRound,
+                    customName: _pkgLabelState.customName, items: items, zoneName: zoneName
+                };
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST', body: JSON.stringify(body), signal: AbortSignal.timeout(60000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '출고용 인식표 생성에 실패했습니다.');
+                await _pkgGenerateShipLabelPdf(res);
+            }
+        }
         // 드롭다운에서 여러 적재번호를 체크했으면 그 목록을, 아니면 기존처럼 입력칸
         // 값 하나를 쓴다(요청, 2026-11-06: "여러장을 출력하고싶을수도있기 때문에
         // 적재번호를 여러개 선택할 수있었으면 좋곘어"). 서버 쪽 로직/액션은 전혀 안
