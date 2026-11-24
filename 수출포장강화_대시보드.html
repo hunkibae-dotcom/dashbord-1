@@ -12463,10 +12463,12 @@
         // "적용" — 이제 드롭다운 안이 아니라 토글 버튼 옆에 항상 보이는 자리에 있어서
         // 체크 목록을 아무리 스크롤해도 바로 누를 수 있다(요청, 2026-11-06). 체크해둔
         // 항목들은 이미 실시간으로 반영돼 있고, 여기서는 검색칸에 아직 남아있는 글자를
-        // "목록에 없는 번호 직접 입력"으로 한 번 더 추가해준다.
+        // "목록에 없는 번호 직접 입력"으로 한 번 더 추가해준다 — 단, 건명/제품코드
+        // 검색 모드에서는 남아있는 글자가 적재번호가 아니라 검색어이므로 추가하지 않는다
+        // (요청, 2026-11-24).
         function _pkgApplyLabelPalletSelection() {
             const q = (document.getElementById('pkgLabelPalletSearchInput').value || '').trim();
-            if (q) {
+            if (q && _pkgLabelPalletSearchMode !== 'item') {
                 const norm = _pkgNormalizePalletNumber(q);
                 if (norm && !_pkgLabelMultiPallets.includes(norm)) _pkgLabelMultiPallets.push(norm);
             }
