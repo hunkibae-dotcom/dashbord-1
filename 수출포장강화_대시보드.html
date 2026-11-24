@@ -12551,28 +12551,43 @@
             else _pkgLabelItemModeSelected.delete(chk.value);
             _pkgUpdateLabelPalletSelectionUI();
         }
-        // 실제로 인쇄할 적재번호 목록 — 적재번호 모드에서 고른 것과, 건명/제품코드
-        // 모드에서 고른 품목들의 적재번호를 합쳐 중복 없이 돌려준다. 같은 적재번호를
-        // 쓰는 품목을 여러 개 체크해도 그 적재번호 인식표는 한 장만 생성된다.
-        function _pkgEffectiveLabelPallets() {
-            const set = new Set(_pkgLabelMultiPallets);
+        // 실제로 인쇄할 작업 목록을 만든다. 적재번호 모드에서 고른 건 그 적재번호로
+        // 실재고를 다시 조회해서 지금 그 파렛트에 실린 전체 내용으로(기존 방식 그대로,
+        // items:null) 한 장을 만든다. 건명/제품코드 모드에서 고른 건 "체크한 품목만"
+        // (적재번호가 같으면 모아서 한 장, 없으면 품목마다 따로 한 장)으로 인쇄한다 —
+        // 예전엔 체크한 품목의 적재번호를 찾아서 "그 적재번호에 실린 전체 품목"을 다시
+        // 끌어와 인쇄했는데, 그러면 체크 안 한 다른 품목이나 수정 전 값이 같이 섞여
+        // 들어갔다(요청, 2026-11-25: "건명/코드로 검색의 수정창에서 수정 후 출력하면
+        // 기존 수정전의 품목도같이 입력되는데", "품목수정창에서 인식표 출력하면...
+        // 다른품목들이 마구입력되는 오류"). 이제는 항상 체크한 품목 그대로만 보낸다.
+        function _pkgLabelPrintJobs() {
+            const jobs = _pkgLabelMultiPallets.map(pn => ({ palletNumber: pn, items: null }));
             if (_pkgLabelItemModeSelected.size) {
                 const pool = _pkgLabelItemSearchSource();
                 const byKey = {};
                 pool.forEach(it => { byKey[it._itemKey] = it; });
+                const byPallet = {};
                 _pkgLabelItemModeSelected.forEach(key => {
                     const it = byKey[key];
-                    if (it && it.pallet) set.add(it.pallet);
+                    if (!it) return;
+                    if (it.pallet) {
+                        if (!byPallet[it.pallet]) byPallet[it.pallet] = [];
+                        byPallet[it.pallet].push(it);
+                    } else {
+                        // 적재번호가 아직 없는 품목은 혼자 한 장(제목은 건명)으로 인쇄한다.
+                        jobs.push({ palletNumber: it.round || '', items: [it] });
+                    }
                 });
+                Object.keys(byPallet).forEach(pn => jobs.push({ palletNumber: pn, items: byPallet[pn] }));
             }
-            return Array.from(set);
+            return jobs;
         }
         function _pkgUpdateLabelPalletSelectionUI() {
-            const effective = _pkgEffectiveLabelPallets();
+            const jobCount = _pkgLabelPrintJobs().length;
             const label = document.getElementById('pkgLabelPalletDropdownLabel');
-            if (label) label.textContent = effective.length ? (effective.length + '개 선택됨') : '목록에서 선택';
+            if (label) label.textContent = jobCount ? (jobCount + '개 선택됨') : '목록에서 선택';
             const countEl = document.getElementById('pkgLabelPalletSelCount');
-            if (countEl) countEl.textContent = effective.length ? ('총 ' + effective.length + '개') : '';
+            if (countEl) countEl.textContent = jobCount ? ('총 ' + jobCount + '개') : '';
             const allChk = document.getElementById('pkgLabelPalletSelectAll');
             if (allChk) {
                 const visibleCls = _pkgLabelPalletSearchMode === 'item' ? '.pkg-label-item-chk' : '.pkg-label-pallet-chk';
