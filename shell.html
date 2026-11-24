@@ -2711,7 +2711,8 @@
                 const st = (x.status || '').replace(/\s+/g,'');
                 // "일부포장완료"(2026-11-05 신설)는 전부 끝난 게 아니라서 완료 수량에
                 // 포함시키면 안 된다 — includes 대신 정확히 일치할 때만 완료로 센다.
-                return s + ((st === '포장완료' || x.isDone) ? (parseInt(x.qty) || 0) : 0);
+                // (웹 updateNearestSchedule()과 동일하게 '출고'도 정확히 일치할 때만 완료로 센다.)
+                return s + ((st === '포장완료' || st === '출고') ? (parseInt(x.qty) || 0) : 0);
             }, 0);
             const remainQty = Math.max(0, totalQty - doneQty);
             const pct = totalQty > 0 ? Math.min(100, Math.round(doneQty / totalQty * 100)) : 0;
