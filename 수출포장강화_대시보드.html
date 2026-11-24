@@ -12353,7 +12353,7 @@
             const norm = s => (s || '').toString().toLowerCase();
             const matched = q ? all.filter(it => norm(it.round).includes(q) || norm(it.code).includes(q)) : all;
             if (!all.length) {
-                listEl.innerHTML = '<div style="padding:10px 6px;color:#94a3b8;font-size:12px;text-align:center;">적재번호가 입력된 재고 품목이 없습니다.</div>';
+                listEl.innerHTML = '<div style="padding:10px 6px;color:#94a3b8;font-size:12px;text-align:center;">적재번호가 등록된 품목이 없습니다.</div>';
                 return;
             }
             if (!matched.length) {
