@@ -12349,19 +12349,22 @@
         }
         function _pkgLabelItemSearchSource() {
             const palletMap = _pkgLabelItemPalletMap();
-            const seen = new Set();
             const out = [];
-            (state.data || []).forEach(it => {
+            // 품목 고유키는 code+건명+색상+적재뿐 아니라 state.data 안에서의 순서(idx)도
+            // 같이 넣는다 — 파렛트 분할·부분입고 등으로 코드+건명+색상+적재가 전부 같은
+            // 서로 다른 실제 행(수량만 다름)이 있을 수 있는데, 이전엔 idx 없이 묶는
+            // 바람에 그런 행 중 하나가 검색 목록에서 조용히 빠졌다(요청, 2026-11-25:
+            // "일부 품목이 검색이 안되는데"). idx를 넣으면 실제 행마다 항상 고유해서
+            // 어느 행도 누락되지 않는다.
+            (state.data || []).forEach((it, idx) => {
                 const key0 = (it.code || '').toUpperCase().trim() + '|' + (it.round || '').trim() + '|' + (it.color || '').trim();
                 const p = (palletMap[key0] || '').toString().trim();
-                if (!p || p === '미적재' || p === '-') return;
-                const key = key0 + '|' + p;
-                if (seen.has(key)) return;
-                seen.add(key);
+                const pallet = (p && p !== '-') ? p : '';
+                const key = key0 + '|' + pallet + '|' + idx;
                 // 이번 출력에서만 쓰기로 한 임시 건명/수량이 있으면 덮어써서 보여준다
                 // (요청, 2026-11-24) — _origItem(state.data의 실제 항목)은 건드리지 않는다.
                 const ov = _pkgLabelItemOverrides[key];
-                out.push({ ...it, pallet: p, _origItem: it, _itemKey: key, round: ov ? ov.round : it.round, qty: ov ? ov.qty : it.qty });
+                out.push({ ...it, pallet: pallet, _origItem: it, _itemKey: key, round: ov ? ov.round : it.round, qty: ov ? ov.qty : it.qty });
             });
             out.sort((a, b) => (a.round || '').localeCompare(b.round || '', 'ko') || (a.code || '').localeCompare(b.code || '', 'ko'));
             return out;
