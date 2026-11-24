@@ -13554,6 +13554,9 @@
                 if (changed.note !== undefined) {
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.note = changed.note; }); });
                 }
+                if (changed.qty !== undefined) {
+                    [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.qty = changed.qty; }); });
+                }
                 if (changed.defectPhotos !== undefined) {
                     const defectPhotosJson = JSON.stringify(changed.defectPhotos);
                     [state.data, state.filteredData].forEach(arr => { if (!arr) return; arr.forEach(it => { if (_pkgMatch(it)) it.defectPhotos = defectPhotosJson; }); });
