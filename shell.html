@@ -6825,6 +6825,16 @@
             );
             changed.memo = newMemo;
         }
+        // 수량 수정(요청, 2026-11-25: "포장강화 품목수정창에서 수량 수정가능하게해줘
+        // (앱, 웹 둘다)") — 진행상태 수정과 같은 이유로, 지금 보고 있는 기준(_ieBasis)의
+        // 시트 하나만 고친다(PC 웹 savePkgItemDetail과 동일).
+        if (newQty !== _ieOrigQty) {
+            tasks.push(
+                fetch(GAS_URL + '?' + new URLSearchParams({ action:'updateQty', origin:_ieBasis||'', code:_ieCode, round:_ieRound, color:_ieColor, qty:String(newQty) }),
+                    { signal: AbortSignal.timeout(15000) }).then(r => r.text())
+            );
+            changed.qty = newQty;
+        }
         if (newPallet !== _ieOrigPallet) {
             // 숫자만 입력했으면 시트 형식("적재 99")에 맞춰 접두사를 붙여서 보냄 — 문자 섞인 라벨(예: A-1)은 그대로 전송
             const sendPallet = /^\d+$/.test(newPallet) ? '적재 ' + newPallet : newPallet;
