@@ -6934,6 +6934,9 @@
             if (changed.memo !== undefined) {
                 allData.forEach(it => { if (_ieMatch(it)) it.memo = changed.memo; });
             }
+            if (changed.qty !== undefined) {
+                allData.forEach(it => { if (_ieMatch(it)) it.qty = changed.qty; });
+            }
             if (changed.pallet !== undefined && rawStockRows && rawStockRows.length > 1) {
                 const hdr = rawStockRows[0].map(h => (h||'').toString().trim());
                 const iC = hdr.findIndex(h => h.replace(/\s/g,'').includes('품목코드') || h.replace(/\s/g,'').includes('제품코드'));
