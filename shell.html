@@ -4052,6 +4052,16 @@
             }
         });
         try {
+            // 상차일은 여러 품목을 한 번에 받는 pkgUpdateShipDate(PC 웹 일괄수정과 동일
+            // 액션)로 먼저 반영한다 — 출고/피킹으로 바뀌면 "수출 현황" 행 자체가
+            // 삭제되므로, 그 전에 먼저 보내둔다(요청, 2026-11-25: "포장강화 앱에서
+            // 품목들의 상차일을 변경하려고했는데 일괄수정에는 상차일변경이없어 추가해줘").
+            if (shipDate) {
+                const dateBody = { action: 'pkgUpdateShipDate', items: items.map(it => ({ code: it.code, round: it.round, color: it.color })), shipDate: shipDate };
+                const dateRes = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(dateBody), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (dateRes && dateRes.ok === false) throw new Error(dateRes.message || '상차일 반영 실패');
+                items.forEach(it => { it.date = shipDate; });
+            }
             await Promise.all(tasks);
             _invalidateDataCache(); // 방금 고친 내용이 다음 재진입에서 옛 캐시로 되돌아가지 않게
             resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다.`;
