@@ -12372,9 +12372,9 @@
             _pkgLabelItemEditPool = shown;
             listEl.innerHTML = shown.map((it, idx) => {
                 const pallet = (it.pallet || '').toString().trim();
-                const checked = _pkgLabelMultiPallets.includes(pallet) ? 'checked' : '';
+                const checked = _pkgLabelItemModeSelected.has(it._itemKey) ? 'checked' : '';
                 return `<label style="display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
-                    <input type="checkbox" class="pkg-label-pallet-chk" value="${_pkgEscHtml(pallet)}" ${checked} onchange="_pkgOnLabelPalletCheckChange(this)" style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
+                    <input type="checkbox" class="pkg-label-item-chk" value="${_pkgEscHtml(it._itemKey)}" ${checked} onchange="_pkgOnLabelItemCheckChange(this)" style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
                     <span style="flex:1;min-width:0;">
                         <div style="font-size:12.5px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_pkgEscHtml(it.round || '-')} <span style="color:#94a3b8;font-weight:500;">· ${_pkgEscHtml(it.code || '-')}</span></div>
                         <div style="font-size:11px;color:#64748b;">${_pkgEscHtml(it.color || '-')} · ${_pkgEscHtml(it.qty != null && it.qty !== '' ? it.qty : '-')}개 · ${_pkgEscHtml(pallet)}</div>
