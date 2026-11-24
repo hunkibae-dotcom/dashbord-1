@@ -12343,7 +12343,7 @@
                 const key = key0 + '|' + p;
                 if (seen.has(key)) return;
                 seen.add(key);
-                out.push({ ...it, pallet: p, _origItem: it });
+                out.push({ ...it, pallet: p, _origItem: it, _itemKey: key });
             });
             out.sort((a, b) => (a.round || '').localeCompare(b.round || '', 'ko') || (a.code || '').localeCompare(b.code || '', 'ko'));
             return out;
