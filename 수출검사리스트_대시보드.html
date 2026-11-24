@@ -8741,8 +8741,12 @@ function renderProductSearchResults(results) {
     const blockCls = QC_BLOCKING_CLS[d.블로킹] || QC_BLOCKING_CLS['미등록'];
     const mik = 'mps_' + idx;
     window._mItemMap[mik] = d;
+    // 검사상태 칸 호버 — 공정진행정보 업로드로 반영된 공정진행률(%)을 살짝 보여준다
+    // (요청, 2026-11-25: "검사상태 칼럼쪽에 마우스 호버 하면... 공정진행률이 몇 %인지
+    // 표시를 살짝해주면"). 아직 한 번도 반영된 적 없으면(빈 값) 툴팁 자체를 안 띄운다.
+    const progressTitle = (d.공정진행률 !== '' && d.공정진행률 != null) ? ` title="공정 ${d.공정진행률}%"` : '';
     return `<tr class="tbl-row" onclick="openMItemDetail('${mik}')" style="cursor:pointer;">
-      <td class="py-2.5 pr-3"><span class="pill ${statusCls}">${statusLabel}</span></td>
+      <td class="py-2.5 pr-3"><span class="pill ${statusCls}"${progressTitle}>${statusLabel}</span></td>
       <td class="py-2.5 pr-3"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap ${blockCls}">${d.블로킹 === '-' ? '—' : _qcBlockingLabel(d.블로킹)}</span></td>
       <td class="py-2.5 pr-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded-md text-[11px] font-bold whitespace-nowrap ${factoryBadgeCls}">${d.공장 === 'cj1' ? '충주1' : '충주2'}</span></td>
       <td class="py-2.5 pr-3 font-semibold text-slate-700 max-w-[140px] truncate" title="${d.건명}">${d.건명}</td>
