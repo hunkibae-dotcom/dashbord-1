@@ -12280,6 +12280,77 @@
         // 누를 때 입력칸 대신 이 목록을 쓰고, 하나씩 순서대로 같은 기존 로직으로
         // PDF를 만들어 각각 다운로드한다 — 서버 쪽 로직은 전혀 안 바꾼다.
         let _pkgLabelMultiPallets = [];
+        // 적재번호를 몰라도 건명/제품코드로 찾아서 고를 수 있게 하는 검색 모드 전환
+        // (요청, 2026-11-24: "목록에서선택이있는데 적재번호로검색, 또는 건명/제품코드로
+        // 검색도 추가해서 내가 골라서 다중으로 출력 가능하게"). 체크박스 자체는 두
+        // 모드 모두 "값=적재번호"로 똑같이 동작해서(_pkgOnLabelPalletCheckChange 등
+        // 기존 로직 그대로 재사용), 실제로 선택되는 건 항상 적재번호 목록이다.
+        let _pkgLabelPalletSearchMode = 'pallet';
+        function _pkgSetLabelPalletSearchMode(mode) {
+            if (_pkgLabelPalletSearchMode === mode) return;
+            _pkgLabelPalletSearchMode = mode;
+            const input = document.getElementById('pkgLabelPalletSearchInput');
+            if (input) {
+                input.value = '';
+                input.placeholder = mode === 'item' ? '건명 또는 제품코드로 검색' : '번호로 검색, 또는 목록에 없는 번호를 직접 입력 (예: 1, B-20)';
+            }
+            _pkgSyncLabelModeButtons();
+            _pkgRenderLabelPalletDropdown();
+            if (input) input.focus();
+        }
+        function _pkgSyncLabelModeButtons() {
+            const defs = [['pkgLabelModeBtnPallet', 'pallet'], ['pkgLabelModeBtnItem', 'item']];
+            defs.forEach(([id, m]) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const active = _pkgLabelPalletSearchMode === m;
+                btn.style.background = active ? '#fff' : 'transparent';
+                btn.style.color = active ? '#0284c7' : '#64748b';
+                btn.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,.08)' : 'none';
+            });
+        }
+        // 건명/제품코드 검색 대상 — 충주공장 재고(state.stockRowItems)에서 적재번호가
+        // 실제로 찍힌 행만 모은다(미적재는 아직 인식표를 뽑을 적재번호가 없으니 제외).
+        // 부분포장 등으로 같은 코드+색상+적재가 여러 행에 쪼개져 있으면 한 번만 보여준다.
+        function _pkgLabelItemSearchSource() {
+            const seen = new Set();
+            const out = [];
+            (state.stockRowItems || []).forEach(it => {
+                const p = (it.pallet || '').toString().trim();
+                if (!p || p === '미적재' || p === '-') return;
+                const key = (it.round || '') + '|' + (it.code || '') + '|' + (it.color || '') + '|' + p;
+                if (seen.has(key)) return;
+                seen.add(key);
+                out.push(it);
+            });
+            out.sort((a, b) => (a.round || '').localeCompare(b.round || '', 'ko') || (a.code || '').localeCompare(b.code || '', 'ko'));
+            return out;
+        }
+        function _pkgRenderLabelItemList(listEl, q) {
+            const all = _pkgLabelItemSearchSource();
+            const norm = s => (s || '').toString().toLowerCase();
+            const matched = q ? all.filter(it => norm(it.round).includes(q) || norm(it.code).includes(q)) : all;
+            if (!all.length) {
+                listEl.innerHTML = '<div style="padding:10px 6px;color:#94a3b8;font-size:12px;text-align:center;">적재번호가 입력된 재고 품목이 없습니다.</div>';
+                return;
+            }
+            if (!matched.length) {
+                listEl.innerHTML = `<div style="padding:10px 6px;color:#94a3b8;font-size:12px;text-align:center;">"${_pkgEscHtml(q)}"와 일치하는 품목이 없습니다.</div>`;
+                return;
+            }
+            const LIMIT = 200;
+            listEl.innerHTML = matched.slice(0, LIMIT).map(it => {
+                const pallet = (it.pallet || '').toString().trim();
+                const checked = _pkgLabelMultiPallets.includes(pallet) ? 'checked' : '';
+                return `<label style="display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:6px;cursor:pointer;" onmouseenter="this.style.background='#f8fafc'" onmouseleave="this.style.background=''">
+                    <input type="checkbox" class="pkg-label-pallet-chk" value="${_pkgEscHtml(pallet)}" ${checked} onchange="_pkgOnLabelPalletCheckChange(this)" style="width:14px;height:14px;cursor:pointer;flex-shrink:0;">
+                    <span style="flex:1;min-width:0;">
+                        <div style="font-size:12.5px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_pkgEscHtml(it.round || '-')} <span style="color:#94a3b8;font-weight:500;">· ${_pkgEscHtml(it.code || '-')}</span></div>
+                        <div style="font-size:11px;color:#64748b;">${_pkgEscHtml(it.color || '-')} · 적재 ${_pkgEscHtml(pallet)}</div>
+                    </span>
+                </label>`;
+            }).join('') + (matched.length > LIMIT ? `<div style="padding:6px;color:#94a3b8;font-size:11px;text-align:center;">검색 결과가 많아 상위 ${LIMIT}건만 표시합니다 — 검색어를 좁혀보세요.</div>` : '');
+        }
         function _pkgClearLabelPalletSelection() {
             _pkgLabelMultiPallets = [];
             const label = document.getElementById('pkgLabelPalletDropdownLabel');
