@@ -12394,6 +12394,13 @@
         // 시트 하나만 고쳐 쓴다.
         let _pkgLabelItemEditPool = [];
         let _pkgLabelItemEditTarget = null;
+        // 품목마다 상황(섞여 실린 적재, 급하게 묶인 차수 등)이 달라서, 이 수정은
+        // 구글시트를 실제로 고치는 게 아니라 "이번 인식표 출력 한 번만" 건명·수량을
+        // 바꿔서 찍기 위한 임시 값이다(요청, 2026-11-24: "실제로 시트에 반영이
+        // 되어서는안돼 저장하는거는 임시로 지금 출력할때 출력내용을 수정한다는
+        // 의미"). 인식표 출력창을 닫으면(pkgCloseLabelModal) 전부 지워진다 — 다음에
+        // 다시 열면 항상 원래 값부터 시작한다.
+        let _pkgLabelItemOverrides = {}; // { _itemKey: {round, qty} }
         function _pkgOpenLabelItemEdit(idx) {
             const it = _pkgLabelItemEditPool[idx];
             if (!it) return;
@@ -12409,7 +12416,7 @@
             document.getElementById('pkgLabelItemEditModal').style.display = 'none';
             _pkgLabelItemEditTarget = null;
         }
-        async function _pkgSaveLabelItemEdit() {
+        function _pkgSaveLabelItemEdit() {
             const it = _pkgLabelItemEditTarget;
             if (!it) return;
             const fb = document.getElementById('pkgLabelItemEditFeedback');
@@ -12418,30 +12425,12 @@
             const newQty = parseInt(newQtyRaw, 10);
             if (!newRound) { fb.textContent = '건명을 입력해주세요.'; return; }
             if (!newQtyRaw || isNaN(newQty) || newQty <= 0) { fb.textContent = '수량을 올바르게 입력해주세요.'; return; }
-            const btn = document.getElementById('pkgLabelItemEditSaveBtn');
-            btn.disabled = true; btn.textContent = '저장 중...';
-            fb.textContent = '';
-            try {
-                const params = new URLSearchParams({
-                    action: 'updateRoundQty',
-                    origin: it._pkgOrigin === 'shipped' ? 'shipped' : 'standard',
-                    code: it.code || '', round: it.round || '', color: it.color || '',
-                    newRound: newRound, newQty: String(newQty)
-                });
-                const res = await fetch(_pkgGasUrl() + '?' + params.toString(), { signal: AbortSignal.timeout(20000) });
-                const json = await res.json();
-                if (json.result !== 'success') throw new Error(json.message || '저장 실패');
-                // 화면에도 바로 반영 — _origItem은 state.data 안의 실제 객체 참조라
-                // 제품검색 표 등 다른 화면에도 그대로 반영된다.
-                if (it._origItem) { it._origItem.round = newRound; it._origItem.qty = newQty; }
-                it.round = newRound; it.qty = newQty;
-                _pkgCloseLabelItemEdit();
-                _pkgRenderLabelPalletDropdown();
-            } catch (e) {
-                fb.textContent = '저장 실패: ' + (e.message || e);
-            } finally {
-                btn.disabled = false; btn.textContent = '저장';
-            }
+            // 구글시트엔 아무것도 쓰지 않는다 — 이번 인식표 출력에만 쓸 임시 값을
+            // 품목 고유키로 기억해뒀다가, 실제 인쇄 직전에 _pkgLabelItemSearchSource()가
+            // 이 값으로 덮어써서 보여주고 인쇄 내용에도 그대로 들어간다.
+            _pkgLabelItemOverrides[it._itemKey] = { round: newRound, qty: newQty };
+            _pkgCloseLabelItemEdit();
+            _pkgRenderLabelPalletDropdown();
         }
         function _pkgClearLabelPalletSelection() {
             _pkgLabelMultiPallets = [];
