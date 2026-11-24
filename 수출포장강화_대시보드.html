@@ -12328,6 +12328,25 @@
                 btn.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,.08)' : 'none';
             });
         }
+        // 여러 개 선택했을 때 "개별로"(선택한 적재번호/품목마다 따로 인식표) /
+        // "묶음으로"(전부 합쳐 한 장) 중 고르는 토글 — 적재번호 검색/건명·제품코드
+        // 검색 두 탭 모두 똑같이 적용된다(요청, 2026-11-25: "적재 32,31을 선택했을때
+        // 개별로할거면 적재32인식표, 31인식표 이렇게 나와야하고 묶음으로할거면 32와31을
+        // 합친 인식표가 나와야하는거지, 이건 건명/제품코드로 검색에도 동일하게 기능이
+        // 적용되어야해").
+        let _pkgLabelPrintMode = 'individual';
+        function _pkgSetLabelPrintMode(mode) {
+            _pkgLabelPrintMode = mode;
+            const defs = [['pkgLabelPrintModeBtnIndividual', 'individual'], ['pkgLabelPrintModeBtnCombined', 'combined']];
+            defs.forEach(([id, m]) => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const active = _pkgLabelPrintMode === m;
+                btn.style.background = active ? '#fff' : 'transparent';
+                btn.style.color = active ? '#0284c7' : '#64748b';
+                btn.style.boxShadow = active ? '0 1px 3px rgba(0,0,0,.08)' : 'none';
+            });
+        }
         // 건명/제품코드 검색 대상 — 실재고(충주공장 재고)가 아니라 제품검색 표와 같은
         // 수출 현황(+출고 완료) 기준으로 보여준다(요청, 2026-11-24: "건명/제품코드검색은
         // 실재고가아닌 수출현황기준이고"). 건명·수량은 여기(state.data) 값을 그대로 쓰고,
