@@ -12200,6 +12200,10 @@
         }
         function pkgCloseLabelModal() {
             document.getElementById('pkgLabelModal').style.display = 'none';
+            // 창을 닫으면 이번 출력용으로 임시로 고쳐둔 건명/수량은 전부 지운다(요청,
+            // 2026-11-24: "인식표 출력창을 내가 닫기를 했을 경우에는 수정한게
+            // 초기화 되어야해") — 다음에 다시 열면 항상 원래 값부터 시작한다.
+            _pkgLabelItemOverrides = {};
         }
         // 확인 버튼 체인은 항상 적재번호를 직접 입력받는다 — 체크(선택)해둔 품목이
         // 있다고 입력칸을 숨기고 그걸로 대신 생성하던 동작은 삭제한다(요청, 2026-11-02:
