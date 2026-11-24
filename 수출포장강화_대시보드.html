@@ -12238,7 +12238,9 @@
             // 별도 입력칸을 받는다. 그 외(사전조립/양지출고)는 기존과 동일.
             const zoneWrap = document.getElementById('pkgLabelZoneInputWrap');
             zoneWrap.style.display = (type === 'kim' || type === 'choi') ? '' : 'none';
-            document.getElementById('pkgLabelZoneInput').value = '';
+            // 제일 많이 쓰는 구역이 B-20이라, 매번 다시 입력하지 않도록 기본값으로
+            // 미리 채워둔다(요청, 2026-11-24) — 다른 구역이면 그대로 지우고 입력.
+            document.getElementById('pkgLabelZoneInput').value = 'B-20';
             _pkgLabelShowStep('pkgLabelStepPallet');
         }
         function pkgLabelBackToShipType() {
