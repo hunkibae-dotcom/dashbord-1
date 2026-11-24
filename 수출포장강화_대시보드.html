@@ -12443,6 +12443,7 @@
         }
         function _pkgClearLabelPalletSelection() {
             _pkgLabelMultiPallets = [];
+            _pkgLabelItemModeSelected = new Set();
             const label = document.getElementById('pkgLabelPalletDropdownLabel');
             if (label) label.textContent = '목록에서 선택';
         }
