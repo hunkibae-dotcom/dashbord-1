@@ -12352,7 +12352,10 @@
                 const key = key0 + '|' + p;
                 if (seen.has(key)) return;
                 seen.add(key);
-                out.push({ ...it, pallet: p, _origItem: it, _itemKey: key });
+                // 이번 출력에서만 쓰기로 한 임시 건명/수량이 있으면 덮어써서 보여준다
+                // (요청, 2026-11-24) — _origItem(state.data의 실제 항목)은 건드리지 않는다.
+                const ov = _pkgLabelItemOverrides[key];
+                out.push({ ...it, pallet: p, _origItem: it, _itemKey: key, round: ov ? ov.round : it.round, qty: ov ? ov.qty : it.qty });
             });
             out.sort((a, b) => (a.round || '').localeCompare(b.round || '', 'ko') || (a.code || '').localeCompare(b.code || '', 'ko'));
             return out;
