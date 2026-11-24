@@ -12586,6 +12586,7 @@
         // 기존 수정전의 품목도같이 입력되는데", "품목수정창에서 인식표 출력하면...
         // 다른품목들이 마구입력되는 오류"). 이제는 항상 체크한 품목 그대로만 보낸다.
         function _pkgLabelPrintJobs() {
+            if (_pkgLabelPrintMode === 'combined') return _pkgLabelCombinedPrintJobs();
             const jobs = _pkgLabelMultiPallets.map(pn => ({ palletNumber: pn, items: null }));
             if (_pkgLabelItemModeSelected.size) {
                 const pool = _pkgLabelItemSearchSource();
@@ -12606,6 +12607,30 @@
                 Object.keys(byPallet).forEach(pn => jobs.push({ palletNumber: pn, items: byPallet[pn] }));
             }
             return jobs;
+        }
+        // "묶음으로 출력" — 적재번호 모드에서 고른 적재번호들(그 적재번호에 실린 전체
+        // 품목)과 건명/제품코드 모드에서 체크한 품목들을 전부 하나로 합쳐 인식표 1장을
+        // 만든다. 적재번호 모드로 고른 번호의 실제 내용은 _pkgLabelItemSearchSource()
+        // (수출 현황+출고 완료 전체, 실재고 적재번호가 이미 매칭된 목록)에서 그 적재번호를
+        // 쓰는 품목을 찾아 채운다.
+        function _pkgLabelCombinedPrintJobs() {
+            const pool = _pkgLabelItemSearchSource();
+            const items = [];
+            const seenKeys = new Set();
+            const addItem = it => { if (!seenKeys.has(it._itemKey)) { seenKeys.add(it._itemKey); items.push(it); } };
+            _pkgLabelMultiPallets.forEach(pn => { pool.filter(it => it.pallet === pn).forEach(addItem); });
+            if (_pkgLabelItemModeSelected.size) {
+                const byKey = {};
+                pool.forEach(it => { byKey[it._itemKey] = it; });
+                _pkgLabelItemModeSelected.forEach(key => { const it = byKey[key]; if (it) addItem(it); });
+            }
+            if (!items.length) return [];
+            const distinctPallets = Array.from(new Set(items.map(it => it.pallet).filter(Boolean)));
+            let title;
+            if (distinctPallets.length === 1) title = distinctPallets[0];
+            else if (distinctPallets.length > 1) title = distinctPallets[0] + ' 외 ' + (distinctPallets.length - 1) + '건';
+            else title = items[0].round || '';
+            return [{ palletNumber: title, items: items }];
         }
         function _pkgUpdateLabelPalletSelectionUI() {
             const jobCount = _pkgLabelPrintJobs().length;
