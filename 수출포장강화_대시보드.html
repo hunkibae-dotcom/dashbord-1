@@ -13482,6 +13482,14 @@
                 tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateNote', code:_pkgCode, round:_pkgRound, color:_pkgColor, note:newNote }), '특이사항 저장'));
                 changed.note = newNote;
             }
+            // 수량 수정(요청, 2026-11-25: "포장강화 품목수정창에서 수량 수정가능하게해줘
+            // (앱, 웹 둘다)") — 진행상태 수정과 같은 이유로, 지금 보고 있는 기준(origin)의
+            // 시트 하나만 고친다(여러 시트를 한꺼번에 고치면 파렛트 분할로 같은 코드+건명+
+            // 색상이 여러 행에 걸쳐 있을 때 전부 같은 수량으로 덮어써버릴 위험이 있다).
+            if (newQty !== _pkgItemQty) {
+                tasks.push(_pkgFetchChecked(gasUrl + '?' + new URLSearchParams({ action:'updateQty', origin:_pkgCurOrigin||'', code:_pkgCode, round:_pkgRound, color:_pkgColor, qty:String(newQty) }), '수량 저장'));
+                changed.qty = newQty;
+            }
             const defectPhotosChanged = _pkgDefectPhotos.some(p => !p.fileId) || _pkgDefectRemovedFileIds.length > 0;
             if (defectPhotosChanged) {
                 tasks.push(_pkgSyncDefectPhotosTask().then(res => { changed.defectPhotos = res.photos || []; }));
