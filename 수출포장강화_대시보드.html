@@ -12388,10 +12388,8 @@
             }).join('') + (matched.length > LIMIT ? `<div style="padding:6px;color:#94a3b8;font-size:11px;text-align:center;">검색 결과가 많아 상위 ${LIMIT}건만 표시합니다 — 검색어를 좁혀보세요.</div>` : '');
         }
 
-        // 건명/제품코드 검색 목록의 "수정" 버튼 — 수출 현황(또는 출고 완료)의 건명·수량을
-        // 바로 고친다(요청, 2026-11-24). 실재고는 안 건드리므로 적재번호 자체는 이 수정
-        // 대상이 아니다 — 새 GAS 액션 updateRoundQty가 origin(standard/shipped)에 맞는
-        // 시트 하나만 고쳐 쓴다.
+        // 건명/제품코드 검색 목록의 "수정" 버튼 — 이번 인식표 출력에서만 쓸 건명·수량을
+        // 임시로 바꾼다(요청, 2026-11-24). 구글시트는 전혀 건드리지 않는다.
         let _pkgLabelItemEditPool = [];
         let _pkgLabelItemEditTarget = null;
         // 품목마다 상황(섞여 실린 적재, 급하게 묶인 차수 등)이 달라서, 이 수정은
