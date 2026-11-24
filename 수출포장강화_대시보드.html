@@ -12178,6 +12178,11 @@
             document.getElementById('pkgLabelPrepFeedback').textContent = '';
             document.getElementById('pkgLabelPalletFeedback').textContent = '';
             _pkgClearLabelPalletSelection();
+            // 이전에 열었을 때 임시로 고쳐둔 건명/수량이 남아있으면, 이번에 우연히
+            // 같은 적재번호를 다시 고를 때 엉뚱한 옛 값이 섞여 들어갈 수 있다(요청,
+            // 2026-11-25: "품목수정창에서 인식표 출력하면... 다른품목들이 마구입력되는
+            // 오류") — 창을 열 때마다 항상 깨끗하게 시작한다.
+            _pkgLabelItemOverrides = {};
             _pkgLabelPalletSearchMode = 'pallet';
             _pkgSyncLabelModeButtons();
             document.getElementById('pkgLabelPalletDropdown').style.display = 'none';
