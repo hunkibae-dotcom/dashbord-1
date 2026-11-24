@@ -12399,6 +12399,11 @@
         function _pkgRenderLabelPalletDropdown() {
             const listEl = document.getElementById('pkgLabelPalletDropdownList');
             const q = (document.getElementById('pkgLabelPalletSearchInput').value || '').trim().toLowerCase();
+            if (_pkgLabelPalletSearchMode === 'item') {
+                _pkgRenderLabelItemList(listEl, q);
+                _pkgUpdateLabelPalletSelectionUI();
+                return;
+            }
             const all = _pkgAllPalletLabels();
             const labels = q ? all.filter(l => l.toLowerCase().includes(q)) : all;
             if (!all.length) {
