@@ -6759,6 +6759,13 @@
         const newH = (document.getElementById('ieH')?.value || '').trim();
         const newG = (document.getElementById('ieG')?.value || '').trim();
         const newMemo = _pkgNoteWithShipReady((document.getElementById('ieMemo')?.value || '').trim(), document.getElementById('ieShipReadyChk')?.checked);
+        const newQtyRaw = (document.getElementById('ieQtyInput')?.value || '').trim();
+        const newQty = parseInt(newQtyRaw, 10);
+        if (!newQtyRaw || isNaN(newQty) || newQty <= 0) {
+            if (fb) { fb.textContent = '수량을 올바르게 입력해주세요.'; fb.style.color = '#FF4444'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> 저장'; }
+            return;
+        }
         const newPeType = (document.getElementById('iePeType')?.value || '').trim();
         const newPeSpec = (document.getElementById('iePeSpec')?.value || '').trim();
         const peChanged = newPeType !== _ieOrigPeType || newPeSpec !== _ieOrigPeSpec;
