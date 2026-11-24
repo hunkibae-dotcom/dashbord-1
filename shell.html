@@ -2649,7 +2649,14 @@
 
     function renderSchedule() {
         const today = new Date(); today.setHours(0,0,0,0);
-        const notDone = allData.filter(d => !d.isDone);
+        // PC 웹 사이드바의 "수출 일정" 카드(updateNearestSchedule)와 똑같은 모수를
+        // 쓰도록 맞춘다(요청, 2026-11-24: "수출일정의 수량이 웹과 맞지않는데... 웹처럼
+        // 똑같이 바꿔줘"). 웹은 "수출 현황" 시트 데이터만 쓰고(충주공장 재고·출고 완료는
+        // 안 섞는다) 피킹만 빼고 포장완료·출고 상태까지 전부 모수에 넣어서 상차일이
+        // 같은 전체 수량을 센다 — 기존엔 allData(재고+출고완료까지 섞인 전체)에서
+        // isDone(=출고/피킹 상태)인 항목을 아예 모수에서 빼버려서, 이미 출고 처리된
+        // 품목의 수량이 수량 합계에서 통째로 빠져 웹보다 작게 나왔다.
+        const notDone = allData.filter(d => d.source === 'standard' && (d.status||'').trim() !== '피킹');
 
         // 상차일이 납기일보다 우선 — 상차일 있는 항목 중 가장 빠른 걸 먼저 찾고,
         // 상차일 있는 항목이 하나도 없을 때만 납기일 기준으로 대체한다.
@@ -2680,10 +2687,11 @@
             const ddayTxt   = days === 0 ? 'D-Day' : 'D-' + days;
             const ddayColor = days === 0 ? '#FF4444' : (days <= 3 ? '#F59E0B' : '#00E676');
 
-            // 같은 기준일(상차일 우선, 없으면 납기일) 전체 항목
-            // — "피킹"은 우리 쪽에서 회수/작업하는 게 아니라 외주에서 직접 꺼내 쓰는 것이라 집계 대상 아님
+            // 같은 기준일(상차일 우선, 없으면 납기일) 전체 항목 — 피킹은 이미 위 모수에서
+            // 빠져 있다(우리 쪽에서 회수/작업하는 게 아니라 외주에서 직접 꺼내 쓰는 것이라
+            // 집계 대상 아님).
             const nearDate = _nd(field === 'date' ? nearest.date : nearest.dueDate);
-            const same = notDone.filter(d => (d.status||'').trim() !== '피킹' && _nd(field === 'date' ? d.date : d.dueDate) === nearDate);
+            const same = notDone.filter(d => _nd(field === 'date' ? d.date : d.dueDate) === nearDate);
             _schSameItems = same;
             _schNearestDate = nearDate;
             _schFullList = notDone.slice();
