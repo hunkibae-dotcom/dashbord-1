@@ -12714,8 +12714,10 @@
             // (요청, 2026-11-06 레이아웃 변경) — 드롭다운을 열어 검색어만 입력하고
             // "적용"을 눌러도 그 글자가 그대로 추가되므로, 체크 없이 번호만 타이핑해
             // 바로 쓰는 기존 방식도 그대로 된다.
-            if (!_pkgLabelMultiPallets.length) { fb.textContent = '"목록에서 선택"을 눌러 적재번호를 고르거나 입력 후 "적용"을 눌러주세요.'; return; }
-            const palletNumbers = _pkgLabelMultiPallets.slice();
+            // 건명/제품코드 모드에서 체크한 품목의 적재번호도 같이 합친다(요청,
+            // 2026-11-24) — 적재번호 모드 선택과 품목 모드 선택을 합쳐 중복 없이 뽑는다.
+            const palletNumbers = _pkgEffectiveLabelPallets();
+            if (!palletNumbers.length) { fb.textContent = '"목록에서 선택"을 눌러 적재번호를 고르거나 입력 후 "적용"을 눌러주세요.'; return; }
 
             fb.textContent = '';
             const btn = document.getElementById('pkgLabelPalletSubmitBtn');
