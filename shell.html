@@ -5321,6 +5321,47 @@
         if (btn) btn.querySelector('i').className = _slideAutoPlay ? 'fa-solid fa-pause' : 'fa-solid fa-play';
     }
 
+    // ── 작업인원 추천 카드(요청, 2026-11-25) — PC 웹과 같은 기준, 차트는 없이 숫자만.
+    // PC 웹은 _pendingDetailItems 등 이미 유지되는 배열을 재사용하지만, 앱은 그런 배열이
+    // 없어서 allData를 직접 같은 조건(생산중/회수중은 수출현황=source:'standard', 포장대기는
+    // 실재고=source:'stock')으로 걸러서 다시 집계한다.
+    let _wfFilterApp = 'all'; // 'all' | 'dateset' | 'pending' | 'producting' | 'recovering'
+    const WF_FILTERS_APP = [['all','전체'],['dateset','상차일 있는것'],['pending','포장대기만'],['producting','생산중만'],['recovering','회수중만']];
+    function _wfRenderChipsApp() {
+        const wrap = document.getElementById('wfChipsApp');
+        if (!wrap) return;
+        wrap.innerHTML = WF_FILTERS_APP.map(([k,label]) => {
+            const active = k === _wfFilterApp;
+            return `<button type="button" onclick="setWfFilterApp('${k}')" style="flex-shrink:0;border:1px solid ${active?'#0284c7':'var(--border)'};border-radius:14px;padding:4px 10px;font-size:10.5px;font-weight:700;background:${active?'#0284c7':'var(--icon-bg)'};color:${active?'#fff':'var(--text-sub)'};cursor:pointer;-webkit-appearance:none;">${label}</button>`;
+        }).join('');
+    }
+    function setWfFilterApp(f) {
+        _wfFilterApp = f;
+        _wfRenderChipsApp();
+        renderWorkforceCardApp();
+    }
+    function renderWorkforceCardApp() {
+        _wfRenderChipsApp();
+        const pool0 = allData || [];
+        const norm = s => (s || '').toString().replace(/\s+/g, '');
+        const pending = pool0.filter(d => d.source === 'stock' && (norm(d.status).includes('포장대기') || norm(d.status).includes('미확인')));
+        const producting = pool0.filter(d => d.source === 'standard' && norm(d.status).includes('생산중'));
+        const recovering = pool0.filter(d => d.source === 'standard' && norm(d.status).includes('회수중'));
+        let pool;
+        if (_wfFilterApp === 'pending') pool = pending;
+        else if (_wfFilterApp === 'producting') pool = producting;
+        else if (_wfFilterApp === 'recovering') pool = recovering;
+        else pool = pending.concat(producting, recovering); // 'all' | 'dateset'
+        if (_wfFilterApp === 'dateset') pool = pool.filter(d => d.date && d.date !== '-');
+        const totalQty = pool.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
+        const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        sv('wfTotalQtyApp', totalQty.toLocaleString());
+        if (!totalQty) { sv('wfNeedPeopleApp', '0'); return; }
+        const lo = Math.ceil(totalQty / 100) * 2;
+        const hi = Math.ceil(totalQty / 80) * 2;
+        sv('wfNeedPeopleApp', lo === hi ? String(lo) : (lo + '~' + hi));
+    }
+
     // ── 차트 슬라이드 자동재생 ───────────────────────────
     let _chartAutoPlay = true, _chartSlideTimer = null;
     function _startChartTimer() {
