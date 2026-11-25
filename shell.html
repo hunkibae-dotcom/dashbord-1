@@ -5357,8 +5357,10 @@
         const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
         sv('wfTotalQtyApp', totalQty.toLocaleString());
         if (!totalQty) { sv('wfNeedPeopleApp', '0'); return; }
-        const lo = Math.ceil(totalQty / 100) * 2;
-        const hi = Math.ceil(totalQty / 80) * 2;
+        // PC 웹과 동일(요청, 2026-11-25: "95box면 2명이면 충분해") — 평소 기준(hi)은
+        // 2명당 100 BOX, 생산성 좋은 날 기준(lo)만 2명당 130 BOX로 넉넉하게 잡는다.
+        const lo = Math.ceil(totalQty / 130) * 2;
+        const hi = Math.ceil(totalQty / 100) * 2;
         sv('wfNeedPeopleApp', lo === hi ? String(lo) : (lo + '~' + hi));
     }
 
