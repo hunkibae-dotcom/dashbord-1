@@ -5290,7 +5290,7 @@
 
     // ── 슬라이드 카드 ─────────────────────────────────────
     // 5페이지로 재구성(요청, 2026-10-28) — 하드코딩된 3 대신 상수로 뺐다.
-    const SLIDE_COUNT = 4;
+    const SLIDE_COUNT = 5; // 작업인원 추천 카드가 맨 앞에 추가되어 4→5(요청, 2026-11-25)
     let _slideIdx = 0, _slideTimer = null, _slideTouchX = 0, _slideAutoPlay = true;
     function goSlide(idx) {
         _slideIdx = Math.max(0, Math.min(idx, SLIDE_COUNT - 1));
