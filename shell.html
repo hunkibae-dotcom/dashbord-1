@@ -5338,19 +5338,31 @@
     }
     function renderWorkforceCardApp() {
         _wfRenderChipsApp();
+        const dateEl = document.getElementById('wfTodayDateApp');
+        if (dateEl) {
+            const today = new Date();
+            const DAY = ['일','월','화','수','목','금','토'];
+            dateEl.textContent = today.getFullYear() + '. ' + String(today.getMonth()+1).padStart(2,'0') + '. ' + String(today.getDate()).padStart(2,'0') + ' (' + DAY[today.getDay()] + ')';
+        }
         const pool0 = allData || [];
         const norm = s => (s || '').toString().replace(/\s+/g, '');
         const pending = pool0.filter(d => d.source === 'stock' && (norm(d.status).includes('포장대기') || norm(d.status).includes('미확인')));
         const producting = pool0.filter(d => d.source === 'standard' && norm(d.status).includes('생산중'));
         const recovering = pool0.filter(d => d.source === 'standard' && norm(d.status).includes('회수중'));
+        const sumQty = arr => arr.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
+        const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        sv('wfPendingQtyApp', sumQty(pending).toLocaleString() + ' BOX');
+        sv('wfProductingQtyApp', sumQty(producting).toLocaleString() + ' BOX');
+        sv('wfRecoveringQtyApp', sumQty(recovering).toLocaleString() + ' BOX');
+        const breakdownEl = document.getElementById('wfBreakdownWrapApp');
+        if (breakdownEl) breakdownEl.style.display = (_wfFilterApp === 'all' || _wfFilterApp === 'dateset') ? 'flex' : 'none';
         let pool;
         if (_wfFilterApp === 'pending') pool = pending;
         else if (_wfFilterApp === 'producting') pool = producting;
         else if (_wfFilterApp === 'recovering') pool = recovering;
         else pool = pending.concat(producting, recovering); // 'all' | 'dateset'
         if (_wfFilterApp === 'dateset') pool = pool.filter(d => d.date && d.date !== '-');
-        const totalQty = pool.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
-        const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+        const totalQty = sumQty(pool);
         sv('wfTotalQtyApp', totalQty.toLocaleString());
         if (!totalQty) { sv('wfNeedPeopleApp', '0'); return; }
         // PC 웹과 동일(요청, 2026-11-25: "95box면 2명이면 충분해") — 평소 기준(hi)은
