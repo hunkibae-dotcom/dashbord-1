@@ -1173,6 +1173,42 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="p-5 flex flex-col" style="width:33.3333%;flex-shrink:0;min-width:0;">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+                            <h3 class="text-[19.5px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
+                                <i class="fa-solid fa-chart-column text-accentBlue"></i> 하루 완료량 평균/MAX/MIN
+                            </h3>
+                            <div class="relative flex rounded-lg p-0.5" style="min-width:150px;background:#EFF6FF;border:1px solid #BAE6FD">
+                                <div id="dailyStatsModeSlider" class="absolute top-0.5 bottom-0.5 rounded-md transition-all duration-200" style="width:50%;left:0;background:#38BDF8"></div>
+                                <button onclick="setDailyStatsPeriod('all')" id="dailyStatsBtn_all"
+                                    class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                    style="flex:1;color:#ffffff;white-space:nowrap;">전체</button>
+                                <button onclick="setDailyStatsPeriod('recent30')" id="dailyStatsBtn_recent30"
+                                    class="relative z-10 text-[13.5px] font-semibold py-1 rounded-md transition-colors duration-200"
+                                    style="flex:1;color:#475569;white-space:nowrap;">최근 30일</button>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-bottom:8px;flex-wrap:wrap;">
+                            <span style="font-size:11.5px;color:#94A3B8;font-weight:700;">평균 <b id="dsAvg" style="color:#38BDF8;">-</b> BOX</span>
+                            <span style="font-size:11.5px;color:#94A3B8;font-weight:700;">최고 <b id="dsMax" style="color:#0ca30c;">-</b></span>
+                            <span style="font-size:11.5px;color:#94A3B8;font-weight:700;">최저 <b id="dsMin" style="color:#fab219;">-</b></span>
+                        </div>
+                        <div class="relative h-64 w-full" style="overflow:hidden;">
+                            <canvas id="dailyStatsChart"></canvas>
+                        </div>
+                    </div>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 0 2px;flex-shrink:0;">
+                        <button type="button" onclick="goChartSlide(_chartSlideIdx-1)" id="chartSlidePrevBtn" style="width:24px;height:24px;border-radius:7px;border:1px solid rgba(148,163,184,.35);background:rgba(148,163,184,.12);color:#94A3B8;cursor:pointer;font-size:16px;line-height:1;">‹</button>
+                        <div style="display:flex;gap:6px;">
+                            <button type="button" onclick="goChartSlide(0)" class="chart-slide-dot" id="chartSlideDot0"></button>
+                            <button type="button" onclick="goChartSlide(1)" class="chart-slide-dot" id="chartSlideDot1"></button>
+                            <button type="button" onclick="goChartSlide(2)" class="chart-slide-dot" id="chartSlideDot2"></button>
+                        </div>
+                        <button type="button" onclick="goChartSlide(_chartSlideIdx+1)" id="chartSlideNextBtn" style="width:24px;height:24px;border-radius:7px;border:1px solid rgba(148,163,184,.35);background:rgba(148,163,184,.12);color:#94A3B8;cursor:pointer;font-size:16px;line-height:1;">›</button>
+                    </div>
+                    </div>
                 </div>
                 <div id="chartRowDots" class="hidden justify-center gap-1.5 pb-3"></div>
             </div><!-- /mobile-carousel-box charts -->
