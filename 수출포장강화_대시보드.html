@@ -1045,7 +1045,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div style="font-size:10.5px;color:#64748B;text-align:center;margin-bottom:10px;">작업인원 2명당 80~100 BOX 처리 가정</div>
+                        <div style="font-size:10.5px;color:#64748B;text-align:center;margin-bottom:10px;">작업인원 2명당 하루 평균 100 BOX(±30) 처리 가정</div>
                         <div id="wfBreakdownWrap" style="display:flex;flex-direction:column;gap:6px;">
                             <div onclick="filterByPendingStatus()" class="card1-row" style="display:flex;align-items:center;justify-content:space-between;background:rgba(148,163,184,.05);border-radius:10px;padding:8px 12px;cursor:pointer;">
                                 <span style="font-size:13px;color:#94A3B8;font-weight:600;">포장대기</span>
@@ -7815,10 +7815,16 @@
             });
             renderWorkforceCard();
         }
+        // 2명 기준 하루 평균 100 BOX, 오차범위 ±30 BOX로 잡는다(요청, 2026-11-25:
+        // "95box면 2명이면 충분해" — 기존엔 80/100 두 기준 다 ceil을 써서, 100보다 조금만
+        // 넘어도(예: 95) 비관적 기준(80)에서 바로 다음 인원 단위로 튀어 "2~4명"처럼
+        // 실제보다 넓게 나왔다). 기본(hi)은 항상 "100 BOX당 2명"이라는 평소 기준으로
+        // 계산하고, 생산성이 좋은 날(최대 130 BOX/2명)이면 그걸로도 충분할 수 있다는
+        // 걸 하한(lo)으로만 보여준다 — 기준치(100)보다 적게 필요하다고는 안 보여준다.
         function _wfComputeNeed(qty) {
             if (!qty) return '0';
-            const lo = Math.ceil(qty / 100) * 2;
-            const hi = Math.ceil(qty / 80) * 2;
+            const lo = Math.ceil(qty / 130) * 2; // 생산성 좋은 날(2명당 최대 130 BOX) 기준
+            const hi = Math.ceil(qty / 100) * 2;  // 평소 기준(2명당 100 BOX)
             return lo === hi ? (lo + '명') : (lo + '~' + hi + '명');
         }
         function renderWorkforceCard() {
