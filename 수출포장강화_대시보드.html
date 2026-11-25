@@ -14682,11 +14682,12 @@
         function _cardRoundKeyRoundName(key) { return key.split('||')[0]; }
 
         function openCard4RoundPicker() {
-            // 기본 선택은 메인 화면 카드에 적혀있는 건명(_card4SameDateRounds)만 — 달을
-            // 넘겨서 다른 건이 보여도 그 선택 자체는 유지된다(새로 체크/해제하기 전까지).
-            _card4PickerSelected = new Set(_card4SameDateRounds);
+            // 예전엔 카드에 적혀있던 가장 빠른 상차일 건명이 기본으로 체크돼 있었는데,
+            // 카드를 누르기만 해도 그 건명으로 자동 필터링되는 것처럼 느껴진다는 요청
+            // (2026-11-25: "클릭하면 자동으로 빠른 상차일이 자동체크되어있는데 이거
+            // 풀어줘")으로 기본 체크 없이 빈 채로 연다 — 직접 체크해야만 조회된다.
+            _card4PickerSelected = new Set();
             _card4PickerSelectedDates = {};
-            _card4SameDateRounds.forEach(r => { _card4PickerSelectedDates[r] = _card4NearestDate; });
             const base = _card4NearestDateObj || new Date();
             _card4PickerYear = base.getFullYear();
             _card4PickerMonth = base.getMonth();
