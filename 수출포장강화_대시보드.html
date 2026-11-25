@@ -7671,6 +7671,183 @@
             document.getElementById('prevDayDetailModal').classList.add('hidden');
         }
 
+        // ── 차트 슬라이드 카드(포장강화/제품별실적/하루완료량 3페이지, 요청 2026-11-25)
+        // "포장강화 누적차트"와 "제품별 실적 누적차트"를 한 카드 안에서 좌우로 드래그/
+        // 스와이프해 넘겨보게 합친다. 기존 두 차트의 내부 로직(renderPackingChart 등)은
+        // 전혀 안 건드리고, 그 두 카드를 감싸던 바깥 테두리만 떼어내 공용 래퍼로 옮긴
+        // 것뿐이라 각자의 연도선택/일주월년 토글/네비 화살표/CSV 출력은 그대로 동작한다.
+        let _chartSlideIdx = 0;
+        const CHART_SLIDE_COUNT = 3;
+        function goChartSlide(i) {
+            _chartSlideIdx = Math.max(0, Math.min(CHART_SLIDE_COUNT - 1, i));
+            const track = document.getElementById('chartSlideTrack');
+            if (track) track.style.transform = `translateX(-${_chartSlideIdx * (100 / CHART_SLIDE_COUNT)}%)`;
+            for (let d = 0; d < CHART_SLIDE_COUNT; d++) {
+                const dot = document.getElementById('chartSlideDot' + d);
+                if (dot) dot.classList.toggle('active', d === _chartSlideIdx);
+            }
+            const prevBtn = document.getElementById('chartSlidePrevBtn');
+            const nextBtn = document.getElementById('chartSlideNextBtn');
+            if (prevBtn) { prevBtn.style.opacity = _chartSlideIdx === 0 ? '.35' : '1'; prevBtn.style.cursor = _chartSlideIdx === 0 ? 'not-allowed' : 'pointer'; }
+            if (nextBtn) { nextBtn.style.opacity = _chartSlideIdx === CHART_SLIDE_COUNT - 1 ? '.35' : '1'; nextBtn.style.cursor = _chartSlideIdx === CHART_SLIDE_COUNT - 1 ? 'not-allowed' : 'pointer'; }
+        }
+        // 마우스 드래그(PC)와 터치 스와이프(모바일) 둘 다 같은 임계값(50px)으로 처리한다.
+        (function _initChartSlideDrag() {
+            let startX = null, dragging = false;
+            function onStart(x) { startX = x; dragging = true; }
+            function onEnd(x) {
+                if (!dragging || startX === null) return;
+                dragging = false;
+                const dx = x - startX;
+                startX = null;
+                if (Math.abs(dx) < 50) return;
+                goChartSlide(_chartSlideIdx + (dx < 0 ? 1 : -1));
+            }
+            document.addEventListener('DOMContentLoaded', function () {
+                const track = document.getElementById('chartSlideTrack');
+                if (!track) return;
+                track.addEventListener('mousedown', function (e) { onStart(e.clientX); e.preventDefault(); });
+                document.addEventListener('mouseup', function (e) { if (dragging) onEnd(e.clientX); });
+                document.addEventListener('mouseleave', function () { dragging = false; startX = null; });
+                track.addEventListener('touchstart', function (e) { onStart(e.touches[0].clientX); }, { passive: true });
+                track.addEventListener('touchend', function (e) { onEnd(e.changedTouches[0].clientX); }, { passive: true });
+            });
+        })();
+
+        // ── 하루 완료량 평균/MAX/MIN 차트(3번째 슬라이드) ──
+        let _dailyStatsPeriod = 'recent30'; // 'all'(선택된 연도) | 'recent30'(최근 30일, 달력일)
+        let dailyStatsChartInstance = null;
+        function setDailyStatsPeriod(p) {
+            _dailyStatsPeriod = p;
+            const slider = document.getElementById('dailyStatsModeSlider');
+            if (slider) slider.style.left = p === 'all' ? '0' : '50%';
+            ['all', 'recent30'].forEach(k => {
+                const btn = document.getElementById('dailyStatsBtn_' + k);
+                if (btn) btn.style.color = (k === p) ? '#ffffff' : '#475569';
+            });
+            renderDailyStatsChart();
+        }
+        // 평균은 "활동이 없는 날(0건)"도 포함해서 계산한다(요청, 2026-11-25 확인) — 실제
+        // 하루 평균 처리능력을 보려는 목적이라, 활동일만 추려서 평균 내면 더 커 보이게
+        // 왜곡된다.
+        function renderDailyStatsChart() {
+            const canvas = document.getElementById('dailyStatsChart');
+            if (!canvas) return;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const days = []; // [{d:'YYYY-MM-DD', label:'M/D', qty}]
+            if (_dailyStatsPeriod === 'recent30') {
+                for (let i = 29; i >= 0; i--) {
+                    const dt = new Date(today); dt.setDate(dt.getDate() - i);
+                    const ds = normalizeDate(dt);
+                    days.push({ d: ds, label: (dt.getMonth() + 1) + '/' + dt.getDate(), qty: _packingDateQtyMap[ds] || 0 });
+                }
+            } else {
+                const year = packingSelectedYear || today.getFullYear();
+                const start = new Date(year, 0, 1);
+                const end = (year === today.getFullYear()) ? today : new Date(year, 11, 31);
+                for (let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+                    const ds = normalizeDate(dt);
+                    days.push({ d: ds, label: (dt.getMonth() + 1) + '/' + dt.getDate(), qty: _packingDateQtyMap[ds] || 0 });
+                }
+            }
+            if (!days.length) return;
+            const total = days.reduce((s, x) => s + x.qty, 0);
+            const avg = Math.round(total / days.length);
+            let maxDay = days[0], minDay = days[0];
+            days.forEach(x => { if (x.qty > maxDay.qty) maxDay = x; if (x.qty < minDay.qty) minDay = x; });
+            const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            sv('dsAvg', avg.toLocaleString());
+            sv('dsMax', maxDay.qty.toLocaleString() + ' BOX(' + maxDay.label + ')');
+            sv('dsMin', minDay.qty.toLocaleString() + ' BOX(' + minDay.label + ')');
+
+            // 색상: 기본 막대는 포장강화 차트와 같은 계열(#38BDF8), 최고/최저만 상태색으로
+            // 강조(dataviz 스킬의 validate_palette.js로 검증한 조합 — 최고=good #0ca30c,
+            // 최저=warning #fab219). CVD 정상/비정상 분리는 통과했지만 카테고리 밝기대역
+            // 체크는 "단일 계열+상태 강조" 용도라 적용 범위 밖이라 라벨(최고/최저 텍스트)로
+            // 색 없이도 구분되게 했다.
+            const barColors = days.map(x => {
+                if (x.d === maxDay.d) return '#0ca30c';
+                if (x.d === minDay.d) return '#fab219';
+                return '#38BDF8';
+            });
+
+            if (dailyStatsChartInstance) dailyStatsChartInstance.destroy();
+            const ctx = canvas.getContext('2d');
+            dailyStatsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: days.map(x => x.label),
+                    datasets: [{
+                        data: days.map(x => x.qty),
+                        backgroundColor: barColors,
+                        borderRadius: 4,
+                        maxBarThickness: _dailyStatsPeriod === 'recent30' ? 14 : 8
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: ctxI => ctxI.parsed.y.toLocaleString() + ' BOX'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#94A3B8', font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: _dailyStatsPeriod === 'recent30' ? 10 : 12 }, grid: { display: false } },
+                        y: { beginAtZero: true, ticks: { color: '#94A3B8', font: { size: 10 } }, grid: { color: 'rgba(148,163,184,.12)' } }
+                    }
+                }
+            });
+        }
+
+        // ── 작업인원 추천 카드(요청, 2026-11-25) ──
+        // 2명당 80~100 BOX 처리를 가정해 "총 수량"과 "필요 인원(범위)"을 보여준다.
+        // updateCard1Stats()가 이미 매번 새로 채우는 _pendingDetailItems/
+        // _productingDetailItems/_recoveringDetailItems(품목 배열)를 그대로 재사용한다.
+        let _wfFilter = 'all'; // 'all' | 'dateset' | 'pending' | 'producting' | 'recovering'
+        function setWfFilter(f) {
+            _wfFilter = f;
+            ['all', 'dateset', 'pending', 'producting', 'recovering'].forEach(k => {
+                const el = document.getElementById('wfChip_' + k);
+                if (el) el.classList.toggle('active', k === f);
+            });
+            renderWorkforceCard();
+        }
+        function _wfComputeNeed(qty) {
+            if (!qty) return '0';
+            const lo = Math.ceil(qty / 100) * 2;
+            const hi = Math.ceil(qty / 80) * 2;
+            return lo === hi ? (lo + '명') : (lo + '~' + hi + '명');
+        }
+        function renderWorkforceCard() {
+            const pending = _pendingDetailItems || [];
+            const producting = _productingDetailItems || [];
+            const recovering = _recoveringDetailItems || [];
+            const sumQty = arr => arr.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
+            const pendingQty = sumQty(pending), productingQty = sumQty(producting), recoveringQty = sumQty(recovering);
+
+            let pool;
+            if (_wfFilter === 'pending') pool = pending;
+            else if (_wfFilter === 'producting') pool = producting;
+            else if (_wfFilter === 'recovering') pool = recovering;
+            else pool = pending.concat(producting, recovering); // 'all' | 'dateset'
+            if (_wfFilter === 'dateset') pool = pool.filter(it => it.date && it.date !== '-');
+
+            const totalQty = sumQty(pool);
+            const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            sv('wfTotalQty', totalQty.toLocaleString());
+            sv('wfNeedPeople', _wfComputeNeed(totalQty));
+
+            const breakdownWrap = document.getElementById('wfBreakdownWrap');
+            const showBreakdown = (_wfFilter === 'all' || _wfFilter === 'dateset');
+            if (breakdownWrap) breakdownWrap.style.display = showBreakdown ? 'flex' : 'none';
+            sv('wfPendingQty', pendingQty.toLocaleString() + ' BOX');
+            sv('wfProductingQty', productingQty.toLocaleString() + ' BOX');
+            sv('wfRecoveringQty', recoveringQty.toLocaleString() + ' BOX');
+        }
+
         function updateCard1Stats() {
             // 충주공장 재고 시트 기준: J열(진행) = '포장대기' | '미확인' 인 항목의 D열(수량) 합산
             const stockSheetKey = Object.keys(datasetMap).find(k => k.includes('충주공장 재고'));
