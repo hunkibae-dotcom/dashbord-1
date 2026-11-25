@@ -3390,7 +3390,7 @@
         }
 
         // 소스 필터 (전체/미입고/실재고/출고)
-        let _activeSourceFilter = 'all'; // 기본값은 "전체" — 처음 열자마자 표가 바로 채워져 있어야 한다는 요청
+        let _activeSourceFilter = 'active'; // 기본값은 "입고현황"(요청, 2026-11-25) — 예전엔 "전체"가 기본이었음
         // "수출 일정" 카드(및 건명 복수 선택 팝업)에서 조회할 때 쓰는 정확한 건명 집합 필터.
         // 예전엔 여기서 datasetMap의 원본 데이터를 직접 잘라 state.filteredData에 넣었는데,
         // 그러면 상태/소스 필터·정렬이 전부 무시되고, 이후에 다른 필터 버튼을 눌러도
@@ -7269,14 +7269,14 @@
             // 제품구분 드롭다운 초기화
             activePcatFilters = new Set(['전체']);
             _syncPcatFilterUI();
-            // 소스 필터 초기화
-            _activeSourceFilter = 'all';
+            // 소스 필터 초기화(요청, 2026-11-25: 기본값이 "입고현황"으로 바뀜)
+            _activeSourceFilter = 'active';
             ['srcAll','srcActive','srcStock','srcShipped'].forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) btn.classList.remove('active');
             });
-            const _srcAllBtn = document.getElementById('srcAll');
-            if (_srcAllBtn) _srcAllBtn.classList.add('active');
+            const _srcActiveBtn = document.getElementById('srcActive');
+            if (_srcActiveBtn) _srcActiveBtn.classList.add('active');
             autoAdjustDateFilters(true); // "초기화" 버튼 — 강제로 전체 기간으로
             applyFilters();
         }
