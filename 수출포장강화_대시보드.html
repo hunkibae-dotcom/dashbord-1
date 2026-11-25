@@ -7674,10 +7674,17 @@
                 }
             }
             if (!days.length) return;
-            const total = days.reduce((s, x) => s + x.qty, 0);
-            const avg = Math.round(total / days.length);
-            let maxDay = days[0], minDay = days[0];
-            days.forEach(x => { if (x.qty > maxDay.qty) maxDay = x; if (x.qty < minDay.qty) minDay = x; });
+            // 평균/최고/최저는 "실제로 포장이 된 날"만 기준으로 삼는다(요청, 2026-11-25:
+            // "각 평균을 50box이상 기준으로 한뒤에 평균으로잡아줘... 최저는 포장된기준으로
+            // 봐야해") — 거의 일을 안 한 날(50 BOX 미만, 주말/휴무 등 포함)까지 끼면 평균이
+            // 실제 작업량보다 낮게 나오고, 최저도 0으로 나와 의미가 없었다. 막대그래프 자체는
+            // (아래 barColors까지) 모든 날짜를 그대로 보여준다 — 숫자만 활동일 기준.
+            const activeDays = days.filter(x => x.qty >= 50);
+            const statsBase = activeDays.length ? activeDays : days;
+            const total = statsBase.reduce((s, x) => s + x.qty, 0);
+            const avg = Math.round(total / statsBase.length);
+            let maxDay = statsBase[0], minDay = statsBase[0];
+            statsBase.forEach(x => { if (x.qty > maxDay.qty) maxDay = x; if (x.qty < minDay.qty) minDay = x; });
             const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
             sv('dsAvg', avg.toLocaleString());
             sv('dsMax', maxDay.qty.toLocaleString() + ' BOX(' + maxDay.label + ')');
