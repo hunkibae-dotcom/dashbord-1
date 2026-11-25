@@ -419,7 +419,8 @@
             </div>
         </div>
 
-        <!-- Row 2: 슬라이드 카드(요청, 2026-10-28로 3페이지→5페이지 재구성 — 신규품목확인/
+        <!-- Row 2: 슬라이드 카드(요청, 2026-10-28로 3페이지→5페이지 재구성, 2026-11-25에
+             작업인원 추천 카드가 맨 앞에 추가되어 6페이지 — 작업인원추천/신규품목확인/
              금일작업계획/수출일정/납기상차일변경내역/파렛트현황. "이전 작업 LOG"는 목록에
              없어서 뺐다. 신규품목확인·금일작업계획의 미회수/상차준비는 PC 화면을 iframe으로
              그대로 재사용한다(openPkgNewItemsOverlay/openPkgMgmtFilterOverlay).) -->
@@ -427,7 +428,31 @@
             <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
 
-                <!-- Slide 0: 신규품목 확인 — PC 웹 "신규품목" 카드와 같은 행(row) 표시로 변경
+                <!-- Slide 0: 작업인원 추천(요청, 2026-11-25) — PC 웹 "작업인원 추천" 카드와
+                     같은 기준(생산중+회수중+포장대기 BOX 합산, 2명당 80~100박스 가정)을
+                     차트 없이 숫자만 보여준다. 필터 칩 5개는 _wfRenderChipsApp()가 채운다. -->
+                <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;gap:7px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <span style="display:flex;align-items:center;gap:6px;">
+                            <i class="fa-solid fa-users" style="font-size:15px;color:#00B0FF;"></i>
+                            <span style="font-size:15.5px;font-weight:800;color:var(--text);">작업인원 추천</span>
+                        </span>
+                    </div>
+                    <div id="wfChipsApp" class="no-scrollbar" style="display:flex;gap:5px;overflow-x:auto;white-space:nowrap;padding-bottom:1px;"></div>
+                    <div style="display:flex;gap:8px;">
+                        <div style="flex:1;background:var(--icon-bg);border-radius:10px;padding:9px 10px;text-align:center;">
+                            <div style="font-size:9.5px;color:var(--label);font-weight:700;margin-bottom:3px;">총 수량</div>
+                            <div><span id="wfTotalQtyApp" style="font-size:17px;font-weight:800;color:#38BDF8;">-</span> <span style="font-size:9.5px;color:var(--label);font-weight:700;">BOX</span></div>
+                        </div>
+                        <div style="flex:1;background:var(--icon-bg);border-radius:10px;padding:9px 10px;text-align:center;">
+                            <div style="font-size:9.5px;color:var(--label);font-weight:700;margin-bottom:3px;">필요 인원</div>
+                            <div><span id="wfNeedPeopleApp" style="font-size:17px;font-weight:800;color:#00E676;">-</span> <span style="font-size:9.5px;color:var(--label);font-weight:700;">명</span></div>
+                        </div>
+                    </div>
+                    <div style="font-size:9px;color:var(--label);text-align:center;">작업인원 2명당 80~100 BOX 처리 가정</div>
+                </div>
+
+                <!-- Slide 1: 신규품목 확인 — PC 웹 "신규품목" 카드와 같은 행(row) 표시로 변경
                      (요청, 2026-11-05: "앱기준 신규품목 확인의 표시를 웹 신규품목 표시처럼
                      카드 표시를 바꿔줘"). pkgNiUpdateHomeCounts()가 각 id를 그대로 채운다. -->
                 <div onclick="openPkgNewItemsOverlay()" style="min-width:100%;height:100%;padding:14px 16px 28px;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;gap:7px;">
