@@ -7224,7 +7224,7 @@
         function initCard1() {
             const today = new Date();
             const DAY = ['일','월','화','수','목','금','토'];
-            const lbl = today.getFullYear() + '.' + String(today.getMonth()+1).padStart(2,'0') + '.' + String(today.getDate()).padStart(2,'0') + ' (' + DAY[today.getDay()] + ')';
+            const lbl = today.getFullYear() + '. ' + String(today.getMonth()+1).padStart(2,'0') + '. ' + String(today.getDate()).padStart(2,'0') + ' (' + DAY[today.getDay()] + ')';
             const el = document.getElementById('card1TodayDateLabel');
             if (el) el.textContent = lbl;
             renderCard1WorkerDisplay();
