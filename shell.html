@@ -420,10 +420,11 @@
         </div>
 
         <!-- Row 2: 슬라이드 카드(요청, 2026-10-28로 3페이지→5페이지 재구성, 2026-11-25에
-             작업인원 추천 카드가 맨 앞에 추가되어 6페이지 — 작업인원추천/신규품목확인/
-             금일작업계획/수출일정/납기상차일변경내역/파렛트현황. "이전 작업 LOG"는 목록에
-             없어서 뺐다. 신규품목확인·금일작업계획의 미회수/상차준비는 PC 화면을 iframe으로
-             그대로 재사용한다(openPkgNewItemsOverlay/openPkgMgmtFilterOverlay).) -->
+             작업인원 추천 카드가 맨 앞에 추가되고 "금일작업계획" 슬라이드는 제거되어 그
+             자리가 수출 일정 달력(기존 Row 3.5 독립 카드를 끌어올림)으로 바뀌었다 — 순서:
+             작업인원추천/신규품목확인/수출일정달력/납기상차일변경내역/파렛트현황.
+             신규품목확인의 미회수/상차준비는 PC 화면을 iframe으로 그대로 재사용한다
+             (openPkgNewItemsOverlay/openPkgMgmtFilterOverlay).) -->
         <div id="scheduleCard" class="card" style="position:relative;overflow:hidden;padding:0;height:240px;">
             <div id="slideTrack" style="display:flex;height:100%;transition:transform .45s cubic-bezier(.4,0,.2,1);"
                  ontouchstart="slideTouch('s',event)" ontouchend="slideTouch('e',event)">
