@@ -3066,11 +3066,12 @@
 
     function openScheduleRoundPicker() {
         if (!_schSameRounds.length) return;
-        // 기본 선택은 메인 화면 카드에 적혀있는 건명(_schSameRounds, "외 N건" 포함된 전체) —
-        // 달을 넘겨서 다른 건이 보여도 그 선택 자체는 유지된다(PC 웹 대시보드와 동일 기능).
-        _schPickerSelected = new Set(_schSameRounds);
+        // 예전엔 카드에 적혀있던 가장 빠른 상차일 건명이 기본으로 체크돼 있었는데, 카드를
+        // 누르기만 해도 자동으로 그 건명 필터가 걸리는 것처럼 느껴진다는 요청(2026-11-25:
+        // "클릭하면 자동으로 빠른 상차일이 자동체크되어있는데 이거 풀어줘")으로 기본
+        // 체크 없이 빈 채로 연다 — 직접 체크해야만 조회된다(PC 웹과 동일).
+        _schPickerSelected = new Set();
         _schPickerSelectedDates = {};
-        _schSameRounds.forEach(r => { _schPickerSelectedDates[r] = _schNearestDate; });
         const base = _schNearestDateObj || new Date();
         _schPickerYear = base.getFullYear();
         _schPickerMonth = base.getMonth();
