@@ -485,32 +485,27 @@
                     </div>
                 </div>
 
-                <!-- Slide 2: 금일 작업계획 -->
-                <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;overflow:hidden;">
-                    <div class="label" style="margin-bottom:9px;">금일 작업계획</div>
-                    <div style="display:flex;flex-direction:column;gap:7px;">
-                        <div onclick="event.stopPropagation();openPendingSearch()" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
-                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">포장대기</span>
-                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtPendingQty" style="font-size:16px;font-weight:800;color:#FF9100;">—</span><span style="font-size:10px;color:var(--label);">BOX</span></span>
+                <!-- Slide 2: 수출 일정 달력(원래 아래쪽 "Row 3.5" 독립 카드였던 미니 달력을
+                     이 자리로 올렸다 — 요청, 2026-11-25: "금일작업카드를 없애고 기존
+                     달력카드를 위로 금일작업카드에 덮어씌워주고". id/렌더 함수(miniCalMonthLabel/
+                     miniCalGrid/miniCalMoveMonth/renderMiniScheduleCalendar)는 그대로 재사용. -->
+                <div style="min-width:100%;height:100%;padding:13px 16px 28px;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                        <div style="font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;">
+                            <i class="fa-solid fa-calendar-days" style="color:#00E676;"></i> <span id="miniCalMonthLabel">-</span>
                         </div>
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openUnreceived','미회수')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
-                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">미회수</span>
-                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtUnreceivedCnt" style="font-size:16px;font-weight:800;color:#F43F5E;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <button onclick="event.stopPropagation();miniCalMoveMonth(-1)" style="-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">‹</button>
+                            <button onclick="event.stopPropagation();miniCalMoveMonth(1)" style="-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:8px;border:1px solid var(--border);background:var(--icon-bg);color:var(--text-sub);font-size:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;">›</button>
+                            <button onclick="event.stopPropagation();openScheduleCalendar()" style="-webkit-appearance:none;appearance:none;margin-left:2px;padding:4px 10px;border-radius:8px;border:none;background:rgba(0,230,118,.14);color:#00E676;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;-webkit-tap-highlight-color:transparent;">
+                                <i class="fa-solid fa-expand" style="font-size:9px;"></i> 전체보기
+                            </button>
                         </div>
-                        <!-- 회수중/생산중(요청, 2026-11-09: PC 웹의 금일 작업계획 카드와 항목을
-                             맞추고, 회수중 아래에 생산중을 추가) -->
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openRecovering','회수중')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
-                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">회수중</span>
-                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtRecoveringCnt" style="font-size:16px;font-weight:800;color:#A21CAF;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
-                        </div>
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openProducting','생산중')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
-                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">생산중</span>
-                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtProductingCnt" style="font-size:16px;font-weight:800;color:#6366F1;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
-                        </div>
-                        <div onclick="event.stopPropagation();openPkgMgmtFilterOverlay('openLoadReady','상차준비')" style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;cursor:pointer;">
-                            <span style="font-size:12.5px;font-weight:700;color:var(--text-sub);">상차준비</span>
-                            <span style="display:flex;align-items:baseline;gap:4px;"><span id="mgmtLoadReadyCnt" style="font-size:16px;font-weight:800;color:#38BDF8;">—</span><span style="font-size:10px;color:var(--label);">건</span></span>
-                        </div>
+                    </div>
+                    <div id="miniCalGrid" onclick="event.stopPropagation();openScheduleCalendar()" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;cursor:pointer;"></div>
+                    <div style="display:flex;gap:12px;font-size:10px;color:var(--label);padding:0 1px;">
+                        <span style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#38BDF8;display:inline-block;"></span>상차일</span>
+                        <span style="display:flex;align-items:center;gap:4px;"><span style="width:6px;height:6px;border-radius:50%;background:#F87171;display:inline-block;"></span>납기일</span>
                     </div>
                 </div>
 
