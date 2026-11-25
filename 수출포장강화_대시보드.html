@@ -943,18 +943,17 @@
                     <div id="workforceCard" class="bg-panelBg border border-borderSlate rounded-xl p-5 shadow-lg flex flex-col">
                         <div class="flex items-center justify-between gap-2 mb-3">
                             <h3 class="text-[19.5px] font-bold text-white flex items-center gap-1.5 whitespace-nowrap">
-                                <i class="fa-solid fa-users text-accentBlue"></i> 작업인원 추천
+                                <i class="fa-solid fa-users text-accentBlue"></i> 금일 작업계획
                             </h3>
+                            <span id="card1TodayDateLabel" class="text-[13.5px] text-slate-400 font-semibold">-</span>
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;">
                             <button type="button" onclick="setWfFilter('all')" id="wfChip_all" class="wf-chip">전체</button>
                             <button type="button" onclick="setWfFilter('dateset')" id="wfChip_dateset" class="wf-chip">상차일 있는것</button>
                             <button type="button" onclick="setWfFilter('pending')" id="wfChip_pending" class="wf-chip">포장대기만</button>
-                            <button type="button" onclick="setWfFilter('producting')" id="wfChip_producting" class="wf-chip">생산중만</button>
-                            <button type="button" onclick="setWfFilter('recovering')" id="wfChip_recovering" class="wf-chip">회수중만</button>
                         </div>
                         <div style="display:flex;gap:10px;margin-bottom:4px;">
-                            <div style="flex:1;background:rgba(148,163,184,.08);border-radius:12px;padding:14px;text-align:center;">
+                            <div onclick="setWfFilter('all')" style="flex:1;background:rgba(56,189,248,.14);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:background .15s;" onmouseenter="this.style.background='rgba(56,189,248,.22)'" onmouseleave="this.style.background='rgba(56,189,248,.14)'">
                                 <div style="font-size:11.5px;color:#94A3B8;font-weight:700;margin-bottom:6px;">총 수량</div>
                                 <div style="display:flex;align-items:baseline;justify-content:center;gap:4px;">
                                     <span id="wfTotalQty" class="text-[26px] font-extrabold" style="color:#38BDF8;">-</span>
