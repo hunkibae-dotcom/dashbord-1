@@ -3613,6 +3613,37 @@ function renderSidebarFlyout(key, items, done, undoneCount) {
   });
 }
 
+// 검사상태 칸에 공정진행률을 보여주는 작은 호버 말풍선 — 네이티브 title 속성은
+// 브라우저마다 뜨기까지 시간이 걸리고, 표 스크롤 영역(overflow)에 잘려서 안 보이는
+// 경우가 있어 직접 만든 말풍선으로 바꿨다(요청, 2026-11-25: "호버해도 아무런
+// 반응이없어"가 반복 보고됨). 마우스를 따라다니는 고정(fixed) div 하나를 재사용한다.
+let _qcHoverTipEl = null;
+function _qcShowHoverTip(ev, text) {
+  if (!text) return;
+  if (!_qcHoverTipEl) {
+    _qcHoverTipEl = document.createElement('div');
+    _qcHoverTipEl.style.cssText = 'position:fixed;z-index:9999;background:#1e293b;color:#fff;font-size:11.5px;font-weight:700;padding:5px 9px;border-radius:7px;pointer-events:none;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.28);display:none;';
+    document.body.appendChild(_qcHoverTipEl);
+  }
+  _qcHoverTipEl.textContent = text;
+  _qcHoverTipEl.style.display = 'block';
+  _qcMoveHoverTip(ev);
+}
+function _qcMoveHoverTip(ev) {
+  if (!_qcHoverTipEl || _qcHoverTipEl.style.display === 'none') return;
+  _qcHoverTipEl.style.left = (ev.clientX + 12) + 'px';
+  _qcHoverTipEl.style.top = (ev.clientY + 16) + 'px';
+}
+function _qcHideHoverTip() {
+  if (_qcHoverTipEl) _qcHoverTipEl.style.display = 'none';
+}
+// 검사상태 배지 하나에 붙일 호버 이벤트 속성 문자열 — 공정진행률 값이 없으면 빈 문자열.
+function _qcProgressHoverAttrs(d) {
+  if (d.공정진행률 === '' || d.공정진행률 == null) return '';
+  const text = '공정 ' + d.공정진행률 + '%';
+  return ` onmouseenter="_qcShowHoverTip(event, '${text}')" onmousemove="_qcMoveHoverTip(event)" onmouseleave="_qcHideHoverTip()"`;
+}
+
 // ===== TABLE =====
 function renderTable(data) {
   _qcRenderMainColButtons();
