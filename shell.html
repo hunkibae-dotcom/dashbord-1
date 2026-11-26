@@ -5324,10 +5324,11 @@
     // 없어서 allData를 직접 같은 조건(생산중/회수중은 수출현황=source:'standard', 포장대기는
     // 실재고=source:'stock')으로 걸러서 다시 집계한다.
     let _wfFilterApp = 'all'; // 'all' | 'dateset' | 'pending' | 'producting' | 'recovering'
-    // 칩 3개로 축소(요청, 2026-11-25: PC 웹과 맞춰 "생산중만"/"회수중만" 제거 — 아래
-    // 요약줄(포장대기/생산중/회수중)과 중복이라서. producting/recovering 필터 자체는
-    // 요약줄 클릭(openPkgMgmtFilterOverlay)로 여전히 조회 가능.
-    const WF_FILTERS_APP = [['all','전체'],['dateset','상차일 있는것'],['pending','포장대기만']];
+    // 칩 2개로 축소(요청, 2026-11-25: PC 웹과 맞춰 "생산중만"/"회수중만" 제거, 2026-11-26:
+    // "포장대기만은 없애줘"도 마저 반영 — 아래 요약줄(포장대기/생산중/회수중)과 중복이라서.
+    // pending/producting/recovering 필터 자체는 요약줄 클릭(openWorkforceStatusSearchApp
+    // 등 네이티브 검색)으로 여전히 조회 가능.
+    const WF_FILTERS_APP = [['all','전체'],['dateset','상차일 있는것']];
     function _wfRenderChipsApp() {
         const wrap = document.getElementById('wfChipsApp');
         if (!wrap) return;
