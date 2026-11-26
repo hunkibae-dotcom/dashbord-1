@@ -444,7 +444,7 @@
                     </div>
                     <div id="wfChipsApp" class="no-scrollbar" style="display:flex;gap:5px;overflow-x:auto;white-space:nowrap;padding-bottom:1px;"></div>
                     <div style="display:flex;gap:8px;">
-                        <div onclick="setWfFilterApp('all')" style="flex:1;background:rgba(56,189,248,.18);border-radius:10px;padding:9px 10px;text-align:center;cursor:pointer;">
+                        <div onclick="event.stopPropagation();openWorkforceTotalSearchApp()" style="flex:1;background:rgba(56,189,248,.18);border-radius:10px;padding:9px 10px;text-align:center;cursor:pointer;">
                             <div style="font-size:9.5px;color:var(--label);font-weight:700;margin-bottom:3px;">총 수량</div>
                             <div><span id="wfTotalQtyApp" style="font-size:17px;font-weight:800;color:#38BDF8;">-</span> <span style="font-size:9.5px;color:var(--label);font-weight:700;">BOX</span></div>
                         </div>
