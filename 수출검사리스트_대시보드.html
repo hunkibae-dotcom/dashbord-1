@@ -13530,6 +13530,7 @@ async function openRoundMergeDetail(key, event) {
   }
   // 복사 가능(요청, 2026-11-16: "상세 차수 확인/복사 가능하게") — 줄을 클릭하면 이
   // 코드베이스의 다른 칸들과 같은 방식(copyCellText)으로 건명이 복사된다.
+  _roundMergeCurrentItems = items;
   listEl.innerHTML = items.map(it => `
     <div onclick="copyCellText('${_jsAttr(it.orderName)}', event)" title="클릭하여 복사" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;">
       <span style="font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${it.orderName}</span>
@@ -13537,6 +13538,21 @@ async function openRoundMergeDetail(key, event) {
       <i class="fa-regular fa-copy" style="font-size:11px;color:var(--label);flex-shrink:0;"></i>
     </div>
   `).join('');
+}
+// "전체복사" — 체크해서 고르는 게 아니라 이 팝업에 떠있는 차수 전부를, 엑셀에 붙여넣었을
+// 때 한 셀에 한 차수씩 세로로(행 단위로) 들어가게 복사한다(요청, 2026-11-27: "한셀에
+// 한차수하고 엔터를 눌러서 바로아래셀" — 이어붙이기 금지). 그래서 _qcNewCopyRows처럼
+// text/html 표를 같이 만들지 않고, 건명만 줄바꿈으로 이은 순수 텍스트만 클립보드에 쓴다.
+function _rmdCopyAllRounds(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (!_roundMergeCurrentItems.length) return;
+  const text = _roundMergeCurrentItems.map(it => it.orderName).join('\n');
+  const label = _roundMergeCurrentItems.length + '개 차수 복사됨 (엑셀에 세로로 붙여넣기 가능)';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => _qcNewShowCopyToast(e, label)).catch(() => _copyCellTextFallback(text, () => _qcNewShowCopyToast(e, label)));
+  } else {
+    _copyCellTextFallback(text, () => _qcNewShowCopyToast(e, label));
+  }
 }
 function closeRoundMergeModal() {
   const modal = document.getElementById('roundMergeModal');
