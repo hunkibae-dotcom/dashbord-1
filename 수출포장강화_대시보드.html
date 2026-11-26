@@ -7555,6 +7555,37 @@
             const tableEl = document.getElementById('tablePanel');
             if (tableEl) tableEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        // "총 수량" 박스 클릭 → 포장대기/생산중/회수중을 지금 고른 칩(전체/상차일
+        // 있는것) 기준으로 합쳐서 그대로 보여준다(요청, 2026-11-26: "총수량을 눌러도
+        // 반응이없는데 조회할 수 있게해줘" — 예전엔 setWfFilter('all')만 호출해서 이미
+        // "전체"였으면 아무 변화가 없어 보였다). 포장대기는 실재고, 생산중/회수중은
+        // 수출현황 소스라 소스 필터 버튼은 하나로 못 맞추니 "전체"를 눌러둔다.
+        function filterByWorkforceTotal() {
+            const pending = _pendingDetailItems || [];
+            const producting = _productingDetailItems || [];
+            const recovering = _recoveringDetailItems || [];
+            let pool = pending.concat(producting, recovering);
+            if (_wfFilter === 'dateset') pool = pool.filter(it => it.date && it.date !== '-');
+            if (!pool.length) return;
+            activeStatusFilters = new Set(['전체']);
+            document.getElementById('statusFilterLabel')?.classList.add('hidden');
+            cardRoundFilter = null;
+            _activeSourceFilter = 'all';
+            ['srcAll', 'srcActive', 'srcStock', 'srcPallet', 'srcShipped'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.remove('active');
+            });
+            document.getElementById('srcAll')?.classList.add('active');
+            state.filteredData = pool.slice();
+            sortData();
+            switchToGeneralDashboardView();
+            updateKPIs();
+            renderTable();
+            renderCharts();
+            updateSortHeaders();
+            const tableEl2 = document.getElementById('tablePanel');
+            if (tableEl2) tableEl2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         function filterByCode(code) {
             document.getElementById('productCodeFilter').value = code;
             applyFilters();
