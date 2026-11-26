@@ -5377,6 +5377,34 @@
         const hi = Math.ceil(totalQty / 100) * 2;
         sv('wfNeedPeopleApp', lo === hi ? String(lo) : (lo + '~' + hi));
     }
+    // 생산중/회수중 박스 — 예전엔 openPkgMgmtFilterOverlay(PC 화면을 iframe으로 띄우는
+    // 방식)를 썼는데, 불러오는 동안 "불러오기중" 표시만 뜨고 별도 대시보드 창이 나와
+    // 느리고 헷갈렸다(요청, 2026-11-26: "생산중을 클릭하니까 불러오기중 표시가뜨며
+    // 다른 포장강화 대시보드 창이 나오는데 수정해줘"). 포장대기(openPendingSearch)와
+    // 똑같이 앱 안 제품검색을 그 상태로 바로 걸어서 연다 — _SF_SOURCE_META에 정확히
+    // 같은 문자열로 등록된 값이라 그대로 써도 된다.
+    function openWorkforceStatusSearchApp(status) {
+        _kpiPendingFilterActive = false; _schRoundFilterSet = null; _mgmtCatKey = null;
+        _sfSourceFilter = 'standard';
+        _sfStatusFilters = new Set([status]);
+        _updateSfSourceButtons();
+        openView('viewSearch');
+        ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        runSearch();
+    }
+    // "총 수량" 박스 — 포장대기+생산중+회수중을 합쳐서 그대로 보여준다(요청, 2026-11-26:
+    // "총수량을 눌러도 반응이없는데 조회할 수 있게해줘" — 예전엔 setWfFilterApp('all')만
+    // 호출해서 이미 '전체'였으면 아무 변화가 없어 보였다). 소스를 하나로 못 고르니(포장대기는
+    // 실재고, 생산중·회수중은 수출현황) 소스는 비워두고 상태 4개를 한번에 건다.
+    function openWorkforceTotalSearchApp() {
+        _kpiPendingFilterActive = false; _schRoundFilterSet = null; _mgmtCatKey = null;
+        _sfSourceFilter = '';
+        _sfStatusFilters = new Set(['포장대기','미확인','생산중','회수중']);
+        _updateSfSourceButtons();
+        openView('viewSearch');
+        ['sf_round','sf_code','sf_color','sf_country','sf_pallet','sf_dateFrom','sf_dateTo'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        runSearch();
+    }
 
     // ── 차트 슬라이드 자동재생 ───────────────────────────
     let _chartAutoPlay = true, _chartSlideTimer = null;
