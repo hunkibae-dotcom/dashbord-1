@@ -5900,15 +5900,14 @@
     function closeView() {
         if (_currentView === 'viewScan') _stopScan();
         if (!_currentView) return;
-        // 검색 화면을 (초기화 버튼이 아니라) 뒤로가기로 그냥 나가서 완전히 홈으로 돌아갈 때만
-        // 포장대기/일정 카드에서 걸어둔 임시 필터를 정리한다 — 상세스펙을 거쳐 다시 이
-        // 화면으로 돌아올 땐(_viewReturnTo로 복귀) 필터를 지우면 안 된다.
+        // 검색 화면을 나가서 완전히 홈으로 돌아갈 때는(초기화 버튼을 누른 것과 동일하게)
+        // 검색어·필터를 전부 지운다(요청, 2026-11-26: "검색이나 필터를 건드렸을때
+        // 제품검색창을 나간다면 검색과 필터가 초기화되어있으면 좋을거같아" — 이전 검색의
+        // 코드/필터가 남아있으면 그 다음 바코드 스캔 결과까지 같이 걸러져서 검색이 잘
+        // 안 되는 문제가 있었다). 상세스펙을 거쳐 다시 이 화면으로 돌아올 땐(_viewReturnTo로
+        // 복귀) 보던 중이던 검색이 지워지면 안 되니 그때만 예외로 둔다.
         if (_currentView === 'viewSearch' && !_viewReturnTo) {
-            _schRoundFilterSet = null;
-            _kpiPendingFilterActive = false;
-            _mgmtCatKey = null;
-            _sfSourceFilter = 'standard';
-            _sfStatusFilters.clear();
+            clearSearch();
         }
         const el = document.getElementById(_currentView);
         if (el) el.style.transform = 'translateX(100%)';
