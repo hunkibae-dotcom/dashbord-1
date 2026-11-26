@@ -5233,11 +5233,12 @@
             bar.innerHTML = html;
         }
 
-        // 페이지를 넘기면 화면에 없는 품목에 대한 체크가 남아 헷갈리지 않도록 선택을
-        // 비운다(선택 모드 자체는 유지 — 그 페이지에서 다시 체크하면 됨).
+        // 페이지를 넘겨도 이전 페이지에서 체크한 선택은 그대로 유지한다(요청, 2026-11-27:
+        // "1페이지에서 선택을하고 2페이지넘어갈때에도 1페이지에 선택한부분이 유지되어야해").
+        // _pkgKey는 전체 결과 기준 절대 인덱스('pkg_N')라 페이지만 넘기는 동안은(정렬/필터가
+        // 안 바뀌는 한) 같은 품목이 항상 같은 키를 가지므로 안전하게 유지할 수 있다.
         function _pkgGoToPage(p) {
             _pkgCurrentPage = p;
-            _pkgSelectedKeys.clear();
             renderTable();
             const cardsWrap = document.getElementById('tableCardsMobile');
             if (cardsWrap) cardsWrap.scrollTop = 0;
