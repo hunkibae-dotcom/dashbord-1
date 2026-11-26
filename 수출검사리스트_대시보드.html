@@ -13546,7 +13546,7 @@ async function openRoundMergeDetail(key, event) {
 function _rmdCopyAllRounds(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   if (!_roundMergeCurrentItems.length) return;
-  const text = _roundMergeCurrentItems.map(it => it.orderName).join('\n');
+  const text = _roundMergeCurrentItems.map(it => it.orderName).join('\n\n');
   const label = _roundMergeCurrentItems.length + '개 차수 복사됨 (엑셀에 세로로 붙여넣기 가능)';
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => _qcNewShowCopyToast(e, label)).catch(() => _copyCellTextFallback(text, () => _qcNewShowCopyToast(e, label)));
