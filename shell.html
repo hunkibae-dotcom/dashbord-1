@@ -5357,9 +5357,13 @@
         const recovering = pool0.filter(d => d.source === 'standard' && norm(d.status).includes('회수중'));
         const sumQty = arr => arr.reduce((s, d) => s + (parseInt(d.qty) || 0), 0);
         const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
-        sv('wfPendingQtyApp', sumQty(pending).toLocaleString() + ' BOX');
-        sv('wfProductingQtyApp', sumQty(producting).toLocaleString() + ' BOX');
-        sv('wfRecoveringQtyApp', sumQty(recovering).toLocaleString() + ' BOX');
+        const hasDate = d => d.date && d.date !== '-';
+        const pendingBd = _wfFilterApp === 'dateset' ? pending.filter(hasDate) : pending;
+        const productingBd = _wfFilterApp === 'dateset' ? producting.filter(hasDate) : producting;
+        const recoveringBd = _wfFilterApp === 'dateset' ? recovering.filter(hasDate) : recovering;
+        sv('wfPendingQtyApp', sumQty(pendingBd).toLocaleString() + ' BOX');
+        sv('wfProductingQtyApp', sumQty(productingBd).toLocaleString() + ' BOX');
+        sv('wfRecoveringQtyApp', sumQty(recoveringBd).toLocaleString() + ' BOX');
         const breakdownEl = document.getElementById('wfBreakdownWrapApp');
         if (breakdownEl) breakdownEl.style.display = (_wfFilterApp === 'all' || _wfFilterApp === 'dateset') ? 'flex' : 'none';
         let pool;
@@ -5367,7 +5371,7 @@
         else if (_wfFilterApp === 'producting') pool = producting;
         else if (_wfFilterApp === 'recovering') pool = recovering;
         else pool = pending.concat(producting, recovering); // 'all' | 'dateset'
-        if (_wfFilterApp === 'dateset') pool = pool.filter(d => d.date && d.date !== '-');
+        if (_wfFilterApp === 'dateset') pool = pool.filter(hasDate);
         const totalQty = sumQty(pool);
         sv('wfTotalQtyApp', totalQty.toLocaleString());
         if (!totalQty) { sv('wfNeedPeopleApp', '0'); return; }
