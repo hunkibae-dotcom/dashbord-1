@@ -13487,12 +13487,14 @@ function _qcFindItemByKey(key) {
   return allData.find(d => _qcNewKey(d) === key) || archiveRows.find(d => _qcNewKey(d) === key) || null;
 }
 const _roundMergeCache = {}; // 'factoryKey|round' → 파싱된 items (예전 방식 보완 조회 전용 캐시)
+let _roundMergeCurrentItems = []; // "전체복사" 버튼용 — 지금 모달에 떠있는 차수 목록
 async function openRoundMergeDetail(key, event) {
   if (event) { event.stopPropagation(); event.preventDefault(); }
   const modal = document.getElementById('roundMergeModal');
   const titleEl = document.getElementById('roundMergeModalTitle');
   const listEl = document.getElementById('roundMergeModalList');
   if (!modal || !titleEl || !listEl) return;
+  _roundMergeCurrentItems = [];
   const found = _qcFindItemByKey(key);
   const round = (found && found.건명) || key.split('|')[1] || '';
   const factoryKey = (found && found.공장) || key.split('|')[0] || '';
