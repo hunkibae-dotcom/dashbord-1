@@ -7792,14 +7792,18 @@
             const producting = _productingDetailItems || [];
             const recovering = _recoveringDetailItems || [];
             const sumQty = arr => arr.reduce((s, it) => s + (parseInt(it.qty) || 0), 0);
-            const pendingQty = sumQty(pending), productingQty = sumQty(producting), recoveringQty = sumQty(recovering);
+            const hasDate = it => it.date && it.date !== '-';
+            const pendingBd = _wfFilter === 'dateset' ? pending.filter(hasDate) : pending;
+            const productingBd = _wfFilter === 'dateset' ? producting.filter(hasDate) : producting;
+            const recoveringBd = _wfFilter === 'dateset' ? recovering.filter(hasDate) : recovering;
+            const pendingQty = sumQty(pendingBd), productingQty = sumQty(productingBd), recoveringQty = sumQty(recoveringBd);
 
             let pool;
             if (_wfFilter === 'pending') pool = pending;
             else if (_wfFilter === 'producting') pool = producting;
             else if (_wfFilter === 'recovering') pool = recovering;
             else pool = pending.concat(producting, recovering); // 'all' | 'dateset'
-            if (_wfFilter === 'dateset') pool = pool.filter(it => it.date && it.date !== '-');
+            if (_wfFilter === 'dateset') pool = pool.filter(hasDate);
 
             const totalQty = sumQty(pool);
             const sv = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
