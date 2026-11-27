@@ -6579,6 +6579,11 @@
         { key: 'shipped', label: '출고완료' },
     ];
     const PKG_STATUS_COLOR = { 미입고:'#DC2626', 회수중:'#A21CAF', 생산중:'#6366F1', 입고:'#38BDF8', 일부입고:'#FBBF24', 미확인:'#64748B', 포장대기:'#F59E0B', 포장완료:'#3B82F6', 일부포장완료:'#0EA5E9', 철물:'#EF4444', 미포장:'#94A3B8', 피킹:'#A78BFA', 출고:'#00E676', 재고활용:'#22D3EE' };
+    // 일괄수정 진행상태 처리 분기용(PC 웹과 동일, 요청 2026-11-27: "일괄수정창을
+    // 웹과 동일하게 바꿔줘") — 이동(입고/일부입고/출고/피킹)이 필요 없으면서도
+    // "수출 현황"에만 있는 상태는 pkgUpdateMainStatusBatch로, 그 외(포장완료/철물/
+    // 미확인/포장대기/미포장처럼 실재고에도 있는 상태)는 pkgUpdateStatusBatch로 보낸다.
+    const PKG_EXPORT_ONLY_STATUSES = ['미입고', '재고활용', '회수중', '생산중', '일부포장완료'];
     let _ieBasis = 'standard';
 
     function _ieApplyCardToggle(prefix, editing) {
