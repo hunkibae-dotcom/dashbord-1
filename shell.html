@@ -3971,33 +3971,80 @@
         runSearch();
     }
 
-    // "수정"(선택 품목 일괄 수정) — 모바일 단일 품목 수정창(itemEditSheet)이 이미 쓰는
-    // 것과 같은 진행상태/포장완료일/적재번호 GAS 액션(updateStatus/updateRegDate/
-    // updatePallet)을 여러 품목에 그대로 반복 적용한다(2026-10-14).
+    // "수정"(선택 품목 일괄 수정) — PC 웹 일괄수정 모달(pkgBulkModal/pkgBulkApply)과
+    // 똑같은 구성·로직으로 맞췄다(요청, 2026-11-27: "포장강화 앱에서 일괄수정하려고
+    // 했는데 일괄수정창을 웹과 동일하게좀 바꿔줘"): 진행상태는 단일 품목 수정창
+    // (itemEditSheet)과 같은 시트별(수출현황/충주공장재고/출고완료) 드롭다운으로,
+    // 납기일/PE폼 유형/상차 준비완료/삭제도 전부 추가. 입고/일부입고/출고/피킹처럼
+    // 시트 간 실제 이동이 필요한 상태는 PC 웹과 동일하게 pkgProcessIncoming/
+    // pkgProcessShipOut으로, 미입고/재고활용/회수중/생산중/일부포장완료는
+    // pkgUpdateMainStatusBatch로, 그 외(포장완료/철물/미확인/포장대기/미포장)는
+    // pkgUpdateStatusBatch로 보낸다(예전엔 전부 실재고 전용 updateStatus 하나로만
+    // 보내서, 수출현황에서 온 품목을 입고/출고로 바꾸면 실제로 이동하지 않는 문제가
+    // 있었다).
     let _sfBulkStatus = null;
+    let _sfBulkStatusOpenGroup = null;
     function _sfOpenBulkEdit() {
         if (!_sfSelected.size) { alert('먼저 품목을 하나 이상 선택해주세요.'); return; }
         _sfBulkStatus = null;
+        _sfBulkStatusOpenGroup = null;
         document.getElementById('sfBulkCount').textContent = _sfSelected.size + '개 품목 선택됨';
         // 지난번에 "직접입력"으로 바꿔둔 채 닫았을 수 있어 매번 날짜선택 모드로 되돌린다.
+        _pkgSetDateFieldMode('sfBulkDueDate', 'sfBulkDueDateModeBtn', '');
         _pkgSetDateFieldMode('sfBulkShipDate', 'sfBulkShipDateModeBtn', '');
         _pkgSetDateFieldMode('sfBulkRegDate', 'sfBulkRegDateModeBtn', '');
         _pkgSetDateFieldMode('sfBulkArriveDate', 'sfBulkArriveDateModeBtn', '');
         document.getElementById('sfBulkPallet').value = '';
+        document.getElementById('sfBulkPeType').value = '';
+        document.getElementById('sfBulkShipReadyChk').checked = false;
         document.getElementById('sfBulkResult').textContent = '';
-        _sfRenderBulkStatusBtns();
+        _sfRenderBulkStatusOpts();
         document.getElementById('sfBulkModal').style.display = 'flex';
     }
     function _sfCloseBulkEdit() {
         document.getElementById('sfBulkModal').style.display = 'none';
     }
-    function _sfRenderBulkStatusBtns() {
-        const wrap = document.getElementById('sfBulkStatusBtns');
-        if (!wrap) return;
-        wrap.innerHTML = _IE_STATUS_OPTS.map(opt => {
-            const on = _sfBulkStatus === opt.v;
-            return `<button type="button" onclick="_sfSetBulkStatus('${opt.v}')" style="flex:1;min-width:48px;padding:8px 2px;border-radius:10px;border:2px solid ${on ? opt.c : 'var(--border)'};background:${on ? opt.c + '22' : 'var(--input-bg)'};color:${on ? opt.c : 'var(--text-sub)'};font-size:11px;font-weight:${on ? 800 : 600};cursor:pointer;">${opt.v}</button>`;
-        }).join('');
+    // 진행상태 — itemEditSheet의 _renderIeStatus()와 같은 fw-dd-* 드롭다운 패턴.
+    // 일괄수정은 originMap(품목별 실제 소속 시트)이 없으므로 PC 웹 일괄수정 모달과
+    // 동일하게, 고른 값이 속한 그룹에서만 보여주고 모든 그룹을 똑같이 열 수 있게 한다.
+    function _sfRenderBulkStatusOpts() {
+        const container = document.getElementById('sfBulkStatusOpts');
+        if (!container) return;
+        container.innerHTML = `<div class="fw-dd-group" style="flex-direction:column;">` + PKG_BASIS_LIST.map(b => {
+            const set = PKG_STATUS_GROUPS[b.key];
+            const isActiveGroup = set.includes(_sfBulkStatus);
+            const isOpen = _sfBulkStatusOpenGroup === b.key;
+            const c = isActiveGroup ? (PKG_STATUS_COLOR[_sfBulkStatus] || '#64748B') : null;
+            return `
+              <div class="fw-dd-anchor${isOpen ? ' open' : ''}" style="display:block;width:100%;">
+                <div class="fw-dd-trigger" style="display:flex;width:100%;box-sizing:border-box;${isActiveGroup ? `border-color:${c};background:${c}22;color:${c};` : ''}" onclick="_sfToggleBulkStatusGroup('${b.key}')">
+                  ${isActiveGroup ? `<span class="fw-dd-dot" style="background:${c}"></span>` : ''}
+                  <span>${b.label}</span>${isActiveGroup ? ` · ${_sfBulkStatus}` : ''}
+                  <i class="fa-solid fa-chevron-down fw-dd-chev" style="margin-left:auto;"></i>
+                </div>
+                <div class="fw-dd-panel" style="display:${isOpen ? '' : 'none'};">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;min-width:190px;">
+                    ${set.map(v => {
+                      const vc = PKG_STATUS_COLOR[v] || '#64748B';
+                      const on = v === _sfBulkStatus;
+                      return `<div class="fw-dd-opt" onclick="_sfSelectBulkStatus('${v}')" style="border-radius:999px;border:1.5px solid ${on?vc:'var(--border)'};background:${on?vc+'22':'var(--input-bg)'};color:${on?vc:'var(--text-sub)'};"><span class="fw-dd-dot" style="background:${vc}"></span>${v}${on?'<span class="fw-dd-chk">✓</span>':''}</div>`;
+                    }).join('')}
+                  </div>
+                </div>
+              </div>`;
+        }).join('') + `</div>`;
+        _sfRenderBulkPartialRows();
+    }
+    function _sfToggleBulkStatusGroup(key) {
+        _sfBulkStatusOpenGroup = (_sfBulkStatusOpenGroup === key) ? null : key;
+        _sfRenderBulkStatusOpts();
+    }
+    function _sfSelectBulkStatus(v) {
+        _sfBulkStatus = (_sfBulkStatus === v) ? null : v; // 다시 누르면 선택 해제("변경 안 함")
+        _sfBulkStatusOpenGroup = null;
+        _sfRenderBulkStatusOpts();
+    }
+    function _sfRenderBulkPartialRows() {
         const partialWrap = document.getElementById('sfBulkPartialWrap');
         const partialRows = document.getElementById('sfBulkPartialRows');
         if (_sfBulkStatus === '일부입고') {
@@ -4013,23 +4060,25 @@
             partialWrap.style.display = 'none';
         }
     }
-    function _sfSetBulkStatus(v) {
-        _sfBulkStatus = (_sfBulkStatus === v) ? null : v;
-        _sfRenderBulkStatusBtns();
+    function _sfIsGasError(res) {
+        return !res || res.ok === false || res.result === 'error';
     }
     async function _sfApplyBulkEdit() {
         const status = _sfBulkStatus;
-        // 단일 수정창(saveItemEdit)과 같은 기준 — 포장완료로 바꾸는데 포장완료일을
-        // 따로 안 골랐으면 오늘 날짜로 자동 채운다(요청, 원래 발주서 추가 때 같이
-        // 들어갔어야 했는데 빠졌던 부분).
+        const dueDate = (document.getElementById('sfBulkDueDate').value || '').trim();
         const shipDate = (document.getElementById('sfBulkShipDate').value || '').trim();
+        const arriveDate = (document.getElementById('sfBulkArriveDate').value || '').trim();
+        // 단일 수정창(saveItemEdit)과 같은 기준 — 포장완료로 바꾸는데 포장완료일을
+        // 따로 안 골랐으면 오늘 날짜로 자동 채운다.
         let regDate = (document.getElementById('sfBulkRegDate').value || '').trim();
         if (status === '포장완료' && !regDate) regDate = todayStr();
-        const arriveDate = (document.getElementById('sfBulkArriveDate').value || '').trim();
         const palletRaw = (document.getElementById('sfBulkPallet').value || '').trim();
+        const peTypeRaw = (document.getElementById('sfBulkPeType').value || '').trim();
+        const shipReadyChecked = document.getElementById('sfBulkShipReadyChk').checked;
         const resultEl = document.getElementById('sfBulkResult');
-        if (!status && !shipDate && !regDate && !arriveDate && !palletRaw) {
-            resultEl.textContent = '진행상태·상차일·포장완료일·입고일·적재번호 중 하나는 선택해주세요.';
+        resultEl.textContent = '';
+        if (!status && !shipDate && !dueDate && !arriveDate && !regDate && !palletRaw && !peTypeRaw && !shipReadyChecked) {
+            resultEl.textContent = '진행상태·납기일·상차일·입고일·포장완료일·적재번호·PE폼 유형·상차 준비완료 중 하나는 바꿔야 합니다.';
             return;
         }
         const items = (window._srLastDeduped || []).filter(d => _sfSelected.has(_sfItemKey(d)));
@@ -4045,58 +4094,146 @@
                     resultEl.textContent = '일부입고로 바꾸는 모든 품목에 수량(EA)을 입력해주세요.';
                     return;
                 }
-                partialQtyByKey[inp.dataset.key] = v;
+                partialQtyByKey[inp.dataset.key] = Number(v);
             }
         }
 
         const btn = document.getElementById('sfBulkApplyBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 적용 중...';
-        const sendPallet = palletRaw ? (/^\d+$/.test(palletRaw) ? '적재 ' + palletRaw : palletRaw) : '';
-        const tasks = [];
-        items.forEach(item => {
-            if (status) {
-                const params = { action: 'updateStatus', code: item.code, round: item.round, color: item.color, status: status };
-                if (status === '일부입고') params.note = partialQtyByKey[_sfItemKey(item)] + ' EA만 입고됨';
-                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams(params), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
-                item.status = status;
-            }
-            if (regDate) {
-                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updateRegDate', code: item.code, round: item.round, color: item.color, regDate: regDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
-                item.regDate = regDate;
-            }
-            if (arriveDate) {
-                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updateArriveDate', code: item.code, round: item.round, color: item.color, arriveDate: arriveDate }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
-                item.arriveDate = arriveDate;
-            }
-            if (sendPallet) {
-                tasks.push(fetch(GAS_URL + '?' + new URLSearchParams({ action: 'updatePallet', code: item.code, round: item.round, color: item.color, pallet: sendPallet }), { signal: AbortSignal.timeout(15000) }).then(r => r.text()));
-                item.pallet = sendPallet;
-            }
-        });
+        let migrated = false; // 입고/일부입고/출고/피킹처럼 시트 간 실제 이동이 생긴 경우
         try {
-            // 상차일은 여러 품목을 한 번에 받는 pkgUpdateShipDate(PC 웹 일괄수정과 동일
-            // 액션)로 먼저 반영한다 — 출고/피킹으로 바뀌면 "수출 현황" 행 자체가
-            // 삭제되므로, 그 전에 먼저 보내둔다(요청, 2026-11-25: "포장강화 앱에서
-            // 품목들의 상차일을 변경하려고했는데 일괄수정에는 상차일변경이없어 추가해줘").
-            if (shipDate) {
-                const dateBody = { action: 'pkgUpdateShipDate', items: items.map(it => ({ code: it.code, round: it.round, color: it.color })), shipDate: shipDate };
-                const dateRes = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(dateBody), signal: AbortSignal.timeout(60000) }).then(r => r.json());
-                if (dateRes && dateRes.ok === false) throw new Error(dateRes.message || '상차일 반영 실패');
-                items.forEach(it => { it.date = shipDate; });
+            // 납기일/상차일부터 먼저 반영(PC 웹과 동일한 순서) — 출고/피킹으로 바뀌면
+            // "수출 현황" 행 자체가 삭제되므로, 그 전에 먼저 보내둔다.
+            if (shipDate || dueDate) {
+                const dateBody = { action: 'pkgUpdateShipDate', items: items.map(it => ({ code: it.code, round: it.round, color: it.color })) };
+                if (shipDate) dateBody.shipDate = shipDate;
+                if (dueDate) dateBody.dueDate = dueDate;
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(dateBody), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (_sfIsGasError(res)) throw new Error((res && res.message) || '납기일/상차일 반영 실패');
+                items.forEach(it => { if (shipDate) it.date = shipDate; if (dueDate) it.dueDate = dueDate; });
             }
-            await Promise.all(tasks);
+
+            // 입고일도 같은 이유로 상태 변경보다 먼저 반영(그 시트에만 있는 칸이라
+            // 행이 이동하기 전에 써둬야 함).
+            if (arriveDate) {
+                const bItems = items.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgUpdateArriveDateBatch', items: bItems, arriveDate: arriveDate }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (_sfIsGasError(res)) throw new Error((res && res.message) || '입고일 반영 실패');
+                items.forEach(it => { it.arriveDate = arriveDate; });
+            }
+
+            // 포장완료일 — 재고/출고완료 시트에 쓰는 칸이라 상태 이동보다 먼저 반영.
+            if (regDate) {
+                const bItems = items.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgUpdateRegDateBatch', items: bItems, regDate: regDate }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (_sfIsGasError(res)) throw new Error((res && res.message) || '포장완료일 반영 실패');
+                items.forEach(it => { it.regDate = regDate; });
+            }
+
+            // 상차 준비완료 — 품목마다 기존 비고는 그대로 두고 문구만 추가, 상태변경으로
+            // 행이 지워지기 전에 먼저 반영.
+            if (shipReadyChecked) {
+                const noteItems = items.map(it => ({ code: it.code, round: it.round, color: it.color, note: _pkgNoteWithShipReady((it.memo || '').toString().trim(), true) }));
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgUpdateNoteBatch', items: noteItems }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (_sfIsGasError(res)) throw new Error((res && res.message) || '상차 준비완료 반영 실패');
+                const noteByKey = {}; noteItems.forEach(ni => { noteByKey[ni.code.toUpperCase() + '|' + ni.round + '|' + (ni.color||'')] = ni.note; });
+                items.forEach(it => { it.memo = noteByKey[(it.code||'').toUpperCase() + '|' + it.round + '|' + (it.color||'')]; });
+            }
+
+            // 진행상태 — 이동이 필요한 상태(입고/일부입고/출고/피킹)는 전용 액션으로.
+            if (status) {
+                const isIncoming = (status === '입고' || status === '일부입고');
+                const isShipOut = (status === '출고' || status === '피킹');
+                const isExportOnly = PKG_EXPORT_ONLY_STATUSES.includes(status);
+                if (isIncoming || isShipOut) migrated = true;
+                const action = isIncoming ? 'pkgProcessIncoming' : (isShipOut ? 'pkgProcessShipOut' : (isExportOnly ? 'pkgUpdateMainStatusBatch' : 'pkgUpdateStatusBatch'));
+                const statusItems = items.map(it => isIncoming
+                    ? { code: it.code, round: it.round, color: it.color, qty: partialQtyByKey ? partialQtyByKey[_sfItemKey(it)] : null }
+                    : { code: it.code, round: it.round, color: it.color, status: status });
+                // 한 번에 너무 많이 보내면 시간 초과 위험이 있어 PC 웹과 동일하게 나눠 보낸다.
+                const CHUNK_SIZE = 15;
+                for (let ci = 0; ci < statusItems.length; ci += CHUNK_SIZE) {
+                    const chunk = statusItems.slice(ci, ci + CHUNK_SIZE);
+                    const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: action, items: chunk }), signal: AbortSignal.timeout(120000) }).then(r => r.json());
+                    if (_sfIsGasError(res)) throw new Error((res && res.message) || '처리 중 오류가 발생했습니다.');
+                }
+                if (!migrated) items.forEach(it => { it.status = status; });
+            }
+
+            // 적재번호
+            if (palletRaw) {
+                const sendPallet = /^\d+$/.test(palletRaw) ? '적재 ' + palletRaw : palletRaw;
+                const bItems = items.map(it => ({ code: it.code, round: it.round, color: it.color }));
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgUpdatePalletBatch', items: bItems, pallet: sendPallet }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+                if (_sfIsGasError(res)) throw new Error((res && res.message) || '적재번호 반영 실패');
+                items.forEach(it => { it.pallet = sendPallet; });
+            }
+
+            // PE폼 유형 — 구글시트가 아니라 이 기기/상세스펙에 코드별로 저장하는 값
+            // (_pkgSetPeType이 네트워크 반영까지 알아서 한다). 같은 코드가 여러 번
+            // 선택돼 있어도 한 번만 보내면 충분하다.
+            if (peTypeRaw) {
+                const doneCodes = new Set();
+                items.forEach(it => {
+                    const codeUp = (it.code || '').toUpperCase();
+                    if (doneCodes.has(codeUp)) return;
+                    doneCodes.add(codeUp);
+                    _pkgSetPeType(it.code, peTypeRaw, _pkgGetPeType(it.code).spec);
+                });
+            }
+
             _invalidateDataCache(); // 방금 고친 내용이 다음 재진입에서 옛 캐시로 되돌아가지 않게
-            resultEl.textContent = `${items.length}개 품목에 반영을 요청했습니다.`;
+            resultEl.textContent = `✓ ${items.length}개 품목에 적용되었습니다.`;
+            setTimeout(async () => {
+                _sfCloseBulkEdit();
+                _sfSelectMode = false;
+                _sfSelected.clear();
+                if (migrated) {
+                    // 수출현황→충주공장재고(입고) 또는 →출고완료(출고/피킹)로 실제 행이
+                    // 옮겨갔으므로, 서버에서 다시 받아와야 정확히 보인다.
+                    await loadData(true);
+                }
+                runSearch();
+                renderAll();
+            }, 600);
         } catch (e) {
-            resultEl.textContent = '일부 반영 중 오류가 발생했습니다 — 새로고침 후 확인해주세요.';
+            resultEl.textContent = '처리 실패: ' + (e.message || '오류');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '적용';
         }
-        btn.disabled = false;
-        btn.innerHTML = '적용';
-        _sfSelectMode = false;
-        _sfSelected.clear();
-        runSearch();
-        setTimeout(() => { _sfCloseBulkEdit(); }, 900);
+    }
+    // 일괄수정창 "삭제" — PC 웹과 동일하게 선택한 품목 전체를 구글시트에서 완전히 삭제.
+    async function _sfBulkDelete() {
+        const resultEl = document.getElementById('sfBulkResult');
+        resultEl.textContent = '';
+        const items = (window._srLastDeduped || []).filter(d => _sfSelected.has(_sfItemKey(d)));
+        if (!items.length) { resultEl.textContent = '선택된 품목이 없습니다.'; return; }
+        if (!confirm(`선택한 ${items.length}건을 정말로 삭제하시겠습니까?\n구글시트에서도 완전히 삭제되며 되돌릴 수 없습니다.`)) return;
+        const btn = document.getElementById('sfBulkDeleteBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 삭제 중...';
+        try {
+            const sendItems = items.map(it => ({ code: it.code, round: it.round, color: it.color }));
+            const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'pkgDeleteItemsBatch', items: sendItems }), signal: AbortSignal.timeout(60000) }).then(r => r.json());
+            if (_sfIsGasError(res)) throw new Error((res && res.message) || '삭제 중 오류가 발생했습니다.');
+            _invalidateDataCache();
+            resultEl.textContent = `✓ ${res.deletedCount || sendItems.length}건 삭제되었습니다.`;
+            setTimeout(async () => {
+                _sfCloseBulkEdit();
+                _sfSelectMode = false;
+                _sfSelected.clear();
+                await loadData(true);
+                runSearch();
+                renderAll();
+            }, 600);
+        } catch (e) {
+            resultEl.textContent = '삭제 실패: ' + (e.message || '오류');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-trash"></i> 삭제';
+        }
     }
     // 시트(source)별로 실제 존재하는 진행상태만 뽑아 세부 필터 팝업에 보여준다.
     // 값(value)은 실제 시트의 진행 컬럼 문자열과 정확히 같아야 하고, '출고완료'만 화면엔 "출고"로 축약 표시.
