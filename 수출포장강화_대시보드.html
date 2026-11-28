@@ -11703,26 +11703,71 @@
         // 확인/선택을 받는다(요청, 2026-11-05: "매칭이 되었지만 수량이... 3개로
         // 되었다면 일부만 입고되었다는 소리인데... 팝업창이 나와야해"). candidates는
         // GAS _coreClassifyIncoming()의 firstPartialCandidates 그대로([{row, itemCode,
-        // color, orderName, originalQty, enteredQty}]) — 체크된 것만 배열로 resolve,
-        // 취소하면 null로 resolve.
-        function _pkgShowFirstPartialConfirm(candidates) {
-            return new Promise((resolve) => {
-                const listEl = document.getElementById('pkgFirstPartialConfirmList');
-                listEl.innerHTML = candidates.map((c, idx) => `
+        // color, orderName, originalQty, enteredQty, reuseAvailable}]) — 체크된 것만
+        // 배열로 resolve, 취소하면 null로 resolve.
+        //
+        // 잔량(부족분)만큼 재고활용 재고가 있으면 "재고활용으로 잔량 채우기" 버튼도
+        // 같이 보여준다(요청, 2026-11-28: "일부입고인데... 재고활용이가능하다면
+        // 재고활용적용도 추가할수있는 버튼도 있어야해" — 회수 시 일부러 일부만
+        // 들여오고 나머지는 재고활용으로 채우는 경우가 있다고 함). 여기서 바로
+        // 적용하면 그 행은 "일부입고로 반영" 대상에서 빠지므로(이미 처리됨) 목록에서
+        // 제거하고 다시 그린다 — 체크박스 data-idx가 매번 바뀌므로, 실제 선택 결과는
+        // 항상 최신 _pkgFirstPartialCandidatesRef에서 다시 찾는다.
+        let _pkgFirstPartialCandidatesRef = [];
+        function _pkgRenderFirstPartialList(candidates) {
+            _pkgFirstPartialCandidatesRef = candidates;
+            const listEl = document.getElementById('pkgFirstPartialConfirmList');
+            listEl.innerHTML = candidates.map((c, idx) => {
+                const shortfall = c.originalQty - c.enteredQty;
+                const reuseAvailable = c.reuseAvailable || 0;
+                const canCoverFully = reuseAvailable >= shortfall && shortfall > 0;
+                return `
                     <label style="display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid #e2e8f0;border-radius:10px;cursor:pointer;">
                         <input type="checkbox" class="pkg-firstpartial-chk" data-idx="${idx}" checked style="margin-top:3px;width:15px;height:15px;flex-shrink:0;">
-                        <div style="font-size:12.5px;line-height:1.5;">
+                        <div style="font-size:12.5px;line-height:1.5;flex:1;min-width:0;">
                             <div style="color:#1e293b;font-weight:700;">${_pkgEscHtml(c.orderName)} — ${_pkgEscHtml(c.itemCode)} / ${_pkgEscHtml(c.color || '-')}</div>
-                            <div style="color:#b45309;font-size:11.5px;">정수량 ${c.originalQty}개 중 <b>${c.enteredQty}개</b>만 입고 확인됨 (잔량 ${c.originalQty - c.enteredQty}개)</div>
+                            <div style="color:#b45309;font-size:11.5px;">정수량 ${c.originalQty}개 중 <b>${c.enteredQty}개</b>만 입고 확인됨 (잔량 ${shortfall}개)</div>
+                            ${reuseAvailable > 0 ? `<div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <span style="font-size:11px;font-weight:700;color:#0e7490;"><i class="fa-solid fa-recycle" style="margin-right:4px;"></i>재고활용 가능 ${reuseAvailable}개</span>
+                                ${canCoverFully
+                                    ? `<button type="button" onclick="event.preventDefault();event.stopPropagation();_pkgApplyReuseForFirstPartial(${idx})" style="padding:4px 10px;border-radius:7px;border:none;background:#0e7490;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">재고활용으로 잔량 채우기</button>`
+                                    : `<span style="font-size:10.5px;color:#64748b;">부족(필요 ${shortfall}개)</span>`}
+                            </div>` : ''}
                         </div>
-                    </label>`).join('');
+                    </label>`;
+            }).join('');
+        }
+        async function _pkgApplyReuseForFirstPartial(idx) {
+            const c = _pkgFirstPartialCandidatesRef[idx];
+            if (!c) return;
+            const shortfall = c.originalQty - c.enteredQty;
+            if (!confirm(`${c.orderName} — ${c.itemCode} / ${c.color || '-'} 품목의 잔량 ${shortfall}개를 재고활용으로 채울까요?\n적용되면 진행상태가 "입고"로 바뀌고, 비고에 재고활용 적용 내역이 추가됩니다.`)) return;
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgApplyReuseForPartial', selections: [{ row: c.row, code: c.itemCode, color: c.color, take: shortfall }] }),
+                    signal: AbortSignal.timeout(30000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고활용 적용 실패');
+                if (!res.appliedCount) { alert('재고활용 재고가 그 사이 바뀐 것 같습니다 — 목록을 다시 확인해주세요.'); return; }
+                // 반영됐으니 "일부입고로 반영" 대상에서 제거(이미 "입고"로 바뀜) — 인덱스가
+                // 바뀌므로 남은 후보로 전체 다시 그린다.
+                _pkgRenderFirstPartialList(_pkgFirstPartialCandidatesRef.filter((x, i) => i !== idx));
+            } catch (e) {
+                alert('재고활용 적용 중 오류: ' + (e.message || '오류'));
+            }
+        }
+        function _pkgShowFirstPartialConfirm(candidates) {
+            return new Promise((resolve) => {
+                _pkgRenderFirstPartialList(candidates);
                 const modal = document.getElementById('pkgFirstPartialConfirmModal');
                 modal.style.display = 'flex';
                 const cleanup = () => { modal.style.display = 'none'; };
                 document.getElementById('pkgFirstPartialConfirmApplyBtn').onclick = () => {
                     const selected = Array.from(document.querySelectorAll('.pkg-firstpartial-chk'))
                         .filter(chk => chk.checked)
-                        .map(chk => candidates[parseInt(chk.dataset.idx, 10)]);
+                        .map(chk => _pkgFirstPartialCandidatesRef[parseInt(chk.dataset.idx, 10)])
+                        .filter(Boolean);
                     cleanup();
                     resolve(selected);
                 };
