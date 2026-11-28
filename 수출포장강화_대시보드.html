@@ -10825,6 +10825,55 @@
                 if (statusEl) { statusEl.style.color = '#dc2626'; statusEl.textContent = '오류: ' + e.message; }
             }
         }
+        // ── 신규품목확인 "확인" 탭 — 재고활용 가능 품목 표시 + 바로 적용(요청,
+        // 2026-11-28: "신규품목에서 확인단계에 재고활용 가능한 품목이 있다면 표시
+        // 해주고 재고활용 적용 가능한 버튼도 만들어줘"). 분류(수주) 직후에만 뜨던
+        // 1회성 팝업과 달리, 이 탭은 떠있는 동안 언제든 다시 생긴 재고활용 재고를
+        // pkgReuseCandidatesForNewItems로 매번 새로 조회해 보여준다. 적용 자체는
+        // 기존 "분류(수주) 재고활용 확인" 팝업과 같은 pkgApplyReuse 액션을 그대로
+        // 쓴다 — 적용되면 그 행의 비고가 "신규"에서 재고활용 메모로 바뀌므로(기존
+        // 메커니즘과 동일), 다음 새로고침 때 이 탭에서 자연히 빠진다.
+        let _pkgNewReuseByCodeColor = {};
+        function _pkgNewReuseKeyFor(code, color) {
+            return (code || '').toString().trim().toUpperCase() + '_' + _pkgNormColor(color);
+        }
+        async function _pkgRefreshNewReuseCandidates() {
+            let candidates = [];
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST', body: JSON.stringify({ action: 'pkgReuseCandidatesForNewItems' }),
+                    signal: AbortSignal.timeout(30000)
+                }).then(r => r.json());
+                if (!_pkgIsGasError(res)) candidates = res.reuseCandidates || [];
+            } catch (e) { /* 조용히 넘어감 — 뱃지가 안 보일 뿐, 확인 탭 자체는 그대로 동작 */ }
+            _pkgNewReuseByCodeColor = {};
+            candidates.forEach(g => { _pkgNewReuseByCodeColor[g.key] = g; });
+        }
+        async function _pkgNewApplyReuseForRow(idx) {
+            const list = _pkgNewDisplayList();
+            const it = list[idx];
+            if (!it) return;
+            const group = _pkgNewReuseByCodeColor[_pkgNewReuseKeyFor(it.code, it.color)];
+            if (!group) return;
+            const cand = group.candidates.find(c => c.orderName === it.round && Math.abs((parseFloat(c.qty) || 0) - (parseFloat(it.qty) || 0)) < 0.001);
+            if (!cand) { alert('재고활용 후보 정보가 바뀐 것 같습니다 — 새로고침 후 다시 시도해주세요.'); return; }
+            if (!confirm(`${it.code} / ${it.color || '-'} 품목에 재고활용 재고(가능 ${group.available}개)를 이 건(${it.qty}EA)만큼 적용할까요?\n적용되면 재고활용 재고가 그만큼 줄고(0이 되면 그 행은 삭제), 이 품목 비고에 "N EA 재고활용 적용됨 회수시 -해주세요."가 표시됩니다.`)) return;
+            try {
+                const res = await fetch(_pkgGasUrl(), {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'pkgApplyReuse', selections: [{ code: it.code, color: it.color, allocations: [{ row: cand.row, take: it.qty }] }] }),
+                    signal: AbortSignal.timeout(30000)
+                }).then(r => r.json());
+                if (_pkgIsGasError(res)) throw new Error((res && res.message) || '재고활용 적용 실패');
+                // 적용되면 비고가 바뀌어 더 이상 "신규"가 아니므로, 다음 전체 새로고침
+                // 전까지도 이 탭에서 바로 사라지도록 직접 목록에서 지운다.
+                window._pkgNewList = (window._pkgNewList || []).filter(x => !(x.code === it.code && x.round === it.round && _pkgNormColor(x.color) === _pkgNormColor(it.color)));
+                await _pkgRefreshNewReuseCandidates();
+                renderPkgNewList();
+            } catch (e) {
+                alert('재고활용 적용 중 오류: ' + (e.message || '오류'));
+            }
+        }
         function renderPkgNewList() {
             const body = document.getElementById('pkgNewBody');
             const sortBtnsEl = document.getElementById('pkgNewConfirmSortBtns');
