@@ -10921,6 +10921,10 @@
                             <button type="button" onclick="_pkgNewSaveShipDate('${key}','${sdInputId}')" style="padding:4px 10px;border-radius:7px;border:none;background:#0284c7;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">저장</button>
                             <span id="${sdInputId}_status" style="font-size:11px;font-weight:600;"></span>
                         </div>` : ''}
+                        ${reuseGroup ? `<div style="display:flex;align-items:center;gap:8px;margin:6px 0 2px 36px;padding:6px 10px;background:#ecfeff;border:1px solid #a5f3fc;border-radius:8px;flex-wrap:wrap;">
+                            <span style="font-size:11px;font-weight:700;color:#0e7490;"><i class="fa-solid fa-recycle" style="margin-right:4px;"></i>재고활용 가능 ${reuseGroup.available}개</span>
+                            ${reuseCand ? `<button type="button" onclick="event.stopPropagation();_pkgNewApplyReuseForRow(${idx})" style="margin-left:auto;padding:4px 10px;border-radius:7px;border:none;background:#0e7490;color:#fff;font-size:11px;font-weight:700;cursor:pointer;">재고활용 적용</button>` : ''}
+                        </div>` : ''}
                     </div>`;
                 }).join('');
             }
