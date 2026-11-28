@@ -9925,12 +9925,19 @@
                 type:    { field: null, from: '', to: '' },
                 barcode: { field: null, from: '', to: '' }
             };
+            // 모달을 다시 열 때마다 지난번 재고활용 후보는 비우고 새로 받아온다(요청,
+            // 2026-11-28) — 리스트는 먼저 그리고, 재고활용 뱃지/버튼은 서버 응답이
+            // 오는 대로 다시 그려서 붙는다(기다렸다가 모달을 늦게 띄우지 않음).
+            _pkgNewReuseByCodeColor = {};
             renderPkgNewList();
             renderPkgMissingSpecList();
             renderPkgMissingTypeList();
             renderPkgBarcodeList();
             pkgNewSwitchTab('confirm');
             document.getElementById('pkgNewModal').style.display = 'flex';
+            _pkgRefreshNewReuseCandidates().then(() => {
+                if (document.getElementById('pkgNewModal').style.display !== 'none') renderPkgNewList();
+            });
         }
         function closePkgNewModal() {
             document.getElementById('pkgNewModal').style.display = 'none';
